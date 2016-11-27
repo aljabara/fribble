@@ -3,12 +3,14 @@
 
 * Copyright (c) 2016 dave shields
 
+*	Utility functions
+
 	define('col(i)')		:(col.end)
 *	return contents of column as a string
 col
-	col = 	cell[1,j] cell[2,j] cell[3,j] cell[4,j] cell[5,j]
-.		cell[6,j] cell[7,j] cell[8,j] cell[9,j] cell[10,j]
-.		cell[11,j] cell[12,j] cell[13,j] cell[14,j] cell[15,j]
+	col = 	board[1,j] board[2,j] board[3,j] board[4,j] board[5,j]
+.		board[6,j] board[7,j] board[8,j] board[9,j] board[10,j]
+.		board[11,j] board[12,j] board[13,j] board[14,j] board[15,j]
 					:(return)
 col.end
 
@@ -39,18 +41,18 @@ getwords.done
 					:(return)
 *	getwords now has the word list as one large string.
 getwords.end
-	define('initcells(),cell,i,j')	:(initcells.end)
-initcells
-	initcells =array('1:15,1:15')
+	define('initboards(),board,i,j')	:(initboards.end)
+initboards
+	initboards =array('1:15,1:15')
 	i = 0
-initcells.i
-	le(i = i + 1,15)		:f(initcells.done)
+initboards.i
+	le(i = i + 1,15)		:f(initboards.done)
 	j = 0
-initcells.j
-	le(j = j + 1,15)		:f(initcells.i)
-	initcells[i,j] = ' '		:(initcells.j)
+initboards.j
+	le(j = j + 1,15)		:f(initboards.i)
+	initboards[i,j] = ' '		:(initboards.j)
 					:(return)
-initcells.end
+initboards.end
 
 	define('isword(word)')		:(isword.end)
 isword
@@ -60,8 +62,8 @@ isword.end
 	define('row(i)')		:(row.end)
 *	return contents of row as a string
 row
-	row = 	cell[i,1] cell[i,2] cell[i,3] cell[i,4] cell[i,5]
-.		cell[i,6] cell[i,7] cell[i,8] cell[i,9] cell[i,10]
-.		cell[i,11] cell[i,12] cell[i,13] cell[i,14] cell[i,15]
+	row = 	board[i,1] board[i,2] board[i,3] board[i,4] board[i,5]
+.		board[i,6] board[i,7] board[i,8] board[i,9] board[i,10]
+.		board[i,11] board[i,12] board[i,13] board[i,14] board[i,15]
 					:(return)
 row.end
