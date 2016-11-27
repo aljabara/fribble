@@ -1,0 +1,23 @@
+
+* This software is licensed under the MIT License, contained in the file LICENSE.
+
+* Copyright (c) 2016 dave shields
+
+	&anchor = &trim = 1
+	max = 0
+loop	line = input			:f(fend)
+	lines = lines + 1
+	s = size(line)
+	le(s,15)			:s(loop1)
+	skipped = skipped + 1
+					:(loop)
+loop1
+*	output = s ' ' line ' ' max
+	le(s,max)			:s(loop)
+	output = 'new max ' max ' ' line
+	max = s				:(loop)
+fend
+	output = 'lines read:	'	lines
+	output = 'longest word length:	' max
+	output = 'lines skipped with words more than 15 letters long:	' skipped
+end

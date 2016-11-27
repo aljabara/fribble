@@ -1,0 +1,67 @@
+
+* This software is licensed under the MIT License, contained in the file LICENSE.
+
+* Copyright (c) 2016 dave shields
+
+	define('col(i)')		:(col.end)
+*	return contents of column as a string
+col
+	col = 	cell[1,j] cell[2,j] cell[3,j] cell[4,j] cell[5,j]
+.		cell[6,j] cell[7,j] cell[8,j] cell[9,j] cell[10,j]
+.		cell[11,j] cell[12,j] cell[13,j] cell[14,j] cell[15,j]
+					:(return)
+col.end
+
+	define('getwords(filename)file,this,word')	:(getwords.end)
+getwords
+
+* Convert dictionary to a single string of getwords, combining getwords
+* into strings of 1000 characters before concatenating to build
+* single string.
+
+	getwords =
+	this = 
+	input(.file,3,filename)		:s(getwords.in)
+	output = 'unable to open input file ' filename	:(feturn)
+getwords.in
+	word = file			:f(getwords.done)
+	this  = this  word  ' '		
+	le(size(this),1000)		:s(getwords.in)
+	getwords = getwords ' ' this		
+	this =				:(getwords.in)
+*	add in remaining words
+	getwords = differ(this) getwords ' ' this 
+*	add blank at end of getwords to simplify scan later
+	getwords = getwords ' '
+					:(getwords.in)
+getwords.done				
+	endfile(3)
+					:(return)
+*	getwords now has the word list as one large string.
+getwords.end
+	define('initcells(),cell,i,j')	:(initcells.end)
+initcells
+	initcells =array('1:15,1:15')
+	i = 0
+initcells.i
+	le(i = i + 1,15)		:f(initcells.done)
+	j = 0
+initcells.j
+	le(j = j + 1,15)		:f(initcells.i)
+	initcells[i,j] = ' '		:(initcells.j)
+					:(return)
+initcells.end
+
+	define('isword(word)')		:(isword.end)
+isword
+	differ(words[word])		:s(return)f(freturn)
+isword.end
+
+	define('row(i)')		:(row.end)
+*	return contents of row as a string
+row
+	row = 	cell[i,1] cell[i,2] cell[i,3] cell[i,4] cell[i,5]
+.		cell[i,6] cell[i,7] cell[i,8] cell[i,9] cell[i,10]
+.		cell[i,11] cell[i,12] cell[i,13] cell[i,14] cell[i,15]
+					:(return)
+row.end

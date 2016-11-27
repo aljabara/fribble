@@ -1,0 +1,38 @@
+
+* This software is licensed under the MIT License, contained in the file LICENSE.
+
+* Copyright (c) 2016 dave shields
+
+-include "util.sbl"
+* Convert dictionary to a single string of words, combining words
+* into strings of 1000 characters before concatenating to build
+* single string.
+
+*	&dump = 3
+	&stlimit = 10000000
+* find pairs of letters that never occur in any word in the word list, and so
+* can not be part of a valid move.
+	&anchor = 1
+
+	all = getwords('words')	:f(eof)
+	output = 'file read'
+*	all now has the word list as one large string.
+	letters = &lcase
+	first = letters
+*	try all two letter combinations to see which are not
+*	in any word in the dictionary.
+next.f
+	first len(1) . f =		:f(eof)
+	second = letters
+*	now iterate over each letter s in second, looking for pair
+*	(f,s) in all
+next.s
+	second len(1) . s =		:f(next.f)
+*	continue on if (f,s) found in some word
+*	all f s				:s(next.s)
+	all breakx(f) f s		:s(next.s)
+	output = f s			:(next.s)
+eof
+end
+	
+

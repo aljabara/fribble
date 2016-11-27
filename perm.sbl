@@ -1,0 +1,46 @@
+
+* This software is licensed under the MIT License, contained in the file LICENSE.
+
+* Copyright (c) 2016 dave shields
+
+	&anchor = &trim = 1
+* compute all permutations of a string, returning a single with
+* the permutations separate by a space.
+	define('perm(s)n,first,second,last')			:(perm.end)
+perm
+	s = trim(s)
+	n = +size(s)
+	eq(n,0)					:s(return)
+	eq(n,1)					:s(perm.1)
+	eq(n,2)					:s(perm.2)
+* case of at least three characters: 
+	s len(1) . first len(1) . second rem . last
+	perm = 	permjoin(substr(s,1,1), perm(substr(s,2)))
+	j = 1
+perm.n
+	gt(j = j + 1, n)				:s(return)
+	perm = 	perm
+.		permjoin(substr(s,j,1), 
+.			 perm(substr(s,1,j - 1) substr(s,j + 1)))
+						:(perm.n)
+perm.1
+	perm =s					:(return)
+perm.2
+	s len(1) . f len(1) . l =
+	perm = f l ' ' l f			:(return)
+perm.end
+
+	define('permjoin(c,s)word')		:(permjoin.end)
+permjoin
+	s = s ' '
+permjoin.1
+	s break(' ') . word ' ' =		:f(return)
+	permjoin = permjoin c word ' '		:(permjoin.1)
+permjoin.end
+	
+
+	s = 'ab'
+	s = 'abcd'
+	p = perm(s)
+	output = p
+end

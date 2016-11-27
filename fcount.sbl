@@ -1,0 +1,21 @@
+
+* This software is licensed under the MIT License, contained in the file LICENSE.
+
+* Copyright (c) 2016 dave shields
+
+	&anchor = &trim = 1
+* count the number of words by their initial character
+
+	first = table(26,,0)
+words.in
+	line = input		:f(words.done)
+	line len(1) . c		:f(words.in)
+	first[c] = first[c] + 1	:(words.in)
+words.done
+	s =  &lcase
+loop.s
+	s len(1) . c =		:f(end)
+	output = c ' ' lpad(first[c],5)	:(loop.s)
+end
+	
+	
