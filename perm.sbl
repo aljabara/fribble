@@ -4,43 +4,83 @@
 * Copyright (c) 2016 dave shields
 
 	&anchor = &trim = 1
-* compute all permutations of a string, returning a single with
-* the permutations separate by a space.
-	define('perm(s)n,first,second,last')			:(perm.end)
+
+	define('add(str,word)')			:(add.end)
+
+*	add word to string str, prefixing with a space if str is not null.
+*	this aids in building list of words separated by spaces.
+add
+	add = str (differ(s) ' ', '') word	:(return)
+add.end
+
+*	copy s,  a list of words separated by spaces,
+*	join takes a list of space-separated words and prefixes each
+*	with the string c.
+
+	define('join(c,s)word')		:(join.end)
+join
+*	output = 'enter join c=' c ' s=' s '='
+join.1
+	s break(' ') . w ' ' =			:f(join.done)
+*	add blank before new word if not the first word
+	join = add(join,  c w)			:(join.1)
+join.done 
+	output = 'exit join=' join
+						:(return)
+join.end
+
+*	perm(s,d) returns all the permutations from string s
+*	with length d, as a list of words separated by spaces.
+
+	define('perm(s,d)n,i')			:(perm.end)
 perm
-	s = trim(s)
+	output = 'enter perm s(' s ') d=' d
+
+*	build perm as list of entries separated by space. Will
+*	eliminate extra space at the end before returning.
+
 	n = +size(s)
-	eq(n,0)					:s(return)
-	eq(n,1)					:s(perm.1)
-	eq(n,2)					:s(perm.2)
-* case of at least three characters: 
-	s len(1) . first len(1) . second rem . last
-	perm = 	permjoin(substr(s,1,1), perm(substr(s,2)))
-	j = 1
+	eq(d,0)					:s(return)
+	gt(d,1)					:s(perm.n) 
+
+*	here for permutations of just one character, which is
+*	the letters in s, separated by spaces.
+
+perm.1	
+	perm = add(perm, substr(s,i = i + 1,1) )
+.						:s(perm.1)f(return)
+
 perm.n
-	gt(j = j + 1, n)				:s(return)
-	perm = 	perm
-.		permjoin(substr(s,j,1), 
-.			 perm(substr(s,1,j - 1) substr(s,j + 1)))
+*	iterate over the string. For each character, find the 
+*	permutations that start with that character. Then move
+*	that character to the end of the string, continuing
+*	until we have processed all characters.
+
+	gt(i = i + 1,n)				:s(return)
+	output = 'perm.n i= ' i  ' s=' s '='
+	perm = add(perm,
+.		join(substr(s,1,1), perm(substr(s,2),d - 1)) 
+	t = s
+	s = substr(s,2) substr(s,1,1)
+	output = 'join ' t ' ->' s 
 						:(perm.n)
-perm.1
-	perm =s					:(return)
-perm.2
-	s len(1) . f len(1) . l =
-	perm = f l ' ' l f			:(return)
 perm.end
 
-	define('permjoin(c,s)word')		:(permjoin.end)
-permjoin
-	s = s ' '
-permjoin.1
-	s break(' ') . word ' ' =		:f(return)
-	permjoin = permjoin c word ' '		:(permjoin.1)
-permjoin.end
+	output = 'perm.end'
+
 	
 
 	s = 'ab'
 	s = 'abcd'
-	p = perm(s)
-	output = p
+	output = join('c', ' ab cb da ef')
+	output = '*********'
+	output = "perm('abcd',1)"
+	output = perm('abcd',1)
+	output = '*********'
+	output = "perm('abcd',2)"
+	output = perm('abcd',2)
+	output = '*********'
+	output = "perm('abcd',3)"
+	output = perm('abcd',3)
+	output = '*********'
 end
