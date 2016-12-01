@@ -9,7 +9,7 @@
 
 *	&ftrace = 1000; &trace = 1000
 
-	define('test()n,p,i,digits,p1,n1,word')			:(test.end)
+	define('test()n,p,i,digits,p1,n1,word')		:(test.end)
 
 
 test
@@ -24,35 +24,18 @@ test
 	output = "less('shampoo','h')" '->' less('shampoo','h')
 	output = "less('shampoo','x')" '->' less('shampoo','x')
 
+	output = "perm('bab',2)" '->' perm('bab',2)
 	output = "perm('shields',1)" '->' perm('shields',1)
-
 	output = "perm('shields',2)" '->' perm('shields',2)
-
-	p1 = perm('123456',6)
-	n1 = words(p1)
-	output =  '6 6 '  n1
-	p1 = p1 ' '
-	
-test.l.1
-	p1 break(' ') . word ' ' =			:f(test.l.2)
-	output = word					:(test.l.1)
-test.l.2
+	output = "perm('shields',3)" '->' perm('shields',3)
 	
 	output = 'done testing...'
 
-	:(return)
-
-*test.1
-*	gt(n = n +1, 3)					:s(return)
-*	p = 0
-test.2
-	gt(p = p + 1,n)					:s(return)
-	output = lpad(n,4) lpad(p,4) char(9)
-. 			perm(substr(digits,1,n), p)		:(test.2)
 							:(return)
+
 test.end
 
-	define('perm(s,p)c,n,i,dist,t')		:(perm.end)
+	define('perm(s,p)c,n,i,dist,t')			:(perm.end)
 
 *	perm(s,d) returns all the permutations from string s
 *	with length p, as a list of words separated by spaces.
@@ -61,23 +44,7 @@ perm
 *	build perm as list of entries separated by space. Will
 *	eliminate extra space at the end before returning.
 
-*	if s contains more than one instance of a letter, then
-*	only need to compute once the permutations that start
-*	with that letter. dist is a word of the distinct letters in s
 
-
-
-	t = s
-perm.dist
-	t len(1) . c =				:f(perm.dist.1)
-
-*	continue if already seen this letter
-
-	dist break(c)				:s(perm.dist)
-
-*	here if new letter not yet seen
-
-	dist = dist c				:(perm.dist)
 perm.dist.1
 	n = +size(s)
 	eq(p,0)						:s(return)
@@ -102,20 +69,41 @@ perm.n.1
 	gt(i = i + 1,n)					:s(return)
 	c = substr(s,i,1)
 
- :(perm.x)
-	move on if have already computed permutations that
-	begin with the same letter.
-	dist break(c)				:s(perm.n.1)
-	subperm = perm(less(s,c),p - 1)
-	output = 'subperm ' subperm
+*	This optimization in next line isn't working, so skip for now
+*	skip if have already generated permutations starting with this letter
 
-*	compute permutations starting with c.
+*	done break(c)					:s(perm.n.1)
 
-perm.x
-*	output = 'perm1 subperm ' perm(less(s,c), p - 1)
-	perm = add(perm,prefix(perm(less(s,c),p - 1),c)) :(perm.n.1)
+*	compute permutations starting with c, by recursively computing the permutations of all the letters
+*	that follow c, and then prefixing each permutation in the resulting list with c.
+
+	perm = add(perm,prefix(perm(less(s,c),p - 1),c)) 
+*	done = done c
+							:(perm.n.1)
 perm.end
 
+
 	digits = '123456789'
-	test()
+*	test()
+*	:(end)
+
+*	generate all permutations of up to seven letters.
+
+	n = 0
+
+main.1
+	gt(n = n + 1, 7)				:s(main.end)
+	p = 0
+main.2
+	gt(p = p + 1,n)					:s(main.1)
+	pip = perm(substr(digits,1,n),p)
+*	now write out permutation, one word per line
+	output = n ' ' p ' ' words(pip)
+	pip = pip ' '
+main.3
+	pip break(' ') . word ' ' =			:f(main.2)
+	output = word					:(main.3)
+
+main.end
+
 end
