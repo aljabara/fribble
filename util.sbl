@@ -5,8 +5,20 @@
 
 *	Utility functions
 
+	define('add(str,word)')			:(add.end)
+
+*	add word to string str, prefixing with a space if str is not null.
+*	this aids in building list of words separated by spaces.
+
+add
+	add = ident(str) word			:s(return)
+	add = str ' ' word				:(return)
+add.end
+
 	define('col(i)')			:(col.end)
+
 *	return contents of column as a string
+
 col
 	col = 	board[1,j] board[2,j] board[3,j] board[4,j] board[5,j]
 .		board[6,j] board[7,j] board[8,j] board[9,j] board[10,j]
@@ -23,52 +35,66 @@ getwords
 
 	getwords =
 	this = 
-	input(.file,3,filename)			:s(getwords.in)
+	input(.file,3,filename)				:s(getwords.in)
 	output = 'unable to open input file ' filename	:(feturn)
 getwords.in
-	word = file				:f(getwords.done)
+	word = file					:f(getwords.done)
 	this  = this  word  ' '		
-	le(size(this),1000)			:s(getwords.in)
+	le(size(this),1000)				:s(getwords.in)
 	getwords = getwords ' ' this		
-	this =					:(getwords.in)
+	this =						:(getwords.in)
 *	add in remaining words
 	getwords = differ(this) getwords ' ' this 
 *	add blank at end of getwords to simplify scan later
 	getwords = getwords ' '
-						:(getwords.in)
+							:(getwords.in)
 getwords.done					
 	endfile(3)
-						:(return)
+							:(return)
 *	getwords now has the word list as one large string.
 getwords.end
-	define('initboards(),board,i,j')	:(initboards.end)
+	define('initboards(),board,i,j')		:(initboards.end)
 initboards
 	initboards =array('1:15,1:15')
 	i = 0
 initboards.i
-	le(i = i + 1,15)			:f(initboards.done)
+	le(i = i + 1,15)				:f(initboards.done)
 	j = 0
 initboards.j
-	le(j = j + 1,15)			:f(initboards.i)
-	initboards[i,j] = ' '			:(initboards.j)
-						:(return)
+	le(j = j + 1,15)				:f(initboards.i)
+	initboards[i,j] = ' '				:(initboards.j)
+							:(return)
 initboards.end
 
-	define('isword(word)')			:(isword.end)
+	define('isword(word)')				:(isword.end)
 isword
-	differ(words[word])			:s(return)f(freturn)
+	differ(words[word])				:s(return)f(freturn)
 isword.end
 
-	define('less(s,c)')			:(less.end)
-*	remove the first instance of character c in s.
+	define('less(str,ch)before,after')		:(less.end)
+*	remove the first instance of character ch in str.
 less
-	less = s
-	s break(c) . first len(1) rem . rest 
-	less = first rest
-*	output = 'less s=' s ', c=' c '->' less
-							:(return)
+	ident(str)					:s(return)
+	str break(ch) . before len(1) rem . after	:f(less.1) 
+	less = before after				:(return)
+less.1
+	less = ident(substr(s,1,1),ch) substr(s,2)	:s(return)
+	less = str					:(return)
 less.end
 	
+	define('prefix(str,pre)word')		:(prefix.end)
+prefix
+
+*	prefix takes a list of space-separated words str and prefixes each
+*	with the string pre.
+
+
+	str = str ' ';* so each word followed by space
+prefix.1
+	str break(' ') . word span(' ')  =		:f(return)
+	prefix = add(prefix, pre word)			:(prefix.1)
+prefix.end
+
 	define('row(i)')		:(row.end)
 *	return contents of row as a string
 row
@@ -77,3 +103,14 @@ row
 .		board[i,11] board[i,12] board[i,13] board[i,14] board[i,15]
 						:(return)
 row.end
+
+	define('words(s)i')				:(words.end)
+*	return number of space-separated words in s
+words
+	s = s  ' '
+	words = 0
+words.1	
+	s break(' ') ' ' =				:f(return)
+	words = words + 1				:(words.1)
+words.end
+
