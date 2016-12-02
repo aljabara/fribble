@@ -29,22 +29,35 @@ backwards.1
 	backwords[key] = reverse(val)			:(backwords.1)
 backwords.end
 
-	define('getcolumns(rows),cline,ci,ri')		:(getcolumns.end)
-
-getcolumns
-	ri = ci = 0
-	getcolumns = array(15)
-getcolumns.c
-*	compute column i
-	gt(ci = ci + 1,15)				:s(return)
-	cline =
-	ri = 0
-getcolumns.r
-	gt(ri = ri + 1,15)				:s(getcolumns.d)
-	cline = cline substr(rows[ri],ci,1)		:(getcolumns.r)
-getcolumns.d
-	getcolumns[ci] = cline				:(getcolumns.c)
-getcolumns.end
+	define('getrows(board)')			:(getrows.end)
+getrows
+	getrows = array(7)
+	rline = 
+getrows.r
+	ri = ri + 1
+	gt(ri,15)					:s(return)
+	line = 
+	ci = 0
+getrows.c
+	getrows[ri, ci = ci + 1] = ' '			:f(return)
+getrows.end
+	
+*	define('getcolumns(rows),cline,ci,ri')		:(getcolumns.end)
+*
+*getcolumns
+*	ri = ci = 0
+*	getcolumns = array(15)
+*getcolumns.c
+**	compute column i
+*	gt(ci = ci + 1,15)				:s(return)
+*	cline =
+*	ri = 0
+*getcolumns.r
+*	gt(ri = ri + 1,15)				:s(getcolumns.d)
+*	cline = cline substr(rows[ri],ci,1)		:(getcolumns.r)
+*getcolumns.d
+*	getcolumns[ci] = cline				:(getcolumns.c)
+*getcolumns.end
 
 	define('getwords(filename)file,this,word')	:(getwords.end)
 getwords
