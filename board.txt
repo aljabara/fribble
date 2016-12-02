@@ -1,0 +1,44 @@
+Representation of WWF playing board, tiles, etc.
+
+The WWF board is a 15x15 grid, with rows 1..15 and columns 1..15.
+
+We will encode the location of each cell as r*100 * c. So row 1 consists of cells 101,102, ... 115. Row 2 consists
+of cells 201,202, ..., 215.
+
+The game is played with tiles, each representing a letter, and 'blank' tiles that can be used
+to represent any letter.  Each player has at most seven tiles at any turn. We refer to these tiles as the 'rack.'
+
+At the end of a turn the board must contain only words that occur in the WWF dictionary.
+
+In SPITBOL terms, we can think of the board as two sets of lines, with each line having 15 characters. The
+rows form one set of lines, the columns form the other. So at the end of a turn -- reading from left to right for
+the rows and top to bottom for the columns -- each line must contain only words in the WWF dictionary.
+
+We need only maintain the list of rows, since the columns can be obtained once the rows are known. 
+We define the initial board with
+
+	rows = array(16)
+board.1
+	gt(i = i + 1, 15)			:s(board.2)
+	rows[i] = dupl'-',15)			:(board.1)
+board.2
+
+
+Need function to check a line for validity:
+
+	define('valid(line)...') which succeeds if line is all blank or contains only valid words, and fails
+				otherwise.
+
+
+util.sbl summary
+
+	add(str,word add word to string prefixing with space if string not null
+	backwords(dict) - return dictionary with words reversed
+	getcolumns(rows) - return columns as array of lines corresponding to the columns
+	getwords(filename) - read list of words in file
+	getdict(filename) - read list of words from file and build table mapping words to non-zero value
+	isword(word,words)) - return nonzero value if word is contained in table words
+	less(str,ch) - return character from string
+	prefix(s,p) - insert p as prefix to each word in s
+	words(s) return number of words (separated by spaces) in s
+	

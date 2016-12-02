@@ -5,26 +5,46 @@
 
 *	Utility functions
 
-	define('add(str,word)')			:(add.end)
+	define('add(str,word)')				:(add.end)
 
 *	add word to string str, prefixing with a space if str is not null.
 *	this aids in building list of words separated by spaces.
 
 add
-	add = ident(str) word			:s(return)
+	add = ident(str) word				:s(return)
 	add = str ' ' word				:(return)
 add.end
 
-	define('col(i)')			:(col.end)
+	define('backwords(dict)ara,key,val,i')	:(backwords.end)
 
-*	return contents of column as a string
+*	use dictionary dict to build dictionary with the words reversed.
 
-col
-	col = 	board[1,j] board[2,j] board[3,j] board[4,j] board[5,j]
-.		board[6,j] board[7,j] board[8,j] board[9,j] board[10,j]
-.		board[11,j] board[12,j] board[13,j] board[14,j] board[15,j]
-						:(return)
-col.end
+backwords
+	ara = convert(dict,'array')
+	backwords = table(200000)
+	
+backwards.1
+	key = ara[i = i + 1,1]				:f(return)
+	val = ara[i,2]
+	backwords[key] = reverse(val)			:(backwords.1)
+backwords.end
+
+	define('getcolumns(rows),cline,ci,ri')		:(getcolumns.end)
+
+getcolumns
+	ri = ci = 0
+	getcolumns = array(15)
+getcolumns.c
+*	compute column i
+	gt(ci = ci + 1,15)				:s(return)
+	cline =
+	ri = 0
+getcolumns.r
+	gt(ri = ri + 1,15)				:s(getcolumns.d)
+	cline = cline substr(rows[ri],ci,1)		:(getcolumns.r)
+getcolumns.d
+	getcolumns[ci] = cline				:(getcolumns.c)
+getcolumns.end
 
 	define('getwords(filename)file,this,word')	:(getwords.end)
 getwords
@@ -39,20 +59,31 @@ getwords
 	output = 'unable to open input file ' filename	:(feturn)
 getwords.in
 	word = file					:f(getwords.done)
-	this  = this  word  ' '		
+	this = add(this,word)
 	le(size(this),1000)				:s(getwords.in)
-	getwords = getwords ' ' this		
+	getwords = add(getwords,this)
 	this =						:(getwords.in)
-*	add in remaining words
-	getwords = differ(this) getwords ' ' this 
-*	add blank at end of getwords to simplify scan later
-	getwords = getwords ' '
 							:(getwords.in)
 getwords.done					
-	endfile(3)
-							:(return)
-*	getwords now has the word list as one large string.
+*	add in remaining words
+	getwords = differ(this) add(getwords,this)
+	endfile(3)					:(return)
 getwords.end
+
+	define('getdict(filename)file,n,word')		:(getdict.end)
+getdict
+
+* Convert dictionary to a table.
+	getdict = table(20000,,0)
+	input(.file,3,filename)				:s(getdict.in)
+	output = 'unable to open input file ' filename	:(feturn)
+getdict.in
+	n = n + 1
+	getdict[file] = 1				:s(getdict.in)
+	output = 'word count ' n
+	endfile(3)					:(return)
+getdict.end
+
 	define('initboards(),board,i,j')		:(initboards.end)
 initboards
 	initboards =array('1:15,1:15')
@@ -82,7 +113,7 @@ less.1
 	less = str					:(return)
 less.end
 	
-	define('prefix(str,pre)word')		:(prefix.end)
+	define('prefix(str,pre)word')			:(prefix.end)
 prefix
 
 *	prefix takes a list of space-separated words str and prefixes each

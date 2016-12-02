@@ -9,7 +9,7 @@
 
 *	&ftrace = 1000; &trace = 1000
 
-	define('test()n,p,i,digits,p1,n1,word')		:(test.end)
+	define('test()n,p,i,digits,p1,n1,word')			:(test.end)
 
 
 test
@@ -31,11 +31,11 @@ test
 	
 	output = 'done testing...'
 
-							:(return)
+								:(return)
 
 test.end
 
-	define('perm(s,p)c,n,i,dist,t')			:(perm.end)
+	define('perm(s,p)c,n,i,dist,t')				:(perm.end)
 
 *	perm(s,d) returns all the permutations from string s
 *	with length p, as a list of words separated by spaces.
@@ -47,16 +47,16 @@ perm
 
 perm.dist.1
 	n = +size(s)
-	eq(p,0)						:s(return)
-	gt(p,1)						:s(perm.n) 
+	eq(p,0)							:s(return)
+	gt(p,1)							:s(perm.n) 
 
 *	here for permutations length one, which consists of
 *	the letters in s, separated by spaces.
 *	Here also we avoid adding duplicate characters
 
 perm.1	
-	c = substr(s,i = i + 1,1)			:f(return)
-	perm = add(perm, c)				:(perm.1)
+	c = substr(s,i = i + 1,1)				:f(return)
+	perm = add(perm, c)					:(perm.1)
 
 perm.n
 
@@ -66,43 +66,43 @@ perm.n
 *	of p-1 items in the string with c removed.
 
 perm.n.1
-	gt(i = i + 1,n)					:s(return)
+	gt(i = i + 1,n)						:s(return)
 	c = substr(s,i,1)
 
 *	This optimization in next line isn't working, so skip for now
 *	skip if have already generated permutations starting with this letter
 
-*	done break(c)					:s(perm.n.1)
+*	done break(c)						:s(perm.n.1)
 
 *	compute permutations starting with c, by recursively computing the permutations of all the letters
 *	that follow c, and then prefixing each permutation in the resulting list with c.
 
 	perm = add(perm,prefix(perm(less(s,c),p - 1),c)) 
 *	done = done c
-							:(perm.n.1)
+								:(perm.n.1)
 perm.end
 
 
 	digits = '123456789'
 *	test()
-*	:(end)
+*		:(end)
 
 *	generate all permutations of up to seven letters.
 
 	n = 0
 
 main.1
-	gt(n = n + 1, 7)				:s(main.end)
+	gt(n = n + 1, 7)					:s(main.end)
 	p = 0
 main.2
-	gt(p = p + 1,n)					:s(main.1)
+	gt(p = p + 1,n)						:s(main.1)
 	pip = perm(substr(digits,1,n),p)
 *	now write out permutation, one word per line
 	output = n ' ' p ' ' words(pip)
 	pip = pip ' '
 main.3
-	pip break(' ') . word ' ' =			:f(main.2)
-	output = word					:(main.3)
+	pip break(' ') . word ' ' =				:f(main.2)
+	output = word						:(main.3)
 
 main.end
 
