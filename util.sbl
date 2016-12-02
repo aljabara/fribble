@@ -84,20 +84,8 @@ getdict.in
 	endfile(3)					:(return)
 getdict.end
 
-	define('initboards(),board,i,j')		:(initboards.end)
-initboards
-	initboards =array('1:15,1:15')
-	i = 0
-initboards.i
-	le(i = i + 1,15)				:f(initboards.done)
-	j = 0
-initboards.j
-	le(j = j + 1,15)				:f(initboards.i)
-	initboards[i,j] = ' '				:(initboards.j)
-							:(return)
-initboards.end
 
-	define('isword(word)')				:(isword.end)
+	define('isword(word,words)')			:(isword.end)
 isword
 	differ(words[word])				:s(return)f(freturn)
 isword.end
@@ -126,14 +114,6 @@ prefix.1
 	prefix = add(prefix, pre word)			:(prefix.1)
 prefix.end
 
-	define('row(i)')		:(row.end)
-*	return contents of row as a string
-row
-	row = 	board[i,1] board[i,2] board[i,3] board[i,4] board[i,5]
-.		board[i,6] board[i,7] board[i,8] board[i,9] board[i,10]
-.		board[i,11] board[i,12] board[i,13] board[i,14] board[i,15]
-						:(return)
-row.end
 
 	define('words(s)i')				:(words.end)
 *	return number of space-separated words in s
