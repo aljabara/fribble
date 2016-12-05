@@ -1,0 +1,32 @@
+
+
+* This software is licensed under the MIT License, contained in the file LICENSE.
+
+* Copyright (c) 2016 dave shields
+
+-include "util.sbl"
+
+* Read the dictionaries and write out words that appear have plural form, such as, for example, 'cat.'
+
+* Note that there are just under 50,000 plurals in the ENABLE list, which is about 30% of the total.
+
+	dict1 = getdict("enable1.txt")
+	dict2 = getdict("wwf.txt")
+
+	ara1 = convert(dict1,'array')
+	ara2 = convert(dict2,'array')
+
+main.1
+	word = ara1[i = i + 1,1]			:f(main.2)
+	ident(dict1[word 's'])				:s(main.1)
+	output = word					:(main.1)
+main.2
+	i = 0
+main.3
+	word = ara2[i = i + 1,1]			:f(main.4)
+	ident(dict2[word 's'])				:s(main.3)
+	output = word					:(main.3)
+main.4
+end
+
+	

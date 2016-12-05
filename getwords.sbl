@@ -1,0 +1,17 @@
+* This software is licensed under the MIT License, contained in the file LICENSE.
+
+* Copyright (c) 2016 dave shields
+
+-include "util.sbl"
+
+*	Copy the words in standard input to standard output.
+
+loop
+	line = input					:f(end)
+	ident(line)					:s(loop)
+	line = replace(line, &ucase, &lcase)
+	line = line ' '
+wloop
+	line break(' ') . word span(' ') =		:f(loop)
+	output = word					:(wloop)
+end

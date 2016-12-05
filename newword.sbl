@@ -1,0 +1,27 @@
+* read lines, separate out words, and write out those not found in the dictionary.
+-include "util.sbl"
+
+	&anchor = &trim = 1
+
+	dict1 = getdict("enable1.txt")
+	dict2 = getdict("wwf.txt")
+
+loop
+	line = input					:f(done)
+	lines = lines + 1
+	ident(line)					:s(loop)
+	line = line ' '
+	line span(' ') =
+loop.w
+	line break(' ') . word span(' ') =		:f(loop.w)
+	ident(line)					:s(loop)
+	word = replace(word,&ucase,&lcase)
+	differ(dict1[word])				:s(loop.w)
+	differ(dict2[word])				:s(loop.w)
+	found = found + 1
+	output = word					:(loop)
+done
+	output = 'read ' lines ' lines'
+	output = 'found ' found ' new words'
+end
+

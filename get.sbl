@@ -1,0 +1,17 @@
+-include "util.sbl"
+
+*	&ftrace = &strace = 3000
+
+	tbl = table(20000,,0)
+	words = getwords('words') ' '
+	output = 'read'
+init
+	words break(' ') . word ' ' =			:f(init.end)
+*	output = word
+	nwords = nwords + 1
+*	tbl[word] = 1					:(init)
+							:(init)
+init.end
+	output = 'words read ' nwords
+
+end

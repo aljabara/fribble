@@ -71,11 +71,12 @@ http://www.zygnawithfriends.com/wordswithfriends/support/WWF_Rulebook.html
 
 2. Tile Placement
 
-  1. The first word must be placed so that 1 of the tiles is on the star in the center of the board.
+  1. The first word must be placed so that one of the tiles is on the star in the center of the board.
 
-  2. Every word following that must be placed so that at least 1 tile is shared from an existing word on the board.
+  2. Every word following that must be placed so that at least one tile is shared from an existing word on the board.
 
-  3. Tiles can only be placed in the same line vertically or horizontally each turn.
+  3. Tiles can only be placed in the same line vertically or horizontally each turn. (The rules don't state,
+ but experience confirms, that no spaces are allowed between the placed tiles.)
 
   4. Tiles can be placed so that multiple new words are formed simultaneously using neighboring letters.
 
@@ -87,32 +88,36 @@ http://www.zygnawithfriends.com/wordswithfriends/support/WWF_Rulebook.html
 
 3. Scoring
 
-  1. Double the value of any tiles that were played this turn on a DL space, and triple the value of any tile that was played on a TL
-       space this turn. Do not double the value of tiles on DL and TL spaces for tiles that were played on previous rounds.
+  1. Double the value of any tiles that were played this turn on a Double Letter (DL) space, and triple the value of 
+any tile that was played on a triple letter (TL) TL space this turn. 
+Do not double the value of tiles on DL and TL spaces for tiles that were played on previous rounds.
 
   2. Add up the values of all letters in the word, even if some were played on a previous turn.
 
-  3. Double the value of the word if any tiles this turn were played on a DW space (and double it again in the case were 2 DW spaces were
-       played upon). Triple the value of the word if any tiles this turn were played on a TW space (and triple it again if 2 TW spaces were
-       used). Do not multiply words if tiles on DW or TW spaces were used from a previous turn.
+  3. Double the value of the word if any tiles this turn were played on a DW space (and double it again 
+in the case were two DW spaces were played upon). Triple the value of the word if any tiles this turn were played on a 
+TW space (and triple it again if two TW spaces were used). Do not multiply words if tiles on DW or 
+TW spaces were used from a previous turn.
 
-  4. It is possible to create multiple words with the same play. In this case, score each new word separately, including bonuses, and sum
-       all of the new words together.  
+  4. It is possible to create multiple words with the same play. In this case, score each new word separately,
+ including bonuses, and sum all of the new words together.  
+
   5. Words cannot be placed if they create an illegal word using neighboring letters.
 
-  6. 35 bonus points are awarded whenever a player uses all 7 tiles on their rack in a single turn.
+  6. Thirty-five bonus points are awarded whenever a player uses all seven tiles on their rack in a single turn.
 
 4. End Game
 
-  1. The game ends when one player plays every tile in his rack, and there are no tiles remaining to draw from. The game could also end
-       if three successive turns have occurred with no scoring and as long as the score is not zero-zero.
+  1. The game ends when one player plays every tile in his rack, and there are no tiles remaining to draw from.
+The game could also end if three successive turns have occurred with no scoring and as long as the score is not zero-zero.
 
-  2. After the last tile is played, the opposing player will lose points equal to the sum of the value of his remaining tiles. This amount
-       is then awarded to the player who placed the last tile.
+  2. After the last tile is played, the opposing player will lose points equal to the sum of the value of his remaining tiles.
+This amount is then awarded to the player who placed the last tile.
 
 5. Dictionary
 
 Words With Friends has more than 173,000 acceptable words for use in the game. Our list is based on the Enhanced North American Benchmark
+
    Lexicon (ENABLE), a public domain list used by many word games.  
 
 The ENABLE word list for WWF can be found at:

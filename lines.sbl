@@ -1,0 +1,49 @@
+*	compute vertical lines (columns) from the horizontal lines (rows).
+
+*	main program	-- test of getcolumns function
+-include "util.sbl"
+
+	define('newboard()')				:(newboard.end)
+
+newboard
+	newboard = array(15,15)
+	ri = 1
+	ci = 0
+newboard.c
+	newboard[ri,ci = ci + 1]` = '-' 		:s(newboard.c)
+	gt(ri = ri + 1,15)				:f(newboard.c)
+newboard.r
+	newboard(ri = ri + 1,ci] = '-'			:f(newboard.c)
+newboard.end
+
+
+
+	letters = &lcase &ucase
+	b = newboard()
+	outboard()
+
+
+end
+	rows = array(15)
+	i = 0
+init.1
+	gt(i = i + 1,15)				:s(init.2)
+	rows[i] = substr(letters,i,15)			:(init.1)
+init.2
+	
+	output = 'rows'
+	i = 0
+main.1
+	gt(i = i + 1, 15)				:s(main.2)
+	output = lpad(i,3) char(9) rows[i]		:(main.1)
+main.2
+
+	output = 'columns'
+	columns = getcolumns(rows)
+	i = 0
+main.4
+	gt(i = i + 1, 15)				:s(end)
+	output = lpad(i,3) char(9) columns[i]		:(main.4)
+
+end
+	

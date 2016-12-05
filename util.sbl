@@ -21,7 +21,9 @@ add.end
 
 backwords
 	ara = convert(dict,'array')
-	backwords = table(200000)
+*	backwords = table(20000)
+	backwords = table()
+
 	
 backwards.1
 	key = ara[i = i + 1,1]				:f(return)
@@ -87,9 +89,9 @@ getwords.end
 getdict
 
 * Convert dictionary to a table.
-	getdict = table(20000,,0)
+	getdict = table(2000)
 	input(.file,3,filename)				:s(getdict.in)
-	output = 'unable to open input file ' filename	:(feturn)
+	output = 'unable to open input file ' filename	:(freturn)
 getdict.in
 	n = n + 1
 	getdict[file] = 1				:s(getdict.in)
@@ -127,7 +129,29 @@ prefix.1
 	prefix = add(prefix, pre word)			:(prefix.1)
 prefix.end
 
+	define('valid(w,d)')				:(valid.end)
 
+*	see if word is in dictionary
+
+valid
+	differ(d[w])					:s(return)f(freturn)
+valid.end
+
+	define('validate(line,dict)word')		:(validate.end)
+
+*	succeed if line contains only valid words, fail otherwise.	
+
+validate
+	line = line ' '
+validate.1
+	line span(' ') =
+	ident(line)					:s(return)
+	line break(' ') . word span(' ') =
+	valid(word,dict)				:f(freturn)s(validate.1)
+validate.end
+
+
+				k
 	define('words(s)i')				:(words.end)
 *	return number of space-separated words in s
 words

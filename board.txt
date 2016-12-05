@@ -42,3 +42,9 @@ util.sbl summary
 	prefix(s,p) - insert p as prefix to each word in s
 	words(s) return number of words (separated by spaces) in s
 	
+Representation of board as two-dimensional array
+	board = array(15,15)
+
+	getrows(board)
+	getcolumns(board)
+
