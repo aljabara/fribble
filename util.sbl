@@ -1,4 +1,3 @@
-
 * This software is licensed under the MIT License, contained in the file LICENSE.
 
 * Copyright (c) 2016 dave shields
@@ -30,6 +29,23 @@ backwards.1
 	val = ara[i,2]
 	backwords[key] = reverse(val)			:(backwords.1)
 backwords.end
+
+	define('bonusinit()b')				:(bonusinit.end)
+
+*	initialize the bonus squares for the 15x15 grid, using 1 for double letter, 
+*	2 for triple letter, and 3 for triple word.
+
+bonusinit
+	line =  '1 0203 1 0212 1 0302 1 0305 1 0311 1 0312 1 0314 1 0503 1 0613 1 0705 1 0711 '
+.		'1 0905 1 0911 1 1103 1 1109 1 1113 1 1302 1 1305 1 1311 1 1314 1 1403 1 1413 '
+.		'2 0107 2 0109 2 0404 2 0412 2 0606 2 0610 2 0701 2 0715 2 0901 2 0915 2 1006 '
+.               '2 1010 2 1304 2 1312 2 1507 2 1509 2 '
+.		'3 0104 3 0112 3 0401 3 0415 3 1101 3 1115 3 1504 3 1512 '
+
+bonusinit.loop
+	line len(1) . b ' ' len(2) . r len(2) . c ' ' = :f(return)
+	bonusinit[+r, +c] = +b				:(bonusinit.loop)
+bonusinit.end
 
 	define('getrows(board)')			:(getrows.end)
 getrows
@@ -89,12 +105,16 @@ getwords.end
 getdict
 
 * Convert dictionary to a table.
+
 	getdict = table(2000)
 	input(.file,3,filename)				:s(getdict.in)
 	output = 'unable to open input file ' filename	:(freturn)
 getdict.in
 	n = n + 1
-	getdict[file] = +1				:s(getdict.in)
+	word = file					:f(getdict.done)
+	gt(size(word),15)				:s(getdict.in)
+	getdict[word] = +1				:(getdict.in)
+getdict.done
 	output = 'word count ' n
 	endfile(3)					:(return)
 getdict.end
@@ -116,6 +136,53 @@ less.1
 	less = str					:(return)
 less.end
 	
+	define('perm(s,p)c,n,i,dist,t')				:(perm.end)
+
+*	perm(s,d) returns all the permutations from string s
+*	with length p, as a list of words separated by spaces.
+
+perm
+*	build perm as list of entries separated by space. Will
+*	eliminate extra space at the end before returning.
+
+
+perm.dist.1
+	n = +size(s)
+	eq(p,0)							:s(return)
+	gt(p,1)							:s(perm.n) 
+
+*	here for permutations length one, which consists of
+*	the letters in s, separated by spaces.
+*	Here also we avoid adding duplicate characters
+
+perm.1	
+	c = substr(s,i = i + 1,1)				:f(return)
+	perm = add(perm, c)					:(perm.1)
+
+perm.n
+
+*	Here if two or more characters in the string. 
+*	For each distinct character, the permutations
+*	of p items can be found by find the permutations
+*	of p-1 items in the string with c removed.
+
+perm.n.1
+	gt(i = i + 1,n)						:s(return)
+	c = substr(s,i,1)
+
+*	This optimization in next line isn't working, so skip for now
+*	skip if have already generated permutations starting with this letter
+
+*	done break(c)						:s(perm.n.1)
+
+*	compute permutations starting with c, by recursively computing the permutations of all the letters
+*	that follow c, and then prefixing each permutation in the resulting list with c.
+
+	perm = add(perm,prefix(perm(less(s,c),p - 1),c)) 
+*	done = done c
+								:(perm.n.1)
+perm.end
+
 	define('prefix(str,pre)word')			:(prefix.end)
 prefix
 

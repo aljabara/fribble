@@ -1,0 +1,62 @@
+
+* This software is licensed under the MIT License, contained in the file LICENSE.
+
+* Copyright (c) 2016 dave shields
+
+-include "util.sbl"
+
+	&anchor = &trim = 1
+
+*	&ftrace = 1000; &trace = 1000
+
+	define('test()n,p,i,digits,p1,n1,word')			:(test.end)
+
+
+test
+
+	n = 3
+
+	output = '... ' digits
+	output = 'testing ...'
+	output = 'digits ' digits
+
+	output = "less('shampoo','s')" '->' less('shampoo','s')
+	output = "less('shampoo','h')" '->' less('shampoo','h')
+	output = "less('shampoo','x')" '->' less('shampoo','x')
+
+	output = "perm('bab',2)" '->' perm('bab',2)
+	output = "perm('shields',1)" '->' perm('shields',1)
+	output = "perm('shields',2)" '->' perm('shields',2)
+	output = "perm('shields',3)" '->' perm('shields',3)
+	
+	output = 'done testing...'
+
+								:(return)
+
+test.end
+
+
+	digits = '123456789'
+*	test()
+*		:(end)
+
+*	generate all permutations of up to seven letters.
+
+	n = 0
+
+main.1
+	gt(n = n + 1, 7)					:s(main.end)
+	p = 0
+main.2
+	gt(p = p + 1,n)						:s(main.1)
+	pip = perm(substr(digits,1,n),p)
+*	now write out permutation, one word per line
+	output = n ' ' p ' ' words(pip)
+	pip = pip ' '
+main.3
+	pip break(' ') . word ' ' =				:f(main.2)
+	output = word						:(main.3)
+
+main.end
+
+end

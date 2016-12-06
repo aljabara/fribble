@@ -56,6 +56,10 @@ Representation of board as two-dimensional array
 	getrows(board)
 	getcolumns(board)
 
+# Study
+
+The directory *study* contains various programs used to study the dictionary structure, to assist in
+refining the brute force approach to make the WWF player faster.
 
 
 

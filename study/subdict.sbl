@@ -1,0 +1,12 @@
+-include "../util.sbl"
+*	create subset of dictionary by copying only every 1000th entry
+*	get words of length 5
+	dict = getdict("../enable1.txt")			:f(end)
+	dara = sort(dict,1)
+	i = 0
+
+loop
+	word = dara[i = i + 50,1]				:f(end)
+	ne(size(word),3)					:s(loop)
+	output = differ(word) word				:(loop)
+end

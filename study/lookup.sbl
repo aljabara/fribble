@@ -1,18 +1,16 @@
 
-
 * This software is licensed under the MIT License, contained in the file LICENSE.
 
 * Copyright (c) 2016 dave shields
 
 -include "util.sbl"
 
-	&anchor = &trim = 1
-	&dump = 3
-
 *	Read lines from input, testing each to see if all there words on it are in the dictionary,
 *	reporting true or false according to the result.
 
-	dict = getdict("subenable1.txt")
+	&anchor = &trim = 1
+
+	dict = getdict("enable1.txt")
 	dict1 = getdict("wwf.txt")
 	dicta = sort(dict1,1)
 dict.init
@@ -23,7 +21,7 @@ dict.init.done
 loop
 	output = '?'
 	line = input					:f(end)
-	validate(dict,line)					:s(yes)f(no)
+	validate(dict,line)				:s(yes)f(no)
 yes
 	output = lpad('yes',4) ' ' line			:(loop)
 no

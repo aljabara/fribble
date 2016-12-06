@@ -1,0 +1,6 @@
+-include "util.sbl"
+
+	s = 'abcdef'
+	output =  'perm(s,1) '  perm(s,1)
+	output =  'perm(s,2) '  perm(s,2)
+end
