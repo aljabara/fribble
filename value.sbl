@@ -1,0 +1,12 @@
+* test value mapping
+-include "util.sbl"
+	value = valueinit()
+loop
+	line = input					:f(end)
+	linein = line
+loop.1	line len(1) . c =				:f(loop.2)
+	v = v + value[c]				:(loop.1)
+loop.2
+	output = lpad(v,4) char(9)	linein
+	v = 0						:(loop)
+end

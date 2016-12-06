@@ -94,7 +94,7 @@ getdict
 	output = 'unable to open input file ' filename	:(freturn)
 getdict.in
 	n = n + 1
-	getdict[file] = 1				:s(getdict.in)
+	getdict[file] = +1				:s(getdict.in)
 	output = 'word count ' n
 	endfile(3)					:(return)
 getdict.end
@@ -129,7 +129,7 @@ prefix.1
 	prefix = add(prefix, pre word)			:(prefix.1)
 prefix.end
 
-	define('valid(w,d)')				:(valid.end)
+	define('valid(d,w)')				:(valid.end)
 
 *	see if word is in dictionary
 
@@ -137,7 +137,7 @@ valid
 	differ(d[w])					:s(return)f(freturn)
 valid.end
 
-	define('validate(line,dict)word')		:(validate.end)
+	define('validate(dict,line)word')		:(validate.end)
 
 *	succeed if line contains only valid words, fail otherwise.	
 
@@ -147,10 +147,25 @@ validate.1
 	line span(' ') =
 	ident(line)					:s(return)
 	line break(' ') . word span(' ') =
-	valid(word,dict)				:f(freturn)s(validate.1)
+	valid(dict, word)				:f(freturn)s(validate.1)
 validate.end
 
 
+	define('valueinit()line,c')			:(valueinit.end)
+
+*	initialize value map for letters
+valueinit
+	valueinit = table(26)
+	line = &lcase
+valueinit.1
+	line len(1) . c =				:f(valueinit.2)
+	valueinit[c] = 1					:(valueinit.1)
+valueinit.2
+	valueinit['q'] = valueinit['z'] = 10
+	valueinit['k'] = valueinit['j'] = 3
+							:(return)
+valueinit.end
+							;
 				k
 	define('words(s)i')				:(words.end)
 *	return number of space-separated words in s

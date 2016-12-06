@@ -7,7 +7,7 @@
 -include "util.sbl"
 
 	&anchor = &trim = 1
-*	&dump = 3
+	&dump = 3
 
 *	Read lines from input, testing each to see if all there words on it are in the dictionary,
 *	reporting true or false according to the result.
@@ -17,13 +17,13 @@
 	dicta = sort(dict1,1)
 dict.init
 	word = dicta[i = i + 1,1]			:f(dict.init.done)
-	dict[word] = 1					:s(dict.init)
+	dict[word] = +1					:s(dict.init)
 dict.init.done
 
 loop
-	output = 'enter line'
+	output = '?'
 	line = input					:f(end)
-	validate(line)					:s(yes)f(no)
+	validate(dict,line)					:s(yes)f(no)
 yes
 	output = lpad('yes',4) ' ' line			:(loop)
 no
