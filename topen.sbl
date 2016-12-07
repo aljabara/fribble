@@ -24,21 +24,27 @@ open
 	output = 'tiles ' tiles
 
 	output = 'open ' tiles 
-*open.1	gt(n = n + 1,7)						:s(open.3)
-open.1	gt(n = n + 1,3)						:s(open.3)
+open.1	gt(n = n + 1,7)						:s(open.3)
+*open.1	gt(n = n + 1,3)						:s(open.3)
 
 *	Get permutations and replace ordinals with actual tile letters. Then iterate over the permutations.
-	p = perm(tiles,n,value)
-	output = 'n ' n ' ' 'p ' p
 	perms = replace(perm(tiles,n,value),'1234567',tiles) ' '
-	output = 'perm ' perms
+*	output = n ' ' perms
 open.2
 	perms break(' ') . w ' ' =			:f(open.1)
 	valid(dict,w)					:f(open.2)
 	p = '0808>' w
-	v = value[p]
-	output = 'test p ' p ' ' v
+*	compute value of w using quick approximation for now
+	vw = w; wval = 0
+vloop
+	vw len(1) . vc =				:f(vloop.done)
+	wval = wval + value[vc]				:(vloop)
+vloop.done
+	v = wval
+*	v = value[p]
+*	output = 'test p ' p ' v ' v
 	lt(v,hv)					:s(open.2)
+	output = 'updating value hv ' hv '  p ' hp
 	hp = p
 	hv = v						:(open.2)
 open.3
@@ -53,17 +59,20 @@ open.end
 	output = 'cannot open dict'			:(end)
 
 d.open
-	value = valueinit()
+*	cvalue is map from individual characters to their value
+	cvalue = valueinit()
 
 loop
 	output = '?' 
-	tiles = 'dapabcg'
+	tiles = '1gapabcg'
+	tiles = 'cgap234'
 *	tiles = input					:f(done)
 	ident(tiles)					:s(done)
 	ident(tiles)					:s(end)
 	output = 'tiles ' tiles
-	move = open(tiles,dict,value)			
+	move = open(tiles,dict,cvalue)			
 *	output = move					:(loop)
 	output = move				
-done	&dump = 
+done	
+*	&dump = 
 end

@@ -7,6 +7,7 @@
 
 loop
 	word = dara[i = i + 50,1]				:f(end)
-	ne(size(word),3)					:s(loop)
+*	word = dara[i = i + 1,1]				:f(end)
+*	ne(size(word),4)					:s(loop)
 	output = differ(word) word				:(loop)
 end
