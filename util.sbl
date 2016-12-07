@@ -106,16 +106,14 @@ getdict
 
 * Convert dictionary to a table.
 
-	getdict = table(2000)
+	getdict = table(200000)
 	input(.file,3,filename)				:s(getdict.in)
 	output = 'unable to open input file ' filename	:(freturn)
 getdict.in
-	n = n + 1
 	word = file					:f(getdict.done)
 	gt(size(word),15)				:s(getdict.in)
 	getdict[word] = +1				:(getdict.in)
 getdict.done
-	output = 'word count ' n
 	endfile(3)					:(return)
 getdict.end
 
