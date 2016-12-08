@@ -128,9 +128,11 @@ The ENABLE word list for WWF can be found at:
 
 http://code.google.com/archive/p/dotnetperls-controls/downloads/enable1.txt
 
-WWF also allows some additional words though this is no official list of them. File **wwf.txt** is a list of additional words
-created by peusing some web sites and also based on actual playing experience For example, consider QI 
+WWF also allows some additional words though this is no official list of them.  For example, consider QI 
 (force whose existence and properties are the basis of much Chinese philosophy and medicine).
+
+A list of such words, created by peusing some web sites and also based on actual playing experience, can be
+found in the definition of the variable *g.wwf* in file *util.sbl*.
 
 
 

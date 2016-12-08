@@ -159,13 +159,28 @@ init.5
 							:(return)
 init.end
 
-	define('initdict(filename,skip)file,n,word')	:(initdict.end)
+	define('initdict(filename,skip)file,n,word,s')	
+
+*	g.wwf is list of words not in enable dictionary but known to be used by wwf.
+
+	g.wwf = 'qi brr '
+
+							:(initdict.end)
 initdict
 
 * Convert dictionary to a table, using every 'skip' entries.
 
 	skip = (ident(skip) +1, +skip)
 	initdict = table(200000)
+
+*	add words from g.wwf list to dictionary
+
+	s = g.wwf
+initdict.wwf.1
+	s break(' ') . word ' ' =			:f(initdict.wwf.2)
+	initdict[word] = +1				:(initdict.wwf.1)
+initdict.wwf.2
+	
 	filename = ident(filename) 'enable1.txt'
 	input(.file,3,filename)				:s(initdict.in)
 	output = 'unable to open input file ' filename	:(freturn)
