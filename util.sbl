@@ -111,7 +111,7 @@ getwords
 	getwords =
 	this = 
 	input(.file,3,filename)				:s(getwords.in)
-	output = 'unable to open input file ' filename	:(feturn)
+	output = 'unable to open input file ' filename	:(freturn)
 getwords.in
 	word = file					:f(getwords.done)
 	this = add(this,word)
@@ -148,7 +148,7 @@ init.2
 *	initialize the bonus squares for the 15x15 grid, using 1 for double letter, 
 *	2 for triple letter, 3 for double word, and 4 for triple word.
 
-	g.bonus = array(15,15)
+	g.bonus = array('15,15')
 
 	s =     '1 0203 1 0212 1 0302 1 0305 1 0311 1 0312 1 0314 1 0503 1 0613 1 0705 1 0711 '
 .		'1 0905 1 0911 1 1103 1 1109 1 1113 1 1302 1 1305 1 1311 1 1314 1 1403 1 1413 '
@@ -168,7 +168,7 @@ init.3.done
 init.4
 *	assume value is 1
 	s len(1) . c =					:f(init.5)
-	g.value[c] = +1					:(init.4)
+	g.value[c] = 1					:(init.4)
 init.5
 *	g.value[' '] = 1
 *	update assumptions for letters with value greater than one.
@@ -307,7 +307,8 @@ prefix.end
 *	in the interval [0,1]. 
 *	The Algorithm is based in that in section 16.1 of "Algorithms in SNOBOL4," James F. Gimpel, John Wiley and Sons, 1976.
 
-	random_var = 1.0;* Gimple uses integer here, but need to have real.
+*	Gimpel uses integer here, but need to have real.
+	random_var = convert(1,'real')
 
 							:(random.end)
 random	random_var = remdr(random_var * 4676, 414971)

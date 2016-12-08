@@ -6,12 +6,43 @@ The goal is to construct a program that can play WWF.
 
 A copy of the offical rules for WWF can be found in Appendix A.
 
-##Representation of WWF playing board, tiles, etc.
+##Strategy
+
+Our strategy is at its core "brute force" in that each
+new move will be determined by generating **all** possible moves and
+then picking one that has a score at least as high as any other.
+
+The reasoning behind this approach is based on the observation
+that each new move will consists of at most about 10000,
+possible permutations of the tiles in the rack that can be placed
+starting at a given blank cell.
+If we consider all moves, then there are 7! (about 5,000) ways to play seven tiles, 6! to
+play six tiles, and so forth. This gives about 7! + 6! ... +1! possibilities (about 10,000).
+
+As the game progresses there will be fewer and fewer blank cells to consider.
+
+While this at first sight a large space to search, the number of impossible moves is
+limited by the size of the dictionary (about 180,000 words) and 
+the structure of English. For example, consider the number of plural words in the dictionary, that is words such adding 's' at the end of
+the word results in a word that is also in the dictionary.
+There are just under 50,000 plurals in the ENABLE list, which is about 30% of the total.
+
+Almost all the possible moves will consist of nonsense strings
+that are  not in the dictionary. Consider for example a  move
+that starts with 'zqiij.' We can find such nonsense strings
+by constructing a list of all the possibilites for the first
+four characters in a valid word, and so forth.
+
+SPITBOL is very fast. The game is now played in real time, but
+over the internet, so that it is acceptable to take minutes,
+if not hours, to find the best move for a given position.
+
+
+
+
+
 
 The WWF board is a 15x15 grid, with rows 1..15 and columns 1..15.
-
-We will encode the location of each cell as r*100 * c. So row 1 consists of cells 101,102, ... 115. Row 2 consists
-of cells 201,202, ..., 215.
 
 The game is played with tiles, each representing a letter, and 'blank' tiles that can be used
 to represent any letter.  Each player has at most seven tiles at any turn. We refer to these tiles as the 'rack.'

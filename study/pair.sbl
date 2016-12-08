@@ -3,14 +3,15 @@
 
 * Copyright (c) 2016 dave shields
 
--include "util.sbl"
+-include "../util.sbl"
 
 * 	find pairs of letters that never occur in any word in the word list,
 *	 and so may help eliminate possible word candidates.
 
 	&anchor = &trim = 1
 
-	all = getwords('words')			:f(eof)
+	init()
+	all = getwords('../enable1.txt')	:f(eof)
 
 *	all now has the word list as one large string.
 
