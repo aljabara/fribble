@@ -3,8 +3,7 @@
 
 	&anchor = &trim = 1
 
-	dict1 = getdict("enable1.txt")
-	dict2 = getdict("wwf.txt")
+	init()
 
 loop
 	line = input					:f(done)
@@ -16,8 +15,7 @@ loop.w
 	line break(' ') . word span(' ') =		:f(loop.w)
 	ident(line)					:s(loop)
 	word = replace(word,&ucase,&lcase)
-	differ(dict1[word])				:s(loop.w)
-	differ(dict2[word])				:s(loop.w)
+	differ(g.dict[word])				:s(loop.w)
 	found = found + 1
 	output = word					:(loop)
 done

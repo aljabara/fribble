@@ -10,9 +10,9 @@
 
 	&anchor = &trim = 1
 
-	dict = getdict("enable1.txt")
-	dict1 = getdict("wwf.txt")
-	dicta = sort(dict1,1)
+	init()
+	dict = g.getdict
+	dicta = sort(dict,1)
 dict.init
 	word = dicta[i = i + 1,1]			:f(dict.init.done)
 	dict[word] = +1					:s(dict.init)

@@ -1,0 +1,14 @@
+*	write out the set of initial tiles as a single line, preceded by length of that line
+	&anchor = &trim = 1
+
+* 	ignoring two blanks for now
+
+	tileset = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
+	new = ''
+loop
+	tileset break(' ') . c ' ' break(' ') . n ' ' =		:f(done)
+	new = new dupl(c,+n)					:(loop)
+done
+	output = size(new)
+	output = new
+end

@@ -8,7 +8,8 @@
 
 *
 *	note that running the program shows about 3100 such words, about the same for strings that end words
-	dict.in = getdict("../enable1.txt")
+	init()
+	dict.in = g.dict
 	dict = sort(dict.in,1)
 *	set dict.n to dictionary size
 	p = prototype(dict)
