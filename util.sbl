@@ -2,6 +2,15 @@
 
 * Copyright (c) 2016 dave shields
 
+*	Global Variables
+
+*	The global variables, initialized by the function *init()*,  are as follows:
+
+*	g.board		array('15,15',' ')	grid of the playing board
+*	g.bonus		array('15,15',+0)	grid with non-zero cells for bonus squares
+*	g.tileset	string			all the characters in the initial set of tiles, by frequency
+*	g.
+
 *	Utility functions
 
 	define('add(str,word)')				:(add.end)
@@ -29,6 +38,38 @@ backwards.1
 	val = ara[i,2]
 	backwords[key] = reverse(val)			:(backwords.1)
 backwords.end
+
+	define('cells(move)r,c,t,text,i,n')		:(cells.end)
+
+*	return the cells that comprise a move, by which we mean a list of the form
+*		rrcc>letters or rrcc^letters, where rr is the row and cc is the column of the first
+*	character in the move, '>' is used to indicate a horizontal sequence of letters going from left to right,
+*	and '^' a vertical sequence going from top to bottom.
+
+cells
+	move len(2) . r len(2) . c len(1) . t rem . text
+	n = size(text)
+	output = ' r ' r ' c ' c ' ' t ' t ' text '' text
+	cells = array(size(text) ',3')
+	ident(t,'>')					:s(cells.h)
+	ident(t,'^')					:s(cells.v)
+	output = 'improper type in move ' move		:(freturn)
+cells.h
+	i = i + 1
+	gt(i,n)						:s(return)
+	cells[i,1] = +r; 				:f(return)
+	cells[i,2] = +c; 
+	cells[i,3] = substr(text,i,1)
+	c = c + 1					:(cells.h)
+cells.v
+	i = i + 1
+	gt(i,n)						:s(return)
+	cells[i,1] = +r; 				:f(return)
+	cells[i,2] = +c; 
+	cells[i,3] = substr(text,i,1)
+	r = r + 1					:(cells.v)
+cells.end
+
 
 	define('getrows(board)')			:(getrows.end)
 getrows
@@ -107,11 +148,7 @@ init.2
 *	initialize the bonus squares for the 15x15 grid, using 1 for double letter, 
 *	2 for triple letter, 3 for double word, and 4 for triple word.
 
-	g.dl = table()
-	g.tl = table()
-	g.dw = table()
-	g.tw = table()
-	g.bonus = table()
+	g.bonus = array(15,15)
 
 	s =     '1 0203 1 0212 1 0302 1 0305 1 0311 1 0312 1 0314 1 0503 1 0613 1 0705 1 0711 '
 .		'1 0905 1 0911 1 1103 1 1109 1 1113 1 1302 1 1305 1 1311 1 1314 1 1403 1 1413 '
@@ -120,24 +157,12 @@ init.2
 .		'3 0206 3 0210 3 0408 3 0602 3 0614 3 0804 3 0812 3 1002 3 1014 3 1208 3 1406 3 1410 '
 .		'4 0104 4 0112 4 0401 4 0415 4 1101 4 1115 4 1504 4 1512 '
 init.3
-	
 	s len(1) . n ' ' len(2) . r len(2) . c ' ' =	:f(init.3.done)
-	n = +n
-	t = lpad(r,2,'0') lpad(c,2,'0')
-	g.bonus[+t] = n					:(init.3)
-	eq(n, 1)					:f(init.3.2)
-	g.dl[+t] = 1					:(init.3.done)
-init.3.2
-	eq(n, 2)					:f(init.3.3)
-	g.tl[+t] = 1					:(init.3.done)
-init.3.3
-	eq(n,3)						:f(init.3.4)
-	g.dw[+t] = 1					:(init.3.done)
-init.3.4
-	g.tw[+t] = 1					:(init.3.done)
+	g.bonus[+r,+c] = +n				:(init.3)
 init.3.done
 	
 *	initialize value map from letters to value, ignoring ' ' for now
+
 	g.value = table(26)
 	s = &lcase
 init.4
