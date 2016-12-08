@@ -30,23 +30,6 @@ backwards.1
 	backwords[key] = reverse(val)			:(backwords.1)
 backwords.end
 
-	define('bonusinit()b')				:(bonusinit.end)
-
-*	initialize the bonus squares for the 15x15 grid, using 1 for double letter, 
-*	2 for triple letter, and 3 for triple word.
-
-bonusinit
-	line =  '1 0203 1 0212 1 0302 1 0305 1 0311 1 0312 1 0314 1 0503 1 0613 1 0705 1 0711 '
-.		'1 0905 1 0911 1 1103 1 1109 1 1113 1 1302 1 1305 1 1311 1 1314 1 1403 1 1413 '
-.		'2 0107 2 0109 2 0404 2 0412 2 0606 2 0610 2 0701 2 0715 2 0901 2 0915 2 1006 '
-.               '2 1010 2 1304 2 1312 2 1507 2 1509 2 '
-.		'3 0104 3 0112 3 0401 3 0415 3 1101 3 1115 3 1504 3 1512 '
-
-bonusinit.loop
-	line len(1) . b ' ' len(2) . r len(2) . c ' ' = :f(return)
-	bonusinit[+r, +c] = +b				:(bonusinit.loop)
-bonusinit.end
-
 	define('getrows(board)')			:(getrows.end)
 getrows
 	getrows = array(7)
@@ -101,22 +84,105 @@ getwords.done
 	endfile(3)					:(return)
 getwords.end
 
-	define('getdict(filename)file,n,word')		:(getdict.end)
-getdict
 
-* Convert dictionary to a table.
+	define('init(dictfile,skip),i,s,t')		:(init.end)
 
-	getdict = table(200000)
-	input(.file,3,filename)				:s(getdict.in)
+*	Initialize global variables, each with name starting with 'g.'
+*	These variables should NEVER be altered once initialized
+
+init
+
+* Initialize set of tiles.
+
+	
+* 	ignoring two blanks for now
+
+	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
+	g.tileset =
+init.1
+	s break(' ') . c ' ' break(' ') . n ' ' =	:f(init.2)
+	g.tileset = g.tileset new dupl(c,+n)		:(init.1)
+init.2
+
+*	initialize the bonus squares for the 15x15 grid, using 1 for double letter, 
+*	2 for triple letter, 3 for double word, and 4 for triple word.
+
+	g.dl = table()
+	g.tl = table()
+	g.dw = table()
+	g.tw = table()
+	g.bonus = table()
+
+	s =     '1 0203 1 0212 1 0302 1 0305 1 0311 1 0312 1 0314 1 0503 1 0613 1 0705 1 0711 '
+.		'1 0905 1 0911 1 1103 1 1109 1 1113 1 1302 1 1305 1 1311 1 1314 1 1403 1 1413 '
+.		'2 0107 2 0109 2 0404 2 0412 2 0606 2 0610 2 0701 2 0715 2 0901 2 0915 2 1006 '
+.               '2 1010 2 1304 2 1312 2 1507 2 1509 '
+.		'3 0206 3 0210 3 0408 3 0602 3 0614 3 0804 3 0812 3 1002 3 1014 3 1208 3 1406 3 1410 '
+.		'4 0104 4 0112 4 0401 4 0415 4 1101 4 1115 4 1504 4 1512 '
+init.3
+	
+	s len(1) . n ' ' len(2) . r len(2) . c ' ' =	:f(init.3.done)
+	n = +n
+	t = lpad(r,2,'0') lpad(c,2,'0')
+	g.bonus[+t] = n					:(init.3)
+	eq(n, 1)					:f(init.3.2)
+	g.dl[+t] = 1					:(init.3.done)
+init.3.2
+	eq(n, 2)					:f(init.3.3)
+	g.tl[+t] = 1					:(init.3.done)
+init.3.3
+	eq(n,3)						:f(init.3.4)
+	g.dw[+t] = 1					:(init.3.done)
+init.3.4
+	g.tw[+t] = 1					:(init.3.done)
+init.3.done
+	
+*	initialize value map from letters to value, ignoring ' ' for now
+	g.value = table(26)
+	s = &lcase
+init.4
+*	assume value is 1
+	s len(1) . c =					:f(init.5)
+	g.value[c] = +1					:(init.4)
+init.5
+*	g.value[' '] = 1
+*	update assumptions for letters with value greater than one.
+	g.value['d'] = g.value['l'] = g.value['m'] = g.value['p'] = g.value['w'] =  +2
+	g.value['g'] = g.value['h'] = g.value['y'] = +3
+	g.value['b'] = g.value['c'] = g.value['m'] = g.value['p'] = g.value['w'] = +4
+	g.value['k'] = g.value['v'] = +5
+	g.value['x'] = +8
+	g.value['j'] = g.value['q'] = g.value['z'] = 10
+
+	g.dict = initdict(dictfile,skip)
+	
+							:(return)
+init.end
+
+	define('initdict(filename,skip)file,n,word')	:(initdict.end)
+initdict
+
+* Convert dictionary to a table, using every 'skip' entries.
+
+	skip = (ident(skip) +1, +skip)
+	initdict = table(200000)
+	filename = ident(filename) 'enable1.txt'
+	input(.file,3,filename)				:s(initdict.in)
 	output = 'unable to open input file ' filename	:(freturn)
-getdict.in
-	word = file					:f(getdict.done)
-	gt(size(word),15)				:s(getdict.in)
-	getdict[word] = +1				:(getdict.in)
-getdict.done
+	n = 0
+initdict.in
+	word = file					:f(initdict.done)
+	gt(size(word),15)				:s(initdict.in)
+	initdict[word] = +1				
+	eq(skip,1)					:s(initdict.in)
+*	here want to skip over entries in the dictionary (for testing)
+	n = skip
+initdict.skip
+	word = file					:f(initdict.done)
+	gt(n = n - 1,0)					:s(initdict.skip)f(initdict.in)
+initdict.done
 	endfile(3)					:(return)
-getdict.end
-
+initdict.end
 
 	define('isword(word,words)')			:(isword.end)
 isword
@@ -194,6 +260,33 @@ prefix.1
 	prefix = add(prefix, pre word)			:(prefix.1)
 prefix.end
 
+
+	define('random(n)')				
+
+*	Return integer uniformly distributed in 1,2,...,n. If n=0 returns real uniformly distributed
+*	in the interval [0,1]. 
+*	The Algorithm is based in that in section 16.1 of "Algorithms in SNOBOL4," James F. Gimpel, John Wiley and Sons, 1976.
+
+	random_var = 1.0;* Gimple uses integer here, but need to have real.
+
+							:(random.end)
+random	random_var = remdr(random_var * 4676, 414971)
+
+	random  = random_var / 414971
+	random = ne(n,0) convert(random * n,'integer') + 1
+							:(return)
+random.end
+
+	define('random_rack()i')				:(random_rack.end)
+
+*	Return random set of seven tiles from the initial set of tiles.
+*	This is used for testing.
+	
+random_rack
+	gt(i = i + 1,7)					:s(return)
+	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
+random_rack.end
+
 	define('valid(d,w)')				:(valid.end)
 
 *	see if word is in dictionary
@@ -216,20 +309,6 @@ validate.1
 validate.end
 
 
-	define('valueinit()line,c')			:(valueinit.end)
-
-*	initialize value map for letters
-valueinit
-	valueinit = table(26)
-	line = &lcase
-valueinit.1
-	line len(1) . c =				:f(valueinit.2)
-	valueinit[c] = 1					:(valueinit.1)
-valueinit.2
-	valueinit['q'] = valueinit['z'] = 10
-	valueinit['k'] = valueinit['j'] = 3
-							:(return)
-valueinit.end
 							;
 				k
 	define('words(s)i')				:(words.end)
