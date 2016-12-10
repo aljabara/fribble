@@ -7,7 +7,7 @@
 *	Test open() and oscore(), used to find best opening move.
 
 	&anchor = &trim = 1
-	init()
+	init('../enable1.txt')
 	test = 'johnson millman shields '
 loop
 	test break(' ') . tiles ' ' =			 :f(end)

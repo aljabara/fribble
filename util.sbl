@@ -259,11 +259,6 @@ less.1
 	less = str					:(return)
 less.end
 	
-	define('perm(s,p)c,n,i,dist,t')				:(perm.end)
-
-*	Perm(s,d) returns all the permutations from string s
-*	with length p, as a list of words separated by spaces.
-
 	define('open(tiles)best,n,perms,w')			:(open.end)
 
 *	Determine best opening move. At least one letter in this move must be in the center square (8,8).
@@ -297,6 +292,11 @@ oscore.1
 	oscore = oscore + g.value[c] * (gt(n,4) +2, +1) :(oscore.1)
 oscore.end
  
+	define('perm(s,p)c,n,i,dist,t')				:(perm.end)
+
+*	Perm(s,d) returns all the permutations from string s
+*	with length p, as a list of words separated by spaces.
+
 perm
 *	build perm as list of entries separated by space. Will
 *	eliminate extra space at the end before returning.
