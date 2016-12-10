@@ -23,12 +23,12 @@ add
 	add = str ' ' word				:(return)
 add.end
 
-	define('backwords(dict)ara,key,val,i')	:(backwords.end)
+	define('backwords()ara,key,val,i')	:(backwords.end)
 
-*	use dictionary dict to build dictionary with the words reversed.
+*	use dictionary g.dict to build dictionary with the words reversed.
 
 backwords
-	ara = convert(dict,'array')
+	ara = convert(g.dict,'array')
 *	backwords = table(20000)
 	backwords = table()
 
@@ -41,37 +41,42 @@ backwords.end
 
 	define('cells(move)r,c,t,text,i,n')		:(cells.end)
 
-*	return the cells that comprise a move, by which we mean a list of the form
-*		rrcc>letters or rrcc^letters, where rr is the row and cc is the column of the first
-*	character in the move, '>' is used to indicate a horizontal sequence of letters going from left to right,
-*	and '^' a vertical sequence going from top to bottom.
+*	Return the cells that comprise a move, by which we mean a list consisting of a series of one or more
+*	placements, each consisting of a string of one or more characters followed by a signed integer with
+*	a specified form. The signed integer identifies where the placement is in a row (plus sign) or
+*	along a column (minus sign). The cell is indicated by multiplying the row number by one hundred and adding the
+*	column number.
 
 cells
-	move len(2) . r len(2) . c len(1) . t rem . text
+	move break('+-') . text len(1) . sign rem . rc
+	output = 'text ' text '|' sign '|' rc
+	
 	n = size(text)
-	output = ' r ' r ' c ' c ' ' t ' t ' text '' text
 	cells = array(size(text) ',3')
-	ident(t,'>')					:s(cells.h)
-	ident(t,'^')					:s(cells.v)
+	ident(sign,'+')					:s(cells.h)
+	ident(sign,'-')					:s(cells.v)
 	output = 'improper type in move ' move		:(freturn)
 cells.h
 	i = i + 1
 	gt(i,n)						:s(return)
-	cells[i,1] = +r; 				:f(return)
-	cells[i,2] = +c; 
+	cells[i,1] = +(rc / 100)			:f(return)
+	cells[i,2] = remdr(rc,100) 
 	cells[i,3] = substr(text,i,1)
 	c = c + 1					:(cells.h)
 cells.v
 	i = i + 1
 	gt(i,n)						:s(return)
-	cells[i,1] = +r; 				:f(return)
-	cells[i,2] = +c; 
+	cells[i,1] = +(rc / 100)			:f(return)
+	cells[i,2] = +remdr(rc,100); 
 	cells[i,3] = substr(text,i,1)
 	r = r + 1					:(cells.v)
 cells.end
 
 
 	define('getrows(board)')			:(getrows.end)
+
+*	Return an array of rows on the board, from top to bottom. Each row is fifteen characters long.
+
 getrows
 	getrows = array(7)
 	rline = 
@@ -85,7 +90,9 @@ getrows.c
 getrows.end
 	
 *	define('getcolumns(rows),cline,ci,ri')		:(getcolumns.end)
-*
+
+*	Return an array of the columns on the board, from left to right. Each column is fifteen characters long.
+
 *getcolumns
 *	ri = ci = 0
 *	getcolumns = array(15)
@@ -104,9 +111,9 @@ getrows.end
 	define('getwords(filename)file,this,word')	:(getwords.end)
 getwords
 
-* Convert dictionary to a single string of getwords, combining getwords
-* into strings of 1000 characters before concatenating to build
-* single string.
+*	Convert the dictionary to a single string of words, combining words
+* 	into strings of 1000 characters before concatenating to build the
+* 	single string.
 
 	getwords =
 	this = 
@@ -129,7 +136,12 @@ getwords.end
 	define('init(dictfile,skip),i,s,t')		:(init.end)
 
 *	Initialize global variables, each with name starting with 'g.'
-*	These variables should NEVER be altered once initialized
+*	The variables include:
+*		g.tileset, a string containing all the characters in the initial bag of characters.
+*		g.bonus, an array indicating which cells have a bonus value, and the nature of that value,
+*			such as double letter, or triple word.
+*		g.value, a map from characters to the tile value of that character.
+*		g.dict, a map on words that is non-null only for words in the dictionary.
 
 init
 
@@ -193,7 +205,9 @@ init.end
 							:(initdict.end)
 initdict
 
-* Convert dictionary to a table, using every 'skip' entries.
+*	Read in a dictionary from a specified file, with one word per line. If 'skip'
+*	is non-zero then that number of lines are skipped before adding the next word.
+*	This assists the use of smaller dictionaries for testing.
 
 	skip = (ident(skip) +1, +skip)
 	initdict = table(200000)
@@ -225,12 +239,17 @@ initdict.done
 initdict.end
 
 	define('isword(word,words)')			:(isword.end)
+
+*	words is a map on words. Returna if words is defined for the specified word,
+*	fails otherwise.
 isword
 	differ(words[word])				:s(return)f(freturn)
 isword.end
 
 	define('less(str,ch)before,after')		:(less.end)
-*	remove the first instance of character ch in str.
+
+*	Removes the first instance of character ch in str.
+
 less
 	ident(str)					:s(return)
 	str break(ch) . before len(1) rem . after	:f(less.1) 
@@ -242,7 +261,7 @@ less.end
 	
 	define('perm(s,p)c,n,i,dist,t')				:(perm.end)
 
-*	perm(s,d) returns all the permutations from string s
+*	Perm(s,d) returns all the permutations from string s
 *	with length p, as a list of words separated by spaces.
 
 perm
@@ -279,7 +298,7 @@ perm.n.1
 
 *	done break(c)						:s(perm.n.1)
 
-*	compute permutations starting with c, by recursively computing the permutations of all the letters
+*	Compute permutations starting with c, by recursively computing the permutations of all the letters
 *	that follow c, and then prefixing each permutation in the resulting list with c.
 
 	perm = add(perm,prefix(perm(less(s,c),p - 1),c)) 
@@ -290,7 +309,7 @@ perm.end
 	define('prefix(str,pre)word')			:(prefix.end)
 prefix
 
-*	prefix takes a list of space-separated words str and prefixes each
+*	Prefix takes a list of space-separated words str and prefixes each
 *	with the string pre.
 
 
@@ -328,17 +347,17 @@ random_rack
 	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
 random_rack.end
 
-	define('valid(d,w)')				:(valid.end)
+	define('valid(w)')				:(valid.end)
 
-*	see if word is in dictionary
+*	Succeeds if w is in the global dictionary, fails otherwise.
 
 valid
-	differ(d[w])					:s(return)f(freturn)
+	differ(g.dict[w])				:s(return)f(freturn)
 valid.end
 
-	define('validate(dict,line)word')		:(validate.end)
+	define('validate(line)word')			:(validate.end)
 
-*	succeed if line contains only valid words, fail otherwise.	
+*	Succeeds if all the words in the line are in the dictionary, fails otherwise.
 
 validate
 	line = line ' '
@@ -346,14 +365,15 @@ validate.1
 	line span(' ') =
 	ident(line)					:s(return)
 	line break(' ') . word span(' ') =
-	valid(dict, word)				:f(freturn)s(validate.1)
+	valid( word)					:f(freturn)s(validate.1)
 validate.end
 
 
 							;
-				k
 	define('words(s)i')				:(words.end)
-*	return number of space-separated words in s
+
+*	Returns number of space-separated words in s
+
 words
 	s = s  ' '
 	words = 0

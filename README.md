@@ -13,11 +13,10 @@ new move will be determined by generating **all** possible moves and
 then picking one that has a score at least as high as any other.
 
 The reasoning behind this approach is based on the observation
-that each new move will consists of at most about 10000,
-possible permutations of the tiles in the rack that can be placed
+that each new move will consists of at most about 10000, possible permutations of the tiles in the rack that can be placed
 starting at a given blank cell.
-If we consider all moves, then there are 7! (about 5,000) ways to play seven tiles, 6! to
-play six tiles, and so forth. This gives about 7! + 6! ... +1! possibilities (about 10,000).
+If we consider all moves, then there are 7! (about 5,000) ways to play seven tiles, 6! to play six tiles, 
+and so forth. This gives about 7! + 6! ... +1! possibilities (about 6,000).
 
 As the game progresses there will be fewer and fewer blank cells to consider.
 
@@ -27,65 +26,41 @@ the structure of English. For example, consider the number of plural words in th
 the word results in a word that is also in the dictionary.
 There are just under 50,000 plurals in the ENABLE list, which is about 30% of the total.
 
-Almost all the possible moves will consist of nonsense strings
-that are  not in the dictionary. Consider for example a  move
-that starts with 'zqiij.' We can find such nonsense strings
-by constructing a list of all the possibilites for the first
-four characters in a valid word, and so forth.
+Almost all the possible moves will consist of nonsense strings that are  not in the dictionary. 
+Consider for example a  move that starts with 'zqiij.' We can find such nonsense strings
+by constructing a list of all the possibilites for the first four characters in a valid word, and so forth.
 
-SPITBOL is very fast. The game is now played in real time, but
-over the internet, so that it is acceptable to take minutes,
-if not hours, to find the best move for a given position.
+SPITBOL is very fast. The game is now played in real time, but over the internet, so that it is 
+acceptable to take minutes, if not hours, to find the best move for a given position.
 
 
+## Data Structures, Utility Functions
 
 
 
+The WWF board is a 15x15 grid, with rows 1..15 and columns 1..15. A cell in the board is represented using an integer id
+of the form *+/-rrcc* where "+" indicates a horizontal placement, "-" a vertical placement. The row and column
+can be found by
 
-The WWF board is a 15x15 grid, with rows 1..15 and columns 1..15.
+			row = id / 100   column = remdr(id,100)
 
 The game is played with tiles, each representing a letter, and 'blank' tiles that can be used
-to represent any letter.  Each player has at most seven tiles at any turn. We refer to these tiles as the 'rack.'
+to represent any letter.  Each player has at most seven tiles at any turn. We refer to these tiles as the *rack*.
 
-At the end of a turn the board must contain only words that occur in the WWF dictionary.
+A move consists of placing one or more tiles in a single row or column, with no intervening spaces.
+At the end of a turn the board must contain only words that occur in the WWF dictionary. Words are read from left
+to right in rows, from top to bottom in columns.
 
-In SPITBOL terms, we can think of the board as two sets of lines, with each line having 15 characters. The
-rows form one set of lines, the columns form the other. So at the end of a turn -- reading from left to right for
-the rows and top to bottom for the columns -- each line must contain only words in the WWF dictionary.
+A move consists of one or more placements. Each placement is represented by a string of tile characters followed
+by the id of the first cell.
 
-We need only maintain the list of rows, since the columns can be obtained once the rows are known. 
-We define the initial board with
+The board can be represented either as a two-dimensional array, *array('15,15')* or as an array of lines, *array(7)*.
+Note that giving the rows also defines the columns.
 
-	rows = array(16)
-board.1
-	gt(i = i + 1, 15)			:s(board.2)
-	rows[i] = dupl'-',15)			:(board.1)
-board.2
+Though the game has blank tiles, which can be used to represent any character, these characters will not be fully
+supported in the initial release. Instead any blanks, as well as any letter that occurs more than once, will be
+'swapped' for another set of tiles.
 
-
-Need function to check a line for validity:
-
-	define('valid(line)...') which succeeds if line is all blank or contains only valid words, and fails
-				otherwise.
-
-
-util.sbl summary
-
-	add(str,word add word to string prefixing with space if string not null
-	backwords(dict) - return dictionary with words reversed
-	getcolumns(rows) - return columns as array of lines corresponding to the columns
-	getwords(filename) - read list of words in file
-	getdict(filename) - read list of words from file and build table mapping words to non-zero value
-	isword(word,words)) - return nonzero value if word is contained in table words
-	less(str,ch) - return character from string
-	prefix(s,p) - insert p as prefix to each word in s
-	words(s) return number of words (separated by spaces) in s
-	
-Representation of board as two-dimensional array
-	board = array(15,15)
-
-	getrows(board)
-	getcolumns(board)
 
 # Study
 

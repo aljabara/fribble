@@ -1,0 +1,14 @@
+* semicolon comments
+
+* copy input to output, changing semicolon at start of line to asterisk followed by tab.
+* this is to assist in commenting files at first using ';' at start of line.
+
+	&anchor = &trim  = 1
+						:(loop)
+copy	output = line
+loop
+	line = input				:f(end)
+	line ';' span(' ') = 			:f(copy)
+	output = '*' char(9) line		:(loop)
+end
+	

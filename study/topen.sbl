@@ -1,0 +1,15 @@
+* This software is licensed under the MIT License, contained in the file LICENSE.
+
+* Copyright (c) 2016 dave shields
+
+-include "../util.sbl"
+
+*	Test open() and oscore(), used to find best opening move.
+
+	&anchor = &trim = 1
+	init()
+	test = 'johnson millman shields '
+loop
+	test break(' ') . tiles ' ' =			 :f(end)
+	output = 'best move for ' tiles ' is '  open(tiles) :(loop)
+end
