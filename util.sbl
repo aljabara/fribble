@@ -264,6 +264,39 @@ less.end
 *	Perm(s,d) returns all the permutations from string s
 *	with length p, as a list of words separated by spaces.
 
+	define('open(tiles)best,n,perms,w')			:(open.end)
+
+*	Determine best opening move. At least one letter in this move must be in the center square (8,8).
+*	The only bonus available is double word, for any word of more than four characters.
+*
+*	The return value has the form 'm s' where m is the move and s is its score.
+*
+*	There are seven tiles, so we just try all permutations of length one up to seven.
+
+open
+	n = 0;* number of tiles to play
+	best = 0;* best score
+
+open.1	le(n = n + 1,7)					:f(return)
+	perms = perm(tiles,n)
+open.2
+*	get next word, check that valid, then see if new high score
+	perms break(' ') . w ' ' =			:f(open.1)
+	valid(w)					:f(open.2)
+	le(oscore(w),best)				:s(open.2)
+	best = oscore(w)
+	open = w '+0808 ' best				:(open.2)
+open.end
+
+	define('oscore(word)n,c')			:(oscore.end)
+oscore
+	n = size(word)
+oscore.1
+	word len(1) . c =				:f(return)
+*	double word score if length greater than four.
+	oscore = oscore + g.value[c] * (gt(n,4) +2, +1) :(oscore.1)
+oscore.end
+ 
 perm
 *	build perm as list of entries separated by space. Will
 *	eliminate extra space at the end before returning.
