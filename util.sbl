@@ -62,7 +62,7 @@ cells.h
 	cells[i,1] = +(rc / 100)			:f(return)
 	cells[i,2] = remdr(rc,100) 
 	cells[i,3] = substr(text,i,1)
-	c = c + 1					:(cells.h)
+	c. = c + 1					:(cells.h)
 cells.v
 	i = i + 1
 	gt(i,n)						:s(return)
@@ -192,7 +192,7 @@ init.5
 	g.value['j'] = g.value['q'] = g.value['z'] = 10
 
 	g.dict = initdict(dictfile,skip)
-	g.perms = initperm(dictfile '.perm')
+	initperm(dictfile '.perm')
 	
 							:(return)
 init.end
@@ -242,7 +242,7 @@ initdict.end
 	define('initperm(filename)line,ifile,n,k,lines')	:(initperm.end)
 
 initperm
-	g.perms = table(100)
+	g.permutations = table(100)
 	input(.ifile,4, filename)			:s(initperm.1)
 	output = 'unable to open permutation file ' filename 	:(freturn)
 *	read first line and merge to process permutation description line
@@ -256,7 +256,8 @@ initperm.2
 initperm.k
 	line = ifile					:f(initperm.done)
 	lines = lines + 1
-	g.perms[n '?' k] = line ' '			:(initperm.1)
+*	add blank at end of list to simplify later iterations over the list
+	g.permutations[n '?' k] = line ' '		:(initperm.1)
 initperm.done	
 	endfile(4)					:(return)
 initperm.err
@@ -284,7 +285,7 @@ less.1
 	less = str					:(return)
 less.end
 	
-	define('open(tiles)best,n,perms,w')			:(open.end)
+	define('open(tiles)best,n,w')			:(open.end)
 
 *	Determine best opening move. At least one letter in this move must be in the center square (8,8).
 *	The only bonus available is double word, for any word of more than four characters.
@@ -298,7 +299,7 @@ open
 	best = 0;* best score
 
 open.1	le(n = n + 1,7)					:f(return)
-	perms = perm(tiles,n)
+	perms = permutations(tiles,n)
 open.2
 *	get next word, check that valid, then see if new high score
 	perms break(' ') . w ' ' =			:f(open.1)
@@ -309,16 +310,6 @@ open.2
 	best = oscore(w)
 	open = w '+0808 ' best				:(open.2)
 open.end
-
-	define('oscore(word)n,c')			:(oscore.end)
-oscore
-	n = size(word)
-	oscoren = oscoren + 1
-oscore.1
-	word len(1) . c =				:f(return)
-*	double word score if length greater than four.
-	oscore = oscore + g.value[c] * (gt(n,4) +2, +1) :(oscore.1)
-oscore.end
 
 	define('prefix(str,pre)word')			:(prefix.end)
 prefix
@@ -334,6 +325,24 @@ prefix.1
 	prefix = add(prefix, pre word)			:(prefix.1)
 prefix.end
 
+	define('oscore(word)n,c')			:(oscore.end)
+oscore
+	n = size(word)
+	oscoren = oscoren + 1
+oscore.1
+	word len(1) . c =				:f(return)
+*	double word score if length greater than four.
+	oscore = oscore + g.value[c] * (gt(n,4) +2, +1) :(oscore.1)
+oscore.end
+
+	define('permutations(s,k)')			:(permutations.end)
+
+*	Return permutations of s taken k at a time.
+
+permutations
+	perm = g.permutations[size(s) '?' k]		:f(freturn)
+	perm = replace(perm,&digits,s)			:(return)
+permutations.end
 
 	define('random(n)')				
 
