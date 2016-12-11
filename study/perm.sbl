@@ -3,60 +3,74 @@
 
 * Copyright (c) 2016 dave shields
 
--include "util.sbl"
+*	Write out all permutations of up to seven digits, including all permutations of substrings.
 
+-include "../util.sbl"
+
+
+	define('perm(s,p)c,n,i,dist,t')				:(perm.end)
+
+*	Perm(s,d) returns all the permutations from string s
+*	with length p, as a list of words separated by spaces.
+
+perm
+*	build perm as list of entries separated by space. Will
+*	eliminate extra space at the end before returning.
+
+
+	permcalls = permcalls + 1
+perm.dist.1
+	n = +size(s)
+	eq(p,0)							:s(return)
+	gt(p,1)							:s(perm.n) 
+
+*	here for permutations length one, which consists of
+*	the letters in s, separated by spaces.
+*	Here also we avoid adding duplicate characters
+
+perm.1	
+	c = substr(s,i = i + 1,1)				:f(return)
+	perm = add(perm, c)					:(perm.1)
+
+perm.n
+
+*	Here if two or more characters in the string. 
+*	For each distinct character, the permutations
+*	of p items can be found by find the permutations
+*	of p-1 items in the string with c removed.
+
+perm.n.1
+	gt(i = i + 1,n)						:s(return)
+	c = substr(s,i,1)
+
+*	This optimization in next line isn't working, so skip for now
+*	skip if have already generated permutations starting with this letter
+
+*	done break(c)						:s(perm.n.1)
+
+*	Compute permutations starting with c, by recursively computing the permutations of all the letters
+*	that follow c, and then prefixing each permutation in the resulting list with c.
+
+	perm = add(perm,prefix(perm(less(s,c),k - 1),c)) 
+*	done = done c
+								:(perm.n.1)
+perm.end
 	&anchor = &trim = 1
-
-*	&ftrace = 1000; &trace = 1000
-
-	define('test()n,p,i,digits,p1,n1,word')			:(test.end)
-
-
-test
-
-	n = 3
-
-	output = '... ' digits
-	output = 'testing ...'
-	output = 'digits ' digits
-
-	output = "less('shampoo','s')" '->' less('shampoo','s')
-	output = "less('shampoo','h')" '->' less('shampoo','h')
-	output = "less('shampoo','x')" '->' less('shampoo','x')
-
-	output = "perm('bab',2)" '->' perm('bab',2)
-	output = "perm('shields',1)" '->' perm('shields',1)
-	output = "perm('shields',2)" '->' perm('shields',2)
-	output = "perm('shields',3)" '->' perm('shields',3)
-	
-	output = 'done testing...'
-
-								:(return)
-
-test.end
-
-
 	digits = '123456789'
-*	test()
-*		:(end)
-
-*	generate all permutations of up to seven letters.
-
 	n = 0
 
 main.1
-	gt(n = n + 1, 7)					:s(main.end)
-	p = 0
+
+*	Start permutations of n digits.
+
+	gt(n = n + 1, 7)					:s(end)
+	k = 0
 main.2
-	gt(p = p + 1,n)						:s(main.1)
-	pip = perm(substr(digits,1,n),p)
-*	now write out permutation, one word per line
-	output = n ' ' p ' ' words(pip)
-	pip = pip ' '
-main.3
-	pip break(' ') . word ' ' =				:f(main.2)
-	output = word						:(main.3)
+	gt(k = k + 1,n)						:s(main.1)
 
-main.end
+*	Compute permutations of n digits taken k at a time.
 
+	pip = perm(substr(digits,1,n),k) ' ' 
+	output = '; ' n '?' k ' ' words(pip)
+	output = pip						:(main.2)
 end

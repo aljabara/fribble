@@ -9,7 +9,16 @@
 	&anchor = &trim = 1
 	init('../enable1.txt')
 	test = 'johnson millman shields '
+	test = 'johnson millman '
+	test = 'meat '
+	test = 'quiet meals guest '
+	test = 'quiets mealds xguest '
 loop
-	test break(' ') . tiles ' ' =			 :f(end)
+	test break(' ') . tiles ' ' =			 :f(done)
 	output = 'best move for ' tiles ' is '  open(tiles) :(loop)
+done
+	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
+	output = 'validcount ' validcount
+	output = 'permcalls ' permcalls
+	output = 'prefixcount ' prefixcount
 end

@@ -3,13 +3,17 @@
 
 * Copyright (c) 2016 dave shields
 
+-include "../util.sbl"
+
 	&anchor = &trim = 1
 * count the number of words by their initial character
 
+	init('../enable1.txt')
+	ara = sort(g.dict)
 	first = table(26,,0)
 words.in
-	line = input		:f(words.done)
-	line len(1) . c		:f(words.in)
+	word = ara[i = i + 1, 1]	:f(words.done)
+	word len(1) . c		:f(words.in)
 	first[c] = first[c] + 1	:(words.in)
 words.done
 	s =  &lcase

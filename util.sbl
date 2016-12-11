@@ -9,7 +9,7 @@
 *	g.board		array('15,15',' ')	grid of the playing board
 *	g.bonus		array('15,15',+0)	grid with non-zero cells for bonus squares
 *	g.tileset	string			all the characters in the initial set of tiles, by frequency
-*	g.
+*	g.perms		table			table of permutations of n=1..7 things taken 1..k at a time
 
 *	Utility functions
 
@@ -192,6 +192,7 @@ init.5
 	g.value['j'] = g.value['q'] = g.value['z'] = 10
 
 	g.dict = initdict(dictfile,skip)
+	g.perms = initperm(dictfile '.perm')
 	
 							:(return)
 init.end
@@ -237,6 +238,30 @@ initdict.skip
 initdict.done
 	endfile(3)					:(return)
 initdict.end
+	
+	define('initperm(filename)line,ifile,n,k,lines')	:(initperm.end)
+
+initperm
+	g.perms = table(100)
+	input(.ifile,4, filename)			:s(initperm.1)
+	output = 'unable to open permutation file ' filename 	:(freturn)
+*	read first line and merge to process permutation description line
+	line = ifile					:f(initperm.done)s(initperm.2)
+	lines = 1
+initperm.1
+	line = ifile					:f(initperm.done)
+	lines = lines + 1
+initperm.2
+	line '; ' break(' ') . n ' ' break(' ') . k ' ' rem . count :f(initperm.err)
+initperm.k
+	line = ifile					:f(initperm.done)
+	lines = lines + 1
+	g.perms[n '?' k] = line ' '			:(initperm.1)
+initperm.done	
+	endfile(4)					:(return)
+initperm.err
+	output = 'initperm error, line ' lines '  '  line :(freturn)
+initperm.end
 
 	define('isword(word,words)')			:(isword.end)
 
@@ -277,7 +302,9 @@ open.1	le(n = n + 1,7)					:f(return)
 open.2
 *	get next word, check that valid, then see if new high score
 	perms break(' ') . w ' ' =			:f(open.1)
+	permwords = permwords + 1
 	valid(w)					:f(open.2)
+	validwords = validwords + 1
 	le(oscore(w),best)				:s(open.2)
 	best = oscore(w)
 	open = w '+0808 ' best				:(open.2)
@@ -286,58 +313,12 @@ open.end
 	define('oscore(word)n,c')			:(oscore.end)
 oscore
 	n = size(word)
+	oscoren = oscoren + 1
 oscore.1
 	word len(1) . c =				:f(return)
 *	double word score if length greater than four.
 	oscore = oscore + g.value[c] * (gt(n,4) +2, +1) :(oscore.1)
 oscore.end
- 
-	define('perm(s,p)c,n,i,dist,t')				:(perm.end)
-
-*	Perm(s,d) returns all the permutations from string s
-*	with length p, as a list of words separated by spaces.
-
-perm
-*	build perm as list of entries separated by space. Will
-*	eliminate extra space at the end before returning.
-
-
-perm.dist.1
-	n = +size(s)
-	eq(p,0)							:s(return)
-	gt(p,1)							:s(perm.n) 
-
-*	here for permutations length one, which consists of
-*	the letters in s, separated by spaces.
-*	Here also we avoid adding duplicate characters
-
-perm.1	
-	c = substr(s,i = i + 1,1)				:f(return)
-	perm = add(perm, c)					:(perm.1)
-
-perm.n
-
-*	Here if two or more characters in the string. 
-*	For each distinct character, the permutations
-*	of p items can be found by find the permutations
-*	of p-1 items in the string with c removed.
-
-perm.n.1
-	gt(i = i + 1,n)						:s(return)
-	c = substr(s,i,1)
-
-*	This optimization in next line isn't working, so skip for now
-*	skip if have already generated permutations starting with this letter
-
-*	done break(c)						:s(perm.n.1)
-
-*	Compute permutations starting with c, by recursively computing the permutations of all the letters
-*	that follow c, and then prefixing each permutation in the resulting list with c.
-
-	perm = add(perm,prefix(perm(less(s,c),p - 1),c)) 
-*	done = done c
-								:(perm.n.1)
-perm.end
 
 	define('prefix(str,pre)word')			:(prefix.end)
 prefix
@@ -349,6 +330,7 @@ prefix
 	str = str ' ';* so each word followed by space
 prefix.1
 	str break(' ') . word span(' ')  =		:f(return)
+	prefixcount = prefixcount + 1
 	prefix = add(prefix, pre word)			:(prefix.1)
 prefix.end
 
@@ -403,7 +385,7 @@ validate.end
 
 
 							;
-	define('words(s)i')				:(words.end)
+	define('words(s)i,w')				:(words.end)
 
 *	Returns number of space-separated words in s
 
@@ -411,7 +393,7 @@ words
 	s = s  ' '
 	words = 0
 words.1	
-	s break(' ') ' ' =				:f(return)
+	s break(' ') . w span(' ') =			:f(return)
 	words = words + 1				:(words.1)
 words.end
 
