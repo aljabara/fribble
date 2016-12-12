@@ -74,7 +74,8 @@ main.2
 
 *	Compute permutations of n digits taken k at a time.
 
-	pip = permgen(substr(digits,1,n),k) ' ' 
+* what is best for next line, substr(1,k) or substr(1,n) ?
+	pip = permgen(substr(digits,1,k),k) ' ' 
 	output = '; ' n '?' k ' ' words(pip)
 	output = pip						:(main.2)
 end
