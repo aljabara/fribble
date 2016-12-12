@@ -252,7 +252,9 @@ initperm.1
 	line = ifile					:f(initperm.done)
 	lines = lines + 1
 initperm.2
-	line '; ' break(' ') . n ' ' break(' ') . k ' ' rem . count :f(initperm.err)
+	output = 'initperm.2 ' line
+	line '; ' break('?') . n '?' break(' ') . k ' ' rem . count :f(initperm.err)
+	output = ' n=' n ' k=' k ' count=' count
 initperm.k
 	line = ifile					:f(initperm.done)
 	lines = lines + 1
