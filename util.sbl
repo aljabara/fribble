@@ -252,9 +252,7 @@ initperm.1
 	line = ifile					:f(initperm.done)
 	lines = lines + 1
 initperm.2
-	output = 'initperm.2 ' line
 	line '; ' break('?') . n '?' break(' ') . k ' ' rem . count :f(initperm.err)
-	output = ' n=' n ' k=' k ' count=' count
 initperm.k
 	line = ifile					:f(initperm.done)
 	lines = lines + 1
@@ -337,13 +335,14 @@ oscore.1
 	oscore = oscore + g.value[c] * (gt(n,4) +2, +1) :(oscore.1)
 oscore.end
 
-	define('permutations(s,k)')			:(permutations.end)
+	define('permutations(s,k,d)')			:(permutations.end)
 
 *	Return permutations of s taken k at a time.
 
 permutations
-	perm = g.permutations[size(s) '?' k]		:f(freturn)
-	perm = replace(perm,&digits,s)			:(return)
+	permutations = g.permutations[size(s) '?' k]		:f(freturn)
+	d = substr('1234567',1,size(s))
+	permutations = replace(permutations,d,s)			:(return)
 permutations.end
 
 	define('random(n)')				

@@ -7,15 +7,15 @@
 *	Test open() and oscore(), used to find best opening move.
 
 	&anchor = &trim = 1
-	&dump = 3
+*	&dump = 3
 
 	init('../enable1.txt')
- :(end)
+* :(end)
 	test = 'johnson millman shields '
-	test = 'johnson millman '
-	test = 'meat '
-	test = 'quiet meals guest '
-	test = 'quiets mealds xguest '
+*	test = 'johnson millman '
+*	test = 'meat '
+*	test = 'quiet meals guest '
+*	test = 'quiets mealds xguest '
 loop
 	test break(' ') . tiles ' ' =			 :f(done)
 	output = 'best move for ' tiles ' is '  open(tiles) :(loop)
