@@ -18,7 +18,6 @@ permgen
 *	eliminate extra space at the end before returning.
 
 
-	permcalls = permcalls + 1
 permgen.dist.1
 	n = +size(s)
 	eq(p,0)							:s(return)

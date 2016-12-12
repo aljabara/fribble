@@ -210,9 +210,9 @@ init.4
 init.5
 *	g.value[' '] = 1
 *	update assumptions for letters with value greater than one.
-	g.value['d'] = g.value['l'] = g.value['m'] = g.value['p'] = g.value['w'] =  +2
+	g.value['d'] = g.value['l'] = g.value['n'] = g.value['p'] = g.value['u'] = g.value['w'] =  +2
 	g.value['g'] = g.value['h'] = g.value['y'] = +3
-	g.value['b'] = g.value['c'] = g.value['m'] = g.value['p'] = g.value['w'] = +4
+	g.value['b'] = g.value['c'] = g.value['f'] = g.value['m'] = g.value['p'] = g.value['w'] = +4
 	g.value['k'] = g.value['v'] = +5
 	g.value['x'] = +8
 	g.value['j'] = g.value['q'] = g.value['z'] = 10
