@@ -21,7 +21,7 @@ dict.init.done
 loop
 	output = '?'
 	line = input					:f(end)
-	validate(dict,line)				:s(yes)f(no)
+	validateline(dict,line)				:s(yes)f(no)
 yes
 	output = lpad('yes',4) ' ' line			:(loop)
 no

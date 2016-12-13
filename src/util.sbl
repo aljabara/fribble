@@ -27,6 +27,13 @@
 *		*new*	letter being tried in this cell for this turn. That is, we mark a cell as 'new' when we
 *			are trying out a potential move.
 
+*	A word is a sequence of two or more non-blank cells, all on the same line. A word is represented by the
+*	row and column of the first letter; the kind of the word, either 'h' for a word in a row, or 'v' for a word
+*	in a column, and the length of the word. A word is said to be new if at least one of its cells has the
+*	new indicator set.
+
+		data('word(rstart,cstart,kind,length')
+
 *	g.board, array('15,15'), the playing board. Each entry is a *cell*. 
 
 *	g.bonus, array('15,15',+0), is an array indicating which cells have a bonus value, 
@@ -34,8 +41,16 @@
 
 *	g.dict, a map on words that is non-null only for words in the dictionary.
 
-*	g.move, array(15), is an array giving a possible move. Each entry is a cell marked as *new*.
-		move is the number of entries currently in the move.
+*	g.move, array(7), is an array giving a possible move. Each entry is a cell marked as *new*.
+*		When the best move has been found, the cells
+*		are added to the board, the score for all
+*		newly formed words is determined, and the
+*		*new* indicator is removed.
+
+*	g.len is the number of entries currently in the move list.
+
+*	g.lines, array(30), is the array of the lines defined by the
+*		rows and columns in the board. 
 
 *	g.perms, a table of the permutations of n=1..7 things taken 1..k at a time.
 *	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time, as a string with
@@ -137,6 +152,23 @@ cells.v
 	r = r + 1					:(cells.v)
 cells.end
 
+	define('clean()r,c,cell')			:(clean.end)
+
+*	Clean up the board after deciding on a move.
+*	For each new cell, clear the bonus value and the new indicator.
+
+clean
+	r = 0; c = 0;
+clean.nextrow
+	gt(r = r + 1, 15)				:s(return)
+	c = 0;
+clean.nextcell
+	gt(c = c + 1, 15)				:s(clean.nextrow)
+	cell = g.board[r,c]
+	ident(new(cell))				:s(clean.nextcell)
+	bonus(cell) = new(cell) =			:(clean.nextcell)
+clean.end
+	
 	define('first(line)')				:(first.end)
 
 *	Return index of first blank in line, or fail if none.
@@ -395,6 +427,16 @@ less.1
 	less = str					:(return)
 less.end
 
+	define('lines()i')				:(lines.end)
+
+lines
+	lines = array(30)
+lines.next
+	gt(i = i + 1,7)					:s(return)
+	lines[i] = hline(i)
+	lines[i+7] = vline(i)				:(lines.next)
+lines.end
+
 	define('open(tiles)best,n,w')			:(open.end)
 
 *	Determine best opening move. At least one letter in this move must be in the center square (8,8).
@@ -435,14 +477,23 @@ prefix.1
 	prefix = add(prefix, pre word)			:(prefix.1)
 prefix.end
 
-	define('oscore(word)n,c')			:(oscore.end)
+	define('oscore(word)tiles,rstart,cstart,i')	:(oscore.end)
+
+*	Compute the score of an initial word, which is always played horizontally starting at the center 
+*	square (row=8, column = 8).
 oscore
-	n = size(word)
+	rstart = 8; cstart = 8
+	kind(word) = 'h'
+	tiles = word
 	oscoren = oscoren + 1
+	i = 0
 oscore.1
-	word len(1) . c =				:f(return)
-*	double word score if length greater than four.
-	oscore = oscore + g.value[c] * (gt(n,4) +2, +1) :(oscore.1)
+	tiles len(1) . c =				:f(oscore.2)
+	oscore = oscore + g.value[c]			:(oscore.1)
+oscore.2
+*	Double word score if length greater than four, so bonus at (8,12) is achieved.
+	oscore = lt(length(word),5)			:s(return)
+	oscore = oscore + oscore			:(return)
 oscore.end
 
 	define('permutations(s,k,d)')			:(permutations.end)
@@ -508,26 +559,38 @@ score.done
 							:(return)
 score.end
 	
-	define('valid(w)')				:(valid.end)
+	define('validword(w)')				:(validword.end)
 
 *	Succeeds if w is in the global dictionary, fails otherwise.
 
-valid
+validword
 	differ(g.dict[w])				:s(return)f(freturn)
-valid.end
+validword.end
 
-	define('validate(line)word')			:(validate.end)
+	define('validateline(line)word')			:(validateline.end)
 
 *	Succeeds if all the words in the line are in the dictionary, fails otherwise.
 
-validate
+validateline
 	line = line ' '
-validate.1
+validateline.1
 	line span(' ') =
 	ident(line)					:s(return)
 	line break(' ') . word span(' ') =
-	valid( word)					:f(freturn)s(validate.1)
-validate.end
+	valid( word)					:f(freturn)s(validateline.1)
+validateline.end
+
+	define('validatelines()i,lines')			:(validatelines.end)
+
+*	Succeeds if every line in the board has only valid words.
+
+validatelines
+	lines = lines()
+validatelines.next
+	gt(i = i + 1,30)				:s(return)
+	validateline(lines[i])				:f(freturn)s(validatelines.next)
+validatelines.end
+
 
 
 	define('vline(c)')				:(hline.end)
