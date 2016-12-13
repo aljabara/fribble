@@ -17,6 +17,7 @@ permgen
 *	build perm as list of entries separated by space. Will
 *	eliminate extra space at the end before returning.
 
+	output = 'permgen'
 
 permgen.dist.1
 	n = +size(s)
@@ -29,6 +30,7 @@ permgen.dist.1
 
 permgen.1	
 	c = substr(s,i = i + 1,1)				:f(return)
+	output = permgen
 	permgen = add(permgen, c)				:(permgen.1)
 
 permgen.n

@@ -7,10 +7,12 @@
 *	Test open() and oscore(), used to find best opening move.
 
 	&anchor = &trim = 1
-*	&dump = 3
+	&ftrace = 1000
+	&dump = 3
 
 	init('../src/enable1.txt')
-* :(end)
+ :(end)
+	l = lines()
 	test = 'johnson millman shields '
 *	test = 'johnson millman '
 *	test = 'meat '

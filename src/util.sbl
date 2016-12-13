@@ -32,7 +32,7 @@
 *	in a column, and the length of the word. A word is said to be new if at least one of its cells has the
 *	new indicator set.
 
-		data('word(rstart,cstart,kind,length')
+		data('word(rstart,cstart,kind,length)')
 
 *	g.board, array('15,15'), the playing board. Each entry is a *cell*. 
 
@@ -258,14 +258,19 @@ hline.end
 	define('init(dictfile,skip)c,,i,j,s,t')		:(init.end)
 
 init
+	output = 'init'
+	:(return)
 
 	g.board = array('15,15')
 init.board.1
 	gt(i = i + 1, 15)				:s(init.board.done)
 init.board.2
-	gt(j = j + 1, 15)				:s(init.board.done)
+	gt(j = j + 1, 15)				:s(init.board.1)
 	g.board[i,j] = cell(i,j)
+							:(init.board.1)
 init.board.done
+ :(return)
+	output = 'g.board done'
 
 *	initialize the bonus squares for the 15x15 grid, using 1 for double letter,
 *	2 for triple letter, 3 for double word, and 4 for triple word.
@@ -434,7 +439,7 @@ lines
 lines.next
 	gt(i = i + 1,7)					:s(return)
 	lines[i] = hline(i)
-	lines[i+7] = vline(i)				:(lines.next)
+	lines[i + 7] = vline(i)				:(lines.next)
 lines.end
 
 	define('open(tiles)best,n,w')			:(open.end)
@@ -452,6 +457,7 @@ open
 
 open.1	le(n = n + 1,7)					:f(return)
 	perms = permutations(tiles,n)
+	output = perms
 open.2
 *	get next word, check that valid, then see if new high score
 	perms break(' ') . w ' ' =			:f(open.1)
@@ -538,6 +544,7 @@ random_rack.end
 *	score a sequence of cells
 
 score
+	output = 'enter score'
 	r = cells[i = i + 1,1]				:f(score.done)
 	c = cells[i,2]
 	t = cells[i,3]
