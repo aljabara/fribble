@@ -8,7 +8,7 @@
 copy	output = line
 loop
 	line = input				:f(end)
-	line ';' span(' ') = 			:f(copy)
+	line ';' (span(' ') | null)  = 		:f(copy)
 	output = '*' char(9) line		:(loop)
 end
 	

@@ -4,12 +4,47 @@
 
 *	Global Variables
 
-*	The global variables, initialized by the function *init()*,  are as follows:
+*	Here are the global variables. Each has a name starting with 'g.' Their initial value is set in the
+*	procedure *init()*.
 
-*	g.board		array('15,15',' ')	grid of the playing board
-*	g.bonus		array('15,15',+0)	grid with non-zero cells for bonus squares
-*	g.tileset	string			all the characters in the initial set of tiles, by frequency
-*	g.perms		table			table of permutations of n=1..7 things taken 1..k at a time
+*	Each cell in the playing board is represented by a program-defined datatype *cell*.
+*	A cell is occupied, or is  'played,' if it has been played on a previous move. Initially no cell is occupied.
+
+	data('cell(row,column,bonus,adjacent,content,new)')
+
+*	where
+
+*		*row* is the row number, in range 1..15
+
+*		*column* is the column number, in range 1..15
+
+*		*bonus* is null or else bonus type for this cell ('dw','dl', etc)
+
+*		*adjacent* is null null if no neighboring cells occupied, otherwise 1 if next to occupied (played) cell
+
+*		*content* null or else the letter that has been played in this cell
+
+*		*new*	letter being tried in this cell for this turn. That is, we mark a cell as 'new' when we
+*			are trying out a potential move.
+
+*	g.board, array('15,15'), the playing board. Each entry is a *cell*. 
+
+*	g.bonus, array('15,15',+0), is an array indicating which cells have a bonus value, 
+*		and the nature of that value: 'dl', 'tl', 'dw','tw'.
+
+*	g.dict, a map on words that is non-null only for words in the dictionary.
+
+*	g.move, array(15), is an array giving a possible move. Each entry is a cell marked as *new*.
+		move is the number of entries currently in the move.
+
+*	g.perms, a table of the permutations of n=1..7 things taken 1..k at a time.
+*	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time, as a string with
+*	entries separated by a space.
+
+*	g.tileset, a string containing all the characters in the initial bag of characters.
+
+*	g.value, a map from characters to the tile value of that character.
+
 
 *	Utility functions
 
@@ -53,7 +88,7 @@ backwords
 *	backwords = table(20000)
 	backwords = table()
 
-	
+
 backwards.1
 	key = ara[i = i + 1,1]				:f(return)
 	val = ara[i,2]
@@ -71,7 +106,7 @@ backwords.end
 cells
 	move break('+-') . text len(1) . sign rem . rc
 	output = 'text ' text '|' sign '|' rc
-	
+
 	n = size(text)
 	cells = array(size(text) ',3')
 	ident(sign,'+')					:s(cells.h)
@@ -81,14 +116,14 @@ cells.h
 	i = i + 1
 	gt(i,n)						:s(return)
 	cells[i,1] = +(rc / 100)			:f(return)
-	cells[i,2] = remdr(rc,100) 
+	cells[i,2] = remdr(rc,100)
 	cells[i,3] = substr(text,i,1)
 	c. = c + 1					:(cells.h)
 cells.v
 	i = i + 1
 	gt(i,n)						:s(return)
 	cells[i,1] = +(rc / 100)			:f(return)
-	cells[i,2] = +remdr(rc,100); 
+	cells[i,2] = +remdr(rc,100);
 	cells[i,3] = substr(text,i,1)
 	r = r + 1					:(cells.v)
 cells.end
@@ -100,16 +135,16 @@ cells.end
 
 getrows
 	getrows = array(7)
-	rline = 
+	rline =
 getrows.r
 	ri = ri + 1
 	gt(ri,15)					:s(return)
-	line = 
+	line =
 	ci = 0
 getrows.c
 	getrows[ri, ci = ci + 1] = ' '			:f(return)
 getrows.end
-	
+
 *	define('getcolumns(rows),cline,ci,ri')		:(getcolumns.end)
 
 *	Return an array of the columns on the board, from left to right. Each column is fifteen characters long.
@@ -137,7 +172,7 @@ getwords
 * 	single string.
 
 	getwords =
-	this = 
+	this =
 	input(.file,3,filename)				:s(getwords.in)
 	output = 'unable to open input file ' filename	:(freturn)
 getwords.in
@@ -147,43 +182,26 @@ getwords.in
 	getwords = add(getwords,this)
 	this =						:(getwords.in)
 							:(getwords.in)
-getwords.done					
+getwords.done
 *	add in remaining words
 	getwords = differ(this) add(getwords,this)
 	endfile(3)					:(return)
 getwords.end
 
 
-	define('init(dictfile,skip),i,s,t')		:(init.end)
-
-*	Initialize global variables, each with name starting with 'g.'
-*	The variables include:
-*		g.tileset, a string containing all the characters in the initial bag of characters.
-*		g.bonus, an array indicating which cells have a bonus value, and the nature of that value,
-*			such as double letter, or triple word.
-*		g.value, a map from characters to the tile value of that character.
-*		g.dict, a map on words that is non-null only for words in the dictionary.
-*		g.board, the playing board, non-null if letter
-*			played on given cell
-
+	define('init(dictfile,skip)c,,i,j,s,t')		:(init.end)
 
 init
 
 	g.board = array('15,15')
+init.board.1
+	gt(i = i + 1, 15)				:s(init.board.done)
+init.board.2
+	gt(j = j + 1, 15)				:s(init.board.done)
+	g.board[i,j] = cell(i,j)
+init.board.done
 
-* Initialize set of tiles.
-
-	
-* 	ignoring two blanks for now
-
-	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
-	g.tileset =
-init.1
-	s break(' ') . c ' ' break(' ') . n ' ' =	:f(init.2)
-	g.tileset = g.tileset new dupl(c,+n)		:(init.1)
-init.2
-
-*	initialize the bonus squares for the 15x15 grid, using 1 for double letter, 
+*	initialize the bonus squares for the 15x15 grid, using 1 for double letter,
 *	2 for triple letter, 3 for double word, and 4 for triple word.
 
 	g.bonus = array('15,15')
@@ -194,22 +212,48 @@ init.2
 .               '2 1010 2 1304 2 1312 2 1507 2 1509 '
 .		'3 0206 3 0210 3 0408 3 0602 3 0614 3 0804 3 0812 3 1002 3 1014 3 1208 3 1406 3 1410 '
 .		'4 0104 4 0112 4 0401 4 0415 4 1101 4 1115 4 1504 4 1512 '
-init.3
-	s len(1) . n ' ' len(2) . r len(2) . c ' ' =	:f(init.3.done)
-	g.bonus[+r,+c] = +n				:(init.3)
-init.3.done
-	
-*	initialize value map from letters to value, ignoring ' ' for now
+init.bonus.
+	s len(1) . n ' ' len(2) . r len(2) . c ' ' =	:f(iniinit.bonus..done)
+	c = g.board[+r,+c]
+	bonus(c) = +n
+	g.bonus[+r,+c] = +n				:(iniinit.bonus)
+init.bonus.done
+
+*	Initialize dictionary.
+
+	g.dict = initdict(dictfile,skip)
+
+*	Initialize set of moves.
+
+	g.move = array(15);* at most 15 cells can be played at a time
+	g.moven = 0
+
+*	Initialze permutation map.
+
+	initperm(dictfile '.perm')
+
+* 	Initialize set of tiles, ignoring the 'blank' tiles for now.
+
+	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
+	g.tileset =
+init.tileset.1
+	s break(' ') . c ' ' break(' ') . n ' ' =	:f(init.tileset.2)
+	g.tileset = g.tileset new dupl(c,+n)		:(init.tileset.1)
+init.tileset.2
+
+*	Initialize value map from letters to value, ignoring ' ' for now
 
 	g.value = table(26)
 	s = &lcase
-init.4
+init.value.next
 *	assume value is 1
-	s len(1) . c =					:f(init.5)
-	g.value[c] = 1					:(init.4)
-init.5
+	s len(1) . c =					:f(init.value.done)
+	g.value[c] = 1					:(init.vale.next)
+init.value.done
+
 *	g.value[' '] = 1
 *	update assumptions for letters with value greater than one.
+
 	g.value['d'] = g.value['l'] = g.value['n'] = g.value['p'] = g.value['u'] = g.value['w'] =  +2
 	g.value['g'] = g.value['h'] = g.value['y'] = +3
 	g.value['b'] = g.value['c'] = g.value['f'] = g.value['m'] = g.value['p'] = g.value['w'] = +4
@@ -217,13 +261,10 @@ init.5
 	g.value['x'] = +8
 	g.value['j'] = g.value['q'] = g.value['z'] = 10
 
-	g.dict = initdict(dictfile,skip)
-	initperm(dictfile '.perm')
-	
-							:(return)
+	:(return)
 init.end
 
-	define('initdict(filename,skip)file,n,word,s')	
+	define('initdict(filename,skip)file,n,word,s')
 
 *	g.wwf is list of words not in enable dictionary but known to be used by wwf.
 
@@ -246,7 +287,7 @@ initdict.wwf.1
 	s break(' ') . word ' ' =			:f(initdict.wwf.2)
 	initdict[word] = +1				:(initdict.wwf.1)
 initdict.wwf.2
-	
+
 	filename = ident(filename) 'enable1.txt'
 	input(.file,3,filename)				:s(initdict.in)
 	output = 'unable to open input file ' filename	:(freturn)
@@ -254,7 +295,7 @@ initdict.wwf.2
 initdict.in
 	word = file					:f(initdict.done)
 	gt(size(word),15)				:s(initdict.in)
-	initdict[word] = +1				
+	initdict[word] = +1
 	eq(skip,1)					:s(initdict.in)
 *	here want to skip over entries in the dictionary (for testing)
 	n = skip
@@ -264,7 +305,7 @@ initdict.skip
 initdict.done
 	endfile(3)					:(return)
 initdict.end
-	
+
 	define('initperm(filename)line,ifile,n,k,lines')	:(initperm.end)
 
 initperm
@@ -284,7 +325,7 @@ initperm.k
 	lines = lines + 1
 *	add blank at end of list to simplify later iterations over the list
 	g.permutations[n '?' k] = line ' '		:(initperm.1)
-initperm.done	
+initperm.done
 	endfile(4)					:(return)
 initperm.err
 	output = 'initperm error, line ' lines '  '  line :(freturn)
@@ -304,13 +345,13 @@ isword.end
 
 less
 	ident(str)					:s(return)
-	str break(ch) . before len(1) rem . after	:f(less.1) 
+	str break(ch) . before len(1) rem . after	:f(less.1)
 	less = before after				:(return)
 less.1
 	less = ident(substr(s,1,1),ch) substr(s,2)	:s(return)
 	less = str					:(return)
 less.end
-	
+
 	define('open(tiles)best,n,w')			:(open.end)
 
 *	Determine best opening move. At least one letter in this move must be in the center square (8,8).
@@ -371,10 +412,10 @@ permutations
 	permutations = replace(permutations,d,s)			:(return)
 permutations.end
 
-	define('random(n)')				
+	define('random(n)')
 
 *	Return integer uniformly distributed in 1,2,...,n. If n=0 returns real uniformly distributed
-*	in the interval [0,1]. 
+*	in the interval [0,1].
 *	The Algorithm is based in that in section 16.1 of "Algorithms in SNOBOL4," James F. Gimpel, John Wiley and Sons, 1976.
 
 *	Gimpel uses integer here, but need to have real.
@@ -392,7 +433,7 @@ random.end
 
 *	Return random set of seven tiles from the initial set of tiles.
 *	This is used for testing.
-	
+
 random_rack
 	gt(i = i + 1,7)					:s(return)
 	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
@@ -428,7 +469,7 @@ validate.end
 words
 	s = s  ' '
 	words = 0
-words.1	
+words.1
 	s break(' ') . w span(' ') =			:f(return)
 	words = words + 1				:(words.1)
 words.end
