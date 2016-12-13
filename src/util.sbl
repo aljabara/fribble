@@ -95,6 +95,15 @@ backwards.1
 	backwords[key] = reverse(val)			:(backwords.1)
 backwords.end
 
+	define('blanks(line)n')				:(blanks.end)
+
+*	Count number of blanks in line.
+
+blanks
+	line len(1) . c =				:f(return)
+	blanks = ident(c,' ') blanks + 1		:(blanks)
+blanks.end
+
 	define('cells(move)r,c,t,text,i,n')		:(cells.end)
 
 *	Return the cells that comprise a move, by which we mean a list consisting of a series of one or more
@@ -128,6 +137,21 @@ cells.v
 	r = r + 1					:(cells.v)
 cells.end
 
+	define('first(line)')				:(first.end)
+
+*	Return index of first blank in line, or fail if none.
+
+first
+	ident(line)					:s(freturn)
+	line len(1) . c 
+	differ(c,' ')					:s(first.1)
+	first = 1					:(return)
+first.1
+	line span(&lcase) . c				:f(freturn)
+	first = size(c) + 1
+	gt(first,15)					:s(freturn)f(return)
+first.end
+	
 
 	define('getrows(board)')			:(getrows.end)
 
@@ -338,6 +362,15 @@ initperm.end
 isword
 	differ(words[word])				:s(return)f(freturn)
 isword.end
+
+	define('last(string)w')				:(last.end)
+
+*	Return index of last space in string, or null if no space in string
+
+last
+	last = first(reverse(line))			:f(freturn)
+	last = 16 - last				:(return)
+last.end
 
 	define('less(str,ch)before,after')		:(less.end)
 
