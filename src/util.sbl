@@ -27,17 +27,15 @@
 *		*new*	letter being tried in this cell for this turn. That is, we mark a cell as 'new' when we
 *			are trying out a potential move.
 
-*	A word is a sequence of two or more non-blank cells, all on the same line. A word is represented by the
-*	row and column of the first letter; the kind of the word, either 'h' for a word in a row, or 'v' for a word
-*	in a column, and the length of the word. A word is said to be new if at least one of its cells has the
+*	A play is a sequence of two or more non-blank cells, all on the same line. A play is represented by the
+*	row and column of the first cell; the kind of the play, either 'h' for a word in a row, or 'v' for a word
+*	in a column; and the length of the play. A play is said to be new if at least one of its cells has the
 *	new indicator set.
 
-		data('word(rstart,cstart,kind,length)')
+		data('play(rstart,cstart,kind,text,length)')
 
 *	g.board, array('15,15'), the playing board. Each entry is a *cell*. 
 
-*	g.bonus, array('15,15',+0), is an array indicating which cells have a bonus value, 
-*		and the nature of that value: 'dl', 'tl', 'dw','tw'.
 
 *	g.dict, a map on words that is non-null only for words in the dictionary.
 
@@ -62,6 +60,31 @@
 
 
 *	Utility functions
+
+	define('init(dictfile,skip)c,i,j,s,t')		:(init.end)
+
+*	Initialize global variables.
+
+init
+	init.board()
+	init.bonus()
+
+*	Initialize set of moves.
+
+	g.move = array(7);* at most seven tiles can be played at a time
+	g.len = 0
+
+*	Initialze permutation map.
+
+	init.perm(dictfile '.perm')
+
+	init.tileset()
+
+	init.value()
+
+	init.dict(dictfile,skip)
+							:(return)
+init.end
 
 	define('add(str,word)')				:(add.end)
 
@@ -152,21 +175,21 @@ cells.v
 	r = r + 1					:(cells.v)
 cells.end
 
-	define('clean()r,c,cell')			:(clean.end)
+	define('clean()row,col,c')			:(clean.end)
 
 *	Clean up the board after deciding on a move.
 *	For each new cell, clear the bonus value and the new indicator.
 
 clean
-	r = 0; c = 0;
+	row = 0; col = 0;
 clean.nextrow
-	gt(r = r + 1, 15)				:s(return)
-	c = 0;
+	gt(row = row + 1, 15)				:s(return)
+	col = 0;
 clean.nextcell
-	gt(c = c + 1, 15)				:s(clean.nextrow)
-	cell = g.board[r,c]
-	ident(new(cell))				:s(clean.nextcell)
-	bonus(cell) = new(cell) =			:(clean.nextcell)
+	gt(col = col + 1, 15)				:s(clean.nextrow)
+	c = g.board[row,col]
+	ident(new(c))					:s(clean.nextcell)
+	bonus(c) = new(c) =				:(clean.nextcell)
 clean.end
 	
 	define('first(line)')				:(first.end)
@@ -249,79 +272,130 @@ getwords.end
 *	Return the r-th horizontal line of the board (row) as a string.
 
 hline
-	hline = tile(board[r,1]) tile(board[r,2]) tile(board[r,3]) tile(board[r,4]) tile(board[r,5]) 
-.		tile(board[r,6]) tile(board[r,7]) tile(board[r,8]) tile(board[r,9]) tile(board[r,10])
-.		tile(board[r,11]) tile(board[r,12]) tile(board[r,13]) tile(board[r,14]) tile(board[r,15])
+	hline = tile(g.board[r,1]) tile(g.board[r,2]) tile(g.board[r,3]) tile(g.board[r,4]) tile(g.board[r,5]) 
+.		tile(g.board[r,6]) tile(g.board[r,7]) tile(g.board[r,8]) tile(g.board[r,9]) tile(g.board[r,10])
+.		tile(g.board[r,11]) tile(g.board[r,12]) tile(g.board[r,13]) tile(g.board[r,14]) tile(g.board[r,15])
 							:(return)
 hline.end
 
-	define('init(dictfile,skip)c,,i,j,s,t')		:(init.end)
-
-init
-	output = 'init'
-	:(return)
-
+	define('init.board()row,col')			:(init.board.end)
+init.board
 	g.board = array('15,15')
-init.board.1
-	gt(i = i + 1, 15)				:s(init.board.done)
-init.board.2
-	gt(j = j + 1, 15)				:s(init.board.1)
-	g.board[i,j] = cell(i,j)
-							:(init.board.1)
-init.board.done
- :(return)
-	output = 'g.board done'
+init.board.row
+	gt(row = row + 1, 15)				:s(return)
+	col = 0
+init.board.col
+	gt(col = col + 1, 15)				:s(init.board.row)
+	g.board[row,col] = cell(row,col,' ')
+							:(init.board.col)
+init.board.end
 
-*	initialize the bonus squares for the 15x15 grid, using 1 for double letter,
+	define('init.bonus()s,row,col,b,c')		:(init.bonus.end)
+
+*	Initialize the bonus squares for the 15x15 grid, using 1 for double letter,
 *	2 for triple letter, 3 for double word, and 4 for triple word.
 
-	g.bonus = array('15,15')
-
+init.bonus
 	s =     '1 0203 1 0212 1 0302 1 0305 1 0311 1 0312 1 0314 1 0503 1 0613 1 0705 1 0711 '
 .		'1 0905 1 0911 1 1103 1 1109 1 1113 1 1302 1 1305 1 1311 1 1314 1 1403 1 1413 '
 .		'2 0107 2 0109 2 0404 2 0412 2 0606 2 0610 2 0701 2 0715 2 0901 2 0915 2 1006 '
 .               '2 1010 2 1304 2 1312 2 1507 2 1509 '
 .		'3 0206 3 0210 3 0408 3 0602 3 0614 3 0804 3 0812 3 1002 3 1014 3 1208 3 1406 3 1410 '
 .		'4 0104 4 0112 4 0401 4 0415 4 1101 4 1115 4 1504 4 1512 '
-init.bonus.
-	s len(1) . n ' ' len(2) . r len(2) . c ' ' =	:f(iniinit.bonus..done)
-	c = g.board[+r,+c]
-	bonus(c) = +n
-	g.bonus[+r,+c] = +n				:(iniinit.bonus)
-init.bonus.done
+init.bonus.1
+	s len(1) . b ' ' len(2) . row len(2) . col ' ' =	:f(return)
+	c = g.board[+row,+col]
+	bonus(c) = +b						:(init.bonus.1)
+init.bonus.end
 
-*	Initialize dictionary.
+	define('init.dict(filename,skip)file,n,w,s')		:(init.dict.end)
 
-	g.dict = initdict(dictfile,skip)
+*	g.wwf is list of words not in enable dictionary but known to be used by wwf.
 
-*	Initialize set of moves.
+	g.wwf = 'qi brr '
 
-	g.move = array(15);* at most 15 cells can be played at a time
-	g.moven = 0
+init.dict
 
-*	Initialze permutation map.
+*	Read in a dictionary from a specified file, with one word per line. If 'skip'
+*	is non-zero then that number of lines are skipped before adding the next word.
+*	This assists the use of smaller dictionaries for testing.
 
-	initperm(dictfile '.perm')
+	skip = (ident(skip) +1, +skip)
+	g.dict = table(100000)
+
+*	add words from g.wwf list to dictionary
+
+	s = g.wwf
+init.dict.wwf.1
+	s break(' ') . w ' ' =				:f(init.dict.wwf.2)
+	g.dict[w] = +1					:(init.dict.wwf.1)
+init.dict.wwf.2
+
+	filename = ident(filename) 'enable1.txt'
+	input(.file,3,filename)				:s(init.dict.in)
+	output = 'unable to open input file ' filename	:(freturn)
+	n = 0
+init.dict.in
+	w = file					:f(init.dict.done)
+	gt(size(w),15)					:s(init.dict.in)
+	g.dict[w] = +1
+	eq(skip,1)					:s(init.dict.in)
+*	here want to skip over entries in the dictionary (for testing)
+	n = skip
+init.dict.skip
+	w = file					:f(init.dict.done)
+	gt(n = n - 1,0)					:s(init.dict.skip)f(init.dict.in)
+init.dict.done
+	endfile(3)					:(return)
+init.dict.end
+
+	define('init.perm(filename)line,ifile,n,k,lines')	:(init.perm.end)
+
+init.perm
+	g.permutations = table(100)
+	input(.ifile,4, filename)			:s(init.perm.1)
+	output = 'unable to open permutation file ' filename 	:(freturn)
+*	read first line and merge to process permutation description line
+	line = ifile					:f(init.perm.done)s(init.perm.2)
+	lines = 1
+init.perm.1
+	line = ifile					:f(init.perm.done)
+	lines = lines + 1
+init.perm.2
+	line '; ' break('?') . n '?' break(' ') . k ' ' rem . count :f(init.perm.err)
+init.perm.k
+	line = ifile					:f(init.perm.done)
+	lines = lines + 1
+*	add blank at end of list to simplify later iterations over the list
+	g.permutations[n '?' k] = line ' '		:(init.perm.1)
+init.perm.done
+	endfile(4)					:(return)
+init.perm.err
+	output = 'init.perm error, line ' lines '  '  line :(freturn)
+init.perm.end
+
+	define('init.tileset()s,n')			:(init.tileset.end)
 
 * 	Initialize set of tiles, ignoring the 'blank' tiles for now.
+*	Initialize value map from letters to value, ignoring ' ' for now
 
+init.tileset
 	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
 	g.tileset =
 init.tileset.1
-	s break(' ') . c ' ' break(' ') . n ' ' =	:f(init.tileset.2)
-	g.tileset = g.tileset new dupl(c,+n)		:(init.tileset.1)
-init.tileset.2
+	s break(' ') . c ' ' break(' ') . n ' ' =	:f(return)
+	g.tileset = g.tileset dupl(c,n)			:(init.tileset.1)
+init.tileset.end
 
-*	Initialize value map from letters to value, ignoring ' ' for now
-
+	define('init.value()s,c')			:(init.value.end)
+init.value
 	g.value = table(26)
 	s = &lcase
 init.value.next
 *	assume value is 1
-	s len(1) . c =					:f(init.value.done)
-	g.value[c] = 1					:(init.vale.next)
-init.value.done
-
+	s len(1) . c =					:f(init.value.finish)
+	g.value[c] = 1					:(init.value.next)
+init.value.finish
 *	g.value[' '] = 1
 *	update assumptions for letters with value greater than one.
 
@@ -331,76 +405,9 @@ init.value.done
 	g.value['k'] = g.value['v'] = +5
 	g.value['x'] = +8
 	g.value['j'] = g.value['q'] = g.value['z'] = 10
+							:(return)
+init.value.end
 
-	:(return)
-init.end
-
-	define('initdict(filename,skip)file,n,word,s')
-
-*	g.wwf is list of words not in enable dictionary but known to be used by wwf.
-
-	g.wwf = 'qi brr '
-
-							:(initdict.end)
-initdict
-
-*	Read in a dictionary from a specified file, with one word per line. If 'skip'
-*	is non-zero then that number of lines are skipped before adding the next word.
-*	This assists the use of smaller dictionaries for testing.
-
-	skip = (ident(skip) +1, +skip)
-	initdict = table(200000)
-
-*	add words from g.wwf list to dictionary
-
-	s = g.wwf
-initdict.wwf.1
-	s break(' ') . word ' ' =			:f(initdict.wwf.2)
-	initdict[word] = +1				:(initdict.wwf.1)
-initdict.wwf.2
-
-	filename = ident(filename) 'enable1.txt'
-	input(.file,3,filename)				:s(initdict.in)
-	output = 'unable to open input file ' filename	:(freturn)
-	n = 0
-initdict.in
-	word = file					:f(initdict.done)
-	gt(size(word),15)				:s(initdict.in)
-	initdict[word] = +1
-	eq(skip,1)					:s(initdict.in)
-*	here want to skip over entries in the dictionary (for testing)
-	n = skip
-initdict.skip
-	word = file					:f(initdict.done)
-	gt(n = n - 1,0)					:s(initdict.skip)f(initdict.in)
-initdict.done
-	endfile(3)					:(return)
-initdict.end
-
-	define('initperm(filename)line,ifile,n,k,lines')	:(initperm.end)
-
-initperm
-	g.permutations = table(100)
-	input(.ifile,4, filename)			:s(initperm.1)
-	output = 'unable to open permutation file ' filename 	:(freturn)
-*	read first line and merge to process permutation description line
-	line = ifile					:f(initperm.done)s(initperm.2)
-	lines = 1
-initperm.1
-	line = ifile					:f(initperm.done)
-	lines = lines + 1
-initperm.2
-	line '; ' break('?') . n '?' break(' ') . k ' ' rem . count :f(initperm.err)
-initperm.k
-	line = ifile					:f(initperm.done)
-	lines = lines + 1
-*	add blank at end of list to simplify later iterations over the list
-	g.permutations[n '?' k] = line ' '		:(initperm.1)
-initperm.done
-	endfile(4)					:(return)
-initperm.err
-	output = 'initperm error, line ' lines '  '  line :(freturn)
-initperm.end
 
 	define('isword(word,words)')			:(isword.end)
 
@@ -408,6 +415,7 @@ initperm.end
 *	fails otherwise.
 isword
 	differ(words[word])				:s(return)f(freturn)
+
 isword.end
 
 	define('last(string)w')				:(last.end)
@@ -457,13 +465,13 @@ open
 
 open.1	le(n = n + 1,7)					:f(return)
 	perms = permutations(tiles,n)
-	output = perms
 open.2
 *	get next word, check that valid, then see if new high score
 	perms break(' ') . w ' ' =			:f(open.1)
 	permwords = permwords + 1
-	valid(w)					:f(open.2)
+	validword(w)					:f(open.2)
 	validwords = validwords + 1
+	p = play(8,8,'h',size(w))
 	le(oscore(w),best)				:s(open.2)
 	best = oscore(w)
 	open = w '+0808 ' best				:(open.2)
@@ -489,7 +497,6 @@ prefix.end
 *	square (row=8, column = 8).
 oscore
 	rstart = 8; cstart = 8
-	kind(word) = 'h'
 	tiles = word
 	oscoren = oscoren + 1
 	i = 0
@@ -498,7 +505,7 @@ oscore.1
 	oscore = oscore + g.value[c]			:(oscore.1)
 oscore.2
 *	Double word score if length greater than four, so bonus at (8,12) is achieved.
-	oscore = lt(length(word),5)			:s(return)
+	oscore = lt(size(word),5)			:s(return)
 	oscore = oscore + oscore			:(return)
 oscore.end
 
@@ -544,12 +551,11 @@ random_rack.end
 *	score a sequence of cells
 
 score
-	output = 'enter score'
 	r = cells[i = i + 1,1]				:f(score.done)
 	c = cells[i,2]
 	t = cells[i,3]
 	v = g.value[cells[i,3]]
-	b = g.bonus[r,c]
+	b = bonus[g.board[r,c]]
 	ident(b)					:s(score)
 	score = eq(b,1) score + 2 * v
 	score = eq(b,2) score * 3 * v
@@ -573,7 +579,6 @@ score.end
 validword
 	differ(g.dict[w])				:s(return)f(freturn)
 validword.end
-
 	define('validateline(line)word')			:(validateline.end)
 
 *	Succeeds if all the words in the line are in the dictionary, fails otherwise.
@@ -600,7 +605,7 @@ validatelines.end
 
 
 
-	define('vline(c)')				:(hline.end)
+	define('vline(c)')				:(vline.end)
 
 *	Return the c-th vertical line of the board (column) as a string.
 
