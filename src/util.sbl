@@ -10,7 +10,7 @@
 *	Each cell in the playing board is represented by a program-defined datatype *cell*.
 *	A cell is occupied, or is  'played,' if it has been played on a previous move. Initially no cell is occupied.
 
-	data('cell(row,column,bonus,adjacent,content,new)')
+	data('cell(row,column,tile,bonus,adjacent,new)')
 
 *	where
 
@@ -18,11 +18,11 @@
 
 *		*column* is the column number, in range 1..15
 
+*		*tile*	blank or the letter that has been played in this cell
+
 *		*bonus* is null or else bonus type for this cell ('dw','dl', etc)
 
 *		*adjacent* is null null if no neighboring cells occupied, otherwise 1 if next to occupied (played) cell
-
-*		*content* null or else the letter that has been played in this cell
 
 *		*new*	letter being tried in this cell for this turn. That is, we mark a cell as 'new' when we
 *			are trying out a potential move.
@@ -212,6 +212,16 @@ getwords.done
 	endfile(3)					:(return)
 getwords.end
 
+	define('hline(r)')				:(hline.end)
+
+*	Return the r-th horizontal line of the board (row) as a string.
+
+hline
+	hline = tile(board[r,1]) tile(board[r,2]) tile(board[r,3]) tile(board[r,4]) tile(board[r,5]) 
+.		tile(board[r,6]) tile(board[r,7]) tile(board[r,8]) tile(board[r,9]) tile(board[r,10])
+.		tile(board[r,11]) tile(board[r,12]) tile(board[r,13]) tile(board[r,14]) tile(board[r,15])
+							:(return)
+hline.end
 
 	define('init(dictfile,skip)c,,i,j,s,t')		:(init.end)
 
@@ -472,7 +482,6 @@ random_rack
 	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
 random_rack.end
 
-
 	define('score(cells)r,i,c,t,v,b,dw,tw')		:(score.end)
 
 *	score a sequence of cells
@@ -521,10 +530,20 @@ validate.1
 validate.end
 
 
-							;
+	define('vline(c)')				:(hline.end)
+
+*	Return the c-th vertical line of the board (column) as a string.
+
+vline
+	vline = g.board[1,c] g.board[2,c] g.board[3,c] g.board[4,c] g.board[5,c] 
+.		g.board[6,c] g.board[r.7,c] g.board[8,c] g.board[9,c] g.board[10,c]
+.		g.board[11,c] g.board[12,c] g.board[13,c] g.board[14,c] g.board[15,c]
+							:(return)
+vline.end
+
 	define('words(s)i,w')				:(words.end)
 
-*	Returns number of space-separated words in s
+*	Return number of space-separated words in s
 
 words
 	s = s  ' '
