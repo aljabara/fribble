@@ -2,14 +2,14 @@
 
 * Copyright (c) 2016 dave shields
 
--include "../util.sbl"
+-include "../src/util.sbl"
 
 *	Test open() and oscore(), used to find best opening move.
 
 	&anchor = &trim = 1
 *	&dump = 3
 
-	init('../enable1.txt')
+	init('../src/enable1.txt')
 * :(end)
 	test = 'johnson millman shields '
 *	test = 'johnson millman '

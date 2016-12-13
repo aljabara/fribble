@@ -1,0 +1,28 @@
+-include "util.sbl"
+	&anchor = &trim = 1
+	&dump = 3
+
+
+	init(,1000)
+	rack = 'daveshi'
+	move = '0204>daveshi'
+	output = move
+	c = cells(move)
+	output = score(c)
+	move = '0205^daveshi'
+	output = move
+	c = cells(move)
+	output = score(c)
+end
+	output = g.tileset
+loop
+	gt(i = i + 1,100)				:s(end)
+	output = '>' random_rack()
+							:(loop)
+	
+
+ n1 = 300
+	
+ n2 = 20
+ output = n1 / n2
+	init('enable1.txt',1000)

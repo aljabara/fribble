@@ -3,12 +3,12 @@
 
 * Copyright (c) 2016 dave shields
 
--include "../util.sbl"
+-include "../src/util.sbl"
 
 	&anchor = &trim = 1
 * count the number of words by their initial character
 
-	init('../enable1.txt')
+	init('../src/enable1.txt')
 	ara = sort(g.dict)
 	first = table(26,,0)
 words.in

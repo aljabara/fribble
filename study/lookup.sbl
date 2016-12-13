@@ -3,7 +3,7 @@
 
 * Copyright (c) 2016 dave shields
 
--include "util.sbl"
+-include "../src/util.sbl"
 
 *	Read lines from input, testing each to see if all there words on it are in the dictionary,
 *	reporting true or false according to the result.

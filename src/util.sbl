@@ -439,6 +439,33 @@ random_rack
 	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
 random_rack.end
 
+
+	define('score(cells)r,i,c,t,v,b,dw,tw')		:(score.end)
+
+*	score a sequence of cells
+
+score
+	r = cells[i = i + 1,1]				:f(score.done)
+	c = cells[i,2]
+	t = cells[i,3]
+	v = g.value[cells[i,3]]
+	b = g.bonus[r,c]
+	ident(b)					:s(score)
+	score = eq(b,1) score + 2 * v
+	score = eq(b,2) score * 3 * v
+	dw = eq(b,3) dw + 1
+	tw = eq(b,4) tw + 1
+							:(score)
+score.done
+
+*	apply double/triple word bonuses
+	score = eq(dw,1) score * 2
+	score = eq(dw,2) score * 4
+	score = eq(tw,1) score * 3
+	score = eq(tw,2) score * 9
+							:(return)
+score.end
+	
 	define('valid(w)')				:(valid.end)
 
 *	Succeeds if w is in the global dictionary, fails otherwise.

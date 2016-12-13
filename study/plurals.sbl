@@ -4,7 +4,7 @@
 
 * Copyright (c) 2016 dave shields
 
--include "../util.sbl"
+-include "../src/util.sbl"
 
 * Read the dictionary and write out words that appear have plural form, such as, for example, 'cat.'
 
