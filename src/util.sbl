@@ -207,66 +207,6 @@ first.1
 	gt(first,15)					:s(freturn)f(return)
 first.end
 	
-
-	define('getrows(board)')			:(getrows.end)
-
-*	Return an array of rows on the board, from top to bottom. Each row is fifteen characters long.
-
-getrows
-	getrows = array(7)
-	rline =
-getrows.r
-	ri = ri + 1
-	gt(ri,15)					:s(return)
-	line =
-	ci = 0
-getrows.c
-	getrows[ri, ci = ci + 1] = ' '			:f(return)
-getrows.end
-
-*	define('getcolumns(rows),cline,ci,ri')		:(getcolumns.end)
-
-*	Return an array of the columns on the board, from left to right. Each column is fifteen characters long.
-
-*getcolumns
-*	ri = ci = 0
-*	getcolumns = array(15)
-*getcolumns.c
-**	compute column i
-*	gt(ci = ci + 1,15)				:s(return)
-*	cline =
-*	ri = 0
-*getcolumns.r
-*	gt(ri = ri + 1,15)				:s(getcolumns.d)
-*	cline = cline substr(rows[ri],ci,1)		:(getcolumns.r)
-*getcolumns.d
-*	getcolumns[ci] = cline				:(getcolumns.c)
-*getcolumns.end
-
-	define('getwords(filename)file,this,word')	:(getwords.end)
-getwords
-
-*	Convert the dictionary to a single string of words, combining words
-* 	into strings of 1000 characters before concatenating to build the
-* 	single string.
-
-	getwords =
-	this =
-	input(.file,3,filename)				:s(getwords.in)
-	output = 'unable to open input file ' filename	:(freturn)
-getwords.in
-	word = file					:f(getwords.done)
-	this = add(this,word)
-	le(size(this),1000)				:s(getwords.in)
-	getwords = add(getwords,this)
-	this =						:(getwords.in)
-							:(getwords.in)
-getwords.done
-*	add in remaining words
-	getwords = differ(this) add(getwords,this)
-	endfile(3)					:(return)
-getwords.end
-
 	define('hline(r)')				:(hline.end)
 
 *	Return the horizontal line of the board corresponding to row r as a string.
