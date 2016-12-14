@@ -6,11 +6,11 @@
 -include "../src/util.sbl"
 
 * 	find pairs of letters that never occur in any word in the word list,
-*	 and so may help eliminate possible word candidates.
+*	and so may help eliminate possible word candidates.
 
 	&anchor = &trim = 1
 
-	init('../enable1.txt')
+	init()
 	all = getwords('../src/enable1.txt')	:f(eof)
 
 *	all now has the word list as one large string.

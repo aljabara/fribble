@@ -1,0 +1,42 @@
+* This software is licensed under the MIT License, contained in the file LICENSE.
+
+* Copyright (c) 2016 dave shields
+
+-include "../src/util.sbl"
+
+*	Read enable1.txt word list, eliminate words that can't be formed from initial tileset, and write
+*	remaining words to output.
+
+	&anchor = &trim = 1
+
+	init('../enable1.txt')
+	ara = sort(g.dict)
+	tiles = g.tileset
+	output = 'tileset ' tiles
+	have = table(26)
+	output(.ofile,3,'dict.wwf')
+init.1
+	tiles len(1) . c =				:f(init.2)
+	have[c] = have[c] + 1				:(init.1)
+init.2
+							:(loop)	
+loop.next
+*	Here if have the tiles to make this word.
+	ofile = w
+loop
+	w = ara[i = i + 1,1]				:f(done)
+	this = table()
+	s = w
+loop.char
+	s len(1) . c =					:f(loop.next)
+	this[c] = this[c] + 1
+	le(this[c],have[c])				:s(loop.char)
+*	skip if have more instances of character c than in initial tileset
+	output = 'skipping ' w ' since too many instances of ' c
+	skipped = skipped + 1				:(loop)
+done
+	g.dict = ara = g.value = g.board = g.permutations
+	output =
+	output =  'dictionary ' i - 1 ' entries read, ' skipped ' skipped.'
+	endfile(3)
+end

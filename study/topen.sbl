@@ -10,7 +10,7 @@
 *	&ftrace = 1000
 *	&dump = 3
 
-	init('../enable1.txt')
+	init()
 	test = 'johnson millman shields '
 loop
 	test break(' ') . tiles ' ' =			 :f(done)

@@ -76,7 +76,7 @@ init
 
 *	Initialze permutation map.
 
-	init.perm(dictfile '.perm')
+	init.perm('../perm.txt')
 
 	init.tileset()
 
@@ -324,6 +324,7 @@ init.dict
 *	is non-zero then that number of lines are skipped before adding the next word.
 *	This assists the use of smaller dictionaries for testing.
 
+	filename = ident(filename) '../dict.txt'
 	skip = (ident(skip) +1, +skip)
 	g.dict = table(100000)
 
@@ -335,7 +336,6 @@ init.dict.wwf.1
 	g.dict[w] = +1					:(init.dict.wwf.1)
 init.dict.wwf.2
 
-	filename = ident(filename) '../enable1.txt'
 	input(.file,3,filename)				:s(init.dict.in)
 	output = 'unable to open input file ' filename	:(freturn)
 	n = 0
@@ -483,6 +483,29 @@ open.2
 	open = 'h0808' w ' ' best			:(open.2)
 open.end
 
+	define('oscore(word)i,c')			:(oscore.end)
+
+*	Compute the score of an initial word, which is always played horizontally starting at the center 
+*	square (row=8, column = 8).
+oscore
+	word len(1) . c =				:f(oscore.finish)
+	oscore = oscore + g.value[c]			:(oscore)
+oscore.finish
+*	Double word score if length greater than four, so bonus at (8,12) is achieved.
+	lt(size(word),5)				:s(return)
+	oscore = oscore + oscore			:(return)
+oscore.end
+
+	define('permutations(s,k,d)')			:(permutations.end)
+
+*	Return permutations of s taken k at a time.
+
+permutations
+	permutations = g.permutations[size(s) '?' k]		:f(freturn)
+	d = substr('1234567',1,size(s))
+	permutations = replace(permutations,d,s)			:(return)
+permutations.end
+
 	define('prefix(str,pre)word')			:(prefix.end)
 prefix
 
@@ -496,34 +519,6 @@ prefix.1
 	prefixcount = prefixcount + 1
 	prefix = add(prefix, pre word)			:(prefix.1)
 prefix.end
-
-	define('oscore(word)tiles,rstart,cstart,i')	:(oscore.end)
-
-*	Compute the score of an initial word, which is always played horizontally starting at the center 
-*	square (row=8, column = 8).
-oscore
-	rstart = 8; cstart = 8
-	tiles = word
-	oscoren = oscoren + 1
-	i = 0
-oscore.1
-	tiles len(1) . c =				:f(oscore.2)
-	oscore = oscore + g.value[c]			:(oscore.1)
-oscore.2
-*	Double word score if length greater than four, so bonus at (8,12) is achieved.
-	oscore = lt(size(word),5)			:s(return)
-	oscore = oscore + oscore			:(return)
-oscore.end
-
-	define('permutations(s,k,d)')			:(permutations.end)
-
-*	Return permutations of s taken k at a time.
-
-permutations
-	permutations = g.permutations[size(s) '?' k]		:f(freturn)
-	d = substr('1234567',1,size(s))
-	permutations = replace(permutations,d,s)			:(return)
-permutations.end
 
 	define('random(n)')
 

@@ -8,7 +8,7 @@
 	&anchor = &trim = 1
 * count the number of words by their initial character
 
-	init('../enable1.txt')
+	init()
 	ara = sort(g.dict)
 	first = table(26,,0)
 words.in
