@@ -27,12 +27,12 @@
 *		*new*	letter being tried in this cell for this turn. That is, we mark a cell as 'new' when we
 *			are trying out a potential move.
 
-*	A play is a sequence of two or more non-blank cells, all on the same line. A play is represented by the
-*	row and column of the first cell; the kind of the play, either 'h' for a word in a row, or 'v' for a word
-*	in a column; and the length of the play. A play is said to be new if at least one of its cells has the
-*	new indicator set.
+*	A play is a sequence of two or more non-blank cells, all on the same line. A play is represented by the the 
+*	kind of the play, either 'h' for a word in a row, or 'v' for a word in a column; 
+*	the row and column of the first cell; and the text.
+*	A play is said to be new if at least one of its cells has the new indicator set.
 
-		data('play(rstart,cstart,kind,text,length)')
+		data('play(kind,rstart,cstart,text)')
 
 *	g.board, array('15,15'), the playing board. Each entry is a *cell*. 
 
@@ -269,7 +269,7 @@ getwords.end
 
 	define('hline(r)')				:(hline.end)
 
-*	Return the r-th horizontal line of the board (row) as a string.
+*	Return the horizontal line of the board corresponding to row r as a string.
 
 hline
 	hline = tile(g.board[r,1]) tile(g.board[r,2]) tile(g.board[r,3]) tile(g.board[r,4]) tile(g.board[r,5]) 
@@ -279,6 +279,9 @@ hline
 hline.end
 
 	define('init.board()row,col')			:(init.board.end)
+
+*	Initialize the playing board.
+
 init.board
 	g.board = array('15,15')
 init.board.row
@@ -310,7 +313,8 @@ init.bonus.end
 
 	define('init.dict(filename,skip)file,n,w,s')		:(init.dict.end)
 
-*	g.wwf is list of words not in enable dictionary but known to be used by wwf.
+*	Initialize the global dictionary g.dict.
+*	g.wwf is list of words not in enable1.txt word list but known to be accepted as valid by wwf.
 
 	g.wwf = 'qi brr '
 
@@ -331,7 +335,7 @@ init.dict.wwf.1
 	g.dict[w] = +1					:(init.dict.wwf.1)
 init.dict.wwf.2
 
-	filename = ident(filename) 'enable1.txt'
+	filename = ident(filename) '../enable1.txt'
 	input(.file,3,filename)				:s(init.dict.in)
 	output = 'unable to open input file ' filename	:(freturn)
 	n = 0
@@ -350,6 +354,8 @@ init.dict.done
 init.dict.end
 
 	define('init.perm(filename)line,ifile,n,k,lines')	:(init.perm.end)
+
+*	Initialize the list of possible permutations from a file.
 
 init.perm
 	g.permutations = table(100)
@@ -411,7 +417,7 @@ init.value.end
 
 	define('isword(word,words)')			:(isword.end)
 
-*	words is a map on words. Returna if words is defined for the specified word,
+*	Words is a map on words. Succeeds if words is defined for the specified word,
 *	fails otherwise.
 isword
 	differ(words[word])				:s(return)f(freturn)
@@ -471,10 +477,10 @@ open.2
 	permwords = permwords + 1
 	validword(w)					:f(open.2)
 	validwords = validwords + 1
-	p = play(8,8,'h',size(w))
+	p = play('h',8,8,w)
 	le(oscore(w),best)				:s(open.2)
 	best = oscore(w)
-	open = w '+0808 ' best				:(open.2)
+	open = 'h0808' w ' ' best			:(open.2)
 open.end
 
 	define('prefix(str,pre)word')			:(prefix.end)
@@ -607,7 +613,7 @@ validatelines.end
 
 	define('vline(c)')				:(vline.end)
 
-*	Return the c-th vertical line of the board (column) as a string.
+*	Return the vertical line of the board corresponding to column c as a string.
 
 vline
 	vline = g.board[1,c] g.board[2,c] g.board[3,c] g.board[4,c] g.board[5,c] 

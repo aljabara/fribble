@@ -25,6 +25,6 @@ filter.eof
 	endfile(3)
 						:(return)
 filter.end
-	filter('enable1.txt')
+	filter('../enable1.txt')
 	filter('wwf.txt')
 end

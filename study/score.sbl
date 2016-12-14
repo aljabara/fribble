@@ -14,15 +14,3 @@
 	c = cells(move)
 	output = score(c)
 end
-	output = g.tileset
-loop
-	gt(i = i + 1,100)				:s(end)
-	output = '>' random_rack()
-							:(loop)
-	
-
- n1 = 300
-	
- n2 = 20
- output = n1 / n2
-	init('enable1.txt',1000)

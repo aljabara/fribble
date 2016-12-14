@@ -2,7 +2,7 @@
 
 * Copyright (c) 2016 dave shields
 
--include "util.sbl"
+-include "../src/util.sbl"
 
 *	Copy the words in standard input to standard output.
 

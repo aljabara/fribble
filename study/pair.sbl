@@ -10,7 +10,7 @@
 
 	&anchor = &trim = 1
 
-	init('../src/enable1.txt')
+	init('../enable1.txt')
 	all = getwords('../src/enable1.txt')	:f(eof)
 
 *	all now has the word list as one large string.
