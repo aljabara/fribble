@@ -1,0 +1,95 @@
+-include "util.sbl"
+
+*	Find all the plays on a line
+
+	define('plays(line)r,c')			:(plays.end)
+;Strategy for line analysis
+
+;Find the blank spaces/cells. These are the only places we can put down new tiles.
+
+;Let NT be current number of tiles at hand. Let NB be number of blanks in line.
+
+;If NB < NT, then need only consider plays using at most NB tiles.
+
+;Let MP = maximum play length.
+
+;If NB < NT, then MP = NB
+;If NB > 7, then MP = 7Z
+
+
+
+;Set LB (left boundary to index of first blank in line)
+
+;Set PL to 1. This is play length.
+
+;Initialize list of plays to (LB,1), meaning try all permutations of length 1 starting at LB
+
+;Advance PL to next blank square
+
+
+plays
+
+*	Find number of blanks in line
+	nb = 0
+;	Do the basic processing on a line, but generating list of all possible moves that can be made for thist
+;	line. Be very simple at first.
+
+;	nr is number of tiles in current rack (usually 7)
+;	nb is number of blanks in current line.
+;	n is
+;
+;	avail is list of indexes of the blank spaces in the line
+	
+	s = line
+	lb = b; rb = 0
+	i = 0
+loop.1
+	gt(i = i + 1,size(line))			:s(loop..)
+	c = substr(line,i,1)
+	ident(c,' ')					:f(loop.1)
+	nb = nb + 1					:(loop.1)
+loop.2
+
+	avail = array(nb)
+	i = 0
+	s = line
+loop.a
+	gt(i = i + 1,nb)				:s(loop.done)
+	differ(substr(line,i,1),' ')			:s(loop.a)
+	avail[ai = ai + 1] = i				:(loop.a)
+loop.d
+;	lb is the index of the leftmost (first) blank square, or null if none = avail[1]
+;	rb is the index of the rightmost (last) blank square, or null if none = avail[nb]
+	
+;	now have nb and avail, list of empty cells
+
+;	starting at lb, try all plays of 1 ... np
+
+;	can play no more than nb tiles
+	np = nb
+;	but there are at most seven tiles
+	np = gb(nb,7) 7
+;	and can only play tiles if there is room for them
+	np = lt(nb,nr) nb
+	
+	availi = 1
+loop.0
+	len = 1
+loop.1
+	play(avail,availi,len); play(ara,sindex,ntiles)
+	len = len + 1
+	le(len,max)					:s(loop.1)
+* 	here to look at moves starting at next blank space
+loop
+	gt(availi = availi + 1,navail)			:s(finish)
+;	look at moves starting at this face, of length  1...
+	:(loop.0)
+	
+	playtable = play(lbkk
+	gt(ni = ni + 1, np)				:s(loop.done)
+	
+play(ara,ai,len)
+
+* compute permutations of length len
+* loop over avail, substituting rack into permutation, then evaluating move. 
+and so forth...

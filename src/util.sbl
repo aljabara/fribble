@@ -28,11 +28,10 @@
 *		*new*	letter being tried in this cell for this turn. That is, we mark a cell as 'new' when we
 *			are trying out a potential move.
 
-*	A play is a sequence of one or more non-blank cells, represented as an array.  The cells are ordered
-*	from left to right for a horizontal play, top to bottom for a vertical play.
-
 *	g.board, array('15,15'), the playing board. Each entry is a *cell*. 
 
+*	A play is a sequence of one or more cells, represented as an array.  The cells are ordered
+*	from left to right for a horizontal play, top to bottom for a vertical play.
 
 *	g.dict, a map on words that is non-null for words in the dictionary.
 
@@ -50,6 +49,8 @@
 *	g.perms, a table of the permutations of n=1..7 things taken 1..k at a time.
 *	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time, as a string with
 *	entries separated by a space.
+
+*	g.rack, a string containing the current rack. Plays are made using the characters from the rack.
 
 *	g.tileset, a string containing all the characters in the initial bag of characters.
 
