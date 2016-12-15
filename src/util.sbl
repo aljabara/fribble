@@ -10,7 +10,7 @@
 *	Each cell in the playing board is represented by a program-defined datatype *cell*.
 *	A cell is occupied, or is  'played,' if it has been played on a previous move. Initially no cell is occupied.
 
-	data('cell(row,column,tile,bonus,adjacent,new)')
+	data('cell(row,column,tile,bonus,new)')
 
 *	where
 
@@ -21,9 +21,6 @@
 *		*tile*	the letter that has been played in this cell, or null if empty
 
 *		*bonus* is null or else bonus type for this cell ('dw','dl', etc)
-
-*		*adjacent* is null if no neighboring cell is occupied, otherwise 1 if this cell is next to an
-*			 occupied (played) cell
 
 *		*new*	letter being tried in this cell for this turn. That is, we mark a cell as 'new' when we
 *			are trying out a potential move.
@@ -187,6 +184,23 @@ clean.nextcell
 	bonus(c) = new(c) =				:(clean.nextcell)
 clean.end
 	
+	define('display()r,c,line')				:(display.end)
+
+*	Display the board on standard output
+
+display
+display.r
+	gt(r = r + 1,15) 				:s(return)
+	line = lpad(r,2) '|'
+	c = 0
+display.c
+	gt(c = c + 1,15)				:s(display.l)
+	line = line (ident(tile(g.board[r,c]),' ') '-', tile(g.board[r,c]))
+							:(display.c)
+display.l
+	output = line '|'				:(display.r)
+display.end
+
 	define('first(line)')				:(first.end)
 
 *	Return index of first blank in line, or fail if none.
@@ -207,6 +221,8 @@ first.end
 *	Return the horizontal line of the board corresponding to row r as a string.
 
 hline
+*	lt(r,1)						:s(freturn)
+*	gt(r,15)					:s(freturn)
 	hline = tile(g.board[r,1]) tile(g.board[r,2]) tile(g.board[r,3]) tile(g.board[r,4]) tile(g.board[r,5]) 
 .		tile(g.board[r,6]) tile(g.board[r,7]) tile(g.board[r,8]) tile(g.board[r,9]) tile(g.board[r,10])
 .		tile(g.board[r,11]) tile(g.board[r,12]) tile(g.board[r,13]) tile(g.board[r,14]) tile(g.board[r,15])
@@ -416,17 +432,12 @@ open.2
 	best.word = w
 	best.score = oscore(w)
 	open = 'h0808' best.word ' ' best.score		:(open.2)
-open.finish
+open.finish						
 	n = 0
-
-*	Set adjacent attribute for neighboring cells in row above and 
-*	below for each character in the word.
-
 open.finish.1
-	gt(n = n + 1,size(w))					:s(return)	
-	adjacent(g.board[7,8 + i]) = 1
-	adjacent(g.board[9,8 + i]) = 1			:(open.finish.1)
-
+	gt(n = n + 1,size(best.word))			:s(return)
+	tile(g.board[8,7 + n]) = substr(best.word,n,1)		
+							:(open.finish.1)
 open.end
 
 	define('oscore(word)i,c')			:(oscore.end)
@@ -557,6 +568,8 @@ validatelines.end
 *	Return the vertical line of the board corresponding to column c as a string.
 
 vline
+*	lt(c,1)						:s(freturn)
+*	gt(c,15)					:s(freturn)
 	vline = tile(g.board[1,c]) tile(g.board[2,c]) tile(g.board[3,c]) tile(g.board[4,c]) tile(g.board[5,c]) 
 .		tile(g.board[6,c]) tile(g.board[r.7,c]) tile(g.board[8,c]) tile(g.board[9,c]) tile(g.board[10,c])
 .		tile(g.board[11,c]) tile(g.board[12,c]) tile(g.board[13,c]) tile(g.board[14,c]) tile(g.board[15,c])
