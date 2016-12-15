@@ -18,26 +18,23 @@
 
 *		*column* is the column number, in range 1..15
 
-*		*tile*	blank or the letter that has been played in this cell
+*		*tile*	the letter that has been played in this cell, or null if empty
 
 *		*bonus* is null or else bonus type for this cell ('dw','dl', etc)
 
-*		*adjacent* is null null if no neighboring cells occupied, otherwise 1 if next to occupied (played) cell
+*		*adjacent* is null if no neighboring cell is occupied, otherwise 1 if this cell is next to an
+*			 occupied (played) cell
 
 *		*new*	letter being tried in this cell for this turn. That is, we mark a cell as 'new' when we
 *			are trying out a potential move.
 
-*	A play is a sequence of two or more non-blank cells, all on the same line. A play is represented by the the 
-*	kind of the play, either 'h' for a word in a row, or 'v' for a word in a column; 
-*	the row and column of the first cell; and the text.
-*	A play is said to be new if at least one of its cells has the new indicator set.
-
-		data('play(kind,rstart,cstart,text)')
+*	A play is a sequence of one or more non-blank cells, represented as an array.  The cells are ordered
+*	from left to right for a horizontal play, top to bottom for a vertical play.
 
 *	g.board, array('15,15'), the playing board. Each entry is a *cell*. 
 
 
-*	g.dict, a map on words that is non-null only for words in the dictionary.
+*	g.dict, a map on words that is non-null for words in the dictionary.
 
 *	g.move, array(7), is an array giving a possible move. Each entry is a cell marked as *new*.
 *		When the best move has been found, the cells
@@ -96,26 +93,23 @@ add
 	add = str ' ' word				:(return)
 add.end
 
-	define('adjacent(r,c)')			:(adjacent.end)
+	define('isadjacent(r,c)')			:(adjacent.end)
 
-*	succeeds if cell (r,c) is adjacent to occupied cell on
+*	Succeeds if cell (r,c) is adjacent to an occupied cell on
 *	board, fails otherwise.
 
-adjacent
+isadjacent
 
-*	test neighboring cells to see if occupied. Note that
-*	may examine cells outside the playing board, in which
+*	Test neighboring cells to see if any one is occupied.
+*	Note that may examine cells outside the playing board, in which
 *	case the attempt to get the value of the cell will fail.
 
-	r = +r; c = +c
-	differ(g.board[r - 1,c])			:s(return)
-	differ(g.board[r - 1,c])			:s(return)
-	differ(g.board[r,c - 1])			:s(return)
-	differ(g.board[r,c + 1])			:s(return)
+	differ(tile(g.board[r - 1,c]))			:s(return)
+	differ(tile(g.board[r - 1,c]))			:s(return)
+	differ(tile(g.board[r,c - 1]))			:s(return)
+	differ(tile(g.board[r,c + 1]))			:s(return)
 						:(freturn)
 adjacent.end
-
-
 
 	define('backwords()ara,key,val,i')	:(backwords.end)
 
@@ -256,7 +250,7 @@ init.bonus.end
 *	Initialize the global dictionary g.dict.
 *	g.wwf is list of words not in enable1.txt word list but known to be accepted as valid by wwf.
 
-	g.wwf = 'qi brr '
+	g.wwf = 'qi brr zen zep '
 
 init.dict
 
@@ -396,7 +390,7 @@ lines.next
 	lines[i + 7] = vline(i)				:(lines.next)
 lines.end
 
-	define('open(tiles)best,n,w')			:(open.end)
+	define('open(tiles)best.score,best.word,n,w')	:(open.end)
 
 *	Determine best opening move. At least one letter in this move must be in the center square (8,8).
 *	The only bonus available is double word, for any word of more than four characters.
@@ -409,7 +403,7 @@ open
 	n = 0;* number of tiles to play
 	best = 0;* best score
 
-open.1	le(n = n + 1,7)					:f(return)
+open.1	le(n = n + 1,7)					:f(open.finish)
 	perms = permutations(tiles,n)
 open.2
 *	get next word, check that valid, then see if new high score
@@ -417,10 +411,21 @@ open.2
 	permwords = permwords + 1
 	validword(w)					:f(open.2)
 	validwords = validwords + 1
-	p = play('h',8,8,w)
-	le(oscore(w),best)				:s(open.2)
-	best = oscore(w)
-	open = 'h0808' w ' ' best			:(open.2)
+	le(oscore(w),best.score)			:s(open.2)
+	best.word = w
+	best.score = oscore(w)
+	open = 'h0808' best.word ' ' best.score		:(open.2)
+open.finish
+	n = 0
+
+*	Set adjacent attribute for neighboring cells in row above and 
+*	below for each character in the word.
+
+open.finish.1
+	gt(n = n + 1,size(w))					:s(return)	
+	adjacent(g.board[7,8 + i]) = 1
+	adjacent(g.board[9,8 + i]) = 1			:(open.finish.1)
+
 open.end
 
 	define('oscore(word)i,c')			:(oscore.end)
@@ -551,9 +556,9 @@ validatelines.end
 *	Return the vertical line of the board corresponding to column c as a string.
 
 vline
-	vline = g.board[1,c] g.board[2,c] g.board[3,c] g.board[4,c] g.board[5,c] 
-.		g.board[6,c] g.board[r.7,c] g.board[8,c] g.board[9,c] g.board[10,c]
-.		g.board[11,c] g.board[12,c] g.board[13,c] g.board[14,c] g.board[15,c]
+	vline = tile(g.board[1,c]) tile(g.board[2,c]) tile(g.board[3,c]) tile(g.board[4,c]) tile(g.board[5,c]) 
+.		tile(g.board[6,c]) tile(g.board[r.7,c]) tile(g.board[8,c]) tile(g.board[9,c]) tile(g.board[10,c])
+.		tile(g.board[11,c]) tile(g.board[12,c]) tile(g.board[13,c]) tile(g.board[14,c]) tile(g.board[15,c])
 							:(return)
 vline.end
 

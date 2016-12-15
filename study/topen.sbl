@@ -17,4 +17,5 @@ loop
 	output = 'best move for ' tiles ' is '  open(tiles) :(loop)
 done
 	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
+	g.dict = g.permutations =
 end
