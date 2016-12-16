@@ -184,21 +184,34 @@ clean.nextcell
 	bonus(c) = new(c) =				:(clean.nextcell)
 clean.end
 	
-	define('display()r,c,line')				:(display.end)
+	define('display()b,r,c,l,line')				:(display.end)
 
 *	Display the board on standard output
 
 display
+	output =
+	output = '    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15'
 display.r
-	gt(r = r + 1,15) 				:s(return)
+	gt(r = r + 1,15) 				:s(display.finish)
 	line = lpad(r,2) '|'
 	c = 0
 display.c
 	gt(c = c + 1,15)				:s(display.l)
-	line = line (ident(tile(g.board[r,c]),' ') '-', tile(g.board[r,c]))
-							:(display.c)
+	l = tile(g.board[r,c])
+	line = differ(l,' ') line ' ' ucase(l) ' ' 	:s(display.c)
+* Here for blank cell, display bonus if applicable
+	b = bonus(g.board[r,c])
+	ident(b)					:s(display.b)
+* 	Here to display bonus
+	l = (eq(b,1) 'dl', eq(b,2) 'tl', eq(b,3) 'dw', eq(b,4) 'tw')
+	line = line l ' '				:(display.c)
+display.b
+*	Here to display empty cell.
+	line = line ' - '				:(display.c)
 display.l
 	output = line '|'				:(display.r)
+display.finish
+	output =					:(return)
 display.end
 
 	define('first(line)')				:(first.end)
@@ -407,7 +420,7 @@ lines.next
 	lines[i + 7] = vline(i)				:(lines.next)
 lines.end
 
-	define('open(tiles)best.score,best.word,n,w')	:(open.end)
+	define('open(tiles)best.score,best.word,n,w,start')	:(open.end)
 
 *	Determine best opening move. At least one letter in this move must be in the center square (8,8).
 *	The only bonus available is double word, for any word of more than four characters.
@@ -419,6 +432,7 @@ lines.end
 open
 	n = 0;* number of tiles to play
 	best = 0;* best score
+	start = 8;* assume word will start in column 8
 
 open.1	le(n = n + 1,7)					:f(open.finish)
 	perms = permutations(tiles,n)
@@ -431,12 +445,15 @@ open.2
 	le(oscore(w),best.score)			:s(open.2)
 	best.word = w
 	best.score = oscore(w)
-	open = 'h0808' best.word ' ' best.score		:(open.2)
+	open = lt(size(best.word),6) 'h0808' best.word ' ' best.score	:s(open.2)
+*	Here if longer open word, move a space to the left
+	start = 7
+	open = 'h0807' best.word ' ' best.score		:(open.2)
 open.finish						
 	n = 0
 open.finish.1
 	gt(n = n + 1,size(best.word))			:s(return)
-	tile(g.board[8,7 + n]) = substr(best.word,n,1)		
+	tile(g.board[8,start - 1 + n]) = substr(best.word,n,1)		
 							:(open.finish.1)
 open.end
 
@@ -529,6 +546,14 @@ score.done
 	score = eq(tw,2) score * 9
 							:(return)
 score.end
+
+	define('ucase(s)')				:(ucase.end)
+
+*	Convert argument converted to upper case
+
+ucase
+	ucase = replace(s,&lcase,&ucase)		:(return)
+ucase.end
 	
 	define('validword(w)')				:(validword.end)
 
