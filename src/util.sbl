@@ -263,12 +263,14 @@ init.board.end
 *	2 for triple letter, 3 for double word, and 4 for triple word.
 
 init.bonus
-	s =     '1 0203 1 0212 1 0302 1 0305 1 0311 1 0312 1 0314 1 0503 1 0613 1 0705 1 0711 '
-.		'1 0905 1 0911 1 1103 1 1109 1 1113 1 1302 1 1305 1 1311 1 1314 1 1403 1 1413 '
-.		'2 0107 2 0109 2 0404 2 0412 2 0606 2 0610 2 0701 2 0715 2 0901 2 0915 2 1006 '
-.               '2 1010 2 1304 2 1312 2 1507 2 1509 '
-.		'3 0206 3 0210 3 0408 3 0602 3 0614 3 0804 3 0812 3 1002 3 1014 3 1208 3 1406 3 1410 '
-.		'4 0104 4 0112 4 0401 4 0415 4 1101 4 1115 4 1504 4 1512 '
+	s = 	'4 0104 2 0107 2 0109 4 0112 1 0203 3 0206 3 0210 1 0213 '
+.		'1 0302 1 0305 1 0311 1 0314 4 0401 2 0404 3 0408 2 0412 3 0415 '
+.		'1 0503 1 0507 1 0509 1 0513 3 0602 2 0606 2 0610 3 0614 '
+.		'2 0701 1 0705 1 0711 3 0715 3 0804 3 0812 2 0901 1 0905 1 0911 2 0915 '
+.		'3 1002 2 1006 2 1010 3 1014 1 1103 1 1107 1 1109 1 1113 '
+.		'4 1201 2 1204 3 1208 2 1212 4 1215 1 1302 1 1305 1 1311 1 1314 '
+.		'4 1403 3 1406 3 1410 1 1413 4 1504 2 1507 2 1509 4 1512 '
+
 init.bonus.1
 	s len(1) . b ' ' len(2) . row len(2) . col ' ' =	:f(return)
 	c = g.board[+row,+col]
@@ -479,6 +481,17 @@ permutations
 	d = substr('1234567',1,size(s))
 	permutations = replace(permutations,d,s)			:(return)
 permutations.end
+
+	define('placeword(r,c,w)ch')			:(placeword.end)
+
+
+*	Add a word to the board (used for testing)
+placeword
+	c = c - 1
+placeword.1
+	w len(1) . ch =					:f(return)
+	tile(g.board[r, c = c + 1]) = ch		:(placeword.1)
+placeword.end
 
 	define('prefix(str,pre)word')			:(prefix.end)
 prefix
