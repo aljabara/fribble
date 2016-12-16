@@ -74,40 +74,24 @@ add
 	add = str ' ' word				:(return)
 add.end
 
-	define('isadjacent(r,c)')			:(adjacent.end)
+	define('after(num)')				:(after.end)
 
-*	Succeeds if cell (r,c) is adjacent to an occupied cell on
-*	board, fails otherwise.
+*	Find the line 'after' line *num*. This is either the row below or the column to the right, or
+*	null if line *num* is at the edge of the board
 
-isadjacent
+after
+	after = (eq(num,1) '', eq(num,15) '',g.lines[num + 1])	:(return)
+after.end
 
-*	Test neighboring cells to see if any one is occupied.
-*	Note that may examine cells outside the playing board, in which
-*	case the attempt to get the value of the cell will fail.
+	define('before(num)')				:(before.end)
 
-	differ(g.board[r - 1,c],' ')			:s(return)
-	differ(g.board[r - 1,c],' ')			:s(return)
-	differ(g.board[r,c - 1],' ')			:s(return)
-	differ(g.board[r,c + 1],' ')			:s(return)
-						:(freturn)
-adjacent.end
+*	Find the line 'before' line *num*. This is either the row above or the column to the left, or
+*	null if line *num* is at the edgs of the board
 
-	define('backwords()ara,key,val,i')	:(backwords.end)
-
-*	use dictionary g.dict to build dictionary with the words reversed.
-
-backwords
-	ara = convert(g.dict,'array')
-*	backwords = table(20000)
-	backwords = table()
-
-
-backwards.1
-	key = ara[i = i + 1,1]				:f(return)
-	val = ara[i,2]
-	backwords[key] = reverse(val)			:(backwords.1)
-backwords.end
-
+before
+	before = (eq(num,1) '', eq(num,16) '',g.lines[num - 1])	:(return)
+before.end
+	
 	define('blanks(line)n')				:(blanks.end)
 
 *	Count number of blanks in line.
@@ -239,8 +223,6 @@ hbonus.end
 *	Return the horizontal line of the board corresponding to row r as a string.
 
 hline
-*	lt(r,1)						:s(freturn)
-*	gt(r,15)					:s(freturn)
 	hline = g.board[r,1] g.board[r,2] g.board[r,3] g.board[r,4] g.board[r,5] 
 .		g.board[r,6] g.board[r,7] g.board[r,8] g.board[r,9] g.board[r,10]
 .		g.board[r,11] g.board[r,12] g.board[r,13] g.board[r,14] g.board[r,15]
@@ -403,6 +385,9 @@ less.1
 less.end
 
 	define('lines()i')				:(lines.end)
+
+*	Express the board as a sequence of lines, with the first 15 consisting of the rows
+*	and the last 15 consisting of the columns.
 
 lines
 	lines = array(30)
@@ -607,10 +592,8 @@ vbonus.end
 *	Return the vertical line of the board corresponding to column c as a string.
 
 vline
-*	lt(c,1)						:s(freturn)
-*	gt(c,15)					:s(freturn)
 	vline = g.board[1,c] g.board[2,c] g.board[3,c] g.board[4,c] g.board[5,c] 
-.		g.board[6,c] g.board[r.7,c] g.board[8,c] g.board[9,c] g.board[10,c]
+.		g.board[6,c] g.board[7,c] g.board[8,c] g.board[9,c] g.board[10,c]
 .		g.board[11,c] g.board[12,c] g.board[13,c] g.board[14,c] g.board[15,c]
 							:(return)
 vline.end
@@ -627,39 +610,20 @@ words.1
 	words = words + 1				:(words.1)
 words.end
 
-MAIN
 
-* This software is licensed under the MIT License, contained in the file LICENSE.
-
-* Copyright (c) 2016 dave shields
-
-
-
-*	define('occupied(kind,num)')					:(occupied.end)
-
-*	Return a line corresponding to a board row or column with non-blank character in each position corresonding
-*	to a non-blank cell. Kind is 'h' for horiztonal (row) line, 'v' for a vertical (column) line. *num* is
-*	the number of the line, in range 1..15.
-
-*occupied
-*	occupied = dupl(' ',15)
-*	ident(kind,'v')							:s(occupied.v)
-*
-*	Here for horizontal line, corresponding to row *num*.
-*
-*occupied.end
-
-*	define('place(num)avail,ai,si,nb,s,nplace')				:(place.end)
+*	define('place(num)avail,ai,si,nb,s')				:(place.end)
 	define('place(num)')				:(place.end)
 
-*	Find all the places where a move can be made in the line specified by *num*. *num* values from 1 .. 15
-*	correspond to row *num*, while values in the range 16..30 correspond to column *num* - 15.
+*	Find all the places where a move can be made in the line specified by *num*. *num* values from 1 .. 30
+
 
 place
-	line = (lt(num,16) hline(num), vline(num))
+*	output = 'place num ' num
+	line = g.lines[num]
+	output = 'enter place num ' num ' line ' line '.'
 *	get adjacent lines
-	adj1 = (lt(num,16) hline(num - 1), vline(num - 1))
-	adj2 = (lt(num,16) hline(num + 1), vline(num + 1))
+	after = after(num)
+	before = before(num)
 	s = line
 	place = table()
 *	Find number of open cells.
@@ -669,16 +633,17 @@ place
 
 	eq(nopen,0)						:s(freturn)
 
+	output = 'place num ' num ' nopen ' nopen ' ' before ':' after ':' 
 *	Allocate and fill in avail, an array giving the positions of the open cells.
 
 	avail = array(nopen)
 	s = line
 	si = ai = 0
-place.1
-	c = substr(line, si = si + 1, 1)			:f(place.2)
-	differ(c,' ')						:s(place.1)
-	avail[ai = ai + 1] = si					:(place.1)
-place.2
+place.3
+	c = substr(line, si = si + 1, 1)			:f(place.4)
+	differ(c,' ')						:s(place.3)
+	avail[ai = ai + 1] = si					:(place.3)
+place.4
 	
 *	lb is the index of the leftmost (first) open square, or null if none = avail[1]
 *	rb is the index of the rightmost (last) open square, or null if none = avail[no]
@@ -687,60 +652,87 @@ place.2
 	
 	ai = 0
 
-place.3
+place.next
 
-	output = 'place.3 nopen ' nopen ' ai ' ai
 *	Here to find all the possible moves starting at the open cell at index ai in the line.
 *	Update left boundary.
-	gt(ai = ai + 1,nopen)					:s(return)
+	gt(ai = ai + 1,len)					:s(place.finish)
 	lb = avail[ai]	
-	output = 'lb ' lb
-*	Find maximum number of tiles that can be played starting at this position
-	max = nopen - ai + 1
-	output = 'initial max ' max
+
+*	Find maximum number of additional tiles that can be played starting at this position
+
+	nopen = nopen - 1;* account for playing a tile at *lb*.
+
+	max = nopen
 *	But can play no more than the number of tiles at hand
 	max = gt(max,size(g.rack)) size(g.rack)
-	output = 'lb ' lb ' rb ' rb ' max ' max 
 
 *	Now try all the placements of length 1 ... max
 
-	output = ' np = ' np
+place.6
+*	starting at lb, try all plays of 1 ... np
+
+*	can play no more than nopen tiles
+	np = nopen
+*	but there are at most seven tiles
+	np = gb(nopen,7) 7
+*	and can only play tiles if there is room for them
+	np = lt(nopen,nr) nopen
+	
 	ai = 0
 place.next.lb
-	lb = avail[ai = ai + 1]				:f(return)
+	lb = avail[ai = ai + 1]				:s(return)
+	nopen = nopen - 1
 *	Initial right boundary is lb, will extend as probe further
 	rb = lb
 	n = 0
 place.next.n
-	gt(n  = n + 1,max)				:s(place.next.lb)
-*	Here to play n tiles starting at lb
-*	Check that at least one of these cells has a neighbor
+	gt(n = n + 1,max)				:s(place.next.n)
+*	Here to play len tiles starting at lb
+*	Check that at least one of these cells has a neighbot
 	i = 0
 	neighbor = 
-place.neighbor	
-	gt(i = i + 1, n)				:s(place.no.neighbor)
-	rb = avail[i]
+
+*	We say a cell has a friend if an adjoining cell has been part of previous move.
+*	For a move to be valid, at least one character in the word must have a friend.
+
+place.friend	
+	gt(i = i + 1, len)				:s(place.no.friend)
+
 *	Test if preceding cell (if any) is occupied
-	differ(substr(line,i - 1,1,' '))		:s(place.has.neighbor)
+
+	differ(substr(line,i - 1,1,' '))		:s(place.has.friend)
+
+
 *	Test if following cell (if any) is occupied
-	differ(substr(line,i + 1,1),' ')		:s(place.has.neighbor)
-*	Test if corresponding cell in first neighbor is occupied
-	differ(substr(adj1,i,1),' ')			:s(place.has.neighbor)
-*	Test if corresponding cell in second neighbor is occupied
-	differ(substr(adj2,i,1),' ')			:s(place.has.neighbor)
-							:(place.neighbor)
-place.no.neighbor
-*	Here if no cell in proposed list neighbor, so increase length
-							:(place.next.n)
-place.has.neighbor
+
+	differ(substr(line,i + 1,1),' ')		:s(place.has.friend)
+
+*	Test if corresponding cell in line before is occupied.
+
+	differ(substr(before,i,1),' ')			:s(place.has.friend)
+
+*	Test if corresponding cell in line after is occupied.
+
+	differ(substr(after,i,1),' ')			:s(place.has.friend)
+							:(place.friend)
+place.no.friend
+*	Here if no cell in proposed list has friend, so increase length
+							:(place.next.len)
+place.has.friend
 
 *	Add cell to candidate list
-	place[nplace = nplace + 1] = lb ':' n
-	output = 'placing ' nplace ' ' lb ':' n
+	output = 'placing ' lb ':' rb
+	place[lb ':' rb] = 1
+	output = lb ':' rb
 							:(place.next.n)
+place.finish
+	output = 'place finish'				:(return)
 place.end
 
+MAIN
 *	Test place()
+	output = 'test place'
 
 	&anchor = &trim = 1
 *	&ftrace = 1000
@@ -752,6 +744,14 @@ place.end
 	placeword(8,2,'dave')
 	placeword(8,8,'shields')
 	display()
+	g.lines = lines()
+	output = 'before 9' before(9) '.'
+	output = 'after 7 ' after(7) '.'
+	output = 'after 22 ' after(22) '.'
+	output = 'before 1 ' before(1) '.'
+	output = 'before 16 ' before(16) '.'
+	output = 'after 15 ' after(15) '.'
+	output = 'after 30 ' after(30) '.'
 	tbl = place(8)
 	output = 'tbl 1 ' tbl[1]
 	output = 'tbl 2 ' tbl[2]
@@ -762,29 +762,3 @@ done
 	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
 	g.dict = g.permutations =
 end
-
-	p = avail[lb];* starting cell
-place.6
-	nopen = nopen - 1;* number of opens that 
-
-*	Now find all the moves that can start at position lb.
-
-*	starting at lb, try all plays of 1 ... np
-
-*	can play no more than nopen tiles
-	np = nopen
-*	but there are at most seven tiles
-	np = gt(nopen,7) 7
-*	and can only play tiles if there is room for them
-	np = lt(nopen,nr) nopen
-	
-	define('friend(
-*	Test if preceding cell (if any) is occupied
-	differ(substr(line,i - 1,1,' '))		:s(place.has.neighbor)
-*	Test if following cell (if any) is occupied
-	differ(substr(line,i + 1,1),' ')		:s(place.has.neighbor)
-*	Test if corresponding cell in first neighbor is occupied
-	differ(substr(adj1,i,1),' ')			:s(place.has.neighbor)
-*	Test if corresponding cell in second neighbor is occupied
-	differ(substr(adj2,i,1),' ')			:s(place.has.neighbor)
-							:(place.neighbor)
