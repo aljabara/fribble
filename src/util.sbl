@@ -634,77 +634,49 @@ words.1
 	words = words + 1				:(words.1)
 words.end
 
-	define('place(num)alone,avail,n,ai,si,nb,s,first,last,c,i,max,line,nplaces,ss,sn')	:(place.end)
+	define('place(num)line,alone,avail,nopen,ai,first,max,n,last,nplaces')	:(place.end)
 
 *	Find all the places where a move can be made in the line specified by *num*. *num* values from 1 .. 30
 
 place
-
-	line = g.board.lines[num]
-
-*	get adjacent lines
-
-	alone = g.alone.lines[num]
-
-	s = line
 	place = table()
+	line = g.board.lines[num]
+	alone = g.alone.lines[num]
 
 *	Allocate and fill in avail, an array giving the positions of the open cells.
 
 	avail = avail(line)				:f(return);* fail if no empty cells
 	nopen = prototype(avail);* number of open cells
 
-	s = line
-	si = ai = 0
-
-*	lb is the index of the leftmost (first) open square, or null if none = avail[1]
-
 *	Prepare for loop, since decrement nopen at start of search at a given empty cell.
 
 	nopen = nopen + 1
-	
-	ai =  nplaces = 0
 
 place.next
+*	Here to find all the possible moves starting at the next open cell, first.
 
-*	Here to find all the possible moves starting at the open cell at index ai in the line.
-*	Update left boundary.
-
-	first = avail[ai = ai + 1]				:f(return)
+	first = avail[ai = ai + 1]			:f(return)
 
 	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
 	le(nopen)					:s(return)
 
-*	Let max be the most tiles we can play on this line.
-*	We can't play more tiles than the number of blank cells in this line.
+*	Let max be the most tiles we can play on this line. We can't play more tiles than the number of 
+*	blank cells in this line, and we can't play more tiles than we have.
 
 	max = nopen
-
-*	We can't play more tiles than we have.
-
 	max = gt(max,size(g.rack)) size(g.rack)
 
-*	Now try all the placements of length 1 ... max
-
-	n = 0
-
 place.next.n
-
 	gt(n = n + 1,max)				:s(place.next)
-*	Here to try to play n tiles starting at start
 
-*	See if this move consists only of alone cells.
+*	Skip this move if all its cells are along
 
+	substr(alone, first, last - first + 1) span('1') :s(place.next.n)
 
-*	Add cell to candidate list, as triple (first cell, last cell, number of empty cells played)
+*	Add cell to candidate list, as triple (first cell, last cell, number of empty cells to be played)
 
 	last = avail[first + n - 1];* index of this cell 
 
-*	Check that at least one cell in the move is not alone.
-
-*	Move to next case if all cells are alone.
-
-	substr(alone, first, last - first + 1) span('1') :s(place.next.n)
 
 	place[nplaces = nplaces + 1] = first ':' last ':' n :(place.next.n)
 place.end
