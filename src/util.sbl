@@ -617,8 +617,6 @@ words.end
 
 place
 
-*	output = 'place num ' num
-
 	line = g.lines[num]
 
 *	get adjacent lines
@@ -647,12 +645,10 @@ place.avail
 	c = substr(line, si = si + 1, 1)			:f(place.avail.done)
 	differ(c,' ')						:s(place.avail)
 	avail[ai = ai + 1] = si					
-*	output = 'avail ' lpad(ai,3) ' ' si
 								:(place.avail)
 
 place.avail.done
 	
-*	output = 'avail final ai ' ai
 *	lb is the index of the leftmost (first) open square, or null if none = avail[1]
 
 *	Prepare for loop, since decrement nopen at start of search at a given empty cell.
@@ -667,7 +663,6 @@ place.next
 *	Update left boundary.
 
 	lb = avail[ai = ai + 1]				:f(return)
-*	output = 'place.next ai ' ai '  lb ' lb
 
 	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
 	le(nopen)					:s(place.finish)
@@ -687,7 +682,6 @@ place.next
 
 place.next.n
 
-* output = 'place.next.n n' n ' max ' max
 	gt(n = n + 1,max)				:s(place.next)
 *	Here to try to play n tiles starting at lb
 
@@ -698,34 +692,26 @@ place.next.n
 
 place.friend	
 
-*	output = 'place.friend i=' i '  n=' n
 	gt(i = i + 1, n)					:s(place.next.n)
-*	output = 'testing friend i ' i ' n ' n
 	
 	this = lb + i - 1
-*	output = 'this ' this ' i ' i '  n ' n
 
 *	Test if preceding cell (if any) is occupied
 
-*	output = 'testing previous'
 	differ(substr(line,this - 1,1,' '))		:s(place.has.friend)
 
 *	Test if following cell (if any) is occupied
 
-*	output = 'testing following'
 	differ(substr(line,this + 1,1),' ')		:s(place.has.friend)
 
 *	Test if corresponding cell in line before is occupied.
 
-*	output = 'testing before'
 	differ(substr(before,this,1),' ')		:s(place.has.friend)
 
 *	Test if corresponding cell in line after is occupied.
 
-*	output = 'testing after'
 	differ(substr(after,this,1),' ')		:s(place.has.friend)f(place.no.friend)
 place.no.friend
-*	output = 'no friend for ' this			
 							:(place.next.n)
 
 place.has.friend
@@ -733,7 +719,6 @@ place.has.friend
 *	Add cell to candidate list
 
 	place[nplaces = nplaces + 1] = lb ':' n	
-*	output = 'place add ' nplaces  ' ' lt ':' n
 							:(place.next.n)
 place.finish						:(return)
 place.end
