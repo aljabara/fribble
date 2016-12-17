@@ -14,10 +14,13 @@
 
 *	g.dict, a map on words that is non-null for words in the dictionary.
 
-*	g.isolated, array('15,15') tracks the isolated cells in the board. A cell is isolated if it is empty and all its
-*	neighbors are empty. A move cannot consist only of isolated cells.
+*	g.alone, array('15,15') tracks the *alone* cells in the board. A cell is *alone* if it is empty and all its
+*	neighbors are empty. A move made after the first move cannot consist only of cells that are alone. 
+*	That is, at least one tile in a valid move must be adjacent to a tile played in a previous move.
 
-*	g.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
+*	g.alone.lines, array(30), is the array of lines defined by the rows and columns of the alone grid.
+
+*	g.board.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
 
 *	g.perms, a table of the permutations of n=1..7 things taken 1..k at a time.
 *	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time, as a string with
@@ -39,7 +42,7 @@
 init
 	g.board = array('15,15',' ')
 
-	g.isolated = array('15,15','1')
+	g.alone = array('15,15','1')
 
 	init.bonus()
 
@@ -76,7 +79,7 @@ add.end
 *	null if line *num* is at the edge of the board
 
 after
-	after = (eq(num,1) '', eq(num,15) '',g.lines[num + 1])	:(return)
+	after = (eq(num,1) '', eq(num,15) '',g.board.lines[num + 1])	:(return)
 after.end
 
 	define('before(num)')				:(before.end)
@@ -85,7 +88,7 @@ after.end
 *	null if line *num* is at the edgs of the board
 
 before
-	before = (eq(num,1) '', eq(num,16) '',g.lines[num - 1])	:(return)
+	before = (eq(num,1) '', eq(num,16) '',g.board.lines[num - 1])	:(return)
 before.end
 	
 	define('blanks(line)n')				:(blanks.end)
@@ -187,6 +190,31 @@ display.l
 display.finish
 	output =					:(return)
 display.end
+
+
+	define('display.alone()b,r,c,l,line')				:(display.alone.end)
+
+*	Display the board on standard output
+
+display.alone
+	output = 
+	output = '                      1 1 1 1 1 1'
+	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
+display.alone.r
+	gt(r = r + 1,15) 				:s(display.alone.finish)
+	line = lpad(r,2) '|'
+	c = 0
+display.alone.c
+	gt(c = c + 1,15)				:s(display.alone.l)
+	l = g.alone[r,c]
+	line = line lpad(l,2)		 		:s(display.alone.c)
+display.alone.l
+	output = line '|'				:(display.alone.r)
+display.alone.finish
+	output =					:(return)
+display.alone.end
+
+
 
 	define('first(line)')				:(first.end)
 
@@ -369,17 +397,17 @@ less.1
 	less = str					:(return)
 less.end
 
-	define('lines()i')				:(lines.end)
+	define('lines(grid)i')				:(lines.end)
 
-*	Express the board as a sequence of lines, with the first 15 consisting of the rows
+*	Express the grid as a sequence of lines, with the first 15 consisting of the rows
 *	and the last 15 consisting of the columns.
 
 lines
 	lines = array(30)
 lines.next
 	gt(i = i + 1,15)				:s(return)
-	lines[i] = hline(g.board,i)
-	lines[i + 15] = vline(g.board,i)		:(lines.next)
+	lines[i] = hline(grid,i)
+	lines[i + 15] = vline(grid,i)		:(lines.next)
 lines.end
 
 	define('open(tiles)best.score,best.word,n,w,start')	:(open.end)
@@ -451,12 +479,12 @@ placeword
 placeword.1
 	w len(1) . ch =					:f(return)
 	g.board[r, c = c + 1] = ch			
-*	Mark self and adjoining squares as no longer isolated
-	g.isolated[r,c] = ' '    ;* self
-	g.isolated[r - 1,c] = ' ';* cell to the north
-	g.isolated[r,c + 1] = ' ';* cell to the east
-	g.isolated[r,c - 1] = ' ';* cell to the west
-	g.isolated[r + 1,c] = ' ';* cell to the south
+*	Mark self and adjoining squares as no longer alone
+	g.alone[r,c] = ' '    ;* self
+	g.alone[r - 1,c] = ' ';* cell to the north
+	g.alone[r,c + 1] = ' ';* cell to the east
+	g.alone[r,c - 1] = ' ';* cell to the west
+	g.alone[r + 1,c] = ' ';* cell to the south
 							:(placeword.1)
 placeword.end
 
@@ -560,7 +588,7 @@ validateline.end
 *	Succeeds if every line in the board has only valid words.
 
 validatelines
-	lines = lines()
+	lines = lines(g.board)
 validatelines.next
 	gt(i = i + 1,30)				:s(return)
 	validateline(lines[i])				:f(freturn)s(validatelines.next)
@@ -589,18 +617,18 @@ words.1
 	words = words + 1				:(words.1)
 words.end
 
-	define('place(num)avail,ai,si,nb,s')		:(place.end)
+	define('place(num)alone,avail,n,ai,si,nb,s,first,last,c,i,max,line,nplaces,ss,sn')	:(place.end)
 
 *	Find all the places where a move can be made in the line specified by *num*. *num* values from 1 .. 30
 
 place
 
-	line = g.lines[num]
+	line = g.board.lines[num]
 
 *	get adjacent lines
 
-	after = after(num)
-	before = before(num)
+	alone = g.alone.lines[num]
+
 	s = line
 	place = table()
 
@@ -623,6 +651,7 @@ place.avail
 	c = substr(line, si = si + 1, 1)			:f(place.avail.done)
 	differ(c,' ')						:s(place.avail)
 	avail[ai = ai + 1] = si					
+	output = 'avail ' lpad(ai,2) ' ' si
 								:(place.avail)
 
 place.avail.done
@@ -640,10 +669,10 @@ place.next
 *	Here to find all the possible moves starting at the open cell at index ai in the line.
 *	Update left boundary.
 
-	lb = avail[ai = ai + 1]				:f(return)
+	first = avail[ai = ai + 1]				:f(return)
 
 	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
-	le(nopen)					:s(place.finish)
+	le(nopen)					:s(return)
 
 *	Let max be the most tiles we can play on this line.
 *	We can't play more tiles than the number of blank cells in this line.
@@ -661,15 +690,22 @@ place.next
 place.next.n
 
 	gt(n = n + 1,max)				:s(place.next)
-*	Here to try to play n tiles starting at lb
+*	Here to try to play n tiles starting at start
 
-*	TODO: Need to check for isolation here
+*	See if this move consists only of alone cells.
 
-*	Add cell to candidate list
 
-	place[nplaces = nplaces + 1] = lb ':' n	
-							:(place.next.n)
-place.finish						:(return)
+*	Add cell to candidate list, as triple (first cell, last cell, number of empty cells played)
+
+	last = avail[first + n - 1];* index of this cell 
+
+*	Check that at least one cell in the move is not alone.
+
+*	Move to next case if all cells are alone.
+
+	substr(alone, first, last - first + 1) span('1') :s(place.next.n)
+
+	place[nplaces = nplaces + 1] = first ':' last ':' n :(place.next.n)
 place.end
 
 MAIN
@@ -678,7 +714,7 @@ MAIN
 
 	&anchor = &trim = 1
 *	&ftrace = 1000
-	&dump = 3
+*	&dump = 3
 
 	init(,1000)
 
@@ -687,14 +723,19 @@ MAIN
 *	placeword(8,8,'shields')
 	placeword(1,3,'dave')
 	display()
-	g.lines = lines()
+	g.board.lines = lines(g.board)
+	g.alone.lines = lines(g.alone)
+	output = 'alone '
+	display.alone()
+	output = 'g.alone.lines 1 ' g.alone.lines[1]
 *	tabl = place(8)
 	tabl = place(1)
 	ara = sort(tabl)
 	i = 0
 
+	output = 'place '
 loop	key = ara[i = i + 1,1]				:f(done)
-	output = 'place ' lpad(i,4) '  ' ara[i,2]		:(loop)
+	output = lpad(i,4) char(9)  ara[i,2]		:(loop)
 done
 *	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
 	g.dict = g.permutations =
