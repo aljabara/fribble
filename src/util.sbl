@@ -82,6 +82,23 @@ after
 	after = (eq(num,1) '', eq(num,15) '',g.board.lines[num + 1])	:(return)
 after.end
 
+	define('avail(line)blanks,c,i')				:(avail.end)
+
+*	Return array containing the indexes of the blank cells in line. Fails if no blanks.
+avail
+	c = substr(line, i = i + 1, 1)				:f(avail.1)
+	differ(c,' ')						:s(avail)
+	blanks = blanks + 1					:(avail)
+avail.1
+	eq(blanks,0)						:s(freturn)
+	avail = array(blanks)
+	i = 0
+avail.2
+	c = substr(line, i = i + 1, 1)				:f(return)
+	differ(c,' ')						:s(avail.2)
+	avail[ai = ai + 1] = +i					:(avail.2)
+avail.end
+
 	define('before(num)')				:(before.end)
 
 *	Find the line 'before' line *num*. This is either the row above or the column to the left, or
@@ -632,30 +649,14 @@ place
 	s = line
 	place = table()
 
-*	Find number of open cells.
-
-	nopen = blanks(line)
-
-*	Fail if no open cells in line.
-
-	eq(nopen,0)						:s(freturn)
-
 *	Allocate and fill in avail, an array giving the positions of the open cells.
 
-	avail = array(nopen)
+	avail = avail(line)				:f(return);* fail if no empty cells
+	nopen = prototype(avail);* number of open cells
+
 	s = line
 	si = ai = 0
 
-place.avail
-
-	c = substr(line, si = si + 1, 1)			:f(place.avail.done)
-	differ(c,' ')						:s(place.avail)
-	avail[ai = ai + 1] = si					
-	output = 'avail ' lpad(ai,2) ' ' si
-								:(place.avail)
-
-place.avail.done
-	
 *	lb is the index of the leftmost (first) open square, or null if none = avail[1]
 
 *	Prepare for loop, since decrement nopen at start of search at a given empty cell.
