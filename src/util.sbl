@@ -621,7 +621,6 @@ place
 
 	line = g.lines[num]
 
-*	output = 'enter place num ' num ' line ' line '.'
 *	get adjacent lines
 
 	after = after(num)
@@ -637,7 +636,6 @@ place
 
 	eq(nopen,0)						:s(freturn)
 
-*	output = 'place num ' num ' nopen ' nopen ' ' before ':' after ':' 
 *	Allocate and fill in avail, an array giving the positions of the open cells.
 
 	avail = array(nopen)
@@ -648,17 +646,20 @@ place.avail
 
 	c = substr(line, si = si + 1, 1)			:f(place.avail.done)
 	differ(c,' ')						:s(place.avail)
-	avail[ai = ai + 1] = si					:(place.avail)
+	avail[ai = ai + 1] = si					
+*	output = 'avail ' lpad(ai,3) ' ' si
+								:(place.avail)
 
 place.avail.done
 	
+*	output = 'avail final ai ' ai
 *	lb is the index of the leftmost (first) open square, or null if none = avail[1]
 
 *	Prepare for loop, since decrement nopen at start of search at a given empty cell.
 
 	nopen = nopen + 1
 	
-	ai = 0
+	ai =  nplaces = 0
 
 place.next
 
@@ -686,8 +687,8 @@ place.next
 
 place.next.n
 
-	gt(n = n + 1,max)				:s(place.next)
 * output = 'place.next.n n' n ' max ' max
+	gt(n = n + 1,max)				:s(place.next)
 *	Here to try to play n tiles starting at lb
 
 	i = 0
@@ -697,35 +698,43 @@ place.next.n
 
 place.friend	
 
-	output = 'place.friend i=' i '  n=' n
-	ge(i = i + 1, n)					:s(place.next.n)
-	output = 'testing friend i ' i ' n ' n
+*	output = 'place.friend i=' i '  n=' n
+	gt(i = i + 1, n)					:s(place.next.n)
+*	output = 'testing friend i ' i ' n ' n
 	
 	this = lb + i - 1
-	output = 'this ' this
+*	output = 'this ' this ' i ' i '  n ' n
 
 *	Test if preceding cell (if any) is occupied
 
+*	output = 'testing previous'
 	differ(substr(line,this - 1,1,' '))		:s(place.has.friend)
 
 *	Test if following cell (if any) is occupied
 
+*	output = 'testing following'
 	differ(substr(line,this + 1,1),' ')		:s(place.has.friend)
 
 *	Test if corresponding cell in line before is occupied.
 
+*	output = 'testing before'
 	differ(substr(before,this,1),' ')		:s(place.has.friend)
 
 *	Test if corresponding cell in line after is occupied.
 
-	differ(substr(after,this,1),' ')		:s(place.has.friend)f(place.friend)
+*	output = 'testing after'
+	differ(substr(after,this,1),' ')		:s(place.has.friend)f(place.no.friend)
+place.no.friend
+*	output = 'no friend for ' this			
+							:(place.next.n)
 
 place.has.friend
 
 *	Add cell to candidate list
 
-	nplaces = nplaces + 1
-	place[nplaces = nplaces + 1] = lb ':' n		:(place.next.n)
+	place[nplaces = nplaces + 1] = lb ':' n	
+*	output = 'place add ' nplaces  ' ' lt ':' n
+							:(place.next.n)
 place.finish						:(return)
 place.end
 
@@ -740,15 +749,18 @@ MAIN
 	init(,1000)
 
 	g.rack = 'catnose'
-	placeword(8,2,'dave')
-	placeword(8,8,'shields')
+*	placeword(8,2,'dave')
+*	placeword(8,8,'shields')
+	placeword(1,3,'dave')
 	display()
 	g.lines = lines()
-	tabl = place(8)
+*	tabl = place(8)
+	tabl = place(1)
 	ara = sort(tabl)
+	i = 0
 
 loop	key = ara[i = i + 1,1]				:f(done)
-	output = 'ara i ' i '  key ' key '  value ' ara[i,2]		:(loop)
+	output = 'place ' lpad(i,4) '  ' ara[i,2]		:(loop)
 done
 *	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
 	g.dict = g.permutations =
