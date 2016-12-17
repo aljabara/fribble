@@ -14,16 +14,10 @@
 
 *	g.dict, a map on words that is non-null for words in the dictionary.
 
-*	g.move, array(7), is an array giving a possible move. Each entry is a cell marked as *new*.
-*		When the best move has been found, the cells
-*		are added to the board, the score for all
-*		newly formed words is determined, and the
-*		*new* indicator is removed.
+*	g.isolated, array('15,15') tracks the isolated cells in the board. A cell is isolated if it is empty and all its
+*	neighbors are empty. A move cannot consist only of isolated cells.
 
-*	g.len is the number of entries currently in the move list.
-
-*	g.lines, array(30), is the array of the lines defined by the
-*		rows and columns in the board. 
+*	g.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
 
 *	g.perms, a table of the permutations of n=1..7 things taken 1..k at a time.
 *	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time, as a string with
@@ -44,6 +38,8 @@
 
 init
 	g.board = array('15,15',' ')
+
+	g.isolated = array('15,15','1')
 
 	init.bonus()
 
@@ -107,8 +103,8 @@ bonus.lines
 	bonus.lines = array(30)
 bonus.lines.next
 	gt(i = i + 1,15)				:s(return)
-	bonus.lines[i] = hbonus(i)
-	bonus.lines[i + 15] = vbonus(i)			:(bonus.lines.next)
+	bonus.lines[i] = hline(g.bonus,i)
+	bonus.lines[i + 15] = vline(g.bonus,i)		:(bonus.lines.next)
 bonus.lines.end
 
 	define('cells(move)r,c,t,text,i,n')		:(cells.end)
@@ -207,25 +203,14 @@ first.1
 	gt(first,15)					:s(freturn)f(return)
 first.end
 	
-	define('hbonus(r)')				:(hbonus.end)
+	define('hline(grid,r)')				:(hline.end)
 
-*	Return the horizontal line of the bonus board corresponding to row r as a string.
-
-hbonus
-	hbonus = g.bonus[r,1] g.bonus[r,2] g.bonus[r,3] g.bonus[r,4] g.bonus[r,5] 
-.		g.bonus[r,6] g.bonus[r,7] g.bonus[r,8] g.bonus[r,9] g.bonus[r,10]
-.		g.bonus[r,11] g.bonus[r,12] g.bonus[r,13] g.bonus[r,14] g.bonus[r,15]
-							:(return)
-hbonus.end
-
-	define('hline(r)')				:(hline.end)
-
-*	Return the horizontal line of the board corresponding to row r as a string.
+*	Return the horizontal line of a grid corresponding to row r as a string.
 
 hline
-	hline = g.board[r,1] g.board[r,2] g.board[r,3] g.board[r,4] g.board[r,5] 
-.		g.board[r,6] g.board[r,7] g.board[r,8] g.board[r,9] g.board[r,10]
-.		g.board[r,11] g.board[r,12] g.board[r,13] g.board[r,14] g.board[r,15]
+	hline = grid[r,1] grid[r,2] grid[r,3] grid[r,4] grid[r,5] 
+.		grid[r,6] grid[r,7] grid[r,8] grid[r,9] grid[r,10]
+.		grid[r,11] grid[r,12] grid[r,13] grid[r,14] grid[r,15]
 							:(return)
 hline.end
 
@@ -393,8 +378,8 @@ lines
 	lines = array(30)
 lines.next
 	gt(i = i + 1,15)				:s(return)
-	lines[i] = hline(i)
-	lines[i + 15] = vline(i)			:(lines.next)
+	lines[i] = hline(g.board,i)
+	lines[i + 15] = vline(g.board,i)		:(lines.next)
 lines.end
 
 	define('open(tiles)best.score,best.word,n,w,start')	:(open.end)
@@ -465,7 +450,14 @@ placeword
 	c = c - 1
 placeword.1
 	w len(1) . ch =					:f(return)
-	g.board[r, c = c + 1] = ch			:(placeword.1)
+	g.board[r, c = c + 1] = ch			
+*	Mark self and adjoining squares as no longer isolated
+	g.isolated[r,c] = ' '    ;* self
+	g.isolated[r - 1,c] = ' ';* cell to the north
+	g.isolated[r,c + 1] = ' ';* cell to the east
+	g.isolated[r,c - 1] = ' ';* cell to the west
+	g.isolated[r + 1,c] = ' ';* cell to the south
+							:(placeword.1)
 placeword.end
 
 	define('prefix(str,pre)word')			:(prefix.end)
@@ -574,28 +566,14 @@ validatelines.next
 	validateline(lines[i])				:f(freturn)s(validatelines.next)
 validatelines.end
 
+	define('vline(grid,c)')				:(vline.end)
 
-
-	define('vbonus(c)')				:(vbonus.end)
-
-*	Return the vertical line of the bonus board corresponding to column c as a string.
-
-vbonus
-	vbonus = g.bonus[1,c] g.bonus[2,c] g.bonus[3,c] g.bonus[4,c] g.bonus[5,c] 
-.		g.bonus[6,c] g.bonus[7,c] g.bonus[8,c] g.bonus[9,c] g.bonus[10,c]
-.		g.bonus[11,c] g.bonus[12,c] g.bonus[13,c] g.bonus[14,c] g.bonus[15,c]
-*	output = 'vbonus ' c ' ' vbonus '.'
-							:(return)
-vbonus.end
-
-	define('vline(c)')				:(vline.end)
-
-*	Return the vertical line of the board corresponding to column c as a string.
+*	Return the vertical line of a grid corresponding to column c as a string.
 
 vline
-	vline = g.board[1,c] g.board[2,c] g.board[3,c] g.board[4,c] g.board[5,c] 
-.		g.board[6,c] g.board[7,c] g.board[8,c] g.board[9,c] g.board[10,c]
-.		g.board[11,c] g.board[12,c] g.board[13,c] g.board[14,c] g.board[15,c]
+	vline = grid[1,c] grid[2,c] grid[3,c] grid[4,c] grid[5,c] 
+.		grid[6,c] grid[7,c] grid[8,c] grid[9,c] grid[10,c]
+.		grid[11,c] grid[12,c] grid[13,c] grid[14,c] grid[15,c]
 							:(return)
 vline.end
 
@@ -685,36 +663,7 @@ place.next.n
 	gt(n = n + 1,max)				:s(place.next)
 *	Here to try to play n tiles starting at lb
 
-	i = 0
-
-*	We say a cell has a friend if an adjoining cell has been part of previous move.
-*	For a move to be valid, at least one character in the word must have a friend.
-
-place.friend	
-
-	gt(i = i + 1, n)					:s(place.next.n)
-	
-	this = lb + i - 1
-
-*	Test if preceding cell (if any) is occupied
-
-	differ(substr(line,this - 1,1,' '))		:s(place.has.friend)
-
-*	Test if following cell (if any) is occupied
-
-	differ(substr(line,this + 1,1),' ')		:s(place.has.friend)
-
-*	Test if corresponding cell in line before is occupied.
-
-	differ(substr(before,this,1),' ')		:s(place.has.friend)
-
-*	Test if corresponding cell in line after is occupied.
-
-	differ(substr(after,this,1),' ')		:s(place.has.friend)f(place.no.friend)
-place.no.friend
-							:(place.next.n)
-
-place.has.friend
+*	TODO: Need to check for isolation here
 
 *	Add cell to candidate list
 
