@@ -1,51 +1,12 @@
-* This software is licensed under the MIT License, contained in the file LICENSE.
-
-* Copyright (c) 2016 dave shields
-
--include "util.sbl"
-
-
-	define('after(num)')
-
-*	Find the line 'after' line *num*. This is either the row below or the column to the right, or
-*	null if line *num* is at the edge of the board
-
-after
-
-	after = (eq(num,1) '', eq(num,16) '',line(num + 1))	:(return)
-after.end
-	
-	define('before(num)')
-
-*	Find the line 'before' line *num*. This is either the row above or the column to the left, or
-*	null if line *num* is at the edgs of the board
-
-before
-
-	before = (eq(num,1) '', eq(num,16) '',line(num - 1))	:(return)
-before.end
-	
-*	define('occupied(kind,num)')					:(occupied.end)
-
-*	Return a line corresponding to a board row or column with non-blank character in each position corresonding
-*	to a non-blank cell. Kind is 'h' for horiztonal (row) line, 'v' for a vertical (column) line. *num* is
-*	the number of the line, in range 1..15.
-
-*occupied
-*	occupied = dupl(' ',15)
-*	ident(kind,'v')							:s(occupied.v)
-*
-*	Here for horizontal line, corresponding to row *num*.
-*
-*occupied.end
-
-	define('place(num)avail,ai,si,nb,s')				:(place.end)
+*	define('place(num)avail,ai,si,nb,s')				:(place.end)
+	define('place(num)')				:(place.end)
 
 *	Find all the places where a move can be made in the line specified by *num*. *num* values from 1 .. 30
 
 
 place
-	line = g.lines(num)
+*	output = 'place num ' num
+	line = g.lines[num]
 	output = 'enter place num ' num ' line ' line '.'
 *	get adjacent lines
 	after = after(num)
@@ -53,12 +14,7 @@ place
 	s = line
 	place = table()
 *	Find number of open cells.
-
-place.1
-	s len(1) . c =						:f(place.2)
-	differ(c,' ')						:s(place.1)
-	nopen = nopen + 1					:(place.1)
-place.2
+	nopen = blanks(line)
 
 *	Fail if no open cells in line.
 
@@ -145,39 +101,3 @@ place.friend
 
 *	Test if corresponding cell in line after is occupied.
 
-	differ(substr(after,i,1),' ')			:s(place.has.friend)
-							:(place.friend)
-place.no.friend
-*	Here if no cell in proposed list has friend, so increase length
-							:(place.next.len)
-place.has.friend
-
-*	Add cell to candidate list
-	output = 'placing ' lb ':' rb
-	place[lb ':' rb] = 1
-	output = lb ':' rb
-							:(place.next.n)
-place.end
-
-*	Test place()
-
-	&anchor = &trim = 1
-*	&ftrace = 1000
-	&dump = 3
-
-	init(,1000)
-	output = 'start place test'
-	placeword(8,2,'dave')
-	placeword(8,8,'shields')
-	display()
-
-	g.lines = lines()
-	tbl = place(8)
-
-	ara = sort(tbl)
-loop	key = ara[i = i + 1,1]				:f(done)
-	output = key					:(loop)
-done
-	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
-	g.dict = g.permutations =
-end

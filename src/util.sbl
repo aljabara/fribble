@@ -107,8 +107,8 @@ bonus.lines
 	bonus.lines = array(30)
 bonus.lines.next
 	gt(i = i + 1,15)				:s(return)
-	bonus.lines[i] = bline(i)
-	bonus.lines[i + 15] = bline(i)			:(bonus.lines.next)
+	bonus.lines[i] = hbonus(i)
+	bonus.lines[i + 15] = vbonus(i)			:(bonus.lines.next)
 bonus.lines.end
 
 	define('cells(move)r,c,t,text,i,n')		:(cells.end)
@@ -235,7 +235,7 @@ hline.end
 *	2 for triple letter, 3 for double word, and 4 for triple word.
 
 init.bonus
-	g.bonus = array('15,15',0)
+	g.bonus = array('15,15',' ')
 	s = 	'4 0104 2 0107 2 0109 4 0112 1 0203 3 0206 3 0210 1 0213 '
 .		'1 0302 1 0305 1 0311 1 0314 4 0401 2 0404 3 0408 2 0412 3 0415 '
 .		'1 0503 1 0507 1 0509 1 0513 3 0602 2 0606 2 0610 3 0614 '
@@ -246,7 +246,7 @@ init.bonus
 
 init.bonus.1
 	s len(1) . b ' ' len(2) . row len(2) . col ' ' =	:f(return)
-	g.bonus[+row,+col] = +b					:(init.bonus.1)
+	g.bonus[+row,+col] = b					:(init.bonus.1)
 init.bonus.end
 
 	define('init.dict(filename,skip)file,n,w,s')		:(init.dict.end)
@@ -582,8 +582,9 @@ validatelines.end
 
 vbonus
 	vbonus = g.bonus[1,c] g.bonus[2,c] g.bonus[3,c] g.bonus[4,c] g.bonus[5,c] 
-.		g.bonus[6,c] g.bonus[r.7,c] g.bonus[8,c] g.bonus[9,c] g.bonus[10,c]
+.		g.bonus[6,c] g.bonus[7,c] g.bonus[8,c] g.bonus[9,c] g.bonus[10,c]
 .		g.bonus[11,c] g.bonus[12,c] g.bonus[13,c] g.bonus[14,c] g.bonus[15,c]
+*	output = 'vbonus ' c ' ' vbonus '.'
 							:(return)
 vbonus.end
 
@@ -610,45 +611,52 @@ words.1
 	words = words + 1				:(words.1)
 words.end
 
-
-*	define('place(num)avail,ai,si,nb,s')				:(place.end)
-	define('place(num)')				:(place.end)
+	define('place(num)avail,ai,si,nb,s')		:(place.end)
 
 *	Find all the places where a move can be made in the line specified by *num*. *num* values from 1 .. 30
 
-
 place
+
 *	output = 'place num ' num
+
 	line = g.lines[num]
-	output = 'enter place num ' num ' line ' line '.'
+
+*	output = 'enter place num ' num ' line ' line '.'
 *	get adjacent lines
+
 	after = after(num)
 	before = before(num)
 	s = line
 	place = table()
+
 *	Find number of open cells.
+
 	nopen = blanks(line)
 
 *	Fail if no open cells in line.
 
 	eq(nopen,0)						:s(freturn)
 
-	output = 'place num ' num ' nopen ' nopen ' ' before ':' after ':' 
+*	output = 'place num ' num ' nopen ' nopen ' ' before ':' after ':' 
 *	Allocate and fill in avail, an array giving the positions of the open cells.
 
 	avail = array(nopen)
 	s = line
 	si = ai = 0
-place.3
-	c = substr(line, si = si + 1, 1)			:f(place.4)
-	differ(c,' ')						:s(place.3)
-	avail[ai = ai + 1] = si					:(place.3)
-place.4
+
+place.avail
+
+	c = substr(line, si = si + 1, 1)			:f(place.avail.done)
+	differ(c,' ')						:s(place.avail)
+	avail[ai = ai + 1] = si					:(place.avail)
+
+place.avail.done
 	
 *	lb is the index of the leftmost (first) open square, or null if none = avail[1]
-*	rb is the index of the rightmost (last) open square, or null if none = avail[no]
 
-	rb = avail[nopen]
+*	Prepare for loop, since decrement nopen at start of search at a given empty cell.
+
+	nopen = nopen + 1
 	
 	ai = 0
 
@@ -656,78 +664,69 @@ place.next
 
 *	Here to find all the possible moves starting at the open cell at index ai in the line.
 *	Update left boundary.
-	gt(ai = ai + 1,len)					:s(place.finish)
-	lb = avail[ai]	
 
-*	Find maximum number of additional tiles that can be played starting at this position
+	lb = avail[ai = ai + 1]				:f(return)
+*	output = 'place.next ai ' ai '  lb ' lb
 
-	nopen = nopen - 1;* account for playing a tile at *lb*.
+	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
+	le(nopen)					:s(place.finish)
+
+*	Let max be the most tiles we can play on this line.
+*	We can't play more tiles than the number of blank cells in this line.
 
 	max = nopen
-*	But can play no more than the number of tiles at hand
+
+*	We can't play more tiles than we have.
+
 	max = gt(max,size(g.rack)) size(g.rack)
 
 *	Now try all the placements of length 1 ... max
 
-place.6
-*	starting at lb, try all plays of 1 ... np
-
-*	can play no more than nopen tiles
-	np = nopen
-*	but there are at most seven tiles
-	np = gb(nopen,7) 7
-*	and can only play tiles if there is room for them
-	np = lt(nopen,nr) nopen
-	
-	ai = 0
-place.next.lb
-	lb = avail[ai = ai + 1]				:s(return)
-	nopen = nopen - 1
-*	Initial right boundary is lb, will extend as probe further
-	rb = lb
 	n = 0
+
 place.next.n
-	gt(n = n + 1,max)				:s(place.next.n)
-*	Here to play len tiles starting at lb
-*	Check that at least one of these cells has a neighbot
+
+	gt(n = n + 1,max)				:s(place.next)
+* output = 'place.next.n n' n ' max ' max
+*	Here to try to play n tiles starting at lb
+
 	i = 0
-	neighbor = 
 
 *	We say a cell has a friend if an adjoining cell has been part of previous move.
 *	For a move to be valid, at least one character in the word must have a friend.
 
 place.friend	
-	gt(i = i + 1, len)				:s(place.no.friend)
+
+	output = 'place.friend i=' i '  n=' n
+	ge(i = i + 1, n)					:s(place.next.n)
+	output = 'testing friend i ' i ' n ' n
+	
+	this = lb + i - 1
+	output = 'this ' this
 
 *	Test if preceding cell (if any) is occupied
 
-	differ(substr(line,i - 1,1,' '))		:s(place.has.friend)
-
+	differ(substr(line,this - 1,1,' '))		:s(place.has.friend)
 
 *	Test if following cell (if any) is occupied
 
-	differ(substr(line,i + 1,1),' ')		:s(place.has.friend)
+	differ(substr(line,this + 1,1),' ')		:s(place.has.friend)
 
 *	Test if corresponding cell in line before is occupied.
 
-	differ(substr(before,i,1),' ')			:s(place.has.friend)
+	differ(substr(before,this,1),' ')		:s(place.has.friend)
 
 *	Test if corresponding cell in line after is occupied.
 
-	differ(substr(after,i,1),' ')			:s(place.has.friend)
-							:(place.friend)
-place.no.friend
-*	Here if no cell in proposed list has friend, so increase length
-							:(place.next.len)
+	differ(substr(after,this,1),' ')		:s(place.has.friend)f(place.friend)
+
 place.has.friend
 
 *	Add cell to candidate list
-	output = 'placing ' lb ':' rb
-	place[lb ':' rb] = 1
-	output = lb ':' rb
-							:(place.next.n)
-place.finish
-	output = 'place finish'				:(return)
+
+	nplaces = nplaces + 1
+	place[nplaces = nplaces + 1] = lb ':' n		:(place.next.n)
+place.finish						:(return)
 place.end
 
 MAIN
@@ -739,26 +738,18 @@ MAIN
 	&dump = 3
 
 	init(,1000)
-	output = 'start place test'
+
 	g.rack = 'catnose'
 	placeword(8,2,'dave')
 	placeword(8,8,'shields')
 	display()
 	g.lines = lines()
-	output = 'before 9' before(9) '.'
-	output = 'after 7 ' after(7) '.'
-	output = 'after 22 ' after(22) '.'
-	output = 'before 1 ' before(1) '.'
-	output = 'before 16 ' before(16) '.'
-	output = 'after 15 ' after(15) '.'
-	output = 'after 30 ' after(30) '.'
-	tbl = place(8)
-	output = 'tbl 1 ' tbl[1]
-	output = 'tbl 2 ' tbl[2]
-	ara = sort(tbl)
+	tabl = place(8)
+	ara = sort(tabl)
+
 loop	key = ara[i = i + 1,1]				:f(done)
-	output = key					:(loop)
+	output = 'ara i ' i '  key ' key '  value ' ara[i,2]		:(loop)
 done
-	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
+*	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
 	g.dict = g.permutations =
 end
