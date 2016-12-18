@@ -82,22 +82,21 @@ after
 	after = (eq(num,1) '', eq(num,15) '',g.board.lines[num + 1])	:(return)
 after.end
 
-	define('avail(line)blanks,c,i')				:(avail.end)
+	define('available(line)blanks,c,i')			:(available.end)
 
 *	Return array containing the indexes of the blank cells in line. Fails if no blanks.
-avail
-	c = substr(line, i = i + 1, 1)				:f(avail.1)
-	differ(c,' ')						:s(avail)
-	blanks = blanks + 1					:(avail)
-avail.1
+available
+	c = substr(line, i = i + 1, 1)				:f(available.1)
+	differ(c,' ')						:s(available)
+	blanks = blanks + 1					:(available)
+available.1
 	eq(blanks,0)						:s(freturn)
-	avail = array(blanks)
-	i = 0
-avail.2
+	available = array(blanks)
+	i = ai = 0
+available.2
 	c = substr(line, i = i + 1, 1)				:f(return)
-	differ(c,' ')						:s(avail.2)
-	avail[ai = ai + 1] = +i					:(avail.2)
-avail.end
+	available[ai = ai + 1] = +i				:(available.2)
+available.end
 
 	define('before(num)')				:(before.end)
 
@@ -487,6 +486,60 @@ permutations
 	permutations = replace(permutations,d,s)			:(return)
 permutations.end
 
+	define('place(num)line,alone,nopen,ai,first,max,n,last,nplaces')	:(place.end)
+
+*	Find all the places where a move can be made in the line specified by *num*. *num* values from 1 .. 30
+
+place
+	place = table()
+	line = g.board.lines[num]
+	alone = g.alone.lines[num]
+
+*	Allocate and fill in avail, an array giving the positions of the open cells.
+
+	avail = available(line)				:f(return);* fail if no empty cells
+	nopen = prototype(avail);* number of open cells
+
+*	Prepare for loop, since decrement nopen at start of search at a given empty cell.
+
+	nopen = nopen + 1
+	ai = 0
+
+place.next
+*	Here to find all the possible moves starting at the next open cell, first.
+
+	first = avail[ai = ai + 1]			:f(place.done)
+
+	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
+	le(nopen)					:s(return)
+
+*	Let max be the most tiles we can play on this line. We can't play more tiles than the number of 
+*	blank cells in this line, and we can't play more tiles than we have.
+
+	max = nopen
+	max = gt(max,size(g.rack)) size(g.rack)
+
+	n = 0
+
+place.next.n
+	gt(n = n + 1,max)				:s(place.next)
+
+	last = avail[ai + n - 1];			:f(place.fail)
+
+*	Skip this move if all its cells are alone.
+
+	substr(alone, first, last - first + 1) break(' '):f(place.next.n)
+
+*	Add cell to candidate list, as triple (first cell, last cell,number of cells to play)
+
+	place[nplaces = nplaces + 1] = first ':' last ':' n :(place.next.n)
+
+place.done
+	place.places = nplaces
+	place.table = place				:(return)
+
+place.end
+
 	define('placeword(r,c,w)ch')			:(placeword.end)
 
 
@@ -634,82 +687,24 @@ words.1
 	words = words + 1				:(words.1)
 words.end
 
-	define('place(num)line,alone,avail,nopen,ai,first,max,n,last,nplaces')	:(place.end)
+*	define('move(rack)')				:(move.end)
 
-*	Find all the places where a move can be made in the line specified by *num*. *num* values from 1 .. 30
+*	Determine best move given current position on the board and rack.
 
-place
-	place = table()
-	line = g.board.lines[num]
-	alone = g.alone.lines[num]
-
-*	Allocate and fill in avail, an array giving the positions of the open cells.
-
-	avail = avail(line)				:f(return);* fail if no empty cells
-	nopen = prototype(avail);* number of open cells
-
-*	Prepare for loop, since decrement nopen at start of search at a given empty cell.
-
-	nopen = nopen + 1
-
-place.next
-*	Here to find all the possible moves starting at the next open cell, first.
-
-	first = avail[ai = ai + 1]			:f(return)
-
-	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
-	le(nopen)					:s(return)
-
-*	Let max be the most tiles we can play on this line. We can't play more tiles than the number of 
-*	blank cells in this line, and we can't play more tiles than we have.
-
-	max = nopen
-	max = gt(max,size(g.rack)) size(g.rack)
-
-place.next.n
-	gt(n = n + 1,max)				:s(place.next)
-
-*	Skip this move if all its cells are along
-
-	substr(alone, first, last - first + 1) span('1') :s(place.next.n)
-
-*	Add cell to candidate list, as triple (first cell, last cell, number of empty cells to be played)
-
-	last = avail[first + n - 1];* index of this cell 
-
-
-	place[nplaces = nplaces + 1] = first ':' last ':' n :(place.next.n)
-place.end
-
-MAIN
-*	Test place()
-	output = 'test place'
-
-	&anchor = &trim = 1
-*	&ftrace = 1000
-*	&dump = 3
-
-	init(,1000)
-
-	g.rack = 'catnose'
-*	placeword(8,2,'dave')
-*	placeword(8,8,'shields')
-	placeword(1,3,'dave')
-	display()
-	g.board.lines = lines(g.board)
-	g.alone.lines = lines(g.alone)
-	output = 'alone '
-	display.alone()
-	output = 'g.alone.lines 1 ' g.alone.lines[1]
-*	tabl = place(8)
-	tabl = place(1)
-	ara = sort(tabl)
-	i = 0
-
-	output = 'place '
-loop	key = ara[i = i + 1,1]				:f(done)
-	output = lpad(i,4) char(9)  ara[i,2]		:(loop)
-done
-*	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
-	g.dict = g.permutations =
-end
+*move
+*	
+*	g.board.lines = lines(g.board)
+*	g.alone.lines = lines(g.alone)
+*
+*
+*move.line
+*
+**	line = g.board.lines[num = num + 1]		;* get next line
+*	places = sort(place(num))			;* find all the places that tiles can be put.
+*	p = 0
+*move.next
+*	move = places[p = p + 1,1]
+*	move break(':') . first ':' break(':') . last ':' rem . n
+*	perms = 
+*
+*move.end

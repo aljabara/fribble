@@ -1,0 +1,33 @@
+*	Test place()
+	output = 'test place'
+
+	&anchor = &trim = 1
+*	&ftrace = 1000
+*	&dump = 3
+
+	init(,1000)
+
+	g.rack = 'catnose'
+
+*	placeword(8,2,'dave')
+*	placeword(8,8,'shields')
+	placeword(1,3,'dave')
+	placeword(2,4,'time')
+	display()
+
+	g.board.lines = lines(g.board)
+	g.alone.lines = lines(g.alone)
+
+*	tabl = place(8)
+*	tabl = place(1)
+	tabl = place(2)
+	ara = convert(tabl,'array')
+	i = 0
+
+	output = 'place '
+loop	key = ara[i = i + 1,1]				:f(done)
+	output = lpad(i,4) char(9)  ara[i,2]		:(loop)
+done
+*	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
+	g.dict = g.permutations =
+end
