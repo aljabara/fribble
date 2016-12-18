@@ -95,7 +95,10 @@ available.1
 	i = ai = 0
 available.2
 	c = substr(line, i = i + 1, 1)				:f(return)
-	available[ai = ai + 1] = +i				:(available.2)
+	differ(c,' ')						:s(available.2)
+	available[ai = ai + 1] = +i				
+	output = 'ai ' lpad(ai,2) '  ' +i
+								:(available.2)
 available.end
 
 	define('before(num)')				:(before.end)
@@ -176,7 +179,7 @@ cells.end
 *	bonus(c) = new(c) =				:(clean.nextcell)
 *clean.end
 	
-	define('display()b,r,c,l,line')				:(display.end)
+	define('display()b,r,c,l,line')			:(display.end)
 
 *	Display the board on standard output
 
@@ -509,6 +512,7 @@ place.next
 *	Here to find all the possible moves starting at the next open cell, first.
 
 	first = avail[ai = ai + 1]			:f(place.done)
+*	output = ' first ' first '  ai ' ai '  avail[ai] ' avail[ai] 
 
 	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
 	le(nopen)					:s(return)
@@ -518,6 +522,7 @@ place.next
 
 	max = nopen
 	max = gt(max,size(g.rack)) size(g.rack)
+
 
 	n = 0
 
@@ -532,6 +537,7 @@ place.next.n
 
 *	Add cell to candidate list, as triple (first cell, last cell,number of cells to play)
 
+*	output = 'places ' nplaces ' first ' first '  last ' last '  n ' n
 	place[nplaces = nplaces + 1] = first ':' last ':' n :(place.next.n)
 
 place.done
@@ -687,24 +693,88 @@ words.1
 	words = words + 1				:(words.1)
 words.end
 
-*	define('move(rack)')				:(move.end)
+	define('move(rack)line,places,p,first,last,n,perm,ai,i)')		:(move.end)
 
 *	Determine best move given current position on the board and rack.
 
-*move
-*	
-*	g.board.lines = lines(g.board)
-*	g.alone.lines = lines(g.alone)
-*
-*
-*move.line
-*
-**	line = g.board.lines[num = num + 1]		;* get next line
-*	places = sort(place(num))			;* find all the places that tiles can be put.
-*	p = 0
-*move.next
-*	move = places[p = p + 1,1]
-*	move break(':') . first ':' break(':') . last ':' rem . n
-*	perms = 
-*
-*move.end
+move
+	
+	g.board.lines = lines(g.board)
+	g.alone.lines = lines(g.alone)
+	chars = array(15); 
+
+move.line
+
+	line = g.board.lines[num = num + 1]		:f(move.done)		
+
+	tline = line
+
+	i = 0
+move.chars
+	tline len(1) . ch =				:f(move.chars.done)
+	chars[i = i + 1] = substr(line,i,1)		:(move.chars)
+move.chars.done
+	
+	
+*	Find all the places that tiles can be put.
+
+	places = convert(place(num),'array')
+	p = 0
+move.next
+	move = places[p = p + 1,2]
+	move break(':') . first ':' break(':') . last ':' rem . n
+
+	perm = g.permutations(size(rack),n)		:f(move.error)
+	perm = replace(perm,'1234567',rack)
+*	Iterate over the permutations for this set of placements
+	
+move.perm.next
+	perm break(' ') . w ' ' =			:f(move.perm.done)
+*	Now substitute tiles from permutation into the empty cells for this move
+
+	i = first - 1; ci = 0
+move.insert
+*	chars[avail[i = i + 1] = substr(perm,ci = ci + 1,1)
+*	gt(i = i + 1,n)					:s(...)
+	
+
+
+move.perm
+move.end
+
+*	Test place()
+	output = 'test place'
+
+	&anchor = &trim = 1
+*	&ftrace = 1000
+*	&dump = 3
+
+	init(,1000)
+
+	g.rack = 'catnose'
+
+
+	placeword(1,3,'shields')
+
+	g.board.lines = lines(g.board)
+	g.alone.lines = lines(g.alone)
+	
+*	ls = g.board.lines[1]
+*	output = 'first board line <' ls '>'
+
+	display()
+	display.alone()
+
+	tabl = place(1)
+	
+	ara = convert(tabl,'array')
+	i = 0
+
+	output = 'place '
+loop	key = ara[i = i + 1,1]				:f(done)
+	output = lpad(i,4) char(9)  ara[i,2]		:(loop)
+done
+*	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
+	g.dict = g.permutations =
+end
+end
