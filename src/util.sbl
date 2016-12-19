@@ -425,8 +425,9 @@ init.value.end
 insert
 	g.chars = unpack(num)
 insert.1
-	gt(i = i + 1,size(str))				:(return)
-	g.chars[first + n -1] = substr(str,i,1)		:(insert.1)
+	gt(i = i + 1,size(str))				:(insert.2)
+	g.chars[g.avail[first + n -1]] = substr(str,i,1)		:(insert.1)
+insert.2						:(return)
 insert.end
 
 	define('isword(word,words)')			:(isword.end)
@@ -786,7 +787,7 @@ try
 	tryi = 0
 	move break(':') . lnum ':' break(':')  . first ':' break(':') . last ':' rem . n
 	perms = g.permutations(size(g.rack),n)
-*	perms = replace(perm,substr('1234567',1,n),substr(rpad(g.rack,7,'?')
+	perms = replace(perm,substr('1234567',1,n),substr(g.rack,1,n))
 	oldline = g.board.lines[num]
 	oldboard = copy(board)
 	g.chars = unpack(oldline);* save current line in unpacked form
@@ -836,6 +837,10 @@ try.valid
 *	it contains an upper case character. 
 *	Start by replacing the tiles played by their upper-case equivalents, to assist
 
+	g.board = oldboard
+	g.board.lines[num] = oldline;
+	g.chars = chars(oldline)
+	insert(num,first,ucase(substr(g.rack,1,n)))
 	srack = g.rack
 	srack = replace(srack,&lcase,&ucase)
 	
@@ -847,10 +852,6 @@ try.invalid
 	g.board = oldboard
 							:(try.next)
 	
-
-	
-	
-
 
 move.perm
 move.end
@@ -891,3 +892,33 @@ done
 	g.dict = g.permutations =
 end
 end
+
+	define('range(line)start,finish,i,c,p')				:(start.end)
+*	Look for first instance of upper case character in line, then return that
+*	indexs of the starting and ending characters in that word.
+
+range
+	line break(any(&ucase)) @ p			:f(freturn)
+	chars = unpack(line)
+*	loop back to find first blank or the range of the line
+range.1
+	c = chars[i = i - 1]				:f(range.2)
+	differ(c,' ')					:s(range.1)
+range.2
+	start = (gt(i) i, 1)
+*	loop forward to find first blank after the word of the index of the last chracter in the line
+	i = p
+range.3
+	c = chars[i = i + 1]				:f(range.4)
+	differ(c,' ')					:s(range.1)
+range.4
+	finish = (le(i,15) i, 15)
+	range = start ':' finish			:(return)
+range.end
+
+	i = kk
+	first = (gt(i) i, 1)
+	first = 
+
+	i = lt(i,1) 1;* if word starts at
+	k
