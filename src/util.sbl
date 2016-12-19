@@ -36,6 +36,11 @@
 
 *	g.avail, array(15), is the result of applying the procedure available() to g.line.
 
+*	g.scores, array(), used to accumulate scores of valid moves during a turn.
+*	g.nscores, number of current entries in g.score
+
+*	g.chars, array(15), array or characters corresponding to current line during move generation
+
 
 *	Utility functions
 
@@ -47,6 +52,9 @@ init
 	g.board = array('15,15',' ')
 
 	g.alone = array('15,15','1')
+
+	g.scores =  array(1000)
+	g.nscores = 0
 
 	init.bonus()
 
@@ -165,6 +173,27 @@ cells.v
 	cells[i,3] = substr(text,i,1)
 	r = r + 1					:(cells.v)
 cells.end
+	
+	define('pack(chars),c,i')			:(pack.end)
+
+*	Pack an array of characters into a line
+
+pack
+	pack = 	chars[1] chars[2] chars[3] chars[4] chars[5]
+.		chars[6] chars[7] chars[8] chars[9] chars[10]
+.		chars[11] chars[12] chars[13] chars[14] chars[15]
+pack.end
+
+	define('unpack(line),c,i')			:(unpack.end)
+
+*	Unpack the characters of line to array of characters.
+
+unpack
+	unpack = array(15)
+unpack.1
+	line len(1) . c =				:f(return)
+	unpack[i = i + 1] = substr(line,i,1)		:(unpack.1)
+unpack.end
 
 *	define('clean()row,col,c')			:(clean.end)
 *
@@ -389,6 +418,16 @@ init.value.update
 	g.value[c] = +v					:(init.value.update)
 init.value.end
 
+	define('insert(num, first,str)i')		:(insert.end)
+
+*	Insert the characters in *str* into the available empty cells in line num starting at index *first*. 
+
+insert
+	g.chars = unpack(num)
+insert.1
+	gt(i = i + 1,size(str))				:(return)
+	g.chars[first + n -1] = substr(str,i,1)		:(insert.1)
+insert.end
 
 	define('isword(word,words)')			:(isword.end)
 
@@ -494,11 +533,11 @@ permutations
 	permutations = replace(permutations,d,s)			:(return)
 permutations.end
 
-	define('places(num)line,alone,nopen,ai,first,max,n,last,nplacess')	:(places.end)
+	define('place(num)line,alone,nopen,ai,first,max,n,last,nplaces')	:(place.end)
 
-*	Find all the placess where a move can be made in the line specified by *num*. *num* values from 1 .. 30
+*	Find all the places where a move can be made in the line specified by *num*. *num* values from 1 .. 30
 
-places
+place
 	tbl = table()
 	line = g.board.lines[num]
 	g.line = line
@@ -514,10 +553,10 @@ places
 	nopen = nopen + 1
 	ai = 0
 
-places.next
+place.next
 *	Here to find all the possible moves starting at the next open cell, first.
 
-	first = g.avail[ai = ai + 1]			:f(places.done)
+	first = g.avail[ai = ai + 1]			:f(place.done)
 *	output = ' first ' first '  ai ' ai '  avail[ai] ' avail[ai] 
 
 	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
@@ -532,24 +571,24 @@ places.next
 
 	n = 0
 
-places.next.n
-	gt(n = n + 1,max)				:s(places.next)
+place.next.n
+	gt(n = n + 1,max)				:s(place.next)
 
-	last = g.avail[ai + n - 1];			:f(places.fail)
+	last = g.avail[ai + n - 1];			:f(place.fail)
 
-*	output = 'places num ' num '  n ' n '  first ' first '  last ' last
+*	output = 'place num ' num '  n ' n '  first ' first '  last ' last
 *	Skip this move if all its cells are alone.
 
-	substr(alone, first, last - first + 1) break(' '):f(places.next.n)
+	substr(alone, first, last - first + 1) break(' '):f(place.next.n)
 
 *	Add cell to candidate list, as triple (first cell, last cell,number of cells to play)
 
-*	output = 'places ' nplaces ' first ' first '  last ' last '  n ' n
-	tbl[nplaces = nplaces + 1] = num ':' first ':' last ':' n :(places.next.n)
+*	output = 'place ' nplace ' first ' first '  last ' last '  n ' n
+	tbl[nplace = nplace + 1] = num ':' first ':' last ':' n :(place.next.n)
 
-places.done
-	places = convert(tbl,'array')			:(return)
-places.end
+place.done
+	place = convert(tbl,'array')			:(return)
+place.end
 
 	define('placeword(r,c,w)ch')			:(placeword.end)
 
@@ -726,7 +765,8 @@ move.next
 *	Save the current line so can restore to it as needed
 	move.line = g.board.lines[num]
 	perm = g.permutations(size(rack),n)		:f(move.error)
-	perm = replace(perm,'1234567',rack)
+*	perm = replace(perm,'1234567',rack)
+	try(num,move,perm)
 	
 *	Iterate over the permutations for this set of placements
 	
@@ -736,55 +776,59 @@ move.perm.next
 
 	try(num,copy(chars),perm,first,avail)
 
-	define('try(num,permutations,move,avail)first,last,n,i,ci,chars,line,oldline')		:(try.end)
+	define('try(num,move)perm,tryi,first,last,n,i,ci,chars,line,oldline')		:(try.end)
 
-*	Given line *num*, with *permutations* a set of permutations to be tried on that line, as
-*	described by *place*
+*	Given line *num* and a list *permutations* of permutations to be tried on that line, as
+*	described by *place*, try all the moves than can be made, see which are valid, and add
+*	their scores to g.scores
 
 try
-*	move break(':' . first ':' break(':') . last ':' rem . n
+	tryi = 0
+	move break(':') . lnum ':' break(':')  . first ':' break(':') . last ':' rem . n
+	perms = g.permutations(size(g.rack),n)
+*	perms = replace(perm,substr('1234567',1,n),substr(rpad(g.rack,7,'?')
 	oldline = g.board.lines[num]
 	oldboard = copy(board)
+	g.chars = unpack(oldline);* save current line in unpacked form
 
-	line = oldline
 	i = first - 1; ci = 0
-*	Prepare for inserting our tiles by converting line to array of characters.
-try.chars
-	line len(1) . ch =				:f(try.chars.done)
-	chars[i = i + 1] = substr(line,i,1)		:(try.chars)
-try.chars.done
-	
-
-try.next
-	permutations break(' ') . perm ' ' =		:f(try.done)
-	i = 0
+try.nextperm
+	perms break(' ') . perm ' ' =		:f(try.done)
 
 *	Insert the digits from this permutation into the selected blank cells in the line. 
 *	The digit '1' selects the first tile, the digit '2' the second, and so on.
 
-	cchars = copy(chars)
+	g.chars = unpack(oldline)
+	i = 0
 
-try.insert
-
-	gt(i = i + 1,n)					:s(try.inserted)
-
-*	cchars[g.avail[first + i - 1] = substr(perm,i,1) :(try.insert)
-try.inserted
+	insert(num,first,perm)
 
 *	Here with choice substituted. Now rebuild the line and see if it is valid.
 
-	line =	chars[1] chars[2] chars[3] chars[4] cars[5]
-.			chars[6] chars[7] chars[8] chars[9] cars[10]
-.			chars[11] chars[12] chars[13] chars[14] cars[15]
+	g.board.lines[num] =	pack(g.chars)
 	validateline(line)				:f(try.invalid)
 
 *	The new line is valid. Now see if all other lines are still valid
-	g.board.lines[num] = line
-	validatelines()					:s(try.insert.succeed)
+	inum = 0
+try.line.next
+	gt(inum = inum + 1,30)				:s(try.valid)
+	eq(inum,num)					:s(try.line.next);* have already checked this line
+*	validateline(g.board.lines[inum]))		:f(try.invalid)s(try.line.next)
 
-*	Here if board not valid, so restore line and continue to next permutation
+*try.invalid
+
+*	Here if board not valid, so restore the cells that were played to empty status and go to next permutation
+
+	line = oldline					:(try.next)
+	i = 0
+try.invalid.restore
+	g.chars[first + i - 1] = ' '			
+	lt(i = i + 1, n)				:(try.invalid.restore)
+
+*	g.board[
+	g.board = oldboard
 	g.board.lines[num] = oldline			:(try.next)
-try.insert.succeed
+try.valid
 
 *	Here if valid move. Compute its score.
 *	In order to determine which words on the board would be formed by making this move,
@@ -792,6 +836,9 @@ try.insert.succeed
 *	it contains an upper case character. 
 *	Start by replacing the tiles played by their upper-case equivalents, to assist
 
+	srack = g.rack
+	srack = replace(srack,&lcase,&ucase)
+	
 *	scores[moves = moves + 1 = 
 	
 try.invalid
@@ -831,7 +878,7 @@ move.end
 	display()
 	display.alone()
 
-	tabl = places(1)
+	tabl = place(1)
 	
 	ara = convert(tabl,'array')
 	i = 0
