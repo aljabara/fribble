@@ -706,47 +706,41 @@ random_rack
 	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
 random_rack.end
 
-	define('score(lines)line,word,chars,ch,i,bonus,wscore,double,triple,val')	:(score.end)
+	define('score(lines)line,word,words,start,wi,ch,i,bonus,wscore,double,triple,val')	:(score.end)
 
 *	Compute the score of a move. All the letters of the move will be in upper case on the board
 *	so the score of the move is the sum of the scores of all the words with upper case letters in them, for
 *	both rows and columns
 
 score
-score.next
 	line = lines[i = i + 1] ' '			:f(score.done)
-	line break(&ucase)				:f(score.next)
-score.word
-	lines break(' ') . word ' ' =			:f(score.next)
-	word break(&ucase)				:f(score.next)
-*	Word is new, but we don't know where it is, go rebuild it to find starting position
-	chars = unpack(line)
-	first = 1;* assume it's the first word
-score.find
-	ch = chars[i = i + 1]				:f(score.find.done)
-	ch span(&ucase)					:s(score.find.done)
-*	If current character is blank, set first to the following index
-	first = ident(ch, ' ') differ(chars[i + 1],' ') 
-							:f(score.find)
+	line break(&ucase)				:f(score)
+	words = words(line)				:f(score)
+score.next
+	start = words[wi = wi + 1]			:f(score)
+	word = words[wi,2]
+	word break(&ucase)				:f(score)
 score.find.done
-	line = substr(line,first)
-	bonus = substr(g.bonus,first)
-	line break(' ') . word
+	line = substr(line,start)
+	bonus = substr(g.bonus,start) line break(' ') . word
 	wscore = 0; double = 0; triple = 0
 score.nextch
-	word len(1) . ch =				:f(score.nextch.done)
+	word len(1) . ch =				:f(score.word)
 	val = g.value[ch]
 	wscore = eq(ch,0) wscore + 1;* default is one point per letter
-	score = eq(ch,1) score + val + val;* double letter
-	score = eq(ch,2) score + g.value[ch] + g.value[ch] + g.value
+	wscore = eq(ch,1) wscore + val + val;* double letter
+	wscore = eq(ch,2) wscore + val + val + val
 	double = eq(ch,3) double + 1
-	triple = eq(ch.4) triple + 1
+	triple = eq(ch,4) triple + 1
 							:(score.nextch)
-score.nextch.done
-	score = eq(double) eq(triple) score + wscore;* if not double or triple word bonus
-	score = ne(double) score + 2 * wscore;* double word(s)
-	score = ne(triple) score + 3 * wscore;* double word(s)
-							:(return)
+score.word
+	wscore = eq(double) eq(triple) wscore + val;* if not double or triple word bonus
+*	May have two double or triple word bonus squares in a line
+	wscore = ne(double) 2 * wscore;* double word(s)
+	wscore = eq(double,2) 2 * wscore;* double word(s)
+	wscore = ne(triple) wscore * 3;* triple word
+	wscore = eq(triple,2) wscore * 3;* triple word
+	score = score + wscore				:(score.next)
 score.end
 
 	define('subarray(ara,start,len)i')		:(subarray.end)
@@ -791,18 +785,39 @@ vline
 							:(return)
 vline.end
 
-	define('words(s)i,w')				:(words.end)
+	define('wordcount(s)i,w')				:(wordcount.end)
 
-*	Return number of space-separated words in s
+*	Return number of words in s, fail if no words
+
+wordcount
+	s break(&ucase &lcase)					:f(freurn)
+	s = s  ' '
+	wordcount = 0
+wordcount.1
+	s break(' ') . w span(' ') =			:f(return)
+	wordcount = wordcount + 1				:(wordcount.1)
+wordcount.end
+
+	define('words(s)n,w,pos')					:(words.end)
+
+*	Return array of the words in s, fail if no words.
+*	The first entry for an array is the starting index,
+*	the second entry is the word itself.
 
 words
-	s = s  ' '
-	words = 0
+	n = wordcount(s)					:f(freturn)
+	s = s ' '
+	words = table(n)
 words.1
-	s break(' ') . w span(' ') =			:f(return)
-	words = words + 1				:(words.1)
+*	Replace the blank with ? 
+	s break(' ') . w ' ' = w '?'				:f(words.done)
+	start = size(w) + 1
+	words[size(w) + 1] = w					:(words.1)
+words.done
+	output = 'words.done ' s '.'
+	words = convert(words,'array')				:(return)
 words.end
-
+	
 	define('best(rack)i,chars,line,places,p,first,last,mov,n,perm,saveline,i)')		:(best.end)
 
 *	Determine best move given current position on the board and rack.
@@ -908,6 +923,7 @@ try.valid
 							:(try.next)
 try.end
 	
+MAIN
 *	Test place()
 	output = 'test place'
 
@@ -929,13 +945,19 @@ try.end
 *	output = 'first board line <' ls '>'
 
 	display()
-	display.alone()
+*	display.alone()
 
-	tabl = place(1)
-	
-	ara = convert(tabl,'array')
-	i = 0
+	wordcount = wordcount('dave shields')
+	words = words('dave shields')
+	n = words('dave shields')
+	output = wordcount 
+	output = words[1,1] ':' words[1,2]
+	output = words[2,1] ':' words[2,2]
 
+
+	g.dict = g.permutations = g.scores = g.bonus = g.alone = g.board = g.value = 
+end
+END
 	output = 'place '
 loop	key = ara[i = i + 1,1]				:f(loop.done)
 	mov = ara[i,2]
@@ -945,9 +967,11 @@ loop.done
 	output = 'loop.done ' i
 done
 *	output = 'permwords ' permwords '  checkwords ' checkwords '  oscoren ' oscoren
-	g.dict = g.permutations = g.scores = g.bonus = g.alone = g.board = g.value = 
 end
-end
+	tabl = place(1)
+	
+	ara = convert(tabl,'array')
+	i = 0
 
 	define('range(line)start,finish,i,c,p')				:(start.end)
 *	Look for first instance of upper case character in line, then return that
