@@ -39,8 +39,15 @@
 *	g.scores, array(), used to accumulate scores of valid moves during a turn.
 *	g.nscores, number of current entries in g.score
 
-*	g.chars, array(15), array or characters corresponding to current line during move generation
+*	A move consists of sequence of cells in a row or column.
+*	*id* gives the line number, in the range 1..30. *count* is the number of free cells covered by this move.
+*	*free* is an array of dimension *count* giving the empty cells to be filled by this move.
+	data('move(id,count,free,text)')
 
+*	g.bonus,array(15,15) gives the bonus values for the squares on the board, using 1 for double letter,
+*	2 for triple letter, 3 for double word, and 4 for triple word.
+
+*	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
 
 *	Utility functions
 
@@ -174,26 +181,37 @@ cells.v
 	r = r + 1					:(cells.v)
 cells.end
 	
-	define('pack(chars),c,i')			:(pack.end)
+	define('checkline(line)word')			:(checkline.end)
 
-*	Pack an array of characters into a line
+*	Succeeds if all the words in the line are in the dictionary, fails otherwise.
 
-pack
-	pack = 	chars[1] chars[2] chars[3] chars[4] chars[5]
-.		chars[6] chars[7] chars[8] chars[9] chars[10]
-.		chars[11] chars[12] chars[13] chars[14] chars[15]
-pack.end
+checkline
+	line = line ' '
+checkline.1
+	line span(' ') =
+	ident(line)					:s(return)
+	line break(' ') . word span(' ') =
+	valid( word)					:f(freturn)s(checkline.1)
+checkline.end
 
-	define('unpack(line),c,i')			:(unpack.end)
+	define('checklines()i,lines')			:(checklines.end)
 
-*	Unpack the characters of line to array of characters.
+*	Succeeds if every line in the board has only valid words.
 
-unpack
-	unpack = array(15)
-unpack.1
-	line len(1) . c =				:f(return)
-	unpack[i = i + 1] = substr(line,i,1)		:(unpack.1)
-unpack.end
+checklines
+	lines = lines(g.board)
+checklines.next
+	gt(i = i + 1,30)				:s(return)
+	checkline(lines[i])				:f(freturn)s(checklines.next)
+checklines.end
+
+	define('checkword(w)')				:(checkword.end)
+
+*	Succeeds if w is in the global dictionary, fails otherwise.
+
+checkword
+	differ(g.dict[w])				:s(return)f(freturn)
+checkword.end
 
 *	define('clean()row,col,c')			:(clean.end)
 *
@@ -266,8 +284,6 @@ display.alone.finish
 	output =					:(return)
 display.alone.end
 
-
-
 	define('first(line)')				:(first.end)
 
 *	Return index of first blank in line, or fail if none.
@@ -310,8 +326,10 @@ init.bonus
 .		'4 1403 3 1406 3 1410 1 1413 4 1504 2 1507 2 1509 4 1512 '
 
 init.bonus.1
-	s len(1) . b ' ' len(2) . row len(2) . col ' ' =	:f(return)
+	s len(1) . b ' ' len(2) . row len(2) . col ' ' =	:f(init.bonus.next)
 	g.bonus[+row,+col] = b					:(init.bonus.1)
+init.bonus.next
+	g.bonus.lines = lines(g.bonus)				:(return)
 init.bonus.end
 
 	define('init.dict(filename,skip)file,n,w,s')		:(init.dict.end)
@@ -418,16 +436,17 @@ init.value.update
 	g.value[c] = +v					:(init.value.update)
 init.value.end
 
-	define('insert(num, first,str)i')		:(insert.end)
+	define('insert(mov,str)i,count,free')		:(insert.end)
 
-*	Insert the characters in *str* into the available empty cells in line num starting at index *first*. 
+*	Insert the characters in *str* into the available empty cells of *chars* in the move *mov*.
 
 insert
-	g.chars = unpack(num)
+	insert = unpack(id(mov))
+	free = free(mov)
+	count = count(mov)
 insert.1
-	gt(i = i + 1,size(str))				:(insert.2)
-	g.chars[g.avail[first + n -1]] = substr(str,i,1)		:(insert.1)
-insert.2						:(return)
+	gt(i = i + 1,count)				:(return)
+	insert[free[i]] = substr(str,i,1)		:(insert.1)
 insert.end
 
 	define('isword(word,words)')			:(isword.end)
@@ -461,6 +480,37 @@ less.1
 	less = str					:(return)
 less.end
 
+	define('grid(lines,start)i,r,c,line')			:(grid.end)
+
+*	Construct a grid from a sequence of lines beginning at index *start* (1..15 for rows, 16..30 for columns).
+	gt(start,15)
+	gt(start,15)
+
+grid
+	grid = array('15,15',' ')
+	gt(start,15)					:(grid.cols)
+
+*	Here to build grid from set of horizontal rows.
+
+	r = 0; i = 0
+
+grid.1
+	gt(r = r + 1,15)				:s(return)
+	line = lines[r]					:f(grid.3)
+	i = 0
+grid.2
+	grid[r,i = i + 1] = substr(line,i,1)		:(grid.2)
+grid.3
+
+*	Here to build the columns from the updated rows.
+
+	c = 0; i = 0
+grid.4  
+	gt(c = c + 1,15)				:s(return)
+	i = 0
+grid.5
+	grid[i = i + 1,c] = substr(line,i,1)		:(grid.5)
+grid.end
 	define('lines(grid)i')				:(lines.end)
 
 *	Express the grid as a sequence of lines, with the first 15 consisting of the rows
@@ -494,8 +544,8 @@ open.2
 *	get next word, check that valid, then see if new high score
 	perms break(' ') . w ' ' =			:f(open.1)
 	permwords = permwords + 1
-	validword(w)					:f(open.2)
-	validwords = validwords + 1
+	checkword(w)					:f(open.2)
+	checkwords = checkwords + 1
 	le(oscore(w),best.score)			:s(open.2)
 	best.word = w
 	best.score = oscore(w)
@@ -534,12 +584,22 @@ permutations
 	permutations = replace(permutations,d,s)			:(return)
 permutations.end
 
+	define('pack(chars),c,i')			:(pack.end)
+
+*	Pack an array of characters into a line
+
+pack
+	pack = 	chars[1] chars[2] chars[3] chars[4] chars[5]
+.		chars[6] chars[7] chars[8] chars[9] chars[10]
+.		chars[11] chars[12] chars[13] chars[14] chars[15]
+pack.end
+
 	define('place(num)line,alone,nopen,ai,first,max,n,last,nplaces')	:(place.end)
 
 *	Find all the places where a move can be made in the line specified by *num*. *num* values from 1 .. 30
 
 place
-	tbl = table()
+	place = table()
 	line = g.board.lines[num]
 	g.line = line
 	alone = g.alone.lines[num]
@@ -558,7 +618,6 @@ place.next
 *	Here to find all the possible moves starting at the next open cell, first.
 
 	first = g.avail[ai = ai + 1]			:f(place.done)
-*	output = ' first ' first '  ai ' ai '  avail[ai] ' avail[ai] 
 
 	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
 	le(nopen)					:s(return)
@@ -569,7 +628,6 @@ place.next
 	max = nopen
 	max = gt(max,size(g.rack)) size(g.rack)
 
-
 	n = 0
 
 place.next.n
@@ -577,18 +635,16 @@ place.next.n
 
 	last = g.avail[ai + n - 1];			:f(place.fail)
 
-*	output = 'place num ' num '  n ' n '  first ' first '  last ' last
 *	Skip this move if all its cells are alone.
 
 	substr(alone, first, last - first + 1) break(' '):f(place.next.n)
 
 *	Add cell to candidate list, as triple (first cell, last cell,number of cells to play)
 
-*	output = 'place ' nplace ' first ' first '  last ' last '  n ' n
-	tbl[nplace = nplace + 1] = num ':' first ':' last ':' n :(place.next.n)
+	place[nplace = nplace + 1] = move(num,n,subarray(g.avail,ai,n))	:(place.next.n)
 
 place.done
-	place = convert(tbl,'array')			:(return)
+							:(return)
 place.end
 
 	define('placeword(r,c,w)ch')			:(placeword.end)
@@ -650,31 +706,60 @@ random_rack
 	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
 random_rack.end
 
-	define('score(cells)r,i,c,t,v,b,dw,tw')		:(score.end)
+	define('score(lines)line,word,chars,ch,i,bonus,wscore,double,triple,val')	:(score.end)
 
-*	score a sequence of cells
+*	Compute the score of a move. All the letters of the move will be in upper case on the board
+*	so the score of the move is the sum of the scores of all the words with upper case letters in them, for
+*	both rows and columns
 
 score
-	r = cells[i = i + 1,1]				:f(score.done)
-	c = cells[i,2]
-	t = cells[i,3]
-	v = g.value[cells[i,3]]
-	b = g.bonus[r,c]
-	ident(b)					:s(score)
-	score = eq(b,1) score + 2 * v
-	score = eq(b,2) score * 3 * v
-	dw = eq(b,3) dw + 1
-	tw = eq(b,4) tw + 1
-							:(score)
-score.done
-
-*	apply double/triple word bonuses
-	score = eq(dw,1) score * 2
-	score = eq(dw,2) score * 4
-	score = eq(tw,1) score * 3
-	score = eq(tw,2) score * 9
+score.next
+	line = lines[i = i + 1] ' '			:f(score.done)
+	line break(&ucase)				:f(score.next)
+score.word
+	lines break(' ') . word ' ' =			:f(score.next)
+	word break(&ucase)				:f(score.next)
+*	Word is new, but we don't know where it is, go rebuild it to find starting position
+	chars = unpack(line)
+	first = 1;* assume it's the first word
+score.find
+	ch = chars[i = i + 1]				:f(score.find.done)
+	ch span(&ucase)					:s(score.find.done)
+*	If current character is blank, set first to the following index
+	first = ident(ch, ' ') differ(chars[i + 1],' ') 
+							:f(score.find)
+score.find.done
+	line = substr(line,first)
+	bonus = substr(g.bonus,first)
+	line break(' ') . word
+	wscore = 0; double = 0; triple = 0
+score.nextch
+	word len(1) . ch =				:f(score.nextch.done)
+	val = g.value[ch]
+	wscore = eq(ch,0) wscore + 1;* default is one point per letter
+	score = eq(ch,1) score + val + val;* double letter
+	score = eq(ch,2) score + g.value[ch] + g.value[ch] + g.value
+	double = eq(ch,3) double + 1
+	triple = eq(ch.4) triple + 1
+							:(score.nextch)
+score.nextch.done
+	score = eq(double) eq(triple) score + wscore;* if not double or triple word bonus
+	score = ne(double) score + 2 * wscore;* double word(s)
+	score = ne(triple) score + 3 * wscore;* double word(s)
 							:(return)
 score.end
+
+	define('subarray(ara,start,len)i')		:(subarray.end)
+
+*	Like substr, but returns the sub-array of *ara* starting at element *start* and
+*	consisting of *len* elements
+
+subarray
+	subarray = array(len)
+subarray.1
+	gt(i = i + 1,len)				:s(return)
+	subarray[i] = ara[start + i - 1]		:(subarray.1)		
+subarray.end
 
 	define('ucase(s)')				:(ucase.end)
 
@@ -684,36 +769,16 @@ ucase
 	ucase = replace(s,&lcase,&ucase)		:(return)
 ucase.end
 	
-	define('validword(w)')				:(validword.end)
+	define('unpack(line),c,i')			:(unpack.end)
 
-*	Succeeds if w is in the global dictionary, fails otherwise.
+*	Unpack the characters of line to array of characters.
 
-validword
-	differ(g.dict[w])				:s(return)f(freturn)
-validword.end
-	define('validateline(line)word')			:(validateline.end)
-
-*	Succeeds if all the words in the line are in the dictionary, fails otherwise.
-
-validateline
-	line = line ' '
-validateline.1
-	line span(' ') =
-	ident(line)					:s(return)
-	line break(' ') . word span(' ') =
-	valid( word)					:f(freturn)s(validateline.1)
-validateline.end
-
-	define('validatelines()i,lines')			:(validatelines.end)
-
-*	Succeeds if every line in the board has only valid words.
-
-validatelines
-	lines = lines(g.board)
-validatelines.next
-	gt(i = i + 1,30)				:s(return)
-	validateline(lines[i])				:f(freturn)s(validatelines.next)
-validatelines.end
+unpack
+	unpack = array(15)
+unpack.1
+	line len(1) . c =				:f(return)
+	unpack[i = i + 1] = substr(line,i,1)		:(unpack.1)
+unpack.end
 
 	define('vline(grid,c)')				:(vline.end)
 
@@ -738,19 +803,19 @@ words.1
 	words = words + 1				:(words.1)
 words.end
 
-	define('move(rack)line,places,p,first,last,n,perm,ai,i)')		:(move.end)
+	define('best(rack)i,chars,line,places,p,first,last,mov,n,perm,saveline,i)')		:(best.end)
 
 *	Determine best move given current position on the board and rack.
 
-move
+best
 	
 	g.board.lines = lines(g.board)
 	g.alone.lines = lines(g.alone)
 	chars = array(15); 
 
-move.line
+best.line
 
-	line = g.board.lines[num = num + 1]		:f(move.done)		
+	line = g.board.lines[num = num + 1]		:f(best.done)		
 
 
 	i = 0
@@ -760,102 +825,89 @@ move.line
 
 	places = convert(place(num),'array')
 	p = 0
-move.next
-	move = places[p = p + 1,2]
-	move break(':') . first ':' break(':') . last ':' rem . n
+best.next
+	mov = places[p = p + 1,2]
+	output = 'id ' lpad(id(mov),4) char(9) lpad(count(id),4) char(9) free(mov)[1] ':' free(mov[count])
 *	Save the current line so can restore to it as needed
 	move.line = g.board.lines[num]
 	perm = g.permutations(size(rack),n)		:f(move.error)
 *	perm = replace(perm,'1234567',rack)
-	try(num,move,perm)
+	try(mov,perm)
 	
 *	Iterate over the permutations for this set of placements
 	
-move.perm.next
-	perm break(' ') . p ' ' =			:f(move.perm.done)
+best.perm.next
+	perm break(' ') . p ' ' =			:f(best.perm.done)
 *	Now substitute tiles from permutation into the empty cells for this move
+best.perm
+best.end
 
-	try(num,copy(chars),perm,first,avail)
+*	try(mov,perm)
 
-	define('try(num,move)perm,tryi,first,last,n,i,ci,chars,line,oldline')		:(try.end)
+	define('try(mov,perm)n,num,first,free,perms,oldlines,i,ci,perm,,newline,board,')		:(try.end)
 
-*	Given line *num* and a list *permutations* of permutations to be tried on that line, as
-*	described by *place*, try all the moves than can be made, see which are valid, and add
-*	their scores to g.scores
+*	Given a move *mov* and a list *permutations* of permutations to be tried for the move,
+*	try all the moves than can be made, see which are valid, and add their scores to g.scores
 
 try
-	tryi = 0
-	move break(':') . lnum ':' break(':')  . first ':' break(':') . last ':' rem . n
+	n  = count(mov)
+	num = id(mov)
+	first = free(mov)[1]
 	perms = g.permutations(size(g.rack),n)
 	perms = replace(perm,substr('1234567',1,n),substr(g.rack,1,n))
-	oldline = g.board.lines[num]
-	oldboard = copy(board)
-	g.chars = unpack(oldline);* save current line in unpacked form
+	oldlines = copy(g.board.lines[num])
 
 	i = first - 1; ci = 0
-try.nextperm
+try.next
 	perms break(' ') . perm ' ' =		:f(try.done)
 
 *	Insert the digits from this permutation into the selected blank cells in the line. 
 *	The digit '1' selects the first tile, the digit '2' the second, and so on.
 
-	g.chars = unpack(oldline)
-	i = 0
-
-	insert(num,first,perm)
+	newline = pack(insert(mov,perm))
 
 *	Here with choice substituted. Now rebuild the line and see if it is valid.
 
-	g.board.lines[num] =	pack(g.chars)
-	validateline(line)				:f(try.invalid)
+	checkline(newline)					:f(try.next)
+
+*	NOTE We don't have to check all the lines, just the ones that are affected. For example if tiles are 
+*	placed in rows 3, in positions 5-8, then only need check row 3 and columns 5-8.
+
+	newlines = copy(oldlines)
+	newlines[num] = newline
+	board = grid(newlines,num)
+*	For now, check the whole grid, after updating to reflect the new row (or column).
+	newlines = lines(board)
 
 *	The new line is valid. Now see if all other lines are still valid
-	inum = 0
-try.line.next
-	gt(inum = inum + 1,30)				:s(try.valid)
-	eq(inum,num)					:s(try.line.next);* have already checked this line
-*	validateline(g.board.lines[inum]))		:f(try.invalid)s(try.line.next)
-
-*try.invalid
-
-*	Here if board not valid, so restore the cells that were played to empty status and go to next permutation
-
-	line = oldline					:(try.next)
 	i = 0
-try.invalid.restore
-	g.chars[first + i - 1] = ' '			
-	lt(i = i + 1, n)				:(try.invalid.restore)
+try.line.next
+	gt(i = i + 1,30)				:s(try.valid)
+	eq(i,num)					:s(try.line.next);* have already checked this line
+	checkline(newlines[i])				:f(try.invalid)s(try.line.next)
 
-*	g.board[
-	g.board = oldboard
-	g.board.lines[num] = oldline			:(try.next)
+try.invalid
+
+*	Here if new line not valid, ...
+							:(try.next)
+
 try.valid
 
 *	Here if valid move. Compute its score.
 *	In order to determine which words on the board would be formed by making this move,
-*	rebuilt the board but with the tiles in uppercase. This way, a word is new if and only if
+*	rebuild the board but with the new tiles in uppercase. This way, a word is new if and only if
 *	it contains an upper case character. 
-*	Start by replacing the tiles played by their upper-case equivalents, to assist
 
-	g.board = oldboard
 	g.board.lines[num] = oldline;
-	g.chars = chars(oldline)
-	insert(num,first,ucase(substr(g.rack,1,n)))
-	srack = g.rack
-	srack = replace(srack,&lcase,&ucase)
-	
-*	scores[moves = moves + 1 = 
-	
-try.invalid
-*	Here if move not valid. Restore the board and return
-	g.board.lines[num] = oldline
-	g.board = oldboard
+	newline = pack(insert(mov,ucase(substr(g.rack,1,n))))
+	newlines[num] = newline
+	board = grid(newlines,num)
+	newlines = lines(board)
+*	Eventually, in next part, will just visit lines that may have changed, and add up their scores.
+	g.scores[mov] = score(newlines)
 							:(try.next)
+try.end
 	
-
-move.perm
-move.end
-
 *	Test place()
 	output = 'test place'
 
@@ -885,11 +937,15 @@ move.end
 	i = 0
 
 	output = 'place '
-loop	key = ara[i = i + 1,1]				:f(done)
-	output = lpad(i,4) char(9)  ara[i,2]		:(loop)
+loop	key = ara[i = i + 1,1]				:f(loop.done)
+	mov = ara[i,2]
+	output = lpad(i,4) char(9)  ' id ' id(mov) char(9) '  count ' count(mov) char(9) ': ' free(mov)[1] ' :  ' free(mov)[count(mov)]
+							:(loop)
+loop.done
+	output = 'loop.done ' i
 done
-*	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
-	g.dict = g.permutations =
+*	output = 'permwords ' permwords '  checkwords ' checkwords '  oscoren ' oscoren
+	g.dict = g.permutations = g.scores = g.bonus = g.alone = g.board = g.value = 
 end
 end
 
