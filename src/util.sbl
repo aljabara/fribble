@@ -44,8 +44,12 @@
 *	*free* is an array of dimension *count* giving the empty cells to be filled by this move.
 	data('move(id,count,free,text)')
 
-*	g.bonus,array(15,15) gives the bonus values for the squares on the board, using 1 for double letter,
-*	2 for triple letter, 3 for double word, and 4 for triple word.
+*	g.bonus,array(15,15) gives the bonus values for the squares on the board, using 
+*		1 for the value of the letter itself
+*		2 for double letter,
+*		3 for triple letter, 
+*		4 for double word, 
+*		5 for triple word.
 
 *	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
 
@@ -245,12 +249,12 @@ display.r
 display.c
 	gt(c = c + 1,15)				:s(display.l)
 	l = g.board[r,c]
-	line = differ(l,' ') line ' ' ucase(l) 		:s(display.c)
+	line = differ(l,' ') line ' ' l 		:s(display.c)
 * Here for blank cell, display bonus if applicable
 	b = g.bonus[r,c]
 	eq(b)						:s(display.b)
 * 	Here to display bonus
-	l = (eq(b,1) 'dl', eq(b,2) 'tl', eq(b,3) 'dw', eq(b,4) 'tw')
+	l = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
 	line = line l 					:(display.c)
 display.b
 *	Here to display empty cell.
@@ -283,6 +287,37 @@ display.alone.l
 display.alone.finish
 	output =					:(return)
 display.alone.end
+
+	define('display.bonus()b,r,c,l,line')			:(display.bonus.end)
+
+*	Display the board on standard output
+
+display.bonus
+	output = 
+	output = '                      1 1 1 1 1 1'
+	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
+display.bonus.r
+	gt(r = r + 1,15) 				:s(display.bonus.finish)
+	line = lpad(r,2) '|'
+	c = 0
+display.bonus.c
+	gt(c = c + 1,15)				:s(display.bonus.l)
+	l = g.bonus[r,c]
+	line = differ(l,' ') line ' ' l 		:s(display.bonus.c)
+* Here for blank cell, display.bonus bonus if applicable
+	b = g.bonus[r,c]
+	eq(b)						:s(display.b)
+* 	Here to display bonus
+	l = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
+	line = line l 					:(display.bonus.c)
+display.bonus.b
+*	Here to display.bonus empty cell.
+	line = line ' -'				:(display.bonus.c)
+display.bonus.l
+	output = line '|'				:(display.bonus.r)
+display.bonus.finish
+	output =					:(return)
+display.bonus.end
 
 	define('first(line)')				:(first.end)
 
@@ -317,17 +352,18 @@ hline.end
 
 init.bonus
 	g.bonus = array('15,15',' ')
-	s = 	'4 0104 2 0107 2 0109 4 0112 1 0203 3 0206 3 0210 1 0213 '
-.		'1 0302 1 0305 1 0311 1 0314 4 0401 2 0404 3 0408 2 0412 3 0415 '
-.		'1 0503 1 0507 1 0509 1 0513 3 0602 2 0606 2 0610 3 0614 '
-.		'2 0701 1 0705 1 0711 3 0715 3 0804 3 0812 2 0901 1 0905 1 0911 2 0915 '
-.		'3 1002 2 1006 2 1010 3 1014 1 1103 1 1107 1 1109 1 1113 '
-.		'4 1201 2 1204 3 1208 2 1212 4 1215 1 1302 1 1305 1 1311 1 1314 '
-.		'4 1403 3 1406 3 1410 1 1413 4 1504 2 1507 2 1509 4 1512 '
+	s = 	' 5 0104 3 0107 3 0109 5 0112 2 0203 4 0206 4 0210 2 0213 '
+.		' 2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 4 0415 '
+.		' 2 0503 2 0507 2 0509 2 0513 4 0602 3 0606 3 0610 4 0614 '
+.		' 3 0701 2 0705 2 0711 4 0715 4 0804 4 0812 3 0901 2 0905 2 0911 3 0915 '
+.		' 4 1002 3 1006 3 1010 4 1014 2 1103 2 1107 2 1109 2 1113 '
+.		' 5 1201 3 1204 4 1208 3 1212 5 1215 2 1302 2 1305 2 1311 2 1314 '
+.		' 5 1403 4 1406 4 1410 2 1413 5 1504 3 1507 3 1509 5 1512 '
 
 init.bonus.1
 	s len(1) . b ' ' len(2) . row len(2) . col ' ' =	:f(init.bonus.next)
-	g.bonus[+row,+col] = b					:(init.bonus.1)
+	output = 'init.bonus  row ' row '  col ' col '  b ' b
+	g.bonus[+row,+col] = +b					:(init.bonus.1)
 init.bonus.next
 	g.bonus.lines = lines(g.bonus)				:(return)
 init.bonus.end
@@ -337,7 +373,7 @@ init.bonus.end
 *	Initialize the global dictionary g.dict.
 *	g.wwf is list of words not in enable1.txt word list but known to be accepted as valid by wwf.
 
-	g.wwf = 'qi brr zen zep '
+	g.wwf = 'qi brr zen zep ' 'dave shields '
 
 init.dict
 
@@ -521,7 +557,7 @@ lines
 lines.next
 	gt(i = i + 1,15)				:s(return)
 	lines[i] = hline(grid,i)
-	lines[i + 15] = vline(grid,i)		:(lines.next)
+	lines[i + 15] = vline(grid,i)			:(lines.next)
 lines.end
 
 	define('open(tiles)best.score,best.word,n,w,start')	:(open.end)
@@ -647,6 +683,7 @@ place.done
 							:(return)
 place.end
 
+ output = 'at place.end'
 	define('placeword(r,c,w)ch')			:(placeword.end)
 
 
@@ -655,7 +692,7 @@ placeword
 	c = c - 1
 placeword.1
 	w len(1) . ch =					:f(return)
-	g.board[r, c = c + 1] = ch			
+	g.board[r, c = c + 1] = ch
 *	Mark self and adjoining squares as no longer alone
 	g.alone[r,c] = ' '    ;* self
 	g.alone[r - 1,c] = ' ';* cell to the north
@@ -671,7 +708,6 @@ prefix
 *	Prefix takes a list of space-separated words str and prefixes each
 *	with the string pre.
 
-
 	str = str ' ';* so each word followed by space
 prefix.1
 	str break(' ') . word span(' ')  =		:f(return)
@@ -679,6 +715,7 @@ prefix.1
 	prefix = add(prefix, pre word)			:(prefix.1)
 prefix.end
 
+ output = 'at prefix.end'
 	define('random(n)')
 
 *	Return integer uniformly distributed in 1,2,...,n. If n=0 returns real uniformly distributed
@@ -712,34 +749,67 @@ random_rack.end
 *	so the score of the move is the sum of the scores of all the words with upper case letters in them, for
 *	both rows and columns
 
+
 score
-	line = lines[i = i + 1] ' '			:f(score.done)
+	line = lines[i = i + 1] ' '			:f(return)
+	output = 'score ' line
 	line break(&ucase)				:f(score)
-	words = words(line)				:f(score)
+	start = 1
+	output = 'score ' i ' ' line
+	words = words(line)
+	output  = 'words proto ' prototype(words)
 score.next
-	start = words[wi = wi + 1]			:f(score)
+	start = words[wi = wi + 1,1]			:f(score)
 	word = words[wi,2]
+	output = 'score.next ' word '.'
+
+*	Single letters don't contribute to score since the come from intersecting line.
+
+	eq(size(word),1)				:s(score.next)
+	output = 'word 1 ' word
 	word break(&ucase)				:f(score)
 score.find.done
+	output = 'line.done  start ' start ' line ' line '.'
 	line = substr(line,start)
-	bonus = substr(g.bonus,start) line break(' ') . word
+	bonus = substr(g.bonus.lines[i],start) 
+	output = 'score line  ' line
+	output = 'bonus line  ' bonus
 	wscore = 0; double = 0; triple = 0
+*SCOR
 score.nextch
 	word len(1) . ch =				:f(score.word)
-	val = g.value[ch]
-	wscore = eq(ch,0) wscore + 1;* default is one point per letter
-	wscore = eq(ch,1) wscore + val + val;* double letter
-	wscore = eq(ch,2) wscore + val + val + val
-	double = eq(ch,3) double + 1
-	triple = eq(ch,4) triple + 1
+	bonus len(1) . b
+	val = +g.value[ch]
+	output = 'WSCORE- '  ch '  ' wscore
+	output = 'score ch ' ch '   val ' val '  double ' double '  triple ' triple '  bon:' bon ':'
+	wscore = ident(bon,' ') wscore + 1		:s(score.nextch);* default is one point per letter
+	bon = +bon
+	output = 'WSCORE0 ' wscore
+	output = ' score ' wscore
+	wscore = eq(bon,1) wscore + val + val		:s(score.nextch);* double letter	
+	output = 'WSCORE1 ' wscore
+	output = '  score ' wscore
+	wscore = eq(bon,2) wscore + val + val + val	:s(score.nextch);* triple letter
+	output = 'WSCORE2 ' wscore
+	output = '   score ' wscore
+	output = 'predouble ' wscore 
+	double = eq(bon,3) double + 1			:s(score.nextch);* double word
+	output = 'WSCORE3 ' wscore
+	output = '    score ' wscore
+	triple = eq(bon,4) triple + 1			:s(score.nextch);* triple word
+	output = 'WSCORE4 ' wscore
+	output = '     score ' wscore
 							:(score.nextch)
 score.word
+	output = 'double ' double '  triple ' triple
+	output = 'score.word start ' wscore
 	wscore = eq(double) eq(triple) wscore + val;* if not double or triple word bonus
 *	May have two double or triple word bonus squares in a line
 	wscore = ne(double) 2 * wscore;* double word(s)
 	wscore = eq(double,2) 2 * wscore;* double word(s)
 	wscore = ne(triple) wscore * 3;* triple word
 	wscore = eq(triple,2) wscore * 3;* triple word
+	output = 'score.word end   ' wscore
 	score = score + wscore				:(score.next)
 score.end
 
@@ -782,6 +852,7 @@ vline
 	vline = grid[1,c] grid[2,c] grid[3,c] grid[4,c] grid[5,c] 
 .		grid[6,c] grid[7,c] grid[8,c] grid[9,c] grid[10,c]
 .		grid[11,c] grid[12,c] grid[13,c] grid[14,c] grid[15,c]
+	out
 							:(return)
 vline.end
 
@@ -790,7 +861,7 @@ vline.end
 *	Return number of words in s, fail if no words
 
 wordcount
-	s break(&ucase &lcase)					:f(freurn)
+	s break(&ucase &lcase)					:f(freturn)
 	s = s  ' '
 	wordcount = 0
 wordcount.1
@@ -808,13 +879,14 @@ words
 	n = wordcount(s)					:f(freturn)
 	s = s ' '
 	words = table(n)
+	pos = 1;* first word has no preceding space.
 words.1
 *	Replace the blank with ? 
-	s break(' ') . w ' ' = w '?'				:f(words.done)
-	start = size(w) + 1
-	words[size(w) + 1] = w					:(words.1)
+	s break(' ') . w ' ' = 					:f(words.done)
+	words[pos] = w					
+	pos = pos + size(w) + 1;* set to start of next word
+								:(words.1)
 words.done
-	output = 'words.done ' s '.'
 	words = convert(words,'array')				:(return)
 words.end
 	
@@ -928,32 +1000,35 @@ MAIN
 	output = 'test place'
 
 	&anchor = &trim = 1
-*	&ftrace = 1000
-*	&dump = 3
+	&ftrace = 1000
+	&dump = 3
 
 	init(,1000)
 
+	display()
 	g.rack = 'catnose'
 
 
-	placeword(1,3,'shields')
+	placeword(1,4,'SHIELDS')
 
 	g.board.lines = lines(g.board)
 	g.alone.lines = lines(g.alone)
 	
-*	ls = g.board.lines[1]
-*	output = 'first board line <' ls '>'
-
 	display()
 *	display.alone()
+	output = 'bonus '
+	display.bonus()
 
 	wordcount = wordcount('dave shields')
-	words = words('dave shields')
+	words = words('dave shieLds')
 	n = words('dave shields')
 	output = wordcount 
 	output = words[1,1] ':' words[1,2]
 	output = words[2,1] ':' words[2,2]
 
+	mylines = lines(g.board)
+	sc  = score(mylines)
+	output = 'score(1) ' sc
 
 	g.dict = g.permutations = g.scores = g.bonus = g.alone = g.board = g.value = 
 end
@@ -965,6 +1040,8 @@ loop	key = ara[i = i + 1,1]				:f(loop.done)
 							:(loop)
 loop.done
 	output = 'loop.done ' i
+	:(done)
+finis	output = 'finis'	:(end)
 done
 *	output = 'permwords ' permwords '  checkwords ' checkwords '  oscoren ' oscoren
 end
