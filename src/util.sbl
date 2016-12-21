@@ -250,9 +250,7 @@ display.c
 	gt(c = c + 1,15)				:s(display.l)
 	l = g.board[r,c]
 	b = g.bonus[r,c]
-	line = ident(b,' ') line '  ' l 		:s(display.c)
-* Here for blank cell, display bonus if applicable
-	line = ident(b,' ') line '  '			:s(display.c)
+	eq(b,1)						:s(display.b)
 * 	Here to display bonus
 	l = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
 	line = line l 					:(display.c)
@@ -351,7 +349,7 @@ hline.end
 *	2 for triple letter, 3 for double word, and 4 for triple word.
 
 init.bonus
-	g.bonus = array('15,15',' ')
+	g.bonus = array('15,15',+1)
 	s = 	'5 0104 3 0107 3 0109 5 0112 2 0203 4 0206 4 0210 2 0213 '
 .		'2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 4 0415 '
 .		'2 0503 2 0507 2 0509 2 0513 4 0602 3 0606 3 0610 4 0614 '
@@ -362,7 +360,6 @@ init.bonus
 
 init.bonus.1
 	s len(1) . b ' ' len(2) . row len(2) . col ' ' =	:f(init.bonus.next)
-	output = 'init.bonus  row ' row '  col ' col '  b ' b
 	g.bonus[+row,+col] = +b					:(init.bonus.1)
 init.bonus.next
 	g.bonus.lines = lines(g.bonus)				:(return)
@@ -741,7 +738,7 @@ random_rack
 	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
 random_rack.end
 
-	define('score(lines)line,word,words,start,wi,ch,i,bonus,wscore,double,triple,val')	:(score.end)
+	define('score(lines)line,word,words,start,ci,wi,ch,i,bonus,wscore,double,triple,val')	:(score.end)
 
 *	Compute the score of a move. All the letters of the move will be in upper case on the board
 *	so the score of the move is the sum of the scores of all the words with upper case letters in them, for
@@ -750,64 +747,52 @@ random_rack.end
 
 score
 	line = lines[i = i + 1] ' '			:f(return)
-	output = 'score ' line
+*	output = 'score ' line
 	line break(&ucase)				:f(score)
 	start = 1
-	output = 'score ' i ' ' line
-	words = words(line)
-	output  = 'words proto ' prototype(words)
+*	output = 'score ' i ' ' line
+	words = words(line)				:f(freturn)
 score.next
 	start = words[wi = wi + 1,1]			:f(score)
 	word = words[wi,2]
-	output = 'score.next ' word '.'
+*	output = 'score.next ' word '.'
 
 *	Single letters don't contribute to score since the come from intersecting line.
 
 	eq(size(word),1)				:s(score.next)
-	output = 'word 1 ' word
+*	output = 'word 1 ' word
 	word break(&ucase)				:f(score)
 score.find.done
-	output = 'line.done  start ' start ' line ' line '.'
+*	output = 'line.done  start ' start ' line ' line '.'
 	line = substr(line,start)
 	bonus = substr(g.bonus.lines[i],start) 
-	output = 'score line  ' line
-	output = 'bonus line  ' bonus
-	wscore = 0; double = 0; triple = 0
+*	output = 'score line  ' line
+*	output = 'bonus line  ' bonus
+	wscore = 0; double = 0; triple = 0; ci = 0
 *SCOR
 score.nextch
-	word len(1) . ch =				:f(score.word)
-	bonus len(1) . b
+	ch = substr(word,ci = ci + 1,1)			:f(score.word)
+	bon = substr(bonus,ci,1)
 	val = +g.value[ch]
-	output = 'WSCORE- '  ch '  ' wscore
-	output = 'score ch ' ch '   val ' val '  double ' double '  triple ' triple '  bon:' bon ':'
-	wscore = ident(bon,' ') wscore + 1		:s(score.nextch);* default is one point per letter
+*	output = 'WSCORE- '  ch '  ' wscore
+*	output = 'score ch ' ch '   val ' val '  double ' double '  triple ' triple '  bon:' bon ':'
 	bon = +bon
-	output = 'WSCORE0 ' wscore
-	output = ' score ' wscore
-	wscore = eq(bon,1) wscore + val + val		:s(score.nextch);* double letter	
-	output = 'WSCORE1 ' wscore
-	output = '  score ' wscore
-	wscore = eq(bon,2) wscore + val + val + val	:s(score.nextch);* triple letter
-	output = 'WSCORE2 ' wscore
-	output = '   score ' wscore
-	output = 'predouble ' wscore 
-	double = eq(bon,3) double + 1			:s(score.nextch);* double word
-	output = 'WSCORE3 ' wscore
-	output = '    score ' wscore
-	triple = eq(bon,4) triple + 1			:s(score.nextch);* triple word
-	output = 'WSCORE4 ' wscore
-	output = '     score ' wscore
+*	wscore = wscore + val;* always get at least the value of the tile
+*	output = 'WSCORE0 ' wscore
+	wscore = eq(bon,1) wscore + val			:s(score.nextch);* double letter	
+*	output = 'WSCORE1 ' wscore
+	wscore = eq(bon,2) wscore + val + val		:s(score.nextch);* triple letter
+*	output = 'WSCORE2 ' wscore
+	wscore = eq(bon,3) wscore + val + val + val	:s(score.nextch);* triple letter
+*	output = 'WSCORE3 ' wscore
+*	Here if not double or triple letter, so just add in the value of the tile
+	wscore = wscore + val
+	double = eq(bon,4) double + 1			:s(score.nextch);* double word
+*	output = 'WSCORE4 ' wscore ' double ' double
+	triple = eq(bon,5) triple + 1			:s(score.nextch);* triple word
+*	output = 'WSCORE5 ' wscore '  triple ' triple
 							:(score.nextch)
 score.word
-	output = 'double ' double '  triple ' triple
-	output = 'score.word start ' wscore
-	wscore = eq(double) eq(triple) wscore + val;* if not double or triple word bonus
-*	May have two double or triple word bonus squares in a line
-	wscore = ne(double) 2 * wscore;* double word(s)
-	wscore = eq(double,2) 2 * wscore;* double word(s)
-	wscore = ne(triple) wscore * 3;* triple word
-	wscore = eq(triple,2) wscore * 3;* triple word
-	output = 'score.word end   ' wscore
 	score = score + wscore				:(score.next)
 score.end
 
