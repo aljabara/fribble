@@ -519,8 +519,6 @@ less.end
 	define('grid(lines,start)i,r,c,line')			:(grid.end)
 
 *	Construct a grid from a sequence of lines beginning at index *start* (1..15 for rows, 16..30 for columns).
-	gt(start,15)
-	gt(start,15)
 
 grid
 	grid = array('15,15',' ')
@@ -547,6 +545,7 @@ grid.4
 grid.5
 	grid[i = i + 1,c] = substr(line,i,1)		:(grid.5)
 grid.end
+
 	define('lines(grid)i')				:(lines.end)
 
 *	Express the grid as a sequence of lines, with the first 15 consisting of the rows
@@ -741,7 +740,7 @@ random_rack
 	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
 random_rack.end
 
-	define('score(lines,num)line,word,words,n,start,ci,wi,ch,i,bonus,wscore,double,triple,val')	:(score.end)
+	define('score(lines,num)iline,line,word,words,n,start,ci,wi,ch,i,bonus,wscore,double,triple,val')	:(score.end)
 
 *	Compute the score of a move on a given line. All the letters of the move will be in upper case on the board
 *	so the score of the move is the sum of the scores of all the words with upper case letters in them, for
@@ -750,10 +749,11 @@ random_rack.end
 
 
 score
+	score = 0
 	iline = lines[num]
 	bonusline = g.bonus.lines[num]
 	iline break(&ucase)				:f(score.error)
-	words = words(iline)				:f(freturn)
+	words = words(iline)				:f(return)
 score.word
 	start = words[wi = wi + 1,1]			:f(score.done)
 	word = words[wi,2]
@@ -782,11 +782,10 @@ score.char
 	double = (eq(bonus,4) double + 1)		:s(score.char);* double word
 	triple = (eq(bonus,5) triple + 1)		:s(score.char);* triple word
 score.done
-	score = eq(double,1) score * 2
-	score = eq(double,2) score * 4
-	score = eq(triple,1) score * 3
-	score = eq(triple,2) score * 9
-	score = score
+	score = (eq(double,1) score * 2)
+	score = (eq(double,2) score * 4)
+	score = (eq(triple,1) score * 3)
+	score = (eq(triple,2) score * 9)
 							:(return)
 score.error
 	output = 'error scoring line with no new move ' line	:(end)
@@ -910,7 +909,7 @@ best.end
 
 *	try(mov,perm)
 
-	define('try(mov,perm)n,num,first,free,perms,oldlines,i,ci,perm,,newline,board,')		:(try.end)
+	define('try(mov,perm)n,num,first,last,free,perms,oldlines,i,ci,perm,,newline,board,score')		:(try.end)
 
 *	Given a move *mov* and a list *permutations* of permutations to be tried for the move,
 *	try all the moves than can be made, see which are valid, and add their scores to g.scores
@@ -918,7 +917,7 @@ best.end
 try
 	n  = count(mov)
 	num = id(mov)
-	first = free(mov)[1]
+	first = free(mov)[1]; last = free(mov)[count(mov)]
 	perms = g.permutations(size(g.rack),n)
 	perms = replace(perm,substr('1234567',1,n),substr(g.rack,1,n))
 	oldlines = copy(g.board.lines[num])
@@ -936,43 +935,39 @@ try.next
 
 	checkline(newline)					:f(try.next)
 
-*	NOTE We don't have to check all the lines, just the ones that are affected. For example if tiles are 
-*	placed in rows 3, in positions 5-8, then only need check row 3 and columns 5-8.
-
-	newlines = copy(oldlines)
-	newlines[num] = newline
-	board = grid(newlines,num)
-*	For now, check the whole grid, after updating to reflect the new row (or column).
-	newlines = lines(board)
-
-*	The new line is valid. Now see if all other lines are still valid
-	i = 0
-try.line.next
-	gt(i = i + 1,30)				:s(try.valid)
-	eq(i,num)					:s(try.line.next);* have already checked this line
-	checkline(newlines[i])				:f(try.invalid)s(try.line.next)
-
-try.invalid
-
-*	Here if new line not valid, ...
-							:(try.next)
-
-try.valid
-
-*	Here if valid move. Compute its score.
+*	Here if valid move. Time to compute its score.
 *	In order to determine which words on the board would be formed by making this move,
 *	rebuild the board but with the new tiles in uppercase. This way, a word is new if and only if
 *	it contains an upper case character. 
 
 	g.board.lines[num] = oldline;
 	newline = pack(insert(mov,ucase(substr(g.rack,1,n))))
-	output = 'try.valid newline ' newline '.'
+*	output = 'try.valid newline ' newline '.'
 	newlines[num] = newline
 	board = grid(newlines,num)
 	newlines = lines(board)
-*	Eventually, in next part, will just visit lines that may have changed, and add up their scores.
-	g.scores[mov] = score(newlines,num)
+
+	score = score(newlines,num)
+	output = 'try valid ' num '  ' newlines[num]
+
+*	The i-th character in the row of our move is also in the i-th column.
+*	We have the scored the row containing the move and have initialized *score* to that score.
+*	Complete scoring by adding the score of all the columns that may contain newly formed words.
+
+	i = first - 1
+try.column
+	gt(first = first + 1,last)			:s(try.done)
+	output = 'try scoring column ' first '  ' newlines[first]
+	score = score + score(newlines,first)		:(try.column)
+
+try.done
+	g.scores[mov] = score(newlines,num)		:(return)
+
+try.invalid
+
+*	Here if new line not valid, ...
 							:(try.next)
+
 try.end
 	
 MAIN
@@ -982,16 +977,21 @@ MAIN
 	&anchor = &trim = 1
 *	&ftrace = 1000
 *	&dump = 3
-	&trace = 1000
-	trace(xscore,'v')
+*	&trace = 1000
+*	trace(score,'v')
 
 	init(,1000)
 
-	display()
-	g.rack = 'catnose'
+	g.rack = 'shields'
 
+	output = 'look to open with ' g.rack '.'
+	mov = open(g.rack)
+	output = 'opening move ' mov
+end
+	
 
-	placeword(1,4,'SHIELDS')
+	placeword(1,4,'shields')
+	placeword(2,4,'oitmao')
 
 	g.board.lines = lines(g.board)
 	g.alone.lines = lines(g.alone)
@@ -1000,18 +1000,6 @@ MAIN
 *	display.alone()
 	output = 'bonus '
 	display.bonus()
-
-	wordcount = wordcount('dave shields')
-	words = words('dave shieLds')
-	n = words('dave shields')
-	output = wordcount 
-	output = words[1,1] ':' words[1,2]
-	output = words[2,1] ':' words[2,2]
-
-	mylines = lines(g.board)
-	output = 'sc ' mylines[1] '.'
-	sc  = score(mylines,1)
-	output = 'score(1) ' sc
 
 	g.dict = g.permutations = g.scores = g.alone = g.board = g.value = 
 end
