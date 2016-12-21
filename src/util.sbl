@@ -239,9 +239,7 @@ checkword.end
 *	Display the board on standard output
 
 display
-	output = 'display()'
-	output = '                      1 1 1 1 1 1'
-	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
+	display.header('board')
 display.r
 	gt(r = r + 1,15) 				:s(display.finish)
 	line = lpad(r,2) '|'
@@ -269,7 +267,7 @@ display.end
 *	Display the board on standard output
 
 display.alone
-	output = 
+	display.header('alone')
 	output = '                      1 1 1 1 1 1'
 	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
 display.alone.r
@@ -291,9 +289,7 @@ display.alone.end
 *	Display the board on standard output
 
 display.bonus
-	output =  'display bonus'
-	output = '                      1 1 1 1 1 1'
-	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
+	display.header('bonus')
 display.bonus.r
 	gt(r = r + 1,15) 				:s(display.bonus.finish)
 	line = lpad(r,2) '|'
@@ -316,6 +312,13 @@ display.bonus.l
 display.bonus.finish
 	output =					:(return)
 display.bonus.end
+
+	define('display.header(label)')			:(display.header.end)
+display.header
+	output = char(9) ucase(label)
+	output = '                      1 1 1 1 1 1'
+	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
+display.header.end
 
 	define('first(line)')				:(first.end)
 
@@ -728,7 +731,7 @@ random	random_var = remdr(random_var * 4676, 414971)
 							:(return)
 random.end
 
-	define('random_rack()i')				:(random_rack.end)
+	define('random_rack()i')			:(random_rack.end)
 
 *	Return random set of seven tiles from the initial set of tiles.
 *	This is used for testing.
@@ -738,62 +741,55 @@ random_rack
 	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
 random_rack.end
 
-	define('score(lines)line,word,words,start,ci,wi,ch,i,bonus,wscore,double,triple,val')	:(score.end)
+	define('score(lines,num)line,word,words,n,start,ci,wi,ch,i,bonus,wscore,double,triple,val')	:(score.end)
 
-*	Compute the score of a move. All the letters of the move will be in upper case on the board
+*	Compute the score of a move on a given line. All the letters of the move will be in upper case on the board
 *	so the score of the move is the sum of the scores of all the words with upper case letters in them, for
-*	both rows and columns
+*	both rows and columns. This function should only be called for lines which have an upper case letter in
+*	them as a result of the move.
 
 
 score
-	line = lines[i = i + 1] ' '			:f(return)
-*	output = 'score ' line
-	line break(&ucase)				:f(score)
-	start = 1
-*	output = 'score ' i ' ' line
-	words = words(line)				:f(freturn)
-score.next
-	start = words[wi = wi + 1,1]			:f(score)
+	iline = lines[num]
+	bonusline = g.bonus.lines[num]
+	iline break(&ucase)				:f(score.error)
+	words = words(iline)				:f(freturn)
+score.word
+	start = words[wi = wi + 1,1]			:f(score.done)
 	word = words[wi,2]
-*	output = 'score.next ' word '.'
+	n = size(word)
 
 *	Single letters don't contribute to score since the come from intersecting line.
 
-	eq(size(word),1)				:s(score.next)
-*	output = 'word 1 ' word
-	word break(&ucase)				:f(score)
-score.find.done
-*	output = 'line.done  start ' start ' line ' line '.'
-	line = substr(line,start)
-	bonus = substr(g.bonus.lines[i],start) 
-*	output = 'score line  ' line
-*	output = 'bonus line  ' bonus
-	wscore = 0; double = 0; triple = 0; ci = 0
+	eq(size(word),1)				:s(score.word)
+	word break(&ucase)				:f(score.word)
+	line = substr(iline,start)
+	bonusline = substr(g.bonus.lines[i],start);* corresponding part of bonus line
+	score = 0; double = 0; triple = 0; i = 0
 *SCOR
-score.nextch
-	ch = substr(word,ci = ci + 1,1)			:f(score.word)
-	bon = substr(bonus,ci,1)
+score.char
+	gt(i = i + 1,n) 				:s(score.word)
+	ch = substr(word,i,1)				:f(score.word)
+	bonus = +substr(bonusline,i,1)
 	val = +g.value[ch]
-*	output = 'WSCORE- '  ch '  ' wscore
-*	output = 'score ch ' ch '   val ' val '  double ' double '  triple ' triple '  bon:' bon ':'
-	bon = +bon
-*	wscore = wscore + val;* always get at least the value of the tile
-*	output = 'WSCORE0 ' wscore
-	wscore = eq(bon,1) wscore + val			:s(score.nextch);* double letter	
-*	output = 'WSCORE1 ' wscore
-	wscore = eq(bon,2) wscore + val + val		:s(score.nextch);* triple letter
-*	output = 'WSCORE2 ' wscore
-	wscore = eq(bon,3) wscore + val + val + val	:s(score.nextch);* triple letter
-*	output = 'WSCORE3 ' wscore
+	score = score + val;* always get at least the value of the tile
+	eq(bonus,1)					:s(score.char)
+	score = (eq(bonus,2) score + val)		:s(score.char);* double letter	
+	score = (eq(bonus,3) score + val + val)		:s(score.char);* triple letter
+
 *	Here if not double or triple letter, so just add in the value of the tile
-	wscore = wscore + val
-	double = eq(bon,4) double + 1			:s(score.nextch);* double word
-*	output = 'WSCORE4 ' wscore ' double ' double
-	triple = eq(bon,5) triple + 1			:s(score.nextch);* triple word
-*	output = 'WSCORE5 ' wscore '  triple ' triple
-							:(score.nextch)
-score.word
-	score = score + wscore				:(score.next)
+
+	double = (eq(bonus,4) double + 1)		:s(score.char);* double word
+	triple = (eq(bonus,5) triple + 1)		:s(score.char);* triple word
+score.done
+	score = eq(double,1) score * 2
+	score = eq(double,2) score * 4
+	score = eq(triple,1) score * 3
+	score = eq(triple,2) score * 9
+	score = score
+							:(return)
+score.error
+	output = 'error scoring line with no new move ' line	:(end)
 score.end
 
 	define('subarray(ara,start,len)i')		:(subarray.end)
@@ -970,11 +966,12 @@ try.valid
 
 	g.board.lines[num] = oldline;
 	newline = pack(insert(mov,ucase(substr(g.rack,1,n))))
+	output = 'try.valid newline ' newline '.'
 	newlines[num] = newline
 	board = grid(newlines,num)
 	newlines = lines(board)
 *	Eventually, in next part, will just visit lines that may have changed, and add up their scores.
-	g.scores[mov] = score(newlines)
+	g.scores[mov] = score(newlines,num)
 							:(try.next)
 try.end
 	
@@ -985,6 +982,8 @@ MAIN
 	&anchor = &trim = 1
 *	&ftrace = 1000
 *	&dump = 3
+	&trace = 1000
+	trace(xscore,'v')
 
 	init(,1000)
 
@@ -1010,7 +1009,8 @@ MAIN
 	output = words[2,1] ':' words[2,2]
 
 	mylines = lines(g.board)
-	sc  = score(mylines)
+	output = 'sc ' mylines[1] '.'
+	sc  = score(mylines,1)
 	output = 'score(1) ' sc
 
 	g.dict = g.permutations = g.scores = g.alone = g.board = g.value = 
