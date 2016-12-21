@@ -239,7 +239,7 @@ checkword.end
 *	Display the board on standard output
 
 display
-	output = 
+	output = 'display()'
 	output = '                      1 1 1 1 1 1'
 	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
 display.r
@@ -249,10 +249,10 @@ display.r
 display.c
 	gt(c = c + 1,15)				:s(display.l)
 	l = g.board[r,c]
-	line = differ(l,' ') line ' ' l 		:s(display.c)
-* Here for blank cell, display bonus if applicable
 	b = g.bonus[r,c]
-	eq(b)						:s(display.b)
+	line = ident(b,' ') line '  ' l 		:s(display.c)
+* Here for blank cell, display bonus if applicable
+	line = ident(b,' ') line '  '			:s(display.c)
 * 	Here to display bonus
 	l = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
 	line = line l 					:(display.c)
@@ -293,7 +293,7 @@ display.alone.end
 *	Display the board on standard output
 
 display.bonus
-	output = 
+	output =  'display bonus'
 	output = '                      1 1 1 1 1 1'
 	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
 display.bonus.r
@@ -352,13 +352,13 @@ hline.end
 
 init.bonus
 	g.bonus = array('15,15',' ')
-	s = 	' 5 0104 3 0107 3 0109 5 0112 2 0203 4 0206 4 0210 2 0213 '
-.		' 2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 4 0415 '
-.		' 2 0503 2 0507 2 0509 2 0513 4 0602 3 0606 3 0610 4 0614 '
-.		' 3 0701 2 0705 2 0711 4 0715 4 0804 4 0812 3 0901 2 0905 2 0911 3 0915 '
-.		' 4 1002 3 1006 3 1010 4 1014 2 1103 2 1107 2 1109 2 1113 '
-.		' 5 1201 3 1204 4 1208 3 1212 5 1215 2 1302 2 1305 2 1311 2 1314 '
-.		' 5 1403 4 1406 4 1410 2 1413 5 1504 3 1507 3 1509 5 1512 '
+	s = 	'5 0104 3 0107 3 0109 5 0112 2 0203 4 0206 4 0210 2 0213 '
+.		'2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 4 0415 '
+.		'2 0503 2 0507 2 0509 2 0513 4 0602 3 0606 3 0610 4 0614 '
+.		'3 0701 2 0705 2 0711 4 0715 4 0804 4 0812 3 0901 2 0905 2 0911 3 0915 '
+.		'4 1002 3 1006 3 1010 4 1014 2 1103 2 1107 2 1109 2 1113 '
+.		'5 1201 3 1204 4 1208 3 1212 5 1215 2 1302 2 1305 2 1311 2 1314 '
+.		'5 1403 4 1406 4 1410 2 1413 5 1504 3 1507 3 1509 5 1512 '
 
 init.bonus.1
 	s len(1) . b ' ' len(2) . row len(2) . col ' ' =	:f(init.bonus.next)
@@ -683,7 +683,6 @@ place.done
 							:(return)
 place.end
 
- output = 'at place.end'
 	define('placeword(r,c,w)ch')			:(placeword.end)
 
 
@@ -715,7 +714,6 @@ prefix.1
 	prefix = add(prefix, pre word)			:(prefix.1)
 prefix.end
 
- output = 'at prefix.end'
 	define('random(n)')
 
 *	Return integer uniformly distributed in 1,2,...,n. If n=0 returns real uniformly distributed
@@ -1000,8 +998,8 @@ MAIN
 	output = 'test place'
 
 	&anchor = &trim = 1
-	&ftrace = 1000
-	&dump = 3
+*	&ftrace = 1000
+*	&dump = 3
 
 	init(,1000)
 
@@ -1030,7 +1028,7 @@ MAIN
 	sc  = score(mylines)
 	output = 'score(1) ' sc
 
-	g.dict = g.permutations = g.scores = g.bonus = g.alone = g.board = g.value = 
+	g.dict = g.permutations = g.scores = g.alone = g.board = g.value = 
 end
 END
 	output = 'place '
