@@ -17,8 +17,6 @@ permgen
 *	build perm as list of entries separated by space. Will
 *	eliminate extra space at the end before returning.
 
-	output = 'permgen'
-
 permgen.dist.1
 	n = +size(s)
 	eq(k,0)							:s(return)
@@ -30,7 +28,7 @@ permgen.dist.1
 
 permgen.1	
 	c = substr(s,i = i + 1,1)				:f(return)
-	output = permgen
+*	output = permgen
 	permgen = add(permgen, c)				:(permgen.1)
 
 permgen.n
@@ -62,20 +60,39 @@ permgen.end
 	&anchor = &trim = 1
 *	&dump = 3
 	digits = '123456789'
-	n = 0
+	n = 0  
+
+	output(.ofile,2,'perm.txt')
 
 main.1
 
 *	Start permutations of n digits.
+	total = 0
 
-	gt(n = n + 1, 7)					:s(end)
+	gt(n = n + 1, 7)					:s(done)
 	k = 0
 main.2
 	gt(k = k + 1,n)						:s(main.1)
+	nperms = nperms + 1
 
 *	Compute permutations of n digits taken k at a time.
-
 	pip = permgen(substr(digits,1,n),k) ' ' 
-	output = '; ' n '?' k ' ' words(pip)
-	output = pip						:(main.2)
+	count = wordcount(pip)
+	output =  n '?' k ' ' count
+	headers = headers + count
+	ofile =  n '?' k ' ' count
+	nout = 0
+main.3
+	pip break(' ') . w ' ' =				:f(main.4)
+	ofile = w						
+	nout = nout + 1
+								:(main.3)
+main.4
+	eq(count,nout)						:s(main.2)
+	output = 'error counts wrong ' nout ' ' count
+done
+	output = lpad('permutations',20) ' '	nperms
+	output = lpad('headers',20)	 ' '	headers
+	output = lpad('total',20) ' ' nperms + headers
 end
+	

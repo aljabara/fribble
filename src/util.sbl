@@ -410,27 +410,23 @@ init.dict.done
 	endfile(3)					:(return)
 init.dict.end
 
-	define('init.perm(filename)line,ifile,n,k,lines')	:(init.perm.end)
+	define('init.perm(filename)line,ifile,n,k,lines,nread')	:(init.perm.end)
 
 *	Initialize the list of possible permutations from a file.
 
+*PERM
 init.perm
 	g.permutations = table(100)
-	input(.ifile,4, filename)			:s(init.perm.1)
+	input(.ifile,4, filename)			:s(init.perm.next)
 	output = 'unable to open permutation file ' filename 	:(freturn)
-*	read first line and merge to process permutation description line
-	line = ifile					:f(init.perm.done)s(init.perm.2)
-	lines = 1
-init.perm.1
+init.perm.next
 	line = ifile					:f(init.perm.done)
-	lines = lines + 1
-init.perm.2
-	line '; ' break('?') . n '?' break(' ') . k ' ' rem . count :f(init.perm.err)
-init.perm.k
-	line = ifile					:f(init.perm.done)
-	lines = lines + 1
-*	add blank at end of list to simplify later iterations over the list
-	g.permutations[n '?' k] = line ' '		:(init.perm.1)
+	line break('?') . n '?' break(' ') . k ' ' rem . count :f(init.perm.err)
+	ara = array(count)
+	ai = 0
+init.perm.array
+	ara[ai = ai + 1] = ifile			:s(init.perm.array)
+	g.permutations[n '?' k] = ara			:(init.perm.next)
 init.perm.done
 	endfile(4)					:(return)
 init.perm.err
@@ -572,18 +568,26 @@ open
 	n = 0;* number of tiles to play
 	best = 0;* best score
 	start = 8;* assume word will start in column 8
+	output = 'open ' tiles
 
 open.1	le(n = n + 1,7)					:f(open.finish)
-	perms = permutations(tiles,n)
+	permz = size(tiles) '?' n
+	output = 'open permz ' permz
+*	perms = g.permutations[size(tiles) '?' n]
+	perms = g.permutations[permz]
+	output = 'open n ' pemz ' ' perms
 open.2
 *	get next word, check that valid, then see if new high score
 	perms break(' ') . w ' ' =			:f(open.1)
 	permwords = permwords + 1
+	output = 'trying ' w
 	checkword(w)					:f(open.2)
+	output = 'is valid ' w ' with score ' oscore(w)
 	checkwords = checkwords + 1
 	le(oscore(w),best.score)			:s(open.2)
 	best.word = w
 	best.score = oscore(w)
+	output = 'new best score for ' w ' is ' best.score
 	open = lt(size(best.word),6) 'h0808' best.word ' ' best.score	:s(open.2)
 *	Here if longer open word, move a space to the left
 	start = 7
@@ -839,12 +843,12 @@ vline.end
 *	Return number of words in s, fail if no words
 
 wordcount
-	s break(&ucase &lcase)					:f(freturn)
+	s break(' ')					:f(freturn)
 	s = s  ' '
 	wordcount = 0
 wordcount.1
 	s break(' ') . w span(' ') =			:f(return)
-	wordcount = wordcount + 1				:(wordcount.1)
+	wordcount = +wordcount + 1				:(wordcount.1)
 wordcount.end
 
 	define('words(s)n,w,pos')					:(words.end)
@@ -914,11 +918,13 @@ best.end
 *	Given a move *mov* and a list *permutations* of permutations to be tried for the move,
 *	try all the moves than can be made, see which are valid, and add their scores to g.scores
 
+*TRY
 try
 	n  = count(mov)
 	num = id(mov)
 	first = free(mov)[1]; last = free(mov)[count(mov)]
 	perms = g.permutations(size(g.rack),n)
+	output = 'try perm ' perm '   g.rack ' g.rack
 	perms = replace(perm,substr('1234567',1,n),substr(g.rack,1,n))
 	oldlines = copy(g.board.lines[num])
 
@@ -969,84 +975,3 @@ try.invalid
 							:(try.next)
 
 try.end
-	
-MAIN
-*	Test place()
-	output = 'test place'
-
-	&anchor = &trim = 1
-*	&ftrace = 1000
-*	&dump = 3
-*	&trace = 1000
-*	trace(score,'v')
-
-	init(,1000)
-
-	g.rack = 'shields'
-
-	output = 'look to open with ' g.rack '.'
-	mov = open(g.rack)
-	output = 'opening move ' mov
-end
-	
-
-	placeword(1,4,'shields')
-	placeword(2,4,'oitmao')
-
-	g.board.lines = lines(g.board)
-	g.alone.lines = lines(g.alone)
-	
-	display()
-*	display.alone()
-	output = 'bonus '
-	display.bonus()
-
-	g.dict = g.permutations = g.scores = g.alone = g.board = g.value = 
-end
-END
-	output = 'place '
-loop	key = ara[i = i + 1,1]				:f(loop.done)
-	mov = ara[i,2]
-	output = lpad(i,4) char(9)  ' id ' id(mov) char(9) '  count ' count(mov) char(9) ': ' free(mov)[1] ' :  ' free(mov)[count(mov)]
-							:(loop)
-loop.done
-	output = 'loop.done ' i
-	:(done)
-finis	output = 'finis'	:(end)
-done
-*	output = 'permwords ' permwords '  checkwords ' checkwords '  oscoren ' oscoren
-end
-	tabl = place(1)
-	
-	ara = convert(tabl,'array')
-	i = 0
-
-	define('range(line)start,finish,i,c,p')				:(start.end)
-*	Look for first instance of upper case character in line, then return that
-*	indexs of the starting and ending characters in that word.
-
-range
-	line break(any(&ucase)) @ p			:f(freturn)
-	chars = unpack(line)
-*	loop back to find first blank or the range of the line
-range.1
-	c = chars[i = i - 1]				:f(range.2)
-	differ(c,' ')					:s(range.1)
-range.2
-	start = (gt(i) i, 1)
-*	loop forward to find first blank after the word of the index of the last chracter in the line
-	i = p
-range.3
-	c = chars[i = i + 1]				:f(range.4)
-	differ(c,' ')					:s(range.1)
-range.4
-	finish = (le(i,15) i, 15)
-	range = start ':' finish			:(return)
-range.end
-
-	i = kk
-	first = (gt(i) i, 1)
-	first = 
-
-	i = lt(i,1) 1;* if word starts at
-	k
