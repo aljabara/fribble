@@ -1,4 +1,5 @@
 *	Test place()
+-include '../src/util.sbl'
 	output = 'test place'
 
 	&anchor = &trim = 1
@@ -20,12 +21,12 @@
 
 *	tabl = place(8)
 *	tabl = place(1)
-	tabl = place(2)
-	ara = convert(tabl,'array')
+	ara = place(2)
 	i = 0
 
 	output = 'place '
 loop	key = ara[i = i + 1,1]				:f(done)
+	output = 'datatype( ) ' datatype(ara[i,2])
 	output = lpad(i,4) char(9)  ara[i,2]		:(loop)
 done
 *	output = 'permwords ' permwords '  validwords ' validwords '  oscoren ' oscoren
