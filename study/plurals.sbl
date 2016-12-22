@@ -11,7 +11,7 @@
 * Note that there are just under 50,000 plurals in the ENABLE list, which is about 30% of the total.
 
 	&anchor = &trim = 1
-	&dump = 3
+*	&dump = 3
 	init()
 
 	ara1 = sort(g.dict)

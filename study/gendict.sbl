@@ -1,0 +1,128 @@
+* This software is licensed under the MIT License, contained in the file LICENSE.
+
+* Copyright (c) 2016 dave shields
+
+	define('tileset()s,n')				:(tileset.end)
+
+* 	Initialize set of tiles, ignoring the 'blank' tiles for now.
+
+tileset
+	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
+	tileset =
+tileset.1
+	s break(' ') . c ' ' break(' ') . n ' ' =	:f(return)
+	tileset = tileset dupl(c,n)			:(tileset.1)
+tileset.end
+
+*	Main program.
+
+*	Read enable1.txt word list, eliminate words that can't be formed from initial tileset, sort the list
+*	of words first by length, and then alphabetically withing words of the same length. Also, mark 
+*	plurals by adding '+' at the end of a word that has a plural. (Almost one third of the words in the
+*	list are plurals.)
+
+*	Eliminate words that can't be constructed from the initial tileset; for example, words with two z's, since
+*	the tileset only has one z.
+
+	&anchor = &trim = 1
+	&dump = 3
+
+	words = table(100000)
+	count = table(15)
+	tiles = tileset()
+	have = table(26)
+init.1
+	tiles len(1) . c =				:f(init.2)
+	have[c] = have[c] + 1				:(init.1)
+init.2
+
+*	wwf is list of words not in enable1.txt word list but known to be accepted as valid by wwf.
+
+	wwf = 'qi brr zen zep ' 
+
+wwf
+	wwf break(' ') . w ' ' =			:f(wwf.done)
+	words[w] = 1
+wwf.done
+
+	words = table(10000)
+
+*	Read in the enable list and add its words to the dictionary
+
+	input(.ifile,2,'../enable1.txt')
+read
+	word = ifile					:f(read.done)
+	words[word] = 1
+	n = size(word)
+	count[n] = count[n] + 1				:(read)
+read.done
+*	The dictionary is an array of tables. The i-th entry in the dictionary is a table for the words of length i.
+
+	dict = array(15)
+	dict[1] = table()
+	di = 1
+dict.init
+	gt(di = di + 1,15)				:s(dict.init.done)
+	n = count[di]
+	output = ' count ' lpad(di, 2) lpad(n,7)
+	dict[di] = table(n)				:(dict.init)
+dict.init.done
+
+	wara = sort(words)
+
+	output(.ofile,3,'dict.wwf')
+
+*	Loop over dictionary, seeing if word can be built from available tiles.
+loop.next
+	w = wara[i = i + 1,1]				:f(done)
+	this = table()
+	s = w
+loop.char
+	s len(1) . c =					:f(loop.out)
+	this[c] = this[c] + 1
+	le(this[c],have[c])				:s(loop.char)
+
+*	skip if have more instances of character c than in initial tileset
+	output = 'skipping ' w ' since too many instances of ' c
+	skipped = skipped + 1				:(loop.next)
+
+loop.out
+
+*	See if this word is a plural form ('s' at the end) of a previous word, in which case updated the entry for that
+*	word adding '+' at the end. Otherwise enter the word into the appropriate dictionary
+
+	n = size(word)
+	eq(n,1)					:(loop.out)
+	ident(words[word 's'])			:s(loop.copy)
+
+*	Here if plural word.
+	tbl = dict[n]
+	tbl[word] = word '+'
+
+loop.copy
+	tbl = dict[n]
+	tbl[word] = 1
+done
+	words = wara =
+*	Here to write out the dictionaries to the output file, in irder of increasing length,and sorted within words
+*	of a given length.
+
+	i = 1
+done.next
+	gt(i = i + 1,15)				:s(done.done)
+	d = dict[i]
+	output = 'datatype dict[i]  ' i '  '  datatype(dict[i])
+
+	output = ' datatype d ' datatype(d)
+	a  = sort(d)
+	output = ' datatype a ' datatype(a)
+	ai = 1
+done.part
+	w = a[ai = ai + 1,1]				:f(done.done)	
+	ofile = w					:(done.part)
+
+done.done
+	
+	output =  'dictionary ' i - 1 ' entries read, ' skipped ' skipped.'
+	endfile(3)
+end
