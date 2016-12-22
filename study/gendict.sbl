@@ -89,15 +89,15 @@ loop.char
 loop.out
 
 *	See if this word is a plural form ('s' at the end) of a previous word, in which case updated the entry for that
-*	word adding '+' at the end. Otherwise enter the word into the appropriate dictionary
+*	word adding 'S' at the end. Otherwise enter the word into the appropriate dictionary
 
 	n = size(word)
-	eq(n,1)					:(loop.out)
+	eq(n,1)					:(loop.next)
 	ident(words[word 's'])			:s(loop.copy)
 
 *	Here if plural word.
 	tbl = dict[n]
-	tbl[word] = word '+'
+	tbl[word] = word 'S'
 
 loop.copy
 	tbl = dict[n]
