@@ -21,7 +21,7 @@
 
 *	g.alone.lines, array(30), is the array of lines defined by the rows and columns of the alone grid.
 
-*	g.board.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
+*	g.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
 
 *	g.perms, a table of the permutations of n=1..7 things taken 1..k at a time.
 *	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time, as a string with
@@ -103,7 +103,7 @@ add.end
 *	null if line *num* is at the edge of the board
 
 after
-	after = (eq(num,1) '', eq(num,15) '',g.board.lines[num + 1])	:(return)
+	after = (eq(num,1) '', eq(num,15) '',g.lines[num + 1])	:(return)
 after.end
 
 	define('available(line)blanks,c,i')			:(available.end)
@@ -131,7 +131,7 @@ available.end
 *	null if line *num* is at the edgs of the board
 
 before
-	before = (eq(num,1) '', eq(num,16) '',g.board.lines[num - 1])	:(return)
+	before = (eq(num,1) '', eq(num,16) '',g.lines[num - 1])	:(return)
 before.end
 	
 	define('blanks(line)n')				:(blanks.end)
@@ -329,14 +329,27 @@ display.header
 	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
 display.header.end
 
+	define('display.move(mov)')			:(display.move.end)
+
+*	Display a move.
+
+display.move
+	output = ' display.move '  id(mov) ':' count(mov) ':' free(mov)[1] ':' free(mov)[count] ':' text(mov) :(return)
+	display.move = id(mov) ':' count(mov) ':' free(mov)[1] ':' free(mov)[count] ':' text(mov) :(return)
+display.move.end
+
 	define('display.moves(moves)i,mov')		:(display.moves.end)
+
+*	Display an array of moves.
+
 display.moves
 	mov = moves[i = i + 1,2]			:f(return)
-	display.moves = add(display.moves, id(mov) ':' count(mov) ':'
-.			free(mov)[1] ':' free(mov)[2] ':' text(mov)) :(display.moves.next)
+	display.moves = add(display.moves, display.move(mov)) :(display.moves)
 display.moves.end
 
 	define('display.scores()ara,i')			:(display.scores.end)
+
+*	Display an array of scores.
 
 display.scores
 	output = 'display g.scores '
@@ -344,6 +357,7 @@ display.scores
 display.scores.next
 	output = ara[i = i + 1,1] ' ' lpad(ara[i,2],6)  :s(display.scores.next)f(return)
 display.scores.end
+
 	define('first(line)')				:(first.end)
 
 *	Return index of first blank in line, or fail if none.
@@ -502,17 +516,18 @@ init.value.update
 	g.value[c] = +v					:(init.value.update)
 init.value.end
 
-	define('insert(mov,str)i,count,free')		:(insert.end)
+	define('insert(mov)text,i,count,free')		:(insert.end)
 
-*	Insert the characters in *str* into the available empty cells of *chars* in the move *mov*.
+*	Insert the text of a move into its free list of empty cells in the line of the move.
 
 insert
 	insert = unpack(id(mov))
 	free = free(mov)
 	count = count(mov)
+	text = text(mov)
 insert.1
 	gt(i = i + 1,count)				:(return)
-	insert[free[i]] = substr(str,i,1)		:(insert.1)
+	insert[free[i]] = substr(text,i,1)		:(insert.1)
 insert.end
 
 	define('isword(word,words)')			:(isword.end)
@@ -589,19 +604,19 @@ lines.next
 	lines[i + 15] = vline(grid,i)			:(lines.next)
 lines.end
 
-	define('moves(num)line,alone,nopen,ai,first,max,n,last,nplaces,ptable')	:(moves.end)
+	define('moves(num)line,alone,nopen,ai,first,max,n,last,nplaces,ptable,mov')	:(moves.end)
 
 *	Find all the moves that can be made in the line specified by *num*, where  *num* values from 1 .. 30.
 *	A move is a sequence of empty cells in the line such that at least one cell in the sequence is adjacent to
 *	an already occupied cell.
 
 moves
-*	output = 'enter moves'
+	output = 'enter moves for line ' num ' ' 
 *	display()
 *	display.alone()
 	ptable = table()
 	moves = table()
-	line = g.board.lines[num]
+	line = g.lines[num]
 	g.line = line
 	alone = g.alone.lines[num]
 
@@ -634,21 +649,23 @@ moves.next
 	n = 0
 
 moves.next.n
-*	output = 'moves for n ' n
 	gt(n = n + 1,max)				:s(moves.next)
+	output = 'moves for n ' n
 
 	last = g.avail[ai + n - 1];			:f(moves.fail)
 
 *	Skip this move if all its cells are alone.
 
-*	output  = 'move pre alone ' first ' ' last
+	output  = 'move pre alone ' first ' ' last
 	substr(alone, first, last - first + 1) break(' '):f(moves.next.n)
-*	output  = 'move pst alone ' first ' ' last
+	output  = 'move pst alone ' first ' ' last
 
 *	Add cell to candidate list, as triple (first cell, last cell,number of cells to play)
 
-*	output = 'add moves ' num '  n ' n 
-	ptable[nmove = nmove + 1] = move(num,n,subarray(g.avail,ai,n))	:(moves.next.n)
+	output = 'adding, num ' num '  n ' n 
+	mov = move(num,n,subarray(g.avail,ai,n))
+	output = 'add possible move ' num '  ' display.move(mov)
+	ptable[nmove = nmove + 1] = mov			:(moves.next.n)
 
 moves.done
 	eq(nmove,0)					:(freturn)
@@ -912,19 +929,19 @@ words.end
 best
 	output = 'enter best ' rack
 	
-	g.board.lines = lines(g.board)
+	g.lines = lines(g.board)
 	g.alone.lines = lines(g.alone)
 	n = size(rack)
 	chars = array(15); 
 
 best.nextline
 
-	line = g.board.lines[num = num + 1]		:f(best.done)		
+	line = g.lines[num = num + 1]		:f(best.done)		
 
 	output = 'best nextline ' lpad(num,3) ' ' line
 
 	i = 0
-	line = g.board.lines[num];* recover line
+	line = g.lines[num];* recover line
 	
 *	Find all the places that tiles can be put.
 
@@ -937,7 +954,7 @@ best.nextplace
 	mov = movs[p = p + 1,2]
 	output = format.move(mov)
 *	Save the current line so can restore to it as needed
-	move.line = g.board.lines[num]
+	move.line = g.lines[num]
 	output = 'g.permutations1 key ' size(rack) '?' n
 	perms = g.permutations[size(rack) '?' n]	:f(best.fail)
 	output = 'perms1 datatype ' datatype(perms)
@@ -969,7 +986,7 @@ try
 	n  = count(mov)
 	num = id(mov)
 	first = free(mov)[1]; last = free(mov)[count(mov)]
-	oldlines = copy(g.board.lines[num])
+	oldlines = copy(g.lines[num])
 
 	i = first - 1; ci = 0; permi = 0
 try.next
@@ -979,8 +996,9 @@ try.next
 *	The digit '1' selects the first tile, the digit '2' the second, and so on.
 
 	perm = replace(perm,substr('1234567',1,size(g.rack)),g.rack)
+	text(mov) = perm
 
-	newline = pack(insert(mov,perm))
+	newline = pack(insert(mov))
 
 *	Here with choice substituted. Now rebuild the line and see if it is valid.
 
@@ -991,8 +1009,9 @@ try.next
 *	rebuild the board but with the new tiles in uppercase. This way, a word is new if and only if
 *	it contains an upper case character. 
 
-	g.board.lines[num] = oldline;
-	newline = pack(insert(mov,ucase(substr(g.rack,1,n))))
+	g.lines[num] = oldline;
+	text(mov)  = ucase(substr(g.rack,1,n))
+	newline = pack(insert(mov))
 *	output = 'try.valid newline ' newline '.'
 	newlines[num] = newline
 	board = grid(newlines,num)
@@ -1012,7 +1031,8 @@ try.column
 	score = score + score(newlines,first)		:(try.column)
 
 try.done
-	output = 'try.done ' g.scorecount ' '  id(mov) ' ' count(mov) ' ' free(mov)[1] ' ' free(mov)[2]
+	
+	output = 'try.done ' g.scorecount ' ' display.move(mov)
 	g.scorecount = g.scorecount + 1
 	g.scores[mov] = score
 							:(return)

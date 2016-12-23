@@ -1,6 +1,8 @@
 
--include 'words.sbl'
- 	init()
+*-include 'words.sbl'
+	data('dave(kids,friends)')
+	him = dave('sam','bobo')
+ &dump = 3
 end
  t = table()
 	a1 = array(2)
