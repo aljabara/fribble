@@ -121,7 +121,7 @@ available.2
 	c = substr(line, i = i + 1, 1)				:f(return)
 	differ(c,' ')						:s(available.2)
 	available[ai = ai + 1] = +i				
-	output = 'ai ' lpad(ai,2) '  ' +i
+*	output = 'ai ' lpad(ai,2) '  ' +i
 								:(available.2)
 available.end
 
@@ -329,14 +329,20 @@ display.header
 	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
 display.header.end
 
+	define('display.moves(moves)i,mov')		:(display.moves.end)
+display.moves
+	mov = moves[i = i + 1,2]			:f(return)
+	display.moves = add(display.moves, id(mov) ':' count(mov) ':'
+.			free(mov)[1] ':' free(mov)[2] ':' text(mov)) :(display.moves.next)
+display.moves.end
+
 	define('display.scores()ara,i')			:(display.scores.end)
 
 display.scores
 	output = 'display g.scores '
 	ara = rsort(g.scores,2)
 display.scores.next
-	output = ara[i = i + 1,1] ' ' lpad(ara[i,2],6)  :s(display.scores.next)
-							:(return)
+	output = ara[i = i + 1,1] ' ' lpad(ara[i,2],6)  :s(display.scores.next)f(return)
 display.scores.end
 	define('first(line)')				:(first.end)
 
@@ -583,6 +589,76 @@ lines.next
 	lines[i + 15] = vline(grid,i)			:(lines.next)
 lines.end
 
+	define('moves(num)line,alone,nopen,ai,first,max,n,last,nplaces,ptable')	:(moves.end)
+
+*	Find all the moves that can be made in the line specified by *num*, where  *num* values from 1 .. 30.
+*	A move is a sequence of empty cells in the line such that at least one cell in the sequence is adjacent to
+*	an already occupied cell.
+
+moves
+*	output = 'enter moves'
+*	display()
+*	display.alone()
+	ptable = table()
+	moves = table()
+	line = g.board.lines[num]
+	g.line = line
+	alone = g.alone.lines[num]
+
+*	Allocate and fill in avail, an array giving the positions of the open cells.
+
+	g.avail = available(line)				:f(moves.done);* fail if no empty cells
+	nopen = prototype(g.avail);* number of open cells
+
+*	Prepare for loop, since decrement nopen at start of search at a given empty cell.
+
+	nopen = nopen + 1
+	ai = 0
+
+*MOVES
+moves.next
+*	Here to find all the possible moves starting at the next open cell, first.
+
+	first = g.avail[ai = ai + 1]			:f(moves.done)
+*	output = 'move first ' first
+
+	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
+	le(nopen)					:s(moves.done)
+
+*	Let max be the most tiles we can play on this line. We can't play more tiles than the number of 
+*	blank cells in this line, and we can't play more tiles than we have.
+
+	max = nopen
+	max = gt(max,size(g.rack)) size(g.rack)
+
+	n = 0
+
+moves.next.n
+*	output = 'moves for n ' n
+	gt(n = n + 1,max)				:s(moves.next)
+
+	last = g.avail[ai + n - 1];			:f(moves.fail)
+
+*	Skip this move if all its cells are alone.
+
+*	output  = 'move pre alone ' first ' ' last
+	substr(alone, first, last - first + 1) break(' '):f(moves.next.n)
+*	output  = 'move pst alone ' first ' ' last
+
+*	Add cell to candidate list, as triple (first cell, last cell,number of cells to play)
+
+*	output = 'add moves ' num '  n ' n 
+	ptable[nmove = nmove + 1] = move(num,n,subarray(g.avail,ai,n))	:(moves.next.n)
+
+moves.done
+	eq(nmove,0)					:(freturn)
+	move = convert(ptable,'array')			:f(move.doner)
+	ptable =
+*	output = 'moves.done ' datatype(move)
+							:(return)
+moves.doner	
+	output = 'move.doner'				:(end)
+moves.end
 	define('open(tiles)best.score,best.word,n,w,start,key,permi')	:(open.end)
 
 *	Determine best opening move. At least one letter in this move must be in the center square (8,8).
@@ -641,74 +717,6 @@ pack
 .		chars[11] chars[12] chars[13] chars[14] chars[15]
 pack.end
 
-	define('place(num)line,alone,nopen,ai,first,max,n,last,nplaces,ptable')	:(place.end)
-
-*	Find all the places where a move can be made in the line specified by *num*. *num* values from 1 .. 30
-
-place
-	output = 'enter place'
-	display()
-	display.alone()
-	ptable = table()
-	place = table()
-	line = g.board.lines[num]
-	g.line = line
-	alone = g.alone.lines[num]
-
-*	Allocate and fill in avail, an array giving the positions of the open cells.
-
-	g.avail = available(line)				:f(place.done);* fail if no empty cells
-	nopen = prototype(g.avail);* number of open cells
-
-*	Prepare for loop, since decrement nopen at start of search at a given empty cell.
-
-	nopen = nopen + 1
-	ai = 0
-
-*PLACE
-place.next
-*	Here to find all the possible moves starting at the next open cell, first.
-
-	first = g.avail[ai = ai + 1]			:f(place.done)
-*	output = 'place first ' first
-
-	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
-	le(nopen)					:s(place.done)
-
-*	Let max be the most tiles we can play on this line. We can't play more tiles than the number of 
-*	blank cells in this line, and we can't play more tiles than we have.
-
-	max = nopen
-	max = gt(max,size(g.rack)) size(g.rack)
-
-	n = 0
-
-place.next.n
-*	output = 'placing n ' n
-	gt(n = n + 1,max)				:s(place.next)
-
-	last = g.avail[ai + n - 1];			:f(place.fail)
-
-*	Skip this move if all its cells are alone.
-
-*	output  = 'place pre alone ' first ' ' last
-	substr(alone, first, last - first + 1) break(' '):f(place.next.n)
-*	output  = 'place pst alone ' first ' ' last
-
-*	Add cell to candidate list, as triple (first cell, last cell,number of cells to play)
-
-*	output = 'add place ' num '  n ' n 
-	ptable[nplace = nplace + 1] = move(num,n,subarray(g.avail,ai,n))	:(place.next.n)
-
-place.done
-	eq(nplace,0)					:(freturn)
-	place = convert(ptable,'array')			:f(place.doner)
-	ptable =
-	output = 'place.done ' datatype(place)
-							:(return)
-place.doner	
-	output = 'place.doner'				:(end)
-place.end
 
 	define('placeword(r,c,w)ch')			:(placeword.end)
 
@@ -781,7 +789,6 @@ score
 	score = 0
 	iline = lines[num]
 	bonusline = g.bonus.lines[num]
-	output = 'score iline num ' num ' ' iline
 	iline break(&ucase)				:f(score.error)
 	words = words(iline)				:f(return)
 score.word
@@ -796,7 +803,6 @@ score.word
 	line = substr(iline,start)
 	bonusline = substr(g.bonus.lines[i],start);* corresponding part of bonus line
 	score = 0; double = 0; triple = 0; i = 0
-*SCOR
 score.char
 	gt(i = i + 1,n) 				:s(score.char.done)
 	ch = substr(word,i,1)
@@ -818,7 +824,8 @@ score.char.done
 	score = (eq(triple,2) score * 9)
 							:(return)
 score.error
-	output = 'error scoring line with no new move ' line	:(end)
+	score = 0					:(return)
+*	output = 'error scoring line with no new move ' line	:(end)
 score.end
 
 	define('subarray(ara,start,len)i')		:(subarray.end)
@@ -903,6 +910,7 @@ words.end
 *	Determine best move given current position on the board and rack.
 
 best
+	output = 'enter best ' rack
 	
 	g.board.lines = lines(g.board)
 	g.alone.lines = lines(g.alone)
@@ -913,15 +921,16 @@ best.nextline
 
 	line = g.board.lines[num = num + 1]		:f(best.done)		
 
+	output = 'best nextline ' lpad(num,3) ' ' line
 
 	i = 0
 	line = g.board.lines[num];* recover line
 	
 *	Find all the places that tiles can be put.
 
-*	places = convert(place(num),'array')
-	output = 'calling place '
-	places = place(num)				:f(best.nextline)
+*	places = convert(moves(num),'array')
+*	output = 'calling place '
+	places = moves(num)				:f(best.nextline)
 	output = 'got places'
 	output = 'datatype places ' datatype(places)
 	p = 0
