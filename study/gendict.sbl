@@ -1,4 +1,4 @@
-* This software is licensed under the MIT License, contained in the file LICENSE.
+*n This software is licensed under the MIT License, contained in the file LICENSE.
 
 * Copyright (c) 2016 dave shields
 
@@ -25,10 +25,10 @@ tileset.end
 *	the tileset only has one z.
 
 	&anchor = &trim = 1
-	&dump = 3
+*	&dump = 3
 
 	words = table(100000)
-	count = table(15)
+	count = array(15)
 	tiles = tileset()
 	have = table(26)
 init.1
@@ -36,16 +36,17 @@ init.1
 	have[c] = have[c] + 1				:(init.1)
 init.2
 
+	words = table(10000)
+
 *	wwf is list of words not in enable1.txt word list but known to be accepted as valid by wwf.
 
-	wwf = 'qi brr zen zep ' 
+	wwf = 'qi brr zen zep marie ' 
 
 wwf
 	wwf break(' ') . w ' ' =			:f(wwf.done)
-	words[w] = 1
+	output = 'wwf extension ' w
+	words[w] = 1					:(wwf)
 wwf.done
-
-	words = table(10000)
 
 *	Read in the enable list and add its words to the dictionary
 
@@ -54,75 +55,83 @@ read
 	word = ifile					:f(read.done)
 	words[word] = 1
 	n = size(word)
+	gt(n,15)					:s(read)
 	count[n] = count[n] + 1				:(read)
 read.done
-*	The dictionary is an array of tables. The i-th entry in the dictionary is a table for the words of length i.
-
-	dict = array(15)
-	dict[1] = table()
-	di = 1
-dict.init
-	gt(di = di + 1,15)				:s(dict.init.done)
-	n = count[di]
-	output = ' count ' lpad(di, 2) lpad(n,7)
-	dict[di] = table(n)				:(dict.init)
-dict.init.done
-
 	wara = sort(words)
 
-	output(.ofile,3,'dict.wwf')
+	output(.ofile,3,'dict.text')
 
-*	Loop over dictionary, seeing if word can be built from available tiles.
-loop.next
-	w = wara[i = i + 1,1]				:f(done)
+*	Loop over dictionary.
+*	We skip over words that can't be build from the initial tileset; for example, any word with two z's,
+*	since the tileset has only one z. We intentionally ignore the use of blank tiles at this time.
+*	We also detect plural words convert to a more compact form.
+
+	plurals = table(10000)
+
+word.next
+	word = wara[i = i + 1,1]				:f(word.done)
+	ndict = ndict + 1
 	this = table()
-	s = w
-loop.char
-	s len(1) . c =					:f(loop.out)
+	s = word
+word.char
+	s len(1) . c =					:f(word.out)
 	this[c] = this[c] + 1
-	le(this[c],have[c])				:s(loop.char)
+	le(this[c],have[c])				:s(word.char)
 
 *	skip if have more instances of character c than in initial tileset
-	output = 'skipping ' w ' since too many instances of ' c
-	skipped = skipped + 1				:(loop.next)
+*	output = 'skipping ' w ' since too many instances of ' c
+	words[word] =
+	skipped = skipped + 1				:(word.next)
 
-loop.out
-
-*	See if this word is a plural form ('s' at the end) of a previous word, in which case updated the entry for that
-*	word adding 'S' at the end. Otherwise enter the word into the appropriate dictionary
-
+word.out
 	n = size(word)
-	eq(n,1)					:(loop.next)
-	ident(words[word 's'])			:s(loop.copy)
+	eq(n,1)						:s(word.next)
 
-*	Here if plural word.
-	tbl = dict[n]
-	tbl[word] = word 'S'
+*	Look for plural word that has already been processed, and skip if found.
 
-loop.copy
-	tbl = dict[n]
-	tbl[word] = 1
-done
-	words = wara =
-*	Here to write out the dictionaries to the output file, in irder of increasing length,and sorted within words
-*	of a given length.
+	differ(plurals[word])				:s(word.next)
+
+	ident(words[word 's'])				:s(word.copy)
+
+*	Here if word has a plural form. Delete the current entries for both and replace with an entry 
+*	for the plural form, but ending with 'S', not 's'.
+
+	nplurals = nplurals + 1
+	plurals[word] = 1
+	plurals[word 's'] = 1
+	words[word] =
+	words[word 's'] = 
+	words[word 'S'] = 1				:(word.next);
+word.copy
+	words[word] = 1					:(word.next)
+word.done
+
+	wara = sort(words)
+	words = 
+
+*	After sorting the words table, write out the entries in order of increasing length.
 
 	i = 1
-done.next
-	gt(i = i + 1,15)				:s(done.done)
-	d = dict[i]
-	output = 'datatype dict[i]  ' i '  '  datatype(dict[i])
-
-	output = ' datatype d ' datatype(d)
-	a  = sort(d)
-	output = ' datatype a ' datatype(a)
-	ai = 1
-done.part
-	w = a[ai = ai + 1,1]				:f(done.done)	
-	ofile = w					:(done.part)
-
-done.done
+	len = 1
+len.next
+	gt(len = len + 1,15)				:s(len.done)
+	i = 0
+write.next
+	word = wara[i = i + 1,1]			:f(len.next)
+	ne(size(word),len)				:s(write.next)
+	ofile = word					
+	nout = nout + 1
+							:(write.next)
+len.done
 	
-	output =  'dictionary ' i - 1 ' entries read, ' skipped ' skipped.'
+	output = 'count' lpad(ci = ci + 1, 3)  ' ' lpad(count[ci],6)	:s(len.done)
+
+	output =
+
+	output = rpad('dictionary entries read',30,'.')		 lpad(ndict,7)
+	output = rpad('unusable words',30,'.') 			 lpad(skipped,7)
+	output = rpad('plural words',30,'.') 			 lpad(nplurals,7)
+	output = rpad('dictionary entries written',30,'.') 	 lpad(nout,7)
 	endfile(3)
 end

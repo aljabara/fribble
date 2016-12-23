@@ -12,7 +12,8 @@
 *	A play is a sequence of one or more cells, represented as an array.  The cells are ordered
 *	from left to right for a horizontal play, top to bottom for a vertical play.
 
-*	g.dict, a map on words that is non-null for words in the dictionary.
+*	g.dict, array(15), is an array of hashtables  that are non-null for words in the dictionary.
+	g.dict = array(15)
 
 *	g.alone, array('15,15') tracks the *alone* cells in the board. A cell is *alone* if it is empty and all its
 *	neighbors are empty. A move made after the first move cannot consist only of cells that are alone. 
@@ -214,7 +215,7 @@ checklines.end
 *	Succeeds if w is in the global dictionary, fails otherwise.
 
 checkword
-	differ(g.dict[w])				:s(return)f(freturn)
+	differ(g.dict[size(w)][w])			:s(return)f(freturn)
 checkword.end
 
 *	define('clean()row,col,c,ch,b')			:(clean.end)
@@ -385,14 +386,24 @@ init.bonus.next
 	g.bonus.lines = lines(g.bonus)				:(return)
 init.bonus.end
 
-	define('init.dict(filename,skip)file,n,w,s')		:(init.dict.end)
+	define('init.dict(filename,skip)file,i,n,w,s')		:(init.dict.end)
 
 *	Initialize the global dictionary g.dict.
-*	g.wwf is list of words not in enable1.txt word list but known to be accepted as valid by wwf.
-
-	g.wwf = 'qi brr zen zep ' 'dave shields '
 
 init.dict
+
+	g.dict = array(15)
+
+*	Set hash table sizes according to output of ../study/gendict.sbl
+
+	s  = '1 100 1000 4000 9000 15000 23000 28000 25000 20000 15000 11000 8000 5000 3000 '
+init.dict.tbl
+	gt(i = i + 1,15)				:s(init.dict.tbl.1)
+	s break(' ') . n ' ' = 
+	g.dict[i] = table(+n)				:(init.dict.tbl)
+init.dict.tbl.1
+	i = 0
+
 
 *	Read in a dictionary from a specified file, with one word per line. If 'skip'
 *	is non-zero then that number of lines are skipped before adding the next word.
@@ -400,15 +411,6 @@ init.dict
 
 	filename = ident(filename) '../dict.txt'
 	skip = (ident(skip) +1, +skip)
-	g.dict = table(100000)
-
-*	add words from g.wwf list to dictionary
-
-	s = g.wwf
-init.dict.wwf.1
-	s break(' ') . w ' ' =				:f(init.dict.wwf.2)
-	g.dict[w] = +1					:(init.dict.wwf.1)
-init.dict.wwf.2
 
 	input(.file,3,filename)				:s(init.dict.in)
 	output = 'unable to open input file ' filename	:(freturn)
@@ -416,7 +418,15 @@ init.dict.wwf.2
 init.dict.in
 	w = file					:f(init.dict.done)
 	gt(size(w),15)					:s(init.dict.in)
-	g.dict[w] = +1
+
+*	Process plural words, indicated by 'S' at end
+
+	differ(substr(w,size(w),1),'S')			:s(init.dict.w)
+	w = substr(w,1,size(w) - 1)
+	g.dict[size(w) + 1][w] = dict[w 's'] = 1			:(init.dict.in)
+init.dict.w
+	output = 'enter ' w ' ' size(w)
+	g.dict[size(w)][w] = +1
 	eq(skip,1)					:s(init.dict.in)
 *	here want to skip over entries in the dictionary (for testing)
 	n = skip
