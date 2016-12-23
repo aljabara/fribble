@@ -11,9 +11,15 @@
 *	&dump = 3
 
 	init()
+
+* test best
 	display()
 	g.rack = 'inverts'
+	placeword(1,3,'INVERTS')
+	g.board.lines = lines(g.board)
+	output = 'score INVERTS' score
 	placeword(1,3,'inverts')
+	
 	g.rack = 'toxoedf'
 	best('toxoedf')
 	display()
@@ -26,22 +32,9 @@
 	score = score(g.board.lines,2)
 	output = 'score ' score
 *	output = 'open with move ' omove
+* end test best
 
 end
-
-*	omove = open('striven')
-	display()
-	placeword(1,3,'inverts')
-	output = 'placed  1,3, inverts'
-	display()
-	g.board.lines = lines(g.board)
-	score = score(g.board.lines,1)
-	output = 'score inverts ' score
-	placeword(2,3,'TO')
-	display()
-	g.board.lines = lines(g.board)
-	score = score(g.board.lines,2)
-	output = 'score ' score
 *	output = 'open with move ' omove
 	
 	test = 'johnson millman shields '
@@ -50,6 +43,23 @@ loop
 	output = 'best move for ' tiles ' is '  open(tiles) 
 	display()
 							:(loop)
+* end test score
 done
 	g.dict = g.permutations =
 end
+
+end
+* test score
+*	omove = open('striven')
+	display()
+	placeword(1,3,'INVERTS')
+	output = 'placed  1,3, inverts'
+	display()
+	g.board.lines = lines(g.board)
+	score = score(g.board.lines,1)
+	output = 'score inverts ' score
+	display()
+	g.board.lines = lines(g.board)
+	score = score(g.board.lines,1)
+	output = 'score ' score
+* end test score

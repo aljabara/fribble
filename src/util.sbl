@@ -38,7 +38,7 @@
 *	g.avail, array(15), is the result of applying the procedure available() to g.line.
 
 *	g.scores, table(100), used to accumulate scores of valid moves during a turn.
-*	g.nscores, number of current entries in g.score
+*	g.scorecount, number of current entries in g.score
 
 *	A move consists of sequence of cells in a row or column.
 *	*id* gives the line number, in the range 1..30. *count* is the number of free cells covered by this move.
@@ -65,7 +65,7 @@ init
 
 	g.alone = array('15,15','1')
 
-	g.scores =  array(100)
+	g.scores =  table(100)
 	g.scorecount = 0
 
 	init.bonus()
@@ -423,9 +423,10 @@ init.dict.in
 
 	differ(substr(w,size(w),1),'S')			:s(init.dict.w)
 	w = substr(w,1,size(w) - 1)
-	g.dict[size(w) + 1][w] = dict[w 's'] = 1			:(init.dict.in)
+	g.dict[size(w)][w] = +1
+	g.dict[size(w) + 1][w 's'] = +1			:(init.dict.in)
 init.dict.w
-	output = 'enter ' w ' ' size(w)
+*	output = 'enter ' w ' ' size(w)
 	g.dict[size(w)][w] = +1
 	eq(skip,1)					:s(init.dict.in)
 *	here want to skip over entries in the dictionary (for testing)
@@ -669,7 +670,7 @@ place.next
 *	Here to find all the possible moves starting at the next open cell, first.
 
 	first = g.avail[ai = ai + 1]			:f(place.done)
-	output = 'place first ' first
+*	output = 'place first ' first
 
 	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
 	le(nopen)					:s(place.done)
@@ -683,20 +684,20 @@ place.next
 	n = 0
 
 place.next.n
-	output = 'placing n ' n
+*	output = 'placing n ' n
 	gt(n = n + 1,max)				:s(place.next)
 
 	last = g.avail[ai + n - 1];			:f(place.fail)
 
 *	Skip this move if all its cells are alone.
 
-	output  = 'place pre alone ' first ' ' last
+*	output  = 'place pre alone ' first ' ' last
 	substr(alone, first, last - first + 1) break(' '):f(place.next.n)
-	output  = 'place pst alone ' first ' ' last
+*	output  = 'place pst alone ' first ' ' last
 
 *	Add cell to candidate list, as triple (first cell, last cell,number of cells to play)
 
-	output = 'add place ' num '  n ' n 
+*	output = 'add place ' num '  n ' n 
 	ptable[nplace = nplace + 1] = move(num,n,subarray(g.avail,ai,n))	:(place.next.n)
 
 place.done
@@ -784,7 +785,7 @@ score
 	iline break(&ucase)				:f(score.error)
 	words = words(iline)				:f(return)
 score.word
-	start = words[wi = wi + 1,1]			:f(score.done)
+	start = words[wi = wi + 1,1]			:f(return)
 	word = words[wi,2]
 	n = size(word)
 
@@ -797,8 +798,8 @@ score.word
 	score = 0; double = 0; triple = 0; i = 0
 *SCOR
 score.char
-	gt(i = i + 1,n) 				:s(score.word)
-	ch = substr(word,i,1)				:f(score.word)
+	gt(i = i + 1,n) 				:s(score.char.done)
+	ch = substr(word,i,1)
 	bonus = +substr(bonusline,i,1)
 	val = +g.value[ch]
 	score = score + val;* always get at least the value of the tile
@@ -810,7 +811,7 @@ score.char
 
 	double = (eq(bonus,4) double + 1)		:s(score.char);* double word
 	triple = (eq(bonus,5) triple + 1)		:s(score.char);* triple word
-score.done
+score.char.done
 	score = (eq(double,1) score * 2)
 	score = (eq(double,2) score * 4)
 	score = (eq(triple,1) score * 3)
@@ -908,7 +909,7 @@ best
 	n = size(rack)
 	chars = array(15); 
 
-best.line
+best.nextline
 
 	line = g.board.lines[num = num + 1]		:f(best.done)		
 
@@ -920,11 +921,11 @@ best.line
 
 *	places = convert(place(num),'array')
 	output = 'calling place '
-	places = place(num)				:f(best.fail)
+	places = place(num)				:f(best.nextline)
 	output = 'got places'
 	output = 'datatype places ' datatype(places)
 	p = 0
-best.next
+best.nextplace
 	mov = places[p = p + 1,2]
 	output = format.move(mov)
 *	Save the current line so can restore to it as needed
@@ -943,7 +944,9 @@ best.perm.next
 best.perm
 		output = 'best.perm??'			:(return)
 best.fail
-	output = 'best fail'			:(end)
+	output = 'best fail'				:(end)
+best.done
+	output = 'best done ' 				:(return)
 best.end
 
 	define('try(mov,perms)n,num,first,last,free,oldlines,i,ci,perm,newline,board,score,permi')		:(try.end)
@@ -1001,6 +1004,8 @@ try.column
 	score = score + score(newlines,first)		:(try.column)
 
 try.done
+	output = 'try.done ' g.scorecount ' '  id(mov) ' ' count(mov) ' ' free(mov)[1] ' ' free(mov)[2]
+	g.scorecount = g.scorecount + 1
 	g.scores[mov] = score
 							:(return)
 
