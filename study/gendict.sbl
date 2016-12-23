@@ -60,7 +60,7 @@ read
 read.done
 	wara = sort(words)
 
-	output(.ofile,3,'dict.text')
+	output(.ofile,3,'dict.txt')
 
 *	Loop over dictionary.
 *	We skip over words that can't be build from the initial tileset; for example, any word with two z's,
