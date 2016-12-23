@@ -905,7 +905,7 @@ words.done
 	words = convert(words,'array')				:(return)
 words.end
 	
-	define('best(rack)i,chars,line,places,p,first,last,mov,n,perm,saveline,i,places,ptable,n)')		:(best.end)
+	define('best(rack)i,chars,line,places,p,first,last,mov,n,perm,saveline,i,places,ptable,movs,n)')		:(best.end)
 
 *	Determine best move given current position on the board and rack.
 
@@ -928,14 +928,13 @@ best.nextline
 	
 *	Find all the places that tiles can be put.
 
-*	places = convert(moves(num),'array')
-*	output = 'calling place '
-	places = moves(num)				:f(best.nextline)
-	output = 'got places'
-	output = 'datatype places ' datatype(places)
+	output = 'calling moves '
+	movs = moves(num)				:f(best.nextline)
+	output = 'got moves '  display.moves(movs)
+*	output = 'datatype places ' datatype(places)
 	p = 0
 best.nextplace
-	mov = places[p = p + 1,2]
+	mov = movs[p = p + 1,2]
 	output = format.move(mov)
 *	Save the current line so can restore to it as needed
 	move.line = g.board.lines[num]

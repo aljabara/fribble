@@ -2,7 +2,7 @@
 
 * Copyright (c) 2016 dave shields
 
--include "../src/util.sbl"
+-include "../src/words.sbl"
 
 *	Determine highest-scoring opening move
 

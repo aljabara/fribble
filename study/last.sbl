@@ -1,6 +1,6 @@
 * Count number of different endings of words.
 
--include "../src/util.sbl"
+-include "../src/words.sbl"
 
 * Of the 26*26*26 = 17,500, there are 2980 distinct ending sequences of 3 letters, 2756 distinct starting.
 

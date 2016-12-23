@@ -1,4 +1,4 @@
--include "../util.sbl"
+-include "../words.sbl"
 *	this is a study of distribution of the first few, and last few, letters in the dictionary words.
 *	first, to decide whether to scan for possible moves from left to right, or from right to left.
 *	also, to decide if it's worth looking at just first few characters of candidate words to see if

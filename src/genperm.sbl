@@ -5,7 +5,7 @@
 
 *	Write out all permutations of up to seven digits, including all permutations of substrings.
 
--include "../src/util.sbl"
+-include "words.sbl"
 
 
 	define('permgen(s,k)c,n,i,dist,t')			:(permgen.end)

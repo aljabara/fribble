@@ -3,7 +3,7 @@
 
 * Copyright (c) 2016 dave shields
 
--include "../src/util.sbl"
+-include "../src/words.sbl"
 
 * 	find pairs of letters that never occur in any word in the word list,
 *	and so may help eliminate possible word candidates.

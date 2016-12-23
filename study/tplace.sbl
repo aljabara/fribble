@@ -1,5 +1,5 @@
 *	Test place()
--include '../src/util.sbl'
+-include '../src/words.sbl'
 	output = 'test place'
 
 	&anchor = &trim = 1

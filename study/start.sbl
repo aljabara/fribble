@@ -1,6 +1,6 @@
 * Count number of different beginnings of words.
 
--include "../src/util.sbl"
+-include "../src/words.sbl"
 
 * Of the 26*26*26 = 17,500, there are 2980 distinct starting sequences of 3 letters, 2756 distinct ending.
 * So only about 1/5 of possible endings (or beginnings,as it turns out) actually occur.

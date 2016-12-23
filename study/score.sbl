@@ -1,4 +1,4 @@
--include "util.sbl"
+-include "words.sbl"
 	&anchor = &trim = 1
 	&dump = 3
 

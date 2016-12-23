@@ -2,7 +2,7 @@
 
 * Copyright (c) 2016 dave shields
 
--include "../src/util.sbl"
+-include "/src/words.sbl"
 
 	&anchor = &trim = 1
 * count the number of words by their initial character
