@@ -329,12 +329,15 @@ display.header
 	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
 display.header.end
 
-	define('display.move(mov)')			:(display.move.end)
+	define('display.move(mov)count')			:(display.move.end)
 
 *	Display a move.
 
 display.move
-	display.move = id(mov) '#' count(mov) ':' free(mov)[1] '...' free(mov)[count(mov)] ":'" text(mov)  "'" :(return)
+	count = count(mov)
+	display.move = (eq(count,1) id(mov) '#' count(mov) ':' free(mov)[1] ':' text(mov))
+	display.move = (ne(count,1) id(mov) '#' count(mov) ':' free(mov)[1] '..' free(mov)[count] ':' text(mov))
+							:(return)
 display.move.end
 
 	define('display.moves(moves)i,mov')		:(display.moves.end)
@@ -656,7 +659,7 @@ moves.next.n
 *	Add cell to candidate list, as triple (first cell, last cell,number of cells to play)
 
 	mov = move(num,n,subarray(g.avail,ai,n))
-	output = 'possible move ' display.move(mov)
+	output = 'move @ ' display.move(mov)
 	ptable[nmove = nmove + 1] = mov			:(moves.next.n)
 
 moves.done
@@ -950,7 +953,7 @@ best.nextplace
 	output = 'g.permutations1 key ' size(rack) '?' n
 	perms = g.permutations[size(rack) '?' n]	:f(best.fail)
 	output = 'perms1 datatype ' datatype(perms)
-	try(mov,perms,rack)
+	tryline(mov,perms,rack)
 	
 *	Iterate over the permutations for this set of placements
 	permi = 0	
@@ -966,75 +969,75 @@ best.done
 	output = 'best done ' 				:(return)
 best.end
 
-	define('try(mov,perms,rack)n,num,first,last,free,oldlines,i,ci,perm,newline,board,score,permi')		:(try.end)
+*TRY
+	define('tryline(mov,perm,rack)') :(tryline.end)
+m.
 
-*	Given a move *mov* and a list *permutations* of permutations to be tried for the move,
-*	try all the moves than can be made, see which are valid, and add their scores to g.scores
+*	Given a move *mov* and a permutation  *perm* to be tried for the move,
+* 	apply it and see if the result has only valid words. Fail if this is not the case.
 
 *TRY
-try
+tryline
 	output = 'try perm ' perm '   rack ' rack
-	output = 'try datatype perms ' datatype(perms)
-	n  = count(mov)
-	num = id(mov)
-	first = free(mov)[1]; last = free(mov)[count(mov)]
-	oldlines = copy(g.lines[num])
-
-	i = first - 1; ci = 0; permi = 0
-try.next
-	perm = perms[permi = permi + 1]			:f(try.done)
 
 *	Insert the letters from the tileset corresponding to the permutation into the selected blank cells in the line. 
 *	The digit '1' selects the first tile, the digit '2' the second, and so on.
 
-	perm = replace(perm,substr('1234567',1,size(rack)),rack)
-	text(mov) = perm
+	text(mov) = replace(perm,substr('1234567',1,size(rack)),rack)
+	line = pack(insert(mov));* INSERT
+	checkline(line)					:f(freturn)
+	tryline = copy(mov)				:(return)
 
-	newline = pack(insert(mov))
+tryline.end
 
-*	Here with choice substituted. Now rebuild the line and see if it is valid.
+	define('trygrid(mov)i,line,lines,grid,first,last`') :(trygrid.end)
 
-	checkline(newline)					:f(try.next)
+*	Given that move *mov* is valid for its line, see that every other line affected by the move contains
+*	only valid words. If this is so, then compute the score of the move and return that as the result, otherwise
+*	the call fails.
 
-*	Here if valid move. Time to compute its score.
+trygrid
+
+*	The i-th character in line of a move in a row (column) is also in the i-th character in
+*	the corresonding row (column). 
+
+*	Rebuild the grid using the new line, and then rebuild the lines array to propogate 
+*	all changes to the necessary lines.
+
+	lines = copy(g.lines)
+	line = lines[id(mov)]
+	lines[id(mov)] = pack(line,insert(mov))
+	grid = grid(lines)
+	lines = lines(grid)
+
+*	See if the move is valid by looking at all affected lines.
+
+trygrid.next
+	line = lines[i = i + 1]				:f(trygrid.valid)
+	checkline(line)					:(trygrid.next)
+trygrid.valid
+
+*	Here after confirming all lines are still valid, so need to compute the score.
+
 *	In order to determine which words on the board would be formed by making this move,
 *	rebuild the board but with the new tiles in uppercase. This way, a word is new if and only if
-*	it contains an upper case character. 
+*	it contains an upper case character. The score is then the sum over all the lines of the scores of
+*	the words containing an upper-case character. At most one word in any line of the new grid with
+*	contain an upper-case character.
 
-	g.lines[num] = oldline;
-	text(mov)  = ucase(substr(rack,1,n))
-	newline = pack(insert(mov))
-*	output = 'try.valid newline ' newline '.'
-	newlines[num] = newline
-	board = grid(newlines,num)
-	newlines = lines(board)
+	text(mov)  = ucase(text(mov))
+	line = lines[id(mov)]
+	line = pack(line,insert(mov));
+	grid = grid(lines)
+	lines = lines(grid)
+	i = 0
 
-	score = score(newlines,num)
-	output = 'try valid ' num '  ' newlines[num]
-
-*	The i-th character in the row of our move is also in the i-th column.
-*	We have the scored the row containing the move and have initialized *score* to that score.
-*	Complete scoring by adding the score of all the columns that may contain newly formed words.
-
-	i = first - 1
-try.column
-	gt(first = first + 1,last)			:s(try.done)
-	output = 'try scoring column ' first '  ' newlines[first]
-	score = score + score(newlines,first)		:(try.column)
-
-try.done
-	
-	output = 'try.done ' g.scorecount ' ' display.move(mov)
-	g.scorecount = g.scorecount + 1
-	g.scores[mov] = score
+trygrid.score
+	line = grid(i = i + 1)				:f(return)
+	trygrid = trygrid + score(lines[i])		:(trygrid.score)
 							:(return)
-
-try.invalid
-
-*	Here if new line not valid, ...
-							:(try.next)
-
-try.end
+							:(return)
+trygrid.end
 
 	define('format.move(mov)')			:(format.move.end)
 format.move
