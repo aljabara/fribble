@@ -7,34 +7,35 @@
 *	Test open() and oscore(), used to find best opening move.
 
 	&anchor = &trim = 1
-*	&ftrace = 1000
 *	&dump = 3
 
 	init()
 
+
 * test best
-*	tara = array(4)
-*	tara[1]  = 2
-*	tara[2]  = 4
-*	tara[3]  = 6
-*	tara[4]  = 8
-*	tmov = move(6,4,tara,'dave')
-*	output = display.move(tmov)
-	display()
 	g.rack = 'inverts'
 	placeword(1,3,'inverts')
+*	g.lines = lines(g.board);* update lines
+	output = 'line 1 ' g.lines[1]
+	display.alone()
 	display()
 	
+
 	rack = 'toxoedf'
-	best(rack)
-	display()
-	g.board.lines = lines(g.board)
-	score = score(g.board.lines,1)
-	output = 'score inverts ' score
-	display()
+
+*	&ftrace = 10009
+
+	moves = find(rack)
+	output = 'moves from find(rack)'
+	display.moves(moves)
 end
-	g.board.lines = lines(g.board)
-	score = score(g.board.lines,2)
+	g.lines = lines(g.board)
+	score = score(g.lines,1)
+	output = 'score inverts ' score
+*	display()
+end
+	g.lines = lines(g.board)
+	score = score(g.lines,2)
 	output = 'score ' score
 *	output = 'open with move ' omove
 * end test best
@@ -60,40 +61,48 @@ end
 	placeword(1,3,'INVERTS')
 	output = 'placed  1,3, inverts'
 	display()
-	g.board.lines = lines(g.board)
-	score = score(g.board.lines,1)
+	g.lines = lines(g.board)
+	score = score(g.lines,1)
 	output = 'score inverts ' score
 	display()
-	g.board.lines = lines(g.board)
-	score = score(g.board.lines,1)
+	g.lines = lines(g.board)
+	score = score(g.lines,1)
 	output = 'score ' score
 * end test score
 * test best
 	display()
 	g.rack = 'inverts'
 	placeword(2,3,'TO')
-	g.board.lines = lines(g.board)
-	output = 'score TO ' score(g.board.lines,2)
+	g.lines = lines(g.board)
+	output = 'score TO ' score(g.lines,2)
 	
 	placeword(1,3,'INVERTS')
 	placeword(2,3,'to')
-	g.board.lines = lines(g.board)
+	g.lines = lines(g.board)
 	display()
 *	placeword(1,3,'inverts')
-	output = 'score INVERTS row 1=' score(g.board.lines,1)
-	output = 'score INVERTS col 3=' score(g.board.lines,18)
-	output = 'score INVERTS col 4=' score(g.board.lines,19)
-	output = 'score INVERTS col 5=' score(g.board.lines,20)
+	output = 'score INVERTS row 1=' score(g.lines,1)
+	output = 'score INVERTS col 3=' score(g.lines,18)
+	output = 'score INVERTS col 4=' score(g.lines,19)
+	output = 'score INVERTS col 5=' score(g.lines,20)
 	
 	g.rack = 'toxoedf'
 	best('toxoedf')
 	display()
-	g.board.lines = lines(g.board)
-	score = score(g.board.lines,1)
+	g.lines = lines(g.board)
+	score = score(g.lines,1)
 	output = 'score inverts ' score
 	display()
-	g.board.lines = lines(g.board)
-	score = score(g.board.lines,2)
+	g.lines = lines(g.board)
+	score = score(g.lines,2)
 	output = 'score ' score
 *	output = 'open with move ' omove
 * end test best
+*	tara = array(4)
+*	tara[1]  = 2
+*	tara[2]  = 4
+*	tara[3]  = 6
+*	tara[4]  = 8
+*	tmov = move(6,4,tara,'dave')
+*	output = display.move(tmov)
+	display()

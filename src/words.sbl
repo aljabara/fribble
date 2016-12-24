@@ -33,17 +33,16 @@
 
 *	g.value, a map from characters to the tile value of that character.
 
-*	g.line is used to hold a line from the board when trying all the possible moves for that line.
-
 *	g.avail, array(15), is the result of applying the procedure available() to g.line.
 
-*	g.scores, table(100), used to accumulate scores of valid moves during a turn.
-*	g.scorecount, number of current entries in g.score
 
-*	A move consists of sequence of cells in a row or column.
-*	*id* gives the line number, in the range 1..30. *count* is the number of free cells covered by this move.
-*	*free* is an array of dimension *count* giving the empty cells to be filled by this move.
-	data('move(id,count,free,text)')
+*	A move is a sequence of empty cells in a row or column such that at least one cell in the sequence 
+*	is adjacent to an already occupied cell.
+*	The field *id* gives the line number, in the range 1..30; *count* is the number of free cells covered by this move;
+*	*free* is an array of dimension *count* giving the empty cells to be filled by this move; and *points*
+*	is the number of points gained. by playing this move.
+
+	data('move(id,count,free,text,points)')
 
 *	g.bonus,array(15,15) gives the bonus values for the squares on the board, using 
 *		1 for the value of the letter itself
@@ -62,11 +61,10 @@
 
 init
 	g.board = array('15,15',' ')
+	g.lines = lines(g.board)
 
 	g.alone = array('15,15','1')
-
-	g.scores =  table(100)
-	g.scorecount = 0
+	g.alone.lines = lines(g.alone)
 
 	init.bonus()
 
@@ -329,24 +327,30 @@ display.header
 	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
 display.header.end
 
-	define('display.move(mov)count')			:(display.move.end)
+	define('display.move(mov)id,count')			:(display.move.end)
 
 *	Display a move.
 
 display.move
 	count = count(mov)
-	display.move = (eq(count,1) id(mov) '#' count(mov) ':' free(mov)[1] ':' text(mov))
-	display.move = (ne(count,1) id(mov) '#' count(mov) ':' free(mov)[1] '..' free(mov)[count] ':' text(mov))
+	display.move = 'M'
+	id = id(mov)
+	id = (le(id,15) 'r' lpad(id,2,0), 'c' lpad(id - 15,2,0)) '#' count(mov) ':'
+	display.move = (eq(count,1)  	id free(mov)[1] ':' text(mov) ':' points(mov),
+.					id free(mov)[1] '..' free(mov)[count] ':' text(mov) ':' points(mov))
 							:(return)
 display.move.end
 
-	define('display.moves(moves)i,mov')		:(display.moves.end)
+	define('display.moves(movs)i,mov')		:(display.moves.end)
 
 *	Display an array of moves.
 
 display.moves
-	mov = moves[i = i + 1,2]			:f(return)
-	display.moves = add(display.moves, display.move(mov)) :(display.moves)
+	ident(movs)					:s(return)
+	output = '  moves '
+display.moves.loop
+	mov = movs[i = i + 1,2]			:f(return)
+	output = char(9) lpad(i,2) ' ' display.move(mov) :(display.moves.loop)
 display.moves.end
 
 	define('display.scores()ara,i')			:(display.scores.end)
@@ -606,19 +610,13 @@ lines.next
 	lines[i + 15] = vline(grid,i)			:(lines.next)
 lines.end
 
-	define('moves(num)line,alone,nopen,ai,first,max,n,last,nplaces,ptable,mov')	:(moves.end)
+	define('moves(num,line,rack)alone,nopen,ai,first,max,n,last,nplaces,ptable,mov,nmove')	:(moves.end)
 
-*	Find all the moves that can be made in the line specified by *num*, where  *num* values from 1 .. 30.
-*	A move is a sequence of empty cells in the line such that at least one cell in the sequence is adjacent to
-*	an already occupied cell.
+*	Find all the moves that can be made in the line specified by *num*, where  *num* values from 1 .. 30,
+*	and *line* has the current content of that line.
 
 moves
-*	display()
-*	display.alone()
-	ptable = table()
 	moves = table()
-	line = g.lines[num]
-	g.line = line
 	alone = g.alone.lines[num]
 
 *	Allocate and fill in avail, an array giving the positions of the open cells.
@@ -643,8 +641,7 @@ moves.next
 *	blank cells in this line, and we can't play more tiles than we have.
 
 	max = nopen
-	max = gt(max,size(g.rack)) size(g.rack)
-
+	max = gt(max,size(rack)) size(rack)
 	n = 0
 
 moves.next.n
@@ -659,15 +656,12 @@ moves.next.n
 *	Add cell to candidate list, as triple (first cell, last cell,number of cells to play)
 
 	mov = move(num,n,subarray(g.avail,ai,n))
-	output = 'move @ ' display.move(mov)
-	ptable[nmove = nmove + 1] = mov			:(moves.next.n)
+	moves[nmove = nmove + 1] = mov			:(moves.next.n)
 
 moves.done
-	eq(nmove,0)					:(freturn)
-	move = convert(ptable,'array')			:f(move.doner)
-	ptable =
-*	output = 'moves.done ' datatype(move)
-							:(return)
+	display.moves(convert(moves,'array'))
+	moves = ident(nmove) 				:s(return)
+	moves = convert(moves,'array')			:(return)
 moves.doner	
 	output = 'move.doner'				:(end)
 moves.end
@@ -738,7 +732,7 @@ pack.end
 placeword
 	c = c - 1
 placeword.1
-	w len(1) . ch =					:f(return)
+	w len(1) . ch =					:f(placeword.done)
 	g.board[r, c = c + 1] = ch
 *	Mark self and adjoining squares as no longer alone
 	g.alone[r,c] = ' '    ;* self
@@ -747,6 +741,10 @@ placeword.1
 	g.alone[r,c - 1] = ' ';* cell to the west
 	g.alone[r + 1,c] = ' ';* cell to the south
 							:(placeword.1)
+placeword.done
+	g.alone.lines = lines(g.alone)
+	g.lines = lines(g.board);* update g.lines so consistent with updated board.
+							:(return)
 placeword.end
 
 	define('prefix(str,pre)word')			:(prefix.end)
@@ -918,65 +916,54 @@ words.done
 	words = convert(words,'array')				:(return)
 words.end
 	
-	define('best(rack)i,chars,line,places,p,first,last,mov,n,perm,saveline,i,places,ptable,movs,n)')		:(best.end)
+	define('find(rack)find,flines,line,movs,movei,mov,perms,perm,score,found)')	:(find.end)
 
-*	Determine best move given current position on the board and rack.
+*	Find all the valid moves and their scores given the current board and the indicated rack.
+*	For each line, find the set of all possible moves for that line. 
+*	Then for each move find all the options (permutations) that can be played from the tileset.
+*	For each specific permutation see if the resulting line contains only valid words. 
+*	If not, go on to the next permutation.
+*	If true, then see if all the lines affected by the move contain only valid words.
+*	If not, go on to the next permutation.
+*	If so, then add up the scores of all new words created by the move.
 
-best
-	output = 'enter best ' rack
-	
-	g.lines = lines(g.board)
-	g.alone.lines = lines(g.alone)
-	n = size(rack)
-	chars = array(15); 
 
-best.nextline
+*FIND
+find
+	find = table()
+	lines = copy(g.lines)
 
-	line = g.lines[num = num + 1]		:f(best.done)		
+find.line
+	gt(num = num + 1,30)				:s(find.done)
+	line = lines[num]
+	output = 'find line ' num ' ' line
+	movs = moves(num,line,rack)
+	ident(movs)					:s(find.line)
+	movei = 0
+find.move
+	mov = movs[movei = movei + 1,2]			:f(find.line)
+	perms = g.permutations[size(rack) ? count(mov)]
+find.perm
+	perms break(' ') . perm ' ' =			:f(find.move)
+	tryline(mov,perm,rack)				:f(find.perm)
 
-	output = 'best nextline ' lpad(num,3) ' ' line
+*	If ok for line, see if ok for all lines
 
-	i = 0
-	line = g.lines[num];* recover line
-	
-*	Find all the places that tiles can be put.
+	score = trygrid(mov,perm,rack)			:f(find.perm)
+	points(mov) = score				
+	find[found = found + 1] = copy(mov)
+							:(find.perm)
+find.done
+	find = (ne(found) convert(find,'array'), '')	:(return)
+find.end
 
-	movs = moves(num)				:f(best.nextline)
-	output = 'got moves '  display.moves(movs)
-*	output = 'datatype places ' datatype(places)
-	p = 0
-best.nextplace
-	mov = movs[p = p + 1,2]
-	output = format.move(mov)
-*	Save the current line so can restore to it as needed
-	move.line = g.lines[num]
-	output = 'g.permutations1 key ' size(rack) '?' n
-	perms = g.permutations[size(rack) '?' n]	:f(best.fail)
-	output = 'perms1 datatype ' datatype(perms)
-	tryline(mov,perms,rack)
-	
-*	Iterate over the permutations for this set of placements
-	permi = 0	
-best.perm.next
-	perm = perms[permi = permi + 1]			:f(best.perm.done)
-	perm = replace(perm,substr('1234567',size(rack)),rack)
-*	Now substitute tiles from permutation into the empty cells for this move
-best.perm
-		output = 'best.perm??'			:(return)
-best.fail
-	output = 'best fail'				:(end)
-best.done
-	output = 'best done ' 				:(return)
-best.end
-
-*TRY
-	define('tryline(mov,perm,rack)') :(tryline.end)
+	define('tryline(mov,perm,rack)') 		:(tryline.end)
 m.
 
 *	Given a move *mov* and a permutation  *perm* to be tried for the move,
 * 	apply it and see if the result has only valid words. Fail if this is not the case.
 
-*TRY
+*TRYLINE
 tryline
 	output = 'try perm ' perm '   rack ' rack
 
@@ -1038,10 +1025,4 @@ trygrid.score
 							:(return)
 							:(return)
 trygrid.end
-
-	define('format.move(mov)')			:(format.move.end)
-format.move
-	format.mov = 'MOVE id ' id(mov) '  count ' count(mov) '  free[1] ' free(mov)[1] '  free[2] ' free(mov)[count(mov)] 
-		:(return)
-format.move.end
 
