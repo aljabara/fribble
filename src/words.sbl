@@ -2,6 +2,8 @@
 
 * Copyright (c) 2016 dave shields
 
+-include "display.sbl"
+
 *	Global Variables
 
 *	Here are the global variables. Each has a name starting with 'g.' Their initial value is set in the
@@ -13,7 +15,6 @@
 *	from left to right for a horizontal play, top to bottom for a vertical play.
 
 *	g.dict, array(15), is an array of hashtables  that are non-null for words in the dictionary.
-	g.dict = array(15)
 
 *	g.alone, array('15,15') tracks the *alone* cells in the board. A cell is *alone* if it is empty and all its
 *	neighbors are empty. A move made after the first move cannot consist only of cells that are alone. 
@@ -23,9 +24,11 @@
 
 *	g.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
 
-*	g.perms, a table of the permutations of n=1..7 things taken 1..k at a time.
+*	g.permutations, a table of the permutations of n=1..7 things taken 1..k at a time.
 *	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time, as a string with
 *	entries separated by a space.
+
+*	g.permutations.count, a table giving the number of permutations of for a given *n* and *k*.
 
 *	g.rack, a string containing the current rack. Plays are made using the characters from the rack.
 
@@ -37,18 +40,19 @@
 
 
 *	A move is a sequence of empty cells in a row or column such that at least one cell in the sequence 
-*	is adjacent to an already occupied cell.
-*	The field *id* gives the line number, in the range 1..30; *count* is the number of free cells covered by this move;
-*	*free* is an array of dimension *count* giving the empty cells to be filled by this move; and *points*
-*	is the number of points gained. by playing this move.
+*	is adjacent to an already occupied cell:
+*		*id* gives the line number, in the range 1..30;
+*		*count* is the number of free cells covered by this move;
+*		*free* is an array of dimension *count* giving the empty cells to be filled by this move; and
+*		*points* is the number of points won by playing this move.
 
 	data('move(id,count,free,text,points)')
 
-*	g.bonus,array(15,15) gives the bonus values for the squares on the board, using 
-*		1 for the value of the letter itself
+*	g.bonus,array(15,15) gives the bonus values for the squares on the board:
+*		1 for the value of the letter itself,
 *		2 for double letter,
 *		3 for triple letter, 
-*		4 for double word, 
+*		4 for double word, and
 *		5 for triple word.
 
 *	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
@@ -60,6 +64,7 @@
 *	Initialize global variables.
 
 init
+	g.dict = array(7)
 	g.board = array('15,15',' ')
 	g.lines = lines(g.board)
 
@@ -67,11 +72,6 @@ init
 	g.alone.lines = lines(g.alone)
 
 	init.bonus()
-
-*	Initialize set of moves.
-
-	g.move = array(7);* at most seven tiles can be played at a time
-	g.len = 0
 
 *	Initialze permutation map.
 
@@ -94,15 +94,6 @@ add
 	add = str ' ' word				:(return)
 add.end
 
-	define('after(num)')				:(after.end)
-
-*	Find the line 'after' line *num*. This is either the row below or the column to the right, or
-*	null if line *num* is at the edge of the board
-
-after
-	after = (eq(num,1) '', eq(num,15) '',g.lines[num + 1])	:(return)
-after.end
-
 	define('available(line)blanks,c,i')			:(available.end)
 
 *	Return array containing the indexes of the blank cells in line. Fails if no blanks.
@@ -122,15 +113,6 @@ available.2
 								:(available.2)
 available.end
 
-	define('before(num)')				:(before.end)
-
-*	Find the line 'before' line *num*. This is either the row above or the column to the left, or
-*	null if line *num* is at the edgs of the board
-
-before
-	before = (eq(num,1) '', eq(num,16) '',g.lines[num - 1])	:(return)
-before.end
-	
 	define('blanks(line)n')				:(blanks.end)
 
 *	Count number of blanks in line.
@@ -150,61 +132,28 @@ bonus.lines.next
 	bonus.lines[i + 15] = vline(g.bonus,i)		:(bonus.lines.next)
 bonus.lines.end
 
-	define('cells(move)r,c,t,text,i,n')		:(cells.end)
-
-*	Return the cells that comprise a move, by which we mean a list consisting of a series of one or more
-*	placements, each consisting of a string of one or more characters followed by a signed integer with
-*	a specified form. The signed integer identifies where the placement is in a row (plus sign) or
-*	along a column (minus sign). The cell is indicated by multiplying the row number by one hundred and adding the
-*	column number.
-
-cells
-	move break('+-') . text len(1) . sign rem . rc
-	output = 'text ' text '|' sign '|' rc
-
-	n = size(text)
-	cells = array(size(text) ',3')
-	ident(sign,'+')					:s(cells.h)
-	ident(sign,'-')					:s(cells.v)
-	output = 'improper type in move ' move		:(freturn)
-cells.h
-	i = i + 1
-	gt(i,n)						:s(return)
-	cells[i,1] = +(rc / 100)			:f(return)
-	cells[i,2] = remdr(rc,100)
-	cells[i,3] = substr(text,i,1)
-	c. = c + 1					:(cells.h)
-cells.v
-	i = i + 1
-	gt(i,n)						:s(return)
-	cells[i,1] = +(rc / 100)			:f(return)
-	cells[i,2] = +remdr(rc,100);
-	cells[i,3] = substr(text,i,1)
-	r = r + 1					:(cells.v)
-cells.end
-	
-	define('checkline(line)word')			:(checkline.end)
+	define('checkline(line)word,iline')			:(checkline.end)
 
 *	Succeeds if all the words in the line are in the dictionary, fails otherwise.
 
 checkline
-	line span(' ') =
-	ident(line)					:s(return)
+	empty(line)					:s(return)
+	iline = line
 checkline.1
 	line break(' ')  . word span(' ') =		:f(return);* if line exhausted
 	checkword(word)					:f(freturn)s(checkline.1)
 checkline.end
 
-	define('checklines()i,lines')			:(checklines.end)
-
-*	Succeeds if every line in the board has only valid words.
-
-checklines
-	lines = lines(g.board)
-checklines.next
-	gt(i = i + 1,30)				:s(return)
-	checkline(lines[i])				:f(freturn)s(checklines.next)
-checklines.end
+*	define('checklines(lines)i')			:(checklines.end)
+*
+**	Succeeds if every line in the board has only valid words.
+*
+*checklines
+*	lines = lines(g.board)
+*checklines.next
+*	gt(i = i + 1,30)				:s(return)
+*	checkline(lines[i])				:f(freturn)s(checklines.next)
+*checklines.end
 
 	define('checkword(w)')				:(checkword.end)
 
@@ -214,155 +163,16 @@ checkword
 	differ(g.dict[size(w)][w])			:s(return)f(freturn)
 checkword.end
 
-*	define('clean()row,col,c,ch,b')			:(clean.end)
-*
-**	Clean up the board after deciding on a move.
-**	For each new cell, clear the bonus value and the new indicator.
-*
-*clean
-*	row = 0; col = 0;
-*clean.nextrow
-*	gt(row = row + 1, 15)				:s(return)
-*	col = 0;
-*clean.nextcell
-*	gt(col = col + 1, 15)				:s(clean.nextrow)
-*	c = g.board[row,col]
-*	ident(new(c))					:s(clean.nextcell)
-*	bonus(c) = new(c) =				:(clean.nextcell)
-*clean.end
+	define('empty(line)')				:(empty.end)
+
+*	Test if line is empty (null or all blanks).
+
+empty	
+	line span(' ') =
+	ident(line)					:s(return)f(freturn)
+empty.end
 	
-	define('display()b,r,c,ch,line')		:(display.end)
-
-*	Display the board on standard output
-
-display
-	display.header('board')
-display.r
-	gt(r = r + 1,15) 				:s(display.finish)
-	line = lpad(r,2) '|'
-	c = 0
-display.c
-	gt(c = c + 1,15)				:s(display.margin)
-	ch = g.board[r,c]
-	b = g.bonus[r,c]
-	differ(ch,' ')					:s(display.ch)
-
-*	Here if empty cell, see if there is a bonus to be displayed.
-
-	ne(b,1)						:s(display.b)
-
-*	Here to display empty cell.
-
-	line = line ' -'				:(display.c)
-display.b
-
-* 	Here to display bonus.
-
-	ch = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
-	line = line ch 					:(display.c)
-display.margin
-	output = line '|'				:(display.r)
-display.ch
-	line  = line ' ' ch				:(display.c);* display tile
-display.finish
-	output =					:(return)
-display.end
-
-
-	define('display.alone()b,r,c,l,line')				:(display.alone.end)
-
-*	Display the board on standard output
-
-display.alone
-	display.header('alone')
-display.alone.r
-	gt(r = r + 1,15) 				:s(display.alone.finish)
-	line = lpad(r,2) '|'
-	c = 0
-display.alone.c
-	gt(c = c + 1,15)				:s(display.alone.l)
-	l = g.alone[r,c]
-	line = line lpad(l,2)		 		:s(display.alone.c)
-display.alone.l
-	output = line '|'				:(display.alone.r)
-display.alone.finish
-	output =					:(return)
-display.alone.end
-
-	define('display.bonus()b,r,c,l,line')			:(display.bonus.end)
-
-*	Display the board on standard output
-
-display.bonus
-	display.header('bonus')
-display.bonus.r
-	gt(r = r + 1,15) 				:s(display.bonus.finish)
-	line = lpad(r,2) '|'
-	c = 0
-display.bonus.c
-	gt(c = c + 1,15)				:s(display.bonus.l)
-	l = g.bonus[r,c]
-	line = differ(l,' ') line ' ' l 		:s(display.bonus.c)
-* Here for blank cell, display.bonus bonus if applicable
-	b = g.bonus[r,c]
-	eq(b)						:s(display.b)
-* 	Here to display bonus
-	l = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
-	line = line l 					:(display.bonus.c)
-display.bonus.b
-*	Here to display.bonus empty cell.
-	line = line ' -'				:(display.bonus.c)
-display.bonus.l
-	output = line '|'				:(display.bonus.r)
-display.bonus.finish
-	output =					:(return)
-display.bonus.end
-
-	define('display.header(label)')			:(display.header.end)
-display.header
-	output = char(9) ucase(label)
-	output = '                      1 1 1 1 1 1'
-	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
-display.header.end
-
-	define('display.move(mov)id,count')			:(display.move.end)
-
-*	Display a move.
-
-display.move
-	count = count(mov)
-	id = id(mov)
-	id = lineid(id) '#' count(mov) ':'
-	display.move = (eq(count,1)  	id free(mov)[1] ':' text(mov) ':' points(mov),
-.					id free(mov)[1] '..' free(mov)[count] ':' text(mov) ':' points(mov))
-							:(return)
-display.move.end
-
-	define('display.moves(moves)i,mov')		:(display.moves.end)
-
-*	Display an array of moves.
-
-display.moves
-	ident(moves)					:s(return)
-	output = '  moves '
-display.moves.loop
-	mov = moves[i = i + 1,2]			:f(return)
-	output = char(9) lpad(i,2) ' ' display.move(mov) :(display.moves.loop)
-display.moves.end
-
-	define('display.scores()ara,i')			:(display.scores.end)
-
-*	Display an array of scores.
-
-display.scores
-	output = 'display g.scores '
-	ara = rsort(g.scores,2)
-display.scores.next
-	output = ara[i = i + 1,1] ' ' lpad(ara[i,2],6)  :s(display.scores.next)f(return)
-display.scores.end
-
-	
-	define('find(rack)find,flines,line,moves,movei,mov,permi,perms,perm,score,found)')	:(find.end)
+	define('find(lines,rack)find,flines,line,moves,mi,mov,permi,perms,perm,score,found)')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -377,30 +187,30 @@ display.scores.end
 *FIND
 find
 	find = table()
-	lines = copy(g.lines)
-
 find.line
 	gt(num = num + 1,30)				:s(find.done)
 	line = lines[num]
 	output = 'find line ' num ' ' line
 	moves = scan(num,line,rack)
 	output = ident(moves) ' no moves found for num ' num ' <' line '>'
+	output = differ(moves) ' moves found for num ' num ' <' line '>'
+	differ(moves) display.moves(moves)
 	ident(moves)					:s(find.line)
-	movei = 0
+	mi = 0
 find.move
-	m = moves[movei = movei + 1,2]			:f(find.line)
-*	output = 'find.move ' movei ' ' display.move(m)
-*	output  = size(rack) '?' count(m)
+	m = moves[mi = mi + 1,2]			:f(find.line)
+	output = 'find.move ' mi ' ' display.move(m)
+	output  = size(rack) '?' count(m)
 	perms = g.permutations[size(rack) '?' count(m)]
 	permi = 0
 find.perm
 	perm = perms[permi = permi + 1]			:f(find.move)
-*	output = 'find.perm  <' perm '>'
+	output = 'find.perm  <' perm '>'
 	tryline(line,m,perm,rack)			:f(find.perm)
 
 *	If ok for line, see if ok for all lines
 
-	score = trygrid(m,perm,rack)			:f(find.perm);* move to next perm if this isn't valie
+	score = trygrid(lines,m,perm,rack)			:f(find.perm);* move to next perm if this isn't valie
 	points(m) = score				
 	find[found = found + 1] = copy(m)
 							:(find.perm)
@@ -408,21 +218,6 @@ find.done
 	find = (ne(found) convert(find,'array'), '')	:(return)
 find.end
 
-	define('first(line)')				:(first.end)
-
-*	Return index of first blank in line, or fail if none.
-
-first
-	ident(line)					:s(freturn)
-	line len(1) . c 
-	differ(c,' ')					:s(first.1)
-	first = 1					:(return)
-first.1
-	line span(&lcase) . c				:f(freturn)
-	first = size(c) + 1
-	gt(first,15)					:s(freturn)f(return)
-first.end
-	
 	define('hline(grid,r)')				:(hline.end)
 
 *	Return the horizontal line of a grid corresponding to row r as a string.
@@ -436,8 +231,12 @@ hline.end
 
 	define('init.bonus()s,row,col,b,c')		:(init.bonus.end)
 
-*	Initialize the bonus squares for the 15x15 grid, using 1 for double letter,
-*	2 for triple letter, 3 for double word, and 4 for triple word.
+*	Initialize the bonus squares for the 15x15 grid: 
+*		1 for the value of the letter,
+*		2 for double letter,
+*		3 for triple letter,
+*		4 for double word, and
+*		5 for triple word.
 
 init.bonus
 	g.bonus = array('15,15',+1)
@@ -462,7 +261,7 @@ init.bonus.end
 
 init.dict
 
-	g.dict = array(15)
+	g.dict = array(7)
 
 *	Set hash table sizes according to output of ../study/gendict.sbl
 
@@ -514,12 +313,14 @@ init.dict.end
 
 *PERM
 init.perm
-	g.permutations = table(100)
+	g.permutations = table(7)
+	g.permutations.count = table(100)
 	input(.ifile,4, filename)			:s(init.perm.next)
 	output = 'unable to open permutation file ' filename 	:(freturn)
 init.perm.next
 	line = ifile					:f(init.perm.done)
 	line break('?') . n '?' break(' ') . k ' ' rem . count :f(init.perm.err)
+	g.permutations.count[n '?' k] = count
 	ara = array(count)
 	ai = 0
 init.perm.array
@@ -583,24 +384,6 @@ insert.done
 	insert = pack(insert)				:(return)
 insert.end
 
-	define('isword(word,words)')			:(isword.end)
-
-*	Words is a map on words. Succeeds if words is defined for the specified word,
-*	fails otherwise.
-isword
-	differ(words[word])				:s(return)f(freturn)
-
-isword.end
-
-	define('last(string)w')				:(last.end)
-
-*	Return index of last space in string, or null if no space in string
-
-last
-	last = first(reverse(line))			:f(freturn)
-	last = 16 - last				:(return)
-last.end
-
 	define('less(str,ch)before,after')		:(less.end)
 
 *	Removes the first instance of character ch in str.
@@ -616,7 +399,8 @@ less.end
 
 	define('grid(lines,start)i,r,c,line')			:(grid.end)
 
-*	Construct a grid from a sequence of lines beginning at index *start* (1..15 for rows, 16..30 for columns).
+*	Construct a grid from a sequence of lines beginning at index *start*,
+*	(1..15 for rows, 16..30 for columns.
 
 grid
 	grid = array('15,15',' ')
@@ -728,7 +512,7 @@ pack.end
 
 	define('placeword(r,c,w)ch')			:(placeword.end)
 
-*	Add a word to the board (used for testing)
+*	Add a word to the board.
 
 placeword
 	c = c - 1
@@ -765,7 +549,8 @@ prefix.end
 
 *	Return integer uniformly distributed in 1,2,...,n. If n=0 returns real uniformly distributed
 *	in the interval [0,1].
-*	The Algorithm is based in that in section 16.1 of "Algorithms in SNOBOL4," James F. Gimpel, John Wiley and Sons, 1976.
+*	The Algorithm is based in that in section 16.1 of "Algorithms in SNOBOL4,"
+*	James F. Gimpel, John Wiley and Sons, 1976.
 
 *	Gimpel uses integer here, but need to have real.
 	random_var = convert(1,'real')
@@ -788,14 +573,15 @@ random_rack
 	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
 random_rack.end
 
-	define('scan(num,line,rack)alone,nopen,ai,first,max,n,last,nplaces,ptable,mov,nmove')	:(scan.end)
+	define('scan(num,line,rack)alone,nopen,ai,first,max,n,last,nplaces,ptable,mov,moves')	:(scan.end)
 
-*	Scan the given line to find all the places where a valid move can be made. At least one cell in the
-*	move must be adjacent to an occupied cell.  *line* is the line to be scanned, and *num* gives its
+*	Scan the given line to find all the places where a valid move can be made. At least one cell in 
+*	a move must be adjacent to an occupied cell.  *line* is the line to be scanned, and *num* gives its
 *	position on the board.
 
 scan
 	scan = table()
+	moves = 0
 	alone = g.alone.lines[num]
 
 *	Allocate and fill in avail, an array giving the positions of the open cells.
@@ -817,7 +603,7 @@ scan.next
 	le(nopen)					:s(scan.done)
 
 *	Let max be the most tiles we can play on this line. We can't play more tiles than the number of 
-*	blank cells in this line, and we can't play more tiles than we have.
+*	blank cells remaining in the line, and we can't play more tiles than we have.
 
 	max = nopen
 	max = gt(max,size(rack)) size(rack)
@@ -831,15 +617,12 @@ scan.next.n
 *	Skip this move if all its cells are alone.
 
 	substr(alone, first, last - first + 1) break(' '):f(scan.next.n)
-
-*	Add cell to candidate list, as triple (first cell, last cell,number of cells to play)
-
 	m = move(num,n,subarray(g.avail,ai,n))
-	scan[nmove = nmove + 1] = m			:(scan.next.n)
+	scan[moves = moves + 1] = m			:(scan.next.n)
 
 scan.done
 *	display.scan(convert(scan,'array'))
-	scan = ident(nmove) 				:s(return)
+	scan = eq(moves) 				:s(return)
 	scan = convert(scan,'array')			:(return)
 scan.doner	
 	output = 'move.doner'				:(end)
@@ -855,17 +638,19 @@ scan.end
 
 *SCORE
 score
+	empty(line)					:s(return)
 	score = 0
 	iline = line
 	bonusline = g.bonus.lines[num]
+	output = 'scoring ' iline ':' bonusline
 	iline break(&ucase)				:f(score.error)
 	words = words(iline)				:f(return)
 score.word
-	start = words[wi = wi + 1,1]			:f(return)
+	start = words[wi = wi + 1,1]			:f(score.done)
 	word = words[wi,2]
 	n = size(word)
 
-*	Single letters don't contribute to score since the come from intersecting line.
+*	Single letters don't contribute to score since they result from an intersecting line.
 
 	eq(size(word),1)				:s(score.word)
 	word break(&ucase)				:f(score.word)
@@ -891,6 +676,8 @@ score.char.done
 	score = (eq(double,2) score * 4)
 	score = (eq(triple,1) score * 3)
 	score = (eq(triple,2) score * 9)
+score.done
+	output = 'score is  ' score
 							:(return)
 score.error
 	score = 0					:(return)
@@ -925,12 +712,12 @@ tryline
 	m = copy(mov)
 	text(m) = replace(perm,substr('1234567',1,size(rack)),rack)
 	line = insert(line,m);
-*	output = 'calling checkline ' line '.'
 	checkline(line)					:f(freturn)
+	output = 'tryline VALID move ' display.move(m)
 	tryline = m					:(return)
 tryline.end
 
-	define('trygrid(mov)i,line,lines,grid,first,last`') :(trygrid.end)
+	define('trygrid(lines,mov)i,line,grid,first,last`') :(trygrid.end)
 
 *	Given that move *mov* is valid for its line, see that every other line affected by the move contains
 *	only valid words. If this is so, then compute the score of the move and return that as the result, otherwise
@@ -939,14 +726,14 @@ tryline.end
 trygrid			
 
 *	The i-th character in line of a move in a row (column) is also in the i-th character in
-*	the corresonding row (column). 
+*	the corresonding column (row). 
 
 *	Rebuild the grid using the new line, and then rebuild the lines array to propogate 
 *	all changes to the necessary lines.
 
-	lines = copy(g.lines)
 	line = lines[id(mov)]
 	lines[id(mov)] = insert(line,mov)
+	output = 'trygrid ' display.move(mov) ' ' lines[id(mov)]
 	grid = grid(lines)
 	lines = lines(grid)
 	i = 0
@@ -955,8 +742,9 @@ trygrid
 
 trygrid.next
 	line = lines[i = i + 1]				:f(trygrid.valid)
-	line break(&lcase)				:f(freturn);* skip blank line
-	checkline(line)					:s(trygrid.next)
+	empty(line)					:s(trygrid.next)
+	output = 'trygrid checking line ' line '.'
+	checkline(line)					:s(trygrid.next)f(freturn)
 trygrid.valid
 
 *	Here after confirming all lines are still valid, so need to compute the score.
@@ -964,7 +752,7 @@ trygrid.valid
 *	In order to determine which words on the board would be formed by making this move,
 *	rebuild the board but with the new tiles in uppercase. This way, a word is new if and only if
 *	it contains an upper case character. The score is then the sum over all the lines of the scores of
-*	the words containing an upper-case character. At most one word in any line of the new grid with
+*	the words containing an upper-case character. At most one word in any line of the new grid will
 *	contain an upper-case character.
 
 	output = 'found VALID move ' display.move(mov)
@@ -974,6 +762,7 @@ trygrid.valid
 	grid = grid(lines)
 	lines = lines(grid)
 	i = 0
+	output = 'trygrid scoring'
 trygrid.score
 	trygrid = trygrid + score(lines[i = i + 1],id(mov))	:s(trygrid.score)f(return)
 trygrid.end
@@ -1042,3 +831,4 @@ words.1
 words.done
 	words = convert(words,'array')				:(return)
 words.end
+

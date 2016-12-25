@@ -1,0 +1,129 @@
+	define('display()b,r,c,ch,line')		:(display.end)
+
+*	Display the board on standard output
+
+display
+	display.header('board')
+display.r
+	gt(r = r + 1,15) 				:s(display.finish)
+	line = lpad(r,2) '|'
+	c = 0
+display.c
+	gt(c = c + 1,15)				:s(display.margin)
+	ch = g.board[r,c]
+	b = g.bonus[r,c]
+	differ(ch,' ')					:s(display.ch)
+
+*	Here if empty cell, see if there is a bonus to be displayed.
+
+	ne(b,1)						:s(display.b)
+
+*	Here to display empty cell.
+
+	line = line ' -'				:(display.c)
+display.b
+
+* 	Here to display bonus.
+
+	ch = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
+	line = line ch 					:(display.c)
+display.margin
+	output = line '|'				:(display.r)
+display.ch
+	line  = line ' ' ch				:(display.c);* display tile
+display.finish
+	output =					:(return)
+display.end
+
+
+	define('display.alone()b,r,c,l,line')				:(display.alone.end)
+
+*	Display the board on standard output
+
+display.alone
+	display.header('alone')
+display.alone.r
+	gt(r = r + 1,15) 				:s(display.alone.finish)
+	line = lpad(r,2) '|'
+	c = 0
+display.alone.c
+	gt(c = c + 1,15)				:s(display.alone.l)
+	l = g.alone[r,c]
+	line = line lpad(l,2)		 		:s(display.alone.c)
+display.alone.l
+	output = line '|'				:(display.alone.r)
+display.alone.finish
+	output =					:(return)
+display.alone.end
+
+	define('display.bonus()b,r,c,l,line')			:(display.bonus.end)
+
+*	Display the board on standard output
+
+display.bonus
+	display.header('bonus')
+display.bonus.r
+	gt(r = r + 1,15) 				:s(display.bonus.finish)
+	line = lpad(r,2) '|'
+	c = 0
+display.bonus.c
+	gt(c = c + 1,15)				:s(display.bonus.l)
+	l = g.bonus[r,c]
+	line = differ(l,' ') line ' ' l 		:s(display.bonus.c)
+* Here for blank cell, display.bonus bonus if applicable
+	b = g.bonus[r,c]
+	eq(b)						:s(display.b)
+* 	Here to display bonus
+	l = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
+	line = line l 					:(display.bonus.c)
+display.bonus.b
+*	Here to display.bonus empty cell.
+	line = line ' -'				:(display.bonus.c)
+display.bonus.l
+	output = line '|'				:(display.bonus.r)
+display.bonus.finish
+	output =					:(return)
+display.bonus.end
+
+	define('display.header(label)')			:(display.header.end)
+display.header
+	output = char(9) ucase(label)
+	output = '                      1 1 1 1 1 1'
+	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
+display.header.end
+
+	define('display.move(mov)id,count')			:(display.move.end)
+
+*	Display a move.
+
+display.move
+	count = count(mov)
+	id = id(mov)
+	id = lineid(id) '#' count(mov) ':'
+	display.move = (eq(count,1)  	id free(mov)[1] ':' text(mov) ':' points(mov),
+.					id free(mov)[1] '..' free(mov)[count] ':' text(mov) ':' points(mov))
+							:(return)
+display.move.end
+
+	define('display.moves(moves)i,mov')		:(display.moves.end)
+
+*	Display an array of moves.
+
+display.moves
+	ident(moves)					:s(return)
+	output = '  moves '
+display.moves.loop
+	mov = moves[i = i + 1,2]			:f(return)
+	output = char(9) lpad(i,2) ' ' display.move(mov) :(display.moves.loop)
+display.moves.end
+
+	define('display.scores()ara,i')			:(display.scores.end)
+
+*	Display an array of scores.
+
+display.scores
+	output = 'display g.scores '
+	ara = rsort(g.scores,2)
+display.scores.next
+	output = ara[i = i + 1,1] ' ' lpad(ara[i,2],6)  :s(display.scores.next)f(return)
+display.scores.end
