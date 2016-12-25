@@ -1,39 +1,40 @@
-	define('display()b,r,c,ch,line')		:(display.end)
+	define('display.board(board,title)b,r,c,ch,line')	:(display.board.end)
 
 *	Display the board on standard output
 
-display
-	display.header('board')
-display.r
-	gt(r = r + 1,15) 				:s(display.finish)
+display.board
+	title  = 'board' (differ(title) ' ' title, '')
+	display.header(title)
+display.board.r
+	gt(r = r + 1,15) 				:s(display.board.finish)
 	line = lpad(r,2) '|'
 	c = 0
-display.c
-	gt(c = c + 1,15)				:s(display.margin)
-	ch = g.board[r,c]
+display.board.c
+	gt(c = c + 1,15)				:s(display.board.margin)
+	ch = board[r,c]
 	b = g.bonus[r,c]
-	differ(ch,' ')					:s(display.ch)
+	differ(ch,' ')					:s(display.board.ch)
 
-*	Here if empty cell, see if there is a bonus to be displayed.
+*	Here if empty cell, see if there is a bonus to be display.boarded.
 
-	ne(b,1)						:s(display.b)
+	ne(b,1)						:s(display.board.b)
 
-*	Here to display empty cell.
+*	Here to display.board empty cell.
 
-	line = line ' -'				:(display.c)
-display.b
+	line = line ' -'				:(display.board.c)
+display.board.b
 
-* 	Here to display bonus.
+* 	Here to display.board bonus.
 
 	ch = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
-	line = line ch 					:(display.c)
-display.margin
-	output = line '|'				:(display.r)
-display.ch
-	line  = line ' ' ch				:(display.c);* display tile
-display.finish
+	line = line ch 					:(display.board.c)
+display.board.margin
+	output = line '|'				:(display.board.r)
+display.board.ch
+	line  = line ' ' ch				:(display.board.c);* display.board tile
+display.board.finish
 	output =					:(return)
-display.end
+display.board.end
 
 
 	define('display.alone()b,r,c,l,line')				:(display.alone.end)
@@ -92,7 +93,16 @@ display.header
 	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
 display.header.end
 
-	define('display.move(mov)id,count')			:(display.move.end)
+	define('display.lines(lines)i,line')		:(display.lines.end)
+
+*	Display array of lines
+
+display.lines
+	line = lines[i = i + 1]				:f(return)
+	output = '  ' lpad(i,2) ' ' replace(line,' ','.')	:(display.lines)
+display.lines.end
+
+	define('display.move(mov)id,count')		:(display.move.end)
 
 *	Display a move.
 

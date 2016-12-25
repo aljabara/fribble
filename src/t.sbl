@@ -1,7 +1,25 @@
+-include 'words.sbl'
 
-*-include 'words.sbl'
+	init()
+	output = g.dict[7]['inserts']
+	s1 = lpad(' dave',15)
+	s2 = pack(unpack(s1))
+
+	output = s1
+	output = s2
+end
+	define('f(item)')	:(f.end)
+f
+	item = copy(item)
+	kids(item) = 'ali'
+				:(return)
+f.end
 	data('dave(kids,friends)')
 	him = dave('sam','bobo')
+	f(him)
+	output = kids(him)
+end
+	
  &dump = 3
 end
  t = table()

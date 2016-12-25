@@ -20,17 +20,17 @@
 *	g.lines = lines(g.board);* update lines
 	output = 'line 1 ' g.lines[1]
 	display.alone()
-	display()
+	display.board(g.board,'g.board')
 	output = 'end initial display'
 	
 
 	rack = 'toxoedf'
 	rack = 'toe'
-	rack = 'is';* should make plural
+	rack = 'si';* should make plural
 
 *	&ftrace = 10009
 
-	moves = find(rack)
+	moves = find(g.lines,rack)
 	output = 'moves from find(rack)'
 *	display.moves(moves)
 	output = 'finis'

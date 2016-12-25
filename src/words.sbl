@@ -139,9 +139,13 @@ bonus.lines.end
 checkline
 	empty(line)					:s(return)
 	iline = line
+	line span(' ') =
 checkline.1
-	line break(' ')  . word span(' ') =		:f(return);* if line exhausted
+	line break(' ')  . word span(' ') =		:f(checkline.done);* if line exhausted
 	checkword(word)					:f(freturn)s(checkline.1)
+checkline.done
+*	output = 'checkline VALID ' iline
+							:(return)
 checkline.end
 
 *	define('checklines(lines)i')			:(checklines.end)
@@ -223,6 +227,7 @@ find.end
 *	Return the horizontal line of a grid corresponding to row r as a string.
 
 hline
+	r = +r
 	hline = grid[r,1] grid[r,2] grid[r,3] grid[r,4] grid[r,5] 
 .		grid[r,6] grid[r,7] grid[r,8] grid[r,9] grid[r,10]
 .		grid[r,11] grid[r,12] grid[r,13] grid[r,14] grid[r,15]
@@ -404,29 +409,32 @@ less.end
 
 grid
 	grid = array('15,15',' ')
+	start = (lt(start,15) 1, 16)
 	gt(start,15)					:s(grid.col)
 
-*	Here to build grid from set of horizontal rows.
+*	Here to build grid from the rows.
 
 	r = 0
 
-grid.r
+grid.nextrow
 	gt(r = r + 1,15)				:s(return)
 	line = lines[r]					:f(grid.3)
 	i = 0
-grid.2
-	grid[r,i = i + 1] = substr(line,i,1)		:s(grid.2)f(grid.r)
+grid.r
+	grid[r,i = i + 1] = substr(line,i,1)		:s(grid.r)f(grid.nextrow)
 
 grid.col
 
-*	Here to build the columns from the updated rows.
+*	Here to build grid from the columns.
 
-	c = 0
-grid.c  
-	gt(c = c + 1,15)				:s(return)
+	c = 14
+grid.nextcol
+	gt(c = c + 1,30)				:s(return)
+	line = lines[c]
 	i = 0
-grid.5
-	grid[i = i + 1,c] = substr(line,i,1)		:s(grid.5)f(grid.c)
+grid.c
+	output = 'grid r ' i '  c ' c ' ' substr(line,i,1)
+	grid[i = i + 1,c] = substr(line,i,1)		:s(grid.c)f(grid.nextcol)
 grid.end
 
 	define('lineid(num)')				:(lineid.end)
@@ -712,6 +720,7 @@ tryline
 	m = copy(mov)
 	text(m) = replace(perm,substr('1234567',1,size(rack)),rack)
 	line = insert(line,m);
+	output = 'tryline checking ' line
 	checkline(line)					:f(freturn)
 	output = 'tryline VALID move ' display.move(m)
 	tryline = m					:(return)
@@ -730,12 +739,21 @@ trygrid
 
 *	Rebuild the grid using the new line, and then rebuild the lines array to propogate 
 *	all changes to the necessary lines.
-
+	output = 'enter trygrid ' display.move(mov)
+	grid = grid(lines,id(mov))
+	display.board(grid,'before')
+*	display.lines(lines)
 	line = lines[id(mov)]
+*	output = 'trygrid line ' line
+	output = 'trygrid insertion ' insert(line,mov)
 	lines[id(mov)] = insert(line,mov)
+	output = 'trygrid lines id(mov) ' id(mov) ' ' replace(lines[id(mov)],' ','.')
 	output = 'trygrid ' display.move(mov) ' ' lines[id(mov)]
-	grid = grid(lines)
+	output =
+	grid = grid(lines,id(mov))
 	lines = lines(grid)
+	output = 'rebuild board for line ' id(mov)
+	display.board(grid,'after')
 	i = 0
 
 *	See if the move is valid by looking at all affected lines.
@@ -744,6 +762,7 @@ trygrid.next
 	line = lines[i = i + 1]				:f(trygrid.valid)
 	empty(line)					:s(trygrid.next)
 	output = 'trygrid checking line ' line '.'
+	output = checkline(line) ' CHECKED'
 	checkline(line)					:s(trygrid.next)f(freturn)
 trygrid.valid
 
@@ -756,6 +775,7 @@ trygrid.valid
 *	contain an upper-case character.
 
 	output = 'found VALID move ' display.move(mov)
+	mov = copy(mov)
 	text(mov)  = ucase(text(mov))
 	output = 'trying ' text(mov)
 	lines[id(mov)] = insert(lines[id(mov)],mov)
@@ -791,10 +811,10 @@ unpack.end
 *	Return the vertical line of a grid corresponding to column c as a string.
 
 vline
+	c = +c
 	vline = grid[1,c] grid[2,c] grid[3,c] grid[4,c] grid[5,c] 
 .		grid[6,c] grid[7,c] grid[8,c] grid[9,c] grid[10,c]
 .		grid[11,c] grid[12,c] grid[13,c] grid[14,c] grid[15,c]
-	out
 							:(return)
 vline.end
 
