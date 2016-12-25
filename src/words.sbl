@@ -142,9 +142,9 @@ checkline
 	line span(' ') =
 checkline.1
 	line break(' ')  . word span(' ') =		:f(checkline.done);* if line exhausted
+	eq(size(word),1)				:s(checkline.1)
 	checkword(word)					:f(freturn)s(checkline.1)
 checkline.done
-*	output = 'checkline VALID ' iline
 							:(return)
 checkline.end
 
@@ -164,6 +164,7 @@ checkline.end
 *	Succeeds if w is in the global dictionary, fails otherwise.
 
 checkword
+	eq(size(w),1)					:s(return)
 	differ(g.dict[size(w)][w])			:s(return)f(freturn)
 checkword.end
 
@@ -194,22 +195,20 @@ find
 find.line
 	gt(num = num + 1,30)				:s(find.done)
 	line = lines[num]
-	output = 'find line ' num ' ' line
+*	output = 'find line ' num ' ' line
 	moves = scan(num,line,rack)
-	output = ident(moves) ' no moves found for num ' num ' <' line '>'
-	output = differ(moves) ' moves found for num ' num ' <' line '>'
-	differ(moves) display.moves(moves)
+*	differ(moves) display.moves(moves)
 	ident(moves)					:s(find.line)
 	mi = 0
 find.move
 	m = moves[mi = mi + 1,2]			:f(find.line)
-	output = 'find.move ' mi ' ' display.move(m)
-	output  = size(rack) '?' count(m)
+*	output = 'find.move ' mi ' ' display.move(m)
+*	output  = size(rack) '?' count(m)
 	perms = g.permutations[size(rack) '?' count(m)]
 	permi = 0
 find.perm
 	perm = perms[permi = permi + 1]			:f(find.move)
-	output = 'find.perm  <' perm '>'
+*	output = 'find.perm  <' perm '>'
 	tryline(line,m,perm,rack)			:f(find.perm)
 
 *	If ok for line, see if ok for all lines
@@ -433,7 +432,6 @@ grid.nextcol
 	line = lines[c]
 	i = 0
 grid.c
-	output = 'grid r ' i '  c ' c ' ' substr(line,i,1)
 	grid[i = i + 1,c] = substr(line,i,1)		:s(grid.c)f(grid.nextcol)
 grid.end
 
@@ -636,35 +634,33 @@ scan.doner
 	output = 'move.doner'				:(end)
 scan.end
 
-	define('score(line,num)iline,word,words,n,start,ci,wi,ch,i,bonus,wscore,double,triple,val')	:(score.end)
+	define('score(line,num)iline,word,words,n,start,ci,wi,ch,i,bonus,wscore,double,triple,val,points')	:(score.end)
 
 *	Compute the score of a move on a given line. All the letters of the move will be in upper case on the board
 *	so the score of the move is the sum of the scores of all the words with upper case letters in them, for
 *	both rows and columns. This function should only be called for lines which have an upper case letter in
 *	them as a result of the move.
 
-
 *SCORE
 score
 	empty(line)					:s(return)
-	score = 0
+	score  = 0
 	iline = line
 	bonusline = g.bonus.lines[num]
-	output = 'scoring ' iline ':' bonusline
 	iline break(&ucase)				:f(score.error)
 	words = words(iline)				:f(return)
 score.word
-	start = words[wi = wi + 1,1]			:f(score.done)
+	start = words[wi = wi + 1,1]			:f(return)
 	word = words[wi,2]
 	n = size(word)
 
 *	Single letters don't contribute to score since they result from an intersecting line.
 
-	eq(size(word),1)				:s(score.word)
 	word break(&ucase)				:f(score.word)
+	eq(n,1)						:s(return);* singletons aren't scored.
 	line = substr(iline,start)
 	bonusline = substr(g.bonus.lines[i],start);* corresponding part of bonus line
-	score = 0; double = 0; triple = 0; i = 0
+	double = 0; triple = 0; i = 0
 score.char
 	gt(i = i + 1,n) 				:s(score.char.done)
 	ch = substr(word,i,1)
@@ -683,10 +679,7 @@ score.char.done
 	score = (eq(double,1) score * 2)
 	score = (eq(double,2) score * 4)
 	score = (eq(triple,1) score * 3)
-	score = (eq(triple,2) score * 9)
-score.done
-	output = 'score is  ' score
-							:(return)
+	score = (eq(triple,2) score * 9)		:(return)
 score.error
 	score = 0					:(return)
 *	output = 'error scoring line with no new move ' line	:(end)
@@ -720,9 +713,7 @@ tryline
 	m = copy(mov)
 	text(m) = replace(perm,substr('1234567',1,size(rack)),rack)
 	line = insert(line,m);
-	output = 'tryline checking ' line
 	checkline(line)					:f(freturn)
-	output = 'tryline VALID move ' display.move(m)
 	tryline = m					:(return)
 tryline.end
 
@@ -739,21 +730,11 @@ trygrid
 
 *	Rebuild the grid using the new line, and then rebuild the lines array to propogate 
 *	all changes to the necessary lines.
-	output = 'enter trygrid ' display.move(mov)
-	grid = grid(lines,id(mov))
-	display.board(grid,'before')
-*	display.lines(lines)
+
 	line = lines[id(mov)]
-*	output = 'trygrid line ' line
-	output = 'trygrid insertion ' insert(line,mov)
 	lines[id(mov)] = insert(line,mov)
-	output = 'trygrid lines id(mov) ' id(mov) ' ' replace(lines[id(mov)],' ','.')
-	output = 'trygrid ' display.move(mov) ' ' lines[id(mov)]
-	output =
 	grid = grid(lines,id(mov))
 	lines = lines(grid)
-	output = 'rebuild board for line ' id(mov)
-	display.board(grid,'after')
 	i = 0
 
 *	See if the move is valid by looking at all affected lines.
@@ -761,8 +742,6 @@ trygrid
 trygrid.next
 	line = lines[i = i + 1]				:f(trygrid.valid)
 	empty(line)					:s(trygrid.next)
-	output = 'trygrid checking line ' line '.'
-	output = checkline(line) ' CHECKED'
 	checkline(line)					:s(trygrid.next)f(freturn)
 trygrid.valid
 
@@ -774,15 +753,12 @@ trygrid.valid
 *	the words containing an upper-case character. At most one word in any line of the new grid will
 *	contain an upper-case character.
 
-	output = 'found VALID move ' display.move(mov)
 	mov = copy(mov)
 	text(mov)  = ucase(text(mov))
-	output = 'trying ' text(mov)
 	lines[id(mov)] = insert(lines[id(mov)],mov)
 	grid = grid(lines)
 	lines = lines(grid)
 	i = 0
-	output = 'trygrid scoring'
 trygrid.score
 	trygrid = trygrid + score(lines[i = i + 1],id(mov))	:s(trygrid.score)f(return)
 trygrid.end

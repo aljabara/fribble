@@ -25,14 +25,14 @@
 	
 
 	rack = 'toxoedf'
-	rack = 'toe'
-	rack = 'si';* should make plural
+*	rack = 'toe'
+*	rack = 'si';* should make plural
 
 *	&ftrace = 10009
 
 	moves = find(g.lines,rack)
 	output = 'moves from find(rack)'
-*	display.moves(moves)
+	display.moves(moves)
 	output = 'finis'
 end
 	g.lines = lines(g.board)
