@@ -13,21 +13,27 @@
 
 
 * test best
+	output = g.dict[7]['inverts']
 	g.rack = 'inverts'
-	placeword(1,3,'inverts')
+*	placeword(1,3,'inverts')
+	placeword(1,3,'invert')
 *	g.lines = lines(g.board);* update lines
 	output = 'line 1 ' g.lines[1]
 	display.alone()
 	display()
+	output = 'end initial display'
 	
 
 	rack = 'toxoedf'
+	rack = 'toe'
+	rack = 'is';* should make plural
 
 *	&ftrace = 10009
 
 	moves = find(rack)
 	output = 'moves from find(rack)'
-	display.moves(moves)
+*	display.moves(moves)
+	output = 'finis'
 end
 	g.lines = lines(g.board)
 	score = score(g.lines,1)
