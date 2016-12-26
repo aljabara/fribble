@@ -23,15 +23,16 @@
 	display.board(g.board,'g.board')
 	output = 'end initial display'
 	
-
 	rack = 'toxoedf'
 *	rack = 'toe'
 *	rack = 'si';* should make plural
 
 *	&ftrace = 10009
 
-	moves = find(g.lines,rack)
-	output = 'moves from find(rack)'
+*	moves = find(g.lines,rack)
+*	output = 'moves from find(rack)'
+	moves = bestmove(rack)
+	output = 'best moves:'
 	display.moves(moves)
 	output = 'finis'
 end

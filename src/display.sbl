@@ -95,10 +95,11 @@ display.header.end
 
 	define('display.lines(lines)i,line')		:(display.lines.end)
 
-*	Display array of lines
+*	Display the lines that are not empty in an array of lines
 
 display.lines
 	line = lines[i = i + 1]				:f(return)
+	empty(line)					:s(display.lines)
 	output = '  ' lpad(i,2) ' ' replace(line,' ','.')	:(display.lines)
 display.lines.end
 

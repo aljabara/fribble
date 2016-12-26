@@ -43,7 +43,8 @@
 *	is adjacent to an already occupied cell:
 *		*id* gives the line number, in the range 1..30;
 *		*count* is the number of free cells covered by this move;
-*		*free* is an array of dimension *count* giving the empty cells to be filled by this move; and
+*		*free* is an array of dimension *count* giving the empty cells to be filled by this move;
+*		*text* is the string of tiles of the move; and
 *		*points* is the number of points won by playing this move.
 
 	data('move(id,count,free,text,points)')
@@ -64,7 +65,7 @@
 *	Initialize global variables.
 
 init
-	g.dict = array(7)
+	g.dict = array(15)
 	g.board = array('15,15',' ')
 	g.lines = lines(g.board)
 
@@ -165,6 +166,12 @@ checkline.end
 
 checkword
 	eq(size(w),1)					:s(return)
+	differ(w,'tofoxed')				:s(checkword.1)
+	g.board = grid(g.lines)
+	display.board(g.board,'checkword')
+	output = 'checkword ' w
+	output = differ(g.dict[size(w)][w]) 'checkword VALID ' w
+checkword.1
 	differ(g.dict[size(w)][w])			:s(return)f(freturn)
 checkword.end
 
@@ -195,6 +202,7 @@ find
 find.line
 	gt(num = num + 1,30)				:s(find.done)
 	line = lines[num]
+	g.lines = lines
 *	output = 'find line ' num ' ' line
 	moves = scan(num,line,rack)
 *	differ(moves) display.moves(moves)
@@ -210,15 +218,20 @@ find.perm
 	perm = perms[permi = permi + 1]			:f(find.move)
 *	output = 'find.perm  <' perm '>'
 	tryline(line,m,perm,rack)			:f(find.perm)
+*	output = 'tryline valid ' line ' ' display.move(m)
 
 *	If ok for line, see if ok for all lines
 
-	score = trygrid(lines,m,perm,rack)			:f(find.perm);* move to next perm if this isn't valie
+	score = trygrid(lines,m,perm,rack)		:f(find.perm);* move to next perm if this isn't valie
+*	output = eq(score,0) ' zero score ' for display.move(m)
+	eq(score,0)					:s(find.perm)
 	points(m) = score				
 	find[found = found + 1] = copy(m)
 							:(find.perm)
 find.done
-	find = (ne(found) convert(find,'array'), '')	:(return)
+	find = (ne(found) convert(find,'array'), '')	
+	output = 'find prototuype ' prototype(find)
+							:(return)
 find.end
 
 	define('hline(grid,r)')				:(hline.end)
@@ -264,8 +277,6 @@ init.bonus.end
 *	Initialize the global dictionary g.dict.
 
 init.dict
-
-	g.dict = array(7)
 
 *	Set hash table sizes according to output of ../study/gendict.sbl
 
@@ -525,6 +536,7 @@ placeword
 placeword.1
 	w len(1) . ch =					:f(placeword.done)
 	g.board[r, c = c + 1] = ch
+	g.bonus[r, c = c + 1] = 1
 *	Mark self and adjoining squares as no longer alone
 	g.alone[r,c] = ' '    ;* self
 	g.alone[r - 1,c] = ' ';* cell to the north
@@ -613,6 +625,7 @@ scan.next
 
 	max = nopen
 	max = gt(max,size(rack)) size(rack)
+	max = eq(max,7) 6
 	n = 0
 
 scan.next.n
@@ -714,6 +727,7 @@ tryline
 	text(m) = replace(perm,substr('1234567',1,size(rack)),rack)
 	line = insert(line,m);
 	checkline(line)					:f(freturn)
+*	output = 'tryline VALID ' display.move(m) ' ' replace(line,' ','.')
 	tryline = m					:(return)
 tryline.end
 
@@ -725,12 +739,15 @@ tryline.end
 
 trygrid			
 
+
 *	The i-th character in line of a move in a row (column) is also in the i-th character in
 *	the corresonding column (row). 
 
 *	Rebuild the grid using the new line, and then rebuild the lines array to propogate 
 *	all changes to the necessary lines.
 
+	mov = copy(mov)
+	points(mov) = 
 	line = lines[id(mov)]
 	lines[id(mov)] = insert(line,mov)
 	grid = grid(lines,id(mov))
@@ -828,3 +845,13 @@ words.done
 	words = convert(words,'array')				:(return)
 words.end
 
+	define('bestmove(rack)')					:(bestmove.end)
+
+*	Find the best move, or at least one with no higher score, given the rack *rack*.
+
+bestmove
+	lines = lines(g.board)
+	moves = find(lines,rack)
+	bestmove = rsort(moves,2)
+								:(return)
+bestmove.end
