@@ -2,8 +2,6 @@
 
 * Copyright (c) 2016 dave shields
 
--include "display.sbl"
-
 *	Global Variables
 
 *	Here are the global variables. Each has a name starting with 'g.' Their initial value is set in the
@@ -85,14 +83,13 @@ init
 	init.dict(dictfile,skip)
 							:(return)
 init.end
-	define('add(str,word)')				:(add.end)
+	define('append(str,w)')				:(add.end)
 
-*	add word to string str, prefixing with a space if str is not null.
-*	this aids in building list of words separated by spaces.
+*	Append word *w* to string *str*, prefixing with a space if *str* is not null.
 
-add
-	add = ident(str) word				:s(return)
-	add = str ' ' word				:(return)
+append
+	append = ident(str) w					:s(return)
+	append = str ' ' w					:(return)
 add.end
 
 	define('available(line)blanks,c,i')			:(available.end)
@@ -205,6 +202,8 @@ find.line
 	g.lines = lines
 *	output = 'find line ' num ' ' line
 	moves = scan(num,line,rack)
+	output = 'scanned moves '
+	display.moves(moves)
 *	differ(moves) display.moves(moves)
 	ident(moves)					:s(find.line)
 	mi = 0
@@ -226,11 +225,12 @@ find.perm
 *	output = eq(score,0) ' zero score ' for display.move(m)
 	eq(score,0)					:s(find.perm)
 	points(m) = score				
+	output = 'find found ' display.move(m)
 	find[found = found + 1] = copy(m)
 							:(find.perm)
 find.done
 	find = (ne(found) convert(find,'array'), '')	
-	output = 'find prototuype ' prototype(find)
+	output = 'find prototype ' prototype(find)
 							:(return)
 find.end
 
@@ -536,7 +536,7 @@ placeword
 placeword.1
 	w len(1) . ch =					:f(placeword.done)
 	g.board[r, c = c + 1] = ch
-	g.bonus[r, c = c + 1] = 1
+	g.bonus[r, c] = 0
 *	Mark self and adjoining squares as no longer alone
 	g.alone[r,c] = ' '    ;* self
 	g.alone[r - 1,c] = ' ';* cell to the north
@@ -560,7 +560,7 @@ prefix
 prefix.1
 	str break(' ') . word span(' ')  =		:f(return)
 	prefixcount = prefixcount + 1
-	prefix = add(prefix, pre word)			:(prefix.1)
+	prefix = append(prefix, pre word)			:(prefix.1)
 prefix.end
 
 	define('random(n)')				:(random.end)
@@ -637,6 +637,8 @@ scan.next.n
 
 	substr(alone, first, last - first + 1) break(' '):f(scan.next.n)
 	m = move(num,n,subarray(g.avail,ai,n))
+	moves.n = moves.n + 1
+*	output = 'scan add move ' moves.n ' ' display.move(m)
 	scan[moves = moves + 1] = m			:(scan.next.n)
 
 scan.done

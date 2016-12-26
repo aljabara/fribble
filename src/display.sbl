@@ -98,31 +98,35 @@ display.header.end
 *	Display the lines that are not empty in an array of lines
 
 display.lines
+	display.header('lines')
+display.lines.n
 	line = lines[i = i + 1]				:f(return)
-	empty(line)					:s(display.lines)
-	output = '  ' lpad(i,2) ' ' replace(line,' ','.')	:(display.lines)
+	empty(line)					:s(display.lines.n)
+	output = '  ' lpad(i,2) ' ' replace(line,' ','.')	:(display.lines.n)
 display.lines.end
 
-	define('display.move(mov)id,count')		:(display.move.end)
+	define('display.move(mov)f,i') 			:(display.move.end)
 
 *	Display a move.
 
 display.move
-	count = count(mov)
-	id = id(mov)
-	id = lineid(id) '#' count(mov) ':'
-	display.move = (eq(count,1)  	id free(mov)[1] ':' text(mov) ':' points(mov),
-.					id free(mov)[1] '..' free(mov)[count] ':' text(mov) ':' points(mov))
+	f = append(f,free(mov)[i = i + 1])		:s(display.move);* list the free cells
+	display.move = 	lineid(id(mov)) ':' f ':'
+	display.move = differ(text(mov)) display.move text(mov) 
+	display.move = differ(points(mov)) display.move  '+' points(mov)
+							:(return)
+*.			(differ(text(mov) text(mov) ,''))
+*.			(differ(points(mov) '+' points(mov), ''))
 							:(return)
 display.move.end
 
-	define('display.moves(moves)i,mov')		:(display.moves.end)
+	define('display.moves(moves,title)i,mov')	:(display.moves.end)
 
 *	Display an array of moves.
 
 display.moves
 	ident(moves)					:s(return)
-	output = '  moves '
+	output = 'MOVES ' title
 display.moves.loop
 	mov = moves[i = i + 1,2]			:f(return)
 	output = char(9) lpad(i,2) ' ' display.move(mov) :(display.moves.loop)
