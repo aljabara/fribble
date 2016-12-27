@@ -23,7 +23,8 @@
 * test best
 	output = g.dict[7]['inverts']
 	g.rack = 'inverts'
-	placeword(1,3,'invert')
+*	placeword(1,4,'invert');* adding 'ed' at end will give triple word bonus
+	placeword(1,3,'invert');* adding 'ed' at end will give triple word bonus
 *	placeword(8,6,'invert')
 	g.lines = lines(g.board);* update lines
 	display.lines(g.lines)

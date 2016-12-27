@@ -111,6 +111,7 @@ display.lines.end
 *	Display a move.
 
 display.move
+*	output = 'display.move datatype mov ' datatype(mov)
 	f = append(f,free(mov)[i = i + 1])		:s(display.move);* list the free cells
 	display.move = 	lineid(id(mov)) ':' f ':'
 	display.move = differ(text(mov)) display.move text(mov) 
