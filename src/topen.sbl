@@ -1,4 +1,4 @@
-* This software is licensed under the MIT License, contained in the file LICENSE.
+* This sofaware is licensed under the MIT License, contained in the file LICENSE.
 
 * Copyright (c) 2016 dave shields
 
@@ -19,12 +19,14 @@
 
 	init()
 
+	display.board(g.board,'initial board')
 * test best
 	output = g.dict[7]['inverts']
 	g.rack = 'inverts'
-	placeword(1,3,'inverts')
+	placeword(1,3,'invert')
 *	placeword(8,6,'invert')
-*	g.lines = lines(g.board);* update lines
+	g.lines = lines(g.board);* update lines
+	display.lines(g.lines)
 	display.alone()
 	display.board(g.board,'g.board')
 	display.bonus(g.bonus,'bonus')
@@ -33,8 +35,10 @@
 	rack = 'toxoedf'
 *	rack = 'toe'
 *	rack = 'si';* should make plural
-
-*	&ftrace = 10009
+*	&trace = 10000
+*	trace('grid','av')
+*	trace('hline','fr')
+*	&ftrace = 1000009
 
 *	moves = find(g.lines,rack)
 *	output = 'moves from find(rack)'

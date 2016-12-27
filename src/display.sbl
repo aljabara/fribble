@@ -93,16 +93,17 @@ display.header
 	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
 display.header.end
 
-	define('display.lines(lines)i,line')		:(display.lines.end)
+	define('display.lines(lines,title)i,line')		:(display.lines.end)
 
 *	Display the lines that are not empty in an array of lines
 
 display.lines
-	display.header('lines')
+	title  = 'lines' (differ(title) ' ' title, '')
+	display.header(title)
 display.lines.n
 	line = lines[i = i + 1]				:f(return)
 	empty(line)					:s(display.lines.n)
-	output = '  ' lpad(i,2) ' ' replace(line,' ','.')	:(display.lines.n)
+	output = '  ' lpad(lineid(i),4) ' ' replace(line,' ','.')	:(display.lines.n)
 display.lines.end
 
 	define('display.move(mov)f,i') 			:(display.move.end)
