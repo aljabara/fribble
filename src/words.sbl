@@ -220,7 +220,7 @@ find.move
 	
 find.perm
 	perm = perms[permi = permi + 1]			:f(find.move)
-	output = 'find.perm  <' perm '>'
+*	output = 'find.perm  <' perm '>'
 
 *	Insert the letters from the tileset corresponding to the permutation into the selected blank cells in the line. 
 *	The digit '1' selects the first tile, the digit '2' the second, and so on.
@@ -232,9 +232,9 @@ find.perm
 
 *	Line is valid. Check intersecting lines.
 
-	intersect(lines,m)				:f(find.perm)
+	intersect(lines,copy(m))			:f(find.perm)
 	
-	output = 'scorerd ' display.move(m) ' ' datatype(m)
+*	output = 'scored ' display.move(m) ' ' datatype(m)
 	scorer(m)
 	find[found = found + 1] = copy(m)		:(find.perm)
 find.done
@@ -464,7 +464,7 @@ init.value.end
 *	Insert the text of a move into its free list of empty cells in the line of the move.
 
 insert
-	output = 'enter insert ' line '.  ' display.move(mov) '  ' size(line)
+*	output = 'enter insert ' line '.  ' display.move(mov) '  ' size(line)
 	
 	insert = unpack(line)
 	f = free(mov)
@@ -474,7 +474,7 @@ insert.1
 	gt(i = i + 1,c)					:s(insert.done)
 	insert[f[i]] = substr(t,i,1)			:(insert.1)
 insert.done
-	output = 'exit  insert'
+*	output = 'exit  insert'
 	insert = pack(insert)				:(return)
 insert.end
 
@@ -484,9 +484,9 @@ insert.end
 
 intersect
 	line = lines[id(m)]
-	output = 'pre insert ' line '.'
+*	output = 'pre insert ' line '.'
 	line = insert(line,m);* update line with text of move
-	output = 'pst insert ' line '.'
+*	output = 'pst insert ' line '.'
 	lines[id(m)] = line
 
 *	The line with the move has been updated. Now update and check all the intersecting lines.
@@ -499,10 +499,10 @@ intersect
 
 intersect.free
 	f = free(m)[fi = fi + 1]			:f(return)
-	output = 'checking free cell ' f
+*	output = 'checking free cell ' f
 	iline = iline(lines,id(m),f)
-	output = 'find.perm iline ' iline '.'
-	output = checkline(iline) ' iline checked ok'
+*	output = 'find.perm iline ' iline '.'
+*	output = checkline(iline) ' iline checked ok'
 	mm = checkline(iline)				:f(freturn)s(intersect.free)
 intersect.end
 
