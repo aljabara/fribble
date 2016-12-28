@@ -359,7 +359,7 @@ empty
 	ident(line)					:s(return)f(freturn)
 empty.end
 	
-	define('find(flines,rack)lines,found,line,moves,mi,m,perms.permi,score,save,fline')	:(find.end)
+	define('find(flines,rack)lines,found,line,moves,mi,m,perms.permi,score,fline')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -403,11 +403,13 @@ find.perm
 	text(m) = replace(perm,substr('1234567',1,size(rack)),rack)
 *	output = 'find updated text ' display.move(m)
 *	output = 'find pre  insert ' line
-	fline = insert(line,m);
+	fline = lt(id(m),16) insert(line,m);
+	fline = gt(id(m),16) cinsert(lines,m)
+	
 *	output = 'find post  insert ' fline
 *	output = 'find checking ' fline '.'
 	checkline(fline)					:f(find.perm)
-	ouput = 'VALID ' fline '.'
+*	ouput = 'VALID ' fline '.'
 
 *	Line is valid. Check crossing lines.
 
@@ -418,8 +420,8 @@ find.perm
 	score = tally(copy(lines),m)
 	points(m) = score
 	find = ident(find) table();* create table if will have any entries.
-*	output = 'find adding ' display.move(m)
-	find[m] = score					:(find.perm)
+	output = 'find adding ' display.move(m)
+	find[copy(m)] = score					:(find.perm)
 find.done
 
 *	Fail if found no moves.
@@ -428,7 +430,14 @@ find.done
 	find = differ(find) convert(find,'array')
 							:(return)
 find.end
-
+	define('cinsert(lines,m)f,i')			:(cinsert.end)
+*	insert text of move into column by doing equivalent set of inserts into rows (bug work-around)
+cinsert
+	t = text(m)
+	f = m(free)[i = i + 1]				:f(return)
+*	i-th entry of column c is the c-th entry in row i
+HERE
+	lines(id(m) - 15) = insert(lines[id(m) - 15]
 
 	define('grid(lines,start)i,r,c,line')			:(grid.end)
 
@@ -503,12 +512,14 @@ insert.done
 	insert = pack(insert)				:(return)
 insert.end
 
-	define('crosscheck(lines,m)line,fi,f,cline')	:(crosscheck.end)
+	define('crosscheck(lines,m)line,fi,f,cline,save')	:(crosscheck.end)
 
 *	The line with the move *m* is valid.  Check the crossing lines to see if they are valid.
 
 crosscheck
+	m = copy(m)
 	line = lines[id(m)]
+	save = line
 *	output = 'pre insert ' line '.'
 	line = insert(line,m);* update line with text of move
 *	output = 'pst insert ' line '.'
@@ -523,12 +534,15 @@ crosscheck
 *	and then check them. Succeed if all are valid, fail otherwise.
 
 crosscheck.free
-	f = free(m)[fi = fi + 1]			:f(return)
+	f = free(m)[fi = fi + 1]			:f(crosscheck.done)
 *	output = 'checking free cell ' f
 	cline = cline(lines,id(m),f)
 *	output = 'find.perm cline ' cline '.'
 *	output = checkline(cline) ' cline checked ok'
-	checkline(cline)				:f(freturn)s(crosscheck.free)
+	checkline(cline)				:f(crosscheck.done)s(crosscheck.free)
+crosscheck.done
+	lines[id(m)] = save;* restore lines
+							:(return)
 crosscheck.end
 
 	define('less(str,ch)before,after')		:(less.end)
@@ -812,7 +826,7 @@ subarray.1
 	subarray[i] = copy(ara[start + i - 1])		:(subarray.1)		
 subarray.end
 
-	define('tally(lines,m)line,fi,f,cline,save,score')	:(tally.end)
+	define('tally(lines,m)line,fi,f,cline,save,score,g')	:(tally.end)
 
 *	In order to determine which words on the board would be formed by making this move,
 *	rebuild the board but with the new tiles in uppercase. This way, a word is new if and only if
@@ -821,13 +835,16 @@ subarray.end
 *	contain an upper-case character.
 
 tally
-*	output = 'scoring ' display.move(m)
+	output = 'scoring ' display.move(m)
 	mm = copy(m)
 	text(mm) = ucase(text(m))
 	line = lines[id(m)]
 	save = line;* save before inserting upper case
 	line = insert(line,mm)
 	lines[id(m)] = line
+*	display.lines(lines, 'tally')
+	g = grid(lines,id(mm))
+	display.board(g,'tally')
 	score = score(line)
 	fi = 0
 tally.next

@@ -26,14 +26,17 @@
 *	placeword(1,4,'invert');* adding 'ed' at end will give triple word bonus
 	placeword(1,3,'invert');* adding 'ed' at end will give triple word bonus
 *	placeword(8,6,'invert')
-	g.lines = lines(g.board);* update lines
-	display.lines(g.lines)
 	display.alone()
+
 	display.board(g.board,'g.board')
+	g.lines = lines(g.board);* update lines
+
+	display.lines(g.lines,initial')
 	display.bonus(g.bonus,'bonus')
+
 	output = 'end initial display'
 	
-	rack = 'toxoedf'
+	rack = 'toxoedr'
 *	rack = 'toe'
 *	rack = 'si';* should make plural
 *	&trace = 10000
@@ -45,7 +48,7 @@
 *	output = 'moves from find(rack)'
 	moves = bestmove(rack)
 	output = 'best moves:'
-	display.moves(moves)
+	display.moves(moves,'bestmove')
 	output = 'finis'
 end
 	g.lines = lines(g.board)
@@ -105,7 +108,7 @@ end
 	output = 'score INVERTS col 4=' score(g.lines,19)
 	output = 'score INVERTS col 5=' score(g.lines,20)
 	
-	g.rack = 'toxoedf'
+	g.rack = 'edtoxof'
 	best('toxoedf')
 	display()
 	g.lines = lines(g.board)
