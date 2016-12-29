@@ -140,13 +140,13 @@ display.move.end
 
 	define('display.moves(moves,title)i,mov')	:(display.moves.end)
 
-*	Display an array of moves.
+*	Display an array of moves. Assume each entry has 1) line num, 2) move
 
 display.moves
 	ident(moves)					:s(return)
 	output = 'MOVES ' title
 display.moves.loop
-	mov = moves[i = i + 1,2]			:f(return)
+	mov = moves[i = i + 1,1]			:f(return)
 	output = char(9) lpad(i,2) ' ' display.move(mov) :(display.moves.loop)
 display.moves.end
 

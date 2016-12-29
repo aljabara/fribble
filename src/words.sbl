@@ -239,12 +239,7 @@ init.value.end
 bestmove
 	g.lines = lines(g.board)
 	moves = find(copy(g.lines),rack);* pass copy since find will alter lines.
-	output = 'best datatype moves ' datatype(moves)
-	bestmove = rsort(moves,2)
-bestmove.1
-	mov = bestmove[i = i + 1,1]			:f(bestmove.2)
-	output = 'best move ' lpad(i,2) ' ' display.move(mov) :(bestmove.1)
-bestmove.2
+	display.moves(moves,'best')
 							:(return)
 bestmove.end
 
@@ -334,7 +329,7 @@ checkword.end
 *	Return crossing line of p-th cell in move *mov*. *ch* gives tile to be played.
 
 cline
-*	output = 'cline cline line ' replace(lines[id(mov)],' ','.')
+*	output = 'cline cline line ' replace(lines[id(mov)],' ','.') size(lines[id(mov)]) ' ' display.move(mov) ' ch ' ch
 	line = lines[p + 15]
 	gt(id(mov),15)					:s(cline.col)
 	r = id(mov)
@@ -343,7 +338,7 @@ cline
 cline.col
 	line = lines[p]
 	c = id(mov) - 15
-	cline = (eq(c,1) '',substr(line,1,p - 1)) ch (eq(c,15) '', substr(line,p + 1))  
+	cline = (eq(p,1) '',substr(line,1,p - 1)) ch (eq(p,15) '', substr(line,p + 1))  
 							:(return)
 cline.end
 
@@ -417,7 +412,8 @@ find.cross
 	checkline(cline)				:f(find.perm)
 *	Save the line for possible later scoring if move proves valid.
 	fi = fi + 1
-	flines[fi,1] = (le(id(mov),15), id(mov) + 15, id(mov) - 15);* number of crossing line
+	flines[fi,1] = (le(id(mov),15) id(mov) + 15, id(mov) - 15);* number of crossing line
+
 	text(mov) = ucase(replace(text(mov),substr('1234567',1,size(rack)),rack))
 	cline = insert(cline,mov)
 	flines[fi,2] = cline				
@@ -427,7 +423,7 @@ find.cross.done
 
 *	Score the line by summing the scores of the lines saved in flines.
 	
-	output = 'Scoring ' find.perm display.move(mov) ' ' d
+	points(mov) = 0
 *	display.lines(lines,'Tally')
 
 find.score
@@ -446,17 +442,20 @@ find.score
 	
 find.score.next
 	gt(i = i + 1,fi)				:s(find.score.done)
-	score = score + score(flines[i,2],flines[i,1])	:s(find.score.next)
+	score = score + score(flines[i,2],flines[i,1])	:(find.score.next)
 find.score.done
-	points(mov) = score
+	points(mov) = +score
 	find = ident(find) table();* create table if will have any entries.
-	find[mov] = score				:(find.perm)
+	find[copy(mov)] = score				
+	score = 0
+	fi = 0
+							:(find.perm)
 find.done
 
 *	Fail if found no moves.
 
 	ident(find)					:s(freturn)
-	find = differ(find) convert(find,'array')
+	find = differ(find) rsort(find,2);* sort with highest scores first
 							:(return)
 find.end
 
@@ -646,6 +645,7 @@ placeword.1
 placeword.done
 	g.alone.lines = lines(g.alone)
 	g.lines = lines(g.board);* update g.lines so consistent with updated board.
+	g.bonus.lines = lines(g.bonus)
 							:(return)
 placeword.end
 
@@ -747,7 +747,7 @@ scan.doner
 	output = 'move.doner'				:(end)
 scan.end
 
-	define('score(line,num)cline,word,words,n,start,ci,wi,ch,i,bonus,wscore,double,triple,val,points')	:(score.end)
+	define('score(line,num)cline,word,words,n,start,wi,ch,i,bonus,double,triple,val')	:(score.end)
 
 *	Compute the score of a move on a given line. All the letters of the move will be in upper case on the board
 *	so the score of the move is the sum of the scores of all the words with upper case letters in them, for
@@ -756,10 +756,25 @@ scan.end
 
 *SCORE
 score
-	empty(line)					:s(return)
 	score  = 0
+	empty(line)					:s(return)
 	cline = line
 	bonusline = g.bonus.lines[num]
+
+	showscore = 0
+	eq(showscore) :s(score.3)
+	vline = 
+score.1
+	gt(i = i + 1,size(cline))			:s(score.2)
+	vch = substr(cline,i,1)
+	vch = gt(g.value[vch],0) substr('123456789ABCDE',g.value[substr(cline,i,1)],1)
+	vline = vline vch				:(score.1)
+score.2
+	output = 'score value ' vline
+	output = 'score       ' cline
+	output = 'score bonus ' bonusline  
+score.3
+
 	cline break(&ucase)				:f(score.error)
 	words = words(cline)				:f(return)
 score.word
@@ -769,30 +784,32 @@ score.word
 
 *	Single letters don't contribute to score since they result from an crossing line.
 
-*	output = 'scoring word ' word
+	output = ne(showscore) 'scoring word ' word
 	word break(&ucase)				:f(score.word)
 	eq(n,1)						:s(return);* singletons aren't scored.
 	line = substr(cline,start)
-	bonusline = substr(g.bonus.lines[i],start);* corresponding part of bonus line
+	bonusline = substr(g.bonus.lines[num],start);* corresponding part of bonus line
 	double = 0; triple = 0; i = 0
 score.char
 	gt(i = i + 1,n) 				:s(score.char.done)
 	ch = substr(word,i,1)
 	bonus = +substr(bonusline,i,1)
 	val = +g.value[ch]
+	output = ne(showscore) ch ' ' val ' ' bonus
 	score = score + val;* always get at least the value of the tile
+	output = ne(showscore) 'score ' ch ' added value ' val ' score now ' score
 	eq(bonus,1)					:s(score.char)
-	score = (eq(bonus,2) score + val)		:s(score.char);* double letter	
-	score = (eq(bonus,3) score + val + val)		:s(score.char);* triple letter
-	double = (eq(bonus,4) double + 1)		:s(score.char);* double word
-	triple = (eq(bonus,5) triple + 1)		:s(score.char);* triple word
+	score = eq(bonus,2) score + val			:s(score.char);* double letter	
+	score = eq(bonus,3) score + val + val		:s(score.char);* triple letter
+	double = eq(bonus,4) double + 1			:s(score.char);* double word
+	triple = eq(bonus,5) triple + 1			:s(score.char);* triple word
 							:(score.char)
 score.char.done
-	score = (eq(double,1) score * 2)
-	score = (eq(double,2) score * 4)
-	score = (eq(triple,1) score * 3)
-	score = (eq(triple,2) score * 9)		
-*	output = 'score ' score ' for line ' lpad(num,2) ' ' line '.'
+	score = eq(double,1) +score * 2
+	score = eq(double,2) +score * 4
+	score = eq(triple,1) +score * 3
+	score = eq(triple,2) +score * 9		
+	output = ne(showscore) 'SCORE ' score ' for line ' lpad(num,2) ' ' line '.'
 							:(return)
 score.error
 	score = 0					:(return)
