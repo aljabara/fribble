@@ -31,12 +31,13 @@
 	display.board(g.board,'g.board')
 	g.lines = lines(g.board);* update lines
 
-	display.lines(g.lines,initial')
+	display.lines(g.lines,'initial')
 	display.bonus(g.bonus,'bonus')
 
 	output = 'end initial display'
 	
 	rack = 'toxoedr'
+	rack = 'edto'
 *	rack = 'toe'
 *	rack = 'si';* should make plural
 *	&trace = 10000

@@ -7,7 +7,7 @@ display.board
 	display.header(title)
 display.board.r
 	gt(r = r + 1,15) 				:s(display.board.finish)
-	line = lpad(r,2) '|'
+	line = lpad(r,2) '|' 
 	c = 0
 display.board.c
 	gt(c = c + 1,15)				:s(display.board.margin)
@@ -45,7 +45,7 @@ display.alone
 	display.header('alone')
 display.alone.r
 	gt(r = r + 1,15) 				:s(display.alone.finish)
-	line = lpad(r,2) '|'
+	line = lpad(r,2) '|' 
 	c = 0
 display.alone.c
 	gt(c = c + 1,15)				:s(display.alone.l)
@@ -88,10 +88,25 @@ display.bonus.end
 
 	define('display.header(label)')			:(display.header.end)
 display.header
-	output = char(9) ucase(label)
+	output = ucase(label)
 	output = '                      1 1 1 1 1 1'
 	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
 display.header.end
+
+	define('display.clines(lines,title)i,line,num')		:(display.clines.end)
+
+*	Display the clines array of lines
+
+display.clines
+	title  = 'clines' (differ(title) ' ' title, '')
+	output = title
+	output = '    123456789012345'
+display.clines.n
+	num = lines[i = i + 1,1]			:f(return)
+	line = lines[i,2]
+	output = size(line)
+	output = lpad(lineid(num),2) ' '  replace(line,' ','.') :(display.clines.n)
+display.clines.end
 
 	define('display.lines(lines,title)i,line')		:(display.lines.end)
 
@@ -99,11 +114,12 @@ display.header.end
 
 display.lines
 	title  = 'lines' (differ(title) ' ' title, '')
-	display.header(title)
+	output = title
+	output = '    123456789012345'
 display.lines.n
 	line = lines[i = i + 1]				:f(return)
 	empty(line)					:s(display.lines.n)
-	output = '  ' lpad(lineid(i),4) ' ' replace(line,' ','.')	:(display.lines.n)
+	output = lpad(lineid(i),2) ' ' replace(line,' ','.') :(display.lines.n)
 display.lines.end
 
 	define('display.move(mov)f,i') 			:(display.move.end)

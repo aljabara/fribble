@@ -245,7 +245,7 @@ bestmove.1
 	mov = bestmove[i = i + 1,1]			:f(bestmove.2)
 	output = 'best move ' lpad(i,2) ' ' display.move(mov) :(bestmove.1)
 bestmove.2
-								:(return)
+							:(return)
 bestmove.end
 
 	define('append(str,w)')				:(append.end)
@@ -253,27 +253,27 @@ bestmove.end
 *	Append word *w* to string *str*, prefixing with a space if *str* is not null.
 
 append
-	append = ident(str) w					:s(return)
-	append = str ' ' w					:(return)
+	append = ident(str) w				:s(return)
+	append = str ' ' w				:(return)
 append.end
 
-	define('available(line)blanks,c,i')			:(available.end)
+	define('available(line)blanks,c,i')		:(available.end)
 
 *	Return array containing the indexes of the blank cells in line. Fails if no blanks.
 available
-	c = substr(line, i = i + 1, 1)				:f(available.1)
-	differ(c,' ')						:s(available)
-	blanks = blanks + 1					:(available)
+	c = substr(line, i = i + 1, 1)			:f(available.1)
+	differ(c,' ')					:s(available)
+	blanks = blanks + 1				:(available)
 available.1
-	eq(blanks,0)						:s(freturn)
+	eq(blanks,0)					:s(freturn)
 	available = array(blanks)
 	i = ai = 0
 available.2
-	c = substr(line, i = i + 1, 1)				:f(return)
-	differ(c,' ')						:s(available.2)
+	c = substr(line, i = i + 1, 1)			:f(return)
+	differ(c,' ')					:s(available.2)
 	available[ai = ai + 1] = +i				
 *	output = 'ai ' lpad(ai,2) '  ' +i
-								:(available.2)
+							:(available.2)
 available.end
 
 	define('blanks(line)n')				:(blanks.end)
@@ -296,7 +296,7 @@ bonus.lines.next
 	bonus.lines[i + 15] = vline(g.bonus,i)		:(bonus.lines.next)
 bonus.lines.end
 
-	define('checkline(line)word,cline')			:(checkline.end)
+	define('checkline(line)word,cline')		:(checkline.end)
 
 *	Succeeds if all the words in the line are in the dictionary, fails otherwise.
 
@@ -329,24 +329,21 @@ checkword.1
 	differ(g.dict[size(w)][w])			:s(return)f(freturn)
 checkword.end
 
-	define('cline(lines,num,p)')			:(cline.end)
+	define('cline(lines,p,mov,ch)line,i,r,c')		:(cline.end)
 
-*	Return the crossing line of line *num* in the array *lines* of lines at position *p*.
-*	The crossing line of position *p* in row *r* is column *p*.
-*	The crossing line of position *p* in column *c* is row *p*.
+*	Return crossing line of p-th cell in move *mov*. *ch* gives tile to be played.
 
 cline
-	gt(num,16)					:s(cline.col)
-
-*	Compute crossing line of a row. That is the p'th column
-
-	cline = substr(lines[p + 15], 1, num - 1) substr(lines[num],p,1) substr(lines[p + 15], num + 1)
+*	output = 'cline cline line ' replace(lines[id(mov)],' ','.')
+	line = lines[p + 15]
+	gt(id(mov),15)					:s(cline.col)
+	r = id(mov)
+	cline = (eq(r,1) '',substr(line,1,r - 1)) ch (eq(r,15) '', substr(line,r + 1)) 
 							:(return)
 cline.col
-
-*	Compute crossing line of a column. That is the p'th row
-
-	cline = substr(lines[p - 15], 1, p - 1) substr(lines[num],p,1) substr(lines[p - 15], p + 1)
+	line = lines[p]
+	c = id(mov) - 15
+	cline = (eq(c,1) '',substr(line,1,p - 1)) ch (eq(c,15) '', substr(line,p + 1))  
 							:(return)
 cline.end
 
@@ -359,7 +356,7 @@ empty
 	ident(line)					:s(return)f(freturn)
 empty.end
 	
-	define('find(flines,rack)lines,found,line,moves,mi,m,perms.permi,score,fline')	:(find.end)
+	define('find(lines,rack)flines,fi,line,moves,mi,m,perms,permi,score,fline,tline,iline,sline')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -373,55 +370,87 @@ empty.end
 
 *FIND
 find
-	lines = copy(flines)
 	display.lines(lines,'find')
+	flines = array('8,2');* for line with move and its crossing lines.
+	fi = 0;* number of entries in flines
 *	plines = copy(lines);* for testing  permutation
 find.line
 	gt(num = num + 1,30)				:s(find.done)
 	line = lines[num]
-*	g.lines = lines
-*	output = 'find line ' num ' ' line
 	moves = scan(num,line,rack)
-	differ(moves) display.moves(moves,'Scan line ' lpad(num,3) )
+*	differ(moves) display.moves(moves,'Scan line ' lpad(num,3) )
 	ident(moves)					:s(find.line)
 	mi = 0
 find.move
-	m = moves[mi = mi + 1,2]			:f(find.line)
-	m = copy(m);* get working copy
-	points(m) = 
-	perms = g.permutations[size(rack) '?' count(m)]
+	mov = moves[mi = mi + 1,2]			:f(find.line)
+	points(mov) = 
+	perms = g.permutations[size(rack) '?' count(mov)]
 	permi = 0
 	
 find.perm
 	perm = perms[permi = permi + 1]			:f(find.move)
-*	output = 'find.perm  <' perm '>'
 
 *	Insert the letters from the tileset corresponding to the permutation into the selected blank cells in the line. 
 *	The digit '1' selects the first tile, the digit '2' the second, and so on.
 *	Then see if the result gives a valid line. Move to the next permutation if not.
 
-	text(m) = replace(perm,substr('1234567',1,size(rack)),rack)
-*	output = 'find updated text ' display.move(m)
-*	output = 'find pre  insert ' line
-	fline = lt(id(m),16) insert(line,m);
-	fline = gt(id(m),16) cinsert(lines,m)
-	
-*	output = 'find post  insert ' fline
-*	output = 'find checking ' fline '.'
-	checkline(fline)					:f(find.perm)
-*	ouput = 'VALID ' fline '.'
+	text(mov) = perm;* insert permutation digits into free cells
+	iline = insert(lines[num],mov);* line with permutation digits entered
 
-*	Line is valid. Check crossing lines.
 
-	crosscheck(copy(lines),copy(m))			:f(find.perm)
+	checkline(replace(iline,substr('1234567',1,size(rack)),rack)) 	:f(find.perm)
+	tline =   replace(iline,substr('1234567',1,size(rack)),rack)
+	checkline(tline)	:f(find.perm)
+
+*	Move is valid on this line, so check validity on crossing lines.
+*	Save the valid lines in *flines* for scoring if move proves valid.
+
+	fi = fi + 1
+	flines[fi,1] =  id(mov)
+	text(mov) = ucase(replace(text(mov),substr('1234567',1,size(rack)),rack))
+	tline = insert(lines[num],mov)
+	flines[fi,2] = tline
+	i = 0
+find.cross
+	p = free(mov)[i = i + 1]			:f(find.cross.done)
+	cline = cline(lines,p,mov,substr(rack,substr(perm,i,1),1))
+	checkline(cline)				:f(find.perm)
+*	Save the line for possible later scoring if move proves valid.
+	fi = fi + 1
+	flines[fi,1] = (le(id(mov),15), id(mov) + 15, id(mov) - 15);* number of crossing line
+	text(mov) = ucase(replace(text(mov),substr('1234567',1,size(rack)),rack))
+	cline = insert(cline,mov)
+	flines[fi,2] = cline				
+							:(find.cross)
 	
-*	output = 'scoring ' find.perm display.move(m) ' ' datatype(m)
+find.cross.done
+
+*	Score the line by summing the scores of the lines saved in flines.
+	
+	output = 'Scoring ' find.perm display.move(mov) ' ' d
 *	display.lines(lines,'Tally')
-	score = tally(copy(lines),m)
-	points(m) = score
+
+find.score
+
+*	In order to determine which words on the board would be formed by making this move,
+*	rebuild the board but with the new tiles in uppercase. This way, a word is new if and only if
+*	it contains an upper case character. The score is then the sum over all the lines of the scores of
+*	the words containing an upper-case character. At most one word in any line of the new grid will
+*	contain an upper-case character.
+
+	i = 0
+	score = 0
+
+*	Replace the digits of the permutation by the corresponding letters from the rack, in upper case.
+
+	
+find.score.next
+	gt(i = i + 1,fi)				:s(find.score.done)
+	score = score + score(flines[i,2],flines[i,1])	:s(find.score.next)
+find.score.done
+	points(mov) = score
 	find = ident(find) table();* create table if will have any entries.
-	output = 'find adding ' display.move(m)
-	find[copy(m)] = score					:(find.perm)
+	find[mov] = score				:(find.perm)
 find.done
 
 *	Fail if found no moves.
@@ -430,16 +459,8 @@ find.done
 	find = differ(find) convert(find,'array')
 							:(return)
 find.end
-	define('cinsert(lines,m)f,i')			:(cinsert.end)
-*	insert text of move into column by doing equivalent set of inserts into rows (bug work-around)
-cinsert
-	t = text(m)
-	f = m(free)[i = i + 1]				:f(return)
-*	i-th entry of column c is the c-th entry in row i
-HERE
-	lines(id(m) - 15) = insert(lines[id(m) - 15]
 
-	define('grid(lines,start)i,r,c,line')			:(grid.end)
+	define('grid(lines,start)i,r,c,line')		:(grid.end)
 
 *	Construct a grid from a sequence of lines beginning at index *start*,
 *	(1..15 for rows, 16..30 for columns.
@@ -448,7 +469,6 @@ grid
 	grid = array('15,15',' ')
 	start = ident(start) +1
 	start = (lt(start,15) 1, 16)
-	output = 'grid start ' start
 	gt(start,15)					:s(grid.col)
 
 *	Here to build grid from the rows.
@@ -493,7 +513,7 @@ hline
 hline.end
 
 
-	define('insert(line,mov)text,i,count,free,f,c,t')	:(insert.end)
+	define('insert(line,mov)i,p,c,t')		:(insert.end)
 
 *	Insert the text of a move into its free list of empty cells in the line of the move.
 
@@ -501,49 +521,14 @@ insert
 *	output = 'enter insert ' line '.  ' display.move(mov) '  ' size(line)
 	
 	insert = unpack(line)
-	f = free(mov)
-	c = count(mov)
-	t = text(mov)
 insert.1
-	gt(i = i + 1,c)					:s(insert.done)
-	insert[f[i]] = substr(t,i,1)			:(insert.1)
+	gt(i = i + 1,count(mov))			:s(insert.done)
+	p = free(mov)[i]
+	insert[p] = substr(text(mov),i,1)		:(insert.1)
 insert.done
 *	output = 'exit  insert'
 	insert = pack(insert)				:(return)
 insert.end
-
-	define('crosscheck(lines,m)line,fi,f,cline,save')	:(crosscheck.end)
-
-*	The line with the move *m* is valid.  Check the crossing lines to see if they are valid.
-
-crosscheck
-	m = copy(m)
-	line = lines[id(m)]
-	save = line
-*	output = 'pre insert ' line '.'
-	line = insert(line,m);* update line with text of move
-*	output = 'pst insert ' line '.'
-	lines[id(m)] = line
-
-*	The line with the move has been updated. Now update and check all the crosschecking lines.
-
-	fi = 0
-	line =
-
-*	Iterate over the free cells of the move, update the corresponding crossing lines, 
-*	and then check them. Succeed if all are valid, fail otherwise.
-
-crosscheck.free
-	f = free(m)[fi = fi + 1]			:f(crosscheck.done)
-*	output = 'checking free cell ' f
-	cline = cline(lines,id(m),f)
-*	output = 'find.perm cline ' cline '.'
-*	output = checkline(cline) ' cline checked ok'
-	checkline(cline)				:f(crosscheck.done)s(crosscheck.free)
-crosscheck.done
-	lines[id(m)] = save;* restore lines
-							:(return)
-crosscheck.end
 
 	define('less(str,ch)before,after')		:(less.end)
 
@@ -674,7 +659,7 @@ prefix
 prefix.1
 	str break(' ') . word span(' ')  =		:f(return)
 	prefixcount = prefixcount + 1
-	prefix = append(prefix, pre word)			:(prefix.1)
+	prefix = append(prefix, pre word)		:(prefix.1)
 prefix.end
 
 	define('random(n)')				:(random.end)
@@ -826,37 +811,6 @@ subarray.1
 	subarray[i] = copy(ara[start + i - 1])		:(subarray.1)		
 subarray.end
 
-	define('tally(lines,m)line,fi,f,cline,save,score,g')	:(tally.end)
-
-*	In order to determine which words on the board would be formed by making this move,
-*	rebuild the board but with the new tiles in uppercase. This way, a word is new if and only if
-*	it contains an upper case character. The score is then the sum over all the lines of the scores of
-*	the words containing an upper-case character. At most one word in any line of the new grid will
-*	contain an upper-case character.
-
-tally
-	output = 'scoring ' display.move(m)
-	mm = copy(m)
-	text(mm) = ucase(text(m))
-	line = lines[id(m)]
-	save = line;* save before inserting upper case
-	line = insert(line,mm)
-	lines[id(m)] = line
-*	display.lines(lines, 'tally')
-	g = grid(lines,id(mm))
-	display.board(g,'tally')
-	score = score(line)
-	fi = 0
-tally.next
-	f = free(m)[fi = fi + 1]			:f(tally.done)
-	cline = cline(lines,id(m),f)
-	score = score + score(cline)			:(tally.next)
-tally.done
-	lines[id(m)] = save;* restore lines to its entry value.
-	tally = score
-							:(return)
-tally.end
-
 	define('ucase(s)')				:(ucase.end)
 
 *	Convert argument to upper case.
@@ -888,7 +842,7 @@ vline
 							:(return)
 vline.end
 
-	define('wordcount(s)i,w')				:(wordcount.end)
+	define('wordcount(s)i,w')			:(wordcount.end)
 
 *	Return number of words in s, fail if no words
 
@@ -898,7 +852,7 @@ wordcount
 	wordcount = 0
 wordcount.1
 	s break(' ') . w span(' ') =			:f(return)
-	wordcount = +wordcount + 1				:(wordcount.1)
+	wordcount = +wordcount + 1			:(wordcount.1)
 wordcount.end
 
 	define('words(s)n,w,pos')					:(words.end)
@@ -908,17 +862,17 @@ wordcount.end
 *	the second entry is the word itself.
 
 words
-	n = wordcount(s)					:f(freturn)
+	n = wordcount(s)				:f(freturn)
 	s = s ' '
 	words = table(n)
 	pos = 1;* first word has no preceding space.
 words.1
 *	Replace the blank with ? 
-	s break(' ') . w ' ' = 					:f(words.done)
+	s break(' ') . w ' ' = 				:f(words.done)
 	words[pos] = w					
 	pos = pos + size(w) + 1;* set to start of next word
-								:(words.1)
+							:(words.1)
 words.done
-	words = convert(words,'array')				:(return)
+	words = convert(words,'array')			:(return)
 words.end
 
