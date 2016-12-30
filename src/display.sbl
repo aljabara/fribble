@@ -92,7 +92,7 @@ display.bonus.end
 
 
 display.tag
-	output = '{' num(tag) ',' "'" replace(line(tag),' ','.') "'" '}'	:(return)
+	display.tag = '{' lineid(num(tag)) ',' "'" replace(line(tag),' ','.') "'" '}'	:(return)
 display.tag.end
 
 	define('display.header(label)')			:(display.header.end)
@@ -116,6 +116,14 @@ display.clines.n
 	output = size(line)
 	output = lpad(lineid(num),2) ' '  replace(line,' ','.') :(display.clines.n)
 display.clines.end
+
+	define('display.line(line)')				:(display.line.end)
+
+*	Display a line with blanks replaced by '.'
+
+display.line
+	display.line = replace(line,' ','.')			:(return)
+display.line.end
 
 	define('display.lines(lines,title)i,line')		:(display.lines.end)
 

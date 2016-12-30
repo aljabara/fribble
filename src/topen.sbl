@@ -38,10 +38,10 @@
 
 	output = 'end initial display'
 	
+*	rack = 'toe'
+	rack = 'si';* should make plural
 	rack = 'toxoedr'
 	rack = 'edto'
-*	rack = 'toe'
-*	rack = 'si';* should make plural
 *	&trace = 10000
 	trace('score','av')
 *	&ftrace = 1000009

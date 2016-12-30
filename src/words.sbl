@@ -34,9 +34,6 @@
 
 *	g.value, a map from characters to the tile value of that character.
 
-*	g.avail, array(15), is the result of applying the procedure available() to g.line.
-
-
 *	A move is a sequence of empty cells in a row or column such that at least one cell in the sequence 
 *	is adjacent to an already occupied cell:
 *		*id* gives the line number, in the range 1..30;
@@ -166,7 +163,6 @@ init.dict.in
 	g.dict[size(w)][w] = +1
 	g.dict[size(w) + 1][w 's'] = +1			:(init.dict.in)
 init.dict.w
-*	output = 'enter ' w ' ' size(w)
 	g.dict[size(w)][w] = +1
 	eq(skip,1)					:s(init.dict.in)
 *	here want to skip over entries in the dictionary (for testing)
@@ -279,7 +275,6 @@ available.2
 	c = substr(line, i = i + 1, 1)			:f(return)
 	differ(c,' ')					:s(available.2)
 	available[ai = ai + 1] = +i				
-*	output = 'ai ' lpad(ai,2) '  ' +i
 							:(available.2)
 available.end
 
@@ -298,16 +293,16 @@ bonus.lines
 	bonus.lines = array(30)
 bonus.lines.next
 	gt(i = i + 1,15)				:s(return)
-	output = 'calling hline ' datatype(g.bonus)
 	bonus.lines[i] = hline(g.bonus,i)
 	bonus.lines[i + 15] = vline(g.bonus,i)		:(bonus.lines.next)
 bonus.lines.end
 
-	define('checkline(line)wordlin')		:(checkline.end)
+	define('checkline(line)word,lin')		:(checkline.end)
 
 *	Succeeds if all the words in the line are in the dictionary, fails otherwise.
 
 checkline
+	lin = line
 	empty(line)					:s(return)
 	line span(' ') =
 checkline.1
@@ -315,6 +310,7 @@ checkline.1
 	eq(size(word),1)				:s(checkline.1)
 	checkword(word)					:f(freturn)s(checkline.1)
 checkline.done
+*	output = 'checkline VALID ' display.line(lin)
 							:(return)
 checkline.end
 
@@ -324,36 +320,30 @@ checkline.end
 
 checkword
 	eq(size(w),1)					:s(return)
-	differ(w,'tofoxed')				:s(checkword.1)
-	g.board = grid(g.lines,1)
-	display.board(g.board,'checkword')
-	output = 'checkword ' w
-	output = differ(g.dict[size(w)][w]) 'checkword VALID ' w
-checkword.1
-*	output = differ(g.dict[size(w)][w]) 'VALID word ' w
-*	differ(g.dict[size(w)][w])			:s(return)f(freturn)
 	differ(g.dict[size(w)][w])			:s(return)f(freturn)
 checkword.end
 
-	define('cline(lines,p,mov,ch)line,i,r,c')		:(cline.end)
+	define('cline(lines,mov,p,ch)line,i,r,c')		:(cline.end)
 
 *	Return crossing line of p-th cell in move *mov*. *ch* gives tile to be played.
 
 cline
-	output = 'enter cline ' display.move(mov) ' p=' p  '  ch<' ch '>'
 	gt(id(mov),15)					:s(cline.col)
-	line = lines[p + 15]
+	line = lines[p + 15];* column p
 	r = id(mov)
 	line = (eq(r,1) '',substr(line,1,r - 1)) ch (eq(r,15) '', substr(line,r + 1)) 
 	cline = tag(p + 15,line)
-	output = 'exit  cline ' display.tag(cline)
+	:(cline.done)
 							:(return)
 cline.col
-	line = lines[p]
+	line = lines[p];* row p
 	c = id(mov) - 15
-	line = (eq(p,1) '',substr(line,1,p - 1)) ch (eq(p,15) '', substr(line,p + 1))  
+	line = (eq(c,1) '',substr(line,1,c - 1)) ch (eq(p,15) '', substr(line,c + 1))  
 	cline = tag(p,line)
-	output = 'exit  cline ' display.tag(cline)
+	:(cline.done)
+							:(return)
+cline.done
+*	output = 'CLINE ' display.move(mov) ' p ' p  "'" ch "'" ' -> ' display.tag(cline)
 							:(return)
 cline.end
 
@@ -387,10 +377,9 @@ find
 find.line
 	gt(num = num + 1,30)				:s(find.done)
 	line = lines[num]
-	moves = scan(num,line,rack)			:f(find.line)
-	output = 'display scan moves ' datatype(moves)
-	display.moves(moves,'From scan')
-	ne(g.showscore) differ(moves) display.moves(moves,'Scan line ' lpad(num,3),2)
+	moves = scan(tag(num,line),rack)			:f(find.line)
+*	display.moves(moves,'From scan')
+*	ne(g.showscore) differ(moves) display.moves(moves,'Scan line ' lpad(num,3),2)
 	mi = 0
 find.move
 	move = moves[mi = mi + 1,2]			:f(find.line)
@@ -409,8 +398,6 @@ find.perm
 
 	text(move) = perm;* insert permutation digits into free cells
 	iline = insert(lines[num],move);* line with permutation digits entered
-
-
 	checkline(place(iline,rack))			:f(find.perm)
 
 *	Move is valid on this line, so check validity on crossing lines.
@@ -421,7 +408,7 @@ find.perm
 	i = 0
 find.cross
 	p = free(move)[i = i + 1]			:f(find.cross.done)
-	cline = cline(lines,p,move,substr(rack,substr(perm,i,1),1))
+	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1))
 	checkline(line(cline))				:f(find.perm)
 
 *	Save the line for possible later scoring if move proves valid.
@@ -472,7 +459,6 @@ findscore
 
 findscore.next
 	gt(i = i + 1,fn)				:s(return)
-	output = ne(g.showscore) 'scoring BEFORE flines, ' display.tag(flines[i])
 	findscore = findscore + score(flines[i])	
 	output = ne(g.showscore) 'scoring AFTER  flines, ' display.tag(flines[i]) '  is ' findscore
 
@@ -512,10 +498,8 @@ grid.nextcol
 	line = lines[c]
 	i = 0
 grid.c
-*	output = 'grid c ' c '  ' i + 1 ' ' substr(line,i + 1,1)
 	grid[i = i + 1,c] = substr(line,i,1)		:s(grid.c)f(grid.nextcol)
-grid.done
-	output = 'grid.done ' datatype(grid)	:(return)
+grid.done						:(return)
 grid.end
 
 	define('hline(grid,r)')				:(hline.end)
@@ -523,7 +507,6 @@ grid.end
 *	Return the horizontal line of a grid corresponding to row r as a string.
 
 hline
-*	output = 'hline ' r ' ' datatype(grid)
 	r = +r
 	hline = grid[r,1] grid[r,2] grid[r,3] grid[r,4] grid[r,5] 
 .		grid[r,6] grid[r,7] grid[r,8] grid[r,9] grid[r,10]
@@ -537,7 +520,6 @@ hline.end
 *	Insert the text of a move into its free list of empty cells in the line of the move.
 
 insert
-*	output = 'enter insert ' line '.  ' display.move(mov) '  ' size(line)
 	
 	insert = unpack(line)
 insert.1
@@ -545,7 +527,6 @@ insert.1
 	p = free(mov)[i]
 	insert[p] = substr(text(mov),i,1)		:(insert.1)
 insert.done
-*	output = 'exit  insert'
 	insert = pack(insert)				:(return)
 insert.end
 
@@ -579,9 +560,7 @@ lines
 	lines = array(30)
 lines.next
 	gt(i = i + 1,15)				:s(return)
-*	output = 'linex.next pre hline ' datatype(grid) ' ' datatype(i)
 	lines[i] = hline(grid,i)
-*	output = 'linex.next pst hline' ' ' datatype(grid)
 	lines[i + 15] = vline(grid,i)			:(lines.next)
 lines.end
 
@@ -650,7 +629,8 @@ pack.end
 *	Place the permutation digits in *txt* with the corresponding tiles from *rack*.
 
 place
-	place = replace(txt,substr('1234567',1,size(rack)),rack) 	:(return)
+	place = replace(txt,substr('1234567',1,size(rack)),rack) 	
+								:(return)
 place.end
 
 	define('placeword(r,c,w)ch')			:(placeword.end)
@@ -718,20 +698,32 @@ random_rack
 	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
 random_rack.end
 
-	define('scan(num,line,rack)alone,nopen,ai,first,max,n,last,nplaces,ptable,mov,moves')	:(scan.end)
+	define('scan(tag,rack)num,line,alone,nopen,ai,first,max,n,last,p,mov,moves,fi,lonely,avail')	:(scan.end)
 
 *	Scan the given line to find the places where a valid move can be made. At least one cell in 
 *	a move must be adjacent to an occupied cell.  *line* is the line to be scanned, and *num* gives its
 *	position on the board.
 
 scan
+	line = line(tag)
+	num = num(tag)
 	moves = 0
 	alone = g.alone.lines[num]
 
 *	Allocate and fill in avail, an array giving the positions of the open cells.
 
-	g.avail = available(line)			:f(scan.done);* fail if no empty cells
-	nopen = prototype(g.avail);* number of open cells
+	avail = available(line)			:f(scan.done);* fail if no empty cells
+
+*	Set lonely to the alone-ness of the cells in avail. The i-th entry in lonely is the alone-ness of the
+*	cell correspondng to the i-th location in avail. As a result, the substring j..k of lonely has
+*	the alone-ness values for entries j..k in avail, so we can test aloneness of all the cells by
+*	extracting the appropriate substring of lonely.
+
+	i = 0
+scan.lonely
+	lonely = lonely substr(alone,avail[i = i + 1],1) :s(scan.lonely)
+	
+	nopen = prototype(avail);* number of open cells
 
 *	Prepare for loop, since decrement nopen at start of search at a given empty cell.
 
@@ -741,7 +733,7 @@ scan
 scan.next
 *	Here to find all the possible moves starting at the next open cell, first.
 
-	first = g.avail[ai = ai + 1]			:f(scan.done)
+	first = avail[ai = ai + 1]			:f(scan.done)
 
 	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
 	le(nopen)					:s(scan.done)
@@ -757,12 +749,13 @@ scan.next
 scan.next.n
 	gt(n = n + 1,max)				:s(scan.next)
 
-	last = g.avail[ai + n - 1];			:f(scan.fail)
+	last = ai + n - 1				:f(scan.fail)
+	fi = first - 1
 
-*	Skip this move if all its cells are alone.
+*	Continue if all the cells in this move are alone, and no valid move is possible.
 
-	substr(alone, first, last - first + 1) break(' '):f(scan.next.n)
-	m = move(num,n,subarray(g.avail,ai,n))
+	substr(lonely,ai,n) ? span('1')		:s(scan.next)
+	m = move(num,n,subarray(avail,ai,n))
 	moves.n = moves.n + 1
 	scan = ident(scan) table()
 	scan[moves.n] = m				:(scan.next.n)
@@ -770,7 +763,6 @@ scan.next.n
 scan.done
 	ident(scan)					:s(freturn)
 	scan = convert(scan,'array')				
-	output = 'scan prototype ' prototype(scan)
 							:(return)
 scan.doner	
 	output = 'move.doner'				:(end)
@@ -815,7 +807,7 @@ score.word
 	eq(n,1)						:s(score.word);* singletons aren't scored.
 	word break(&ucase)				:f(score.word)
 
-*	output = ne(g.showscore) 'scoring word ' word ' starting at ' start
+	output = ne(g.showscore) 'scoring word ' word ' starting at ' start
 	line = substr(cline,start)
 	bonusline = substr(g.bonus.lines[num(tag)],start);* corresponding part of bonus line
 	i = 0
@@ -840,7 +832,7 @@ score.char
 							:(score.char)
 score.char.done
 	score = score * mult
-	output =  'result SCORE ' score ' for word ' word ' , for ' display.tag(tag)
+*	output =  'result SCORE ' score ' for word ' word ' , for ' display.tag(tag)
 							:(return)
 score.error
 	score = 0					:(return)
@@ -917,13 +909,11 @@ words
 	s span(' ') . w =				:f(words.1)
 	pos = size(w) + 1;* point to start of first word
 words.1
-*	output = 'words.1 ' s '.'
 	s break(' ') . w ' ' = ' ' 			:f(words.done)
 	words[pos] = w					
 	i = i + 1	
 	gt(i,n)						:s(words.done)
 	
-*	output = 'words pos ' pos ' ' w
 	pos = pos + size(w) + 1;* set to start of next word
 							:(words.1)
 words.done
