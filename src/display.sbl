@@ -1,3 +1,24 @@
+
+	define('display.alone()b,r,c,l,line')				:(display.alone.end)
+
+*	Display the board on standard output
+
+display.alone
+	display.header('alone')
+display.alone.r
+	gt(r = r + 1,15) 				:s(display.alone.finish)
+	line = lpad(r,2) '|' 
+	c = 0
+display.alone.c
+	gt(c = c + 1,15)				:s(display.alone.l)
+	l = g.alone[r,c]
+	line = line lpad(l,2)		 		:s(display.alone.c)
+display.alone.l
+	output = line '|'				:(display.alone.r)
+display.alone.finish
+	output =					:(return)
+display.alone.end
+
 	define('display.board(board,title)b,r,c,ch,line')	:(display.board.end)
 
 *	Display the board on standard output
@@ -36,27 +57,6 @@ display.board.finish
 	output =					:(return)
 display.board.end
 
-
-	define('display.alone()b,r,c,l,line')				:(display.alone.end)
-
-*	Display the board on standard output
-
-display.alone
-	display.header('alone')
-display.alone.r
-	gt(r = r + 1,15) 				:s(display.alone.finish)
-	line = lpad(r,2) '|' 
-	c = 0
-display.alone.c
-	gt(c = c + 1,15)				:s(display.alone.l)
-	l = g.alone[r,c]
-	line = line lpad(l,2)		 		:s(display.alone.c)
-display.alone.l
-	output = line '|'				:(display.alone.r)
-display.alone.finish
-	output =					:(return)
-display.alone.end
-
 	define('display.bonus()b,r,c,l,line')			:(display.bonus.end)
 
 *	Display the board on standard output
@@ -85,6 +85,15 @@ display.bonus.l
 display.bonus.finish
 	output =					:(return)
 display.bonus.end
+
+	define('display.tag(tag)')			:(display.tag.end)
+
+*	Display tagged item.
+
+
+display.tag
+	output = '{' num(tag) ',' "'" replace(line(tag),' ','.') "'" '}'	:(return)
+display.tag.end
 
 	define('display.header(label)')			:(display.header.end)
 display.header
@@ -122,19 +131,15 @@ display.lines.n
 	output = lpad(lineid(i),2) ' ' replace(line,' ','.') :(display.lines.n)
 display.lines.end
 
-	define('display.move(mov)f,i') 			:(display.move.end)
+	define('display.move(mov,title)f,i') 			:(display.move.end)
 
 *	Display a move.
 
 display.move
-*	output = 'display.move datatype mov ' datatype(mov)
 	f = append(f,free(mov)[i = i + 1])		:s(display.move);* list the free cells
 	display.move = 	lineid(id(mov)) ':' f ':'
 	display.move = differ(text(mov)) display.move text(mov) 
 	display.move = differ(points(mov)) display.move  '+' points(mov)
-							:(return)
-*.			(differ(text(mov) text(mov) ,''))
-*.			(differ(points(mov) '+' points(mov), ''))
 							:(return)
 display.move.end
 
@@ -146,9 +151,28 @@ display.moves
 	ident(moves)					:s(return)
 	output = 'MOVES ' title
 display.moves.loop
-	mov = moves[i = i + 1,1]			:f(return)
+	mov = moves[i = i + 1,2]			:f(return)
 	output = char(9) lpad(i,2) ' ' display.move(mov) :(display.moves.loop)
 display.moves.end
+	
+	define('display.play(mov,title)board,f,r,c,i')	:(display.play.end)
+
+*	Display the results of making move *mov*. 
+
+
+display.play
+	board = copy(g.board)
+	txt = text(mov)
+display.play.next
+	f = free(mov)[i = i + 1]			:f(display.play.done)
+	r = (lt(id(mov),15) id(mov), f)
+	c = (gt(id(mov),15) id(mov) - 15, f)
+*	output = 'display.play r ' r ' c ' c ' ch ' substr(txt,i,1)
+	board[r,c] = substr(txt,i,1)
+							:(display.play.next)
+display.play.done
+	display.board(board,title)			:(return)
+display.play.end
 
 	define('display.scores()ara,i')			:(display.scores.end)
 
