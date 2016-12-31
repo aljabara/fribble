@@ -153,8 +153,10 @@ show.lines.end
 *	Show a move.
 
 show.move
-	f = append(f,free(mov)[i = i + 1])		:s(show.move);* list the free cells
-	show.move = 	lineid(id(mov)) ':' f ':'
+	gt(i = i + 1,count(mov))			:s(show.move.f)
+	f = append(f,free(mov)[i])			:s(show.move);* list the free cells
+show.move.f
+	show.move = lineid(id(mov)) ':' count(mov) ':' f ':'
 	show.move = differ(text(mov)) show.move text(mov) 
 	show.move = differ(perm(mov)) show.move ':' perm(move)
 	show.move = differ(points(mov)) show.move  '+' points(mov)

@@ -60,6 +60,11 @@
 
 		data('pair(num, line)')
 
+*	g.random_var is used by random() to compute the next pseudo-random value.
+*	Gimpel uses integer here, but need to have real.
+
+	g.random_var = 1
+
 *	g.showscore is used to enable tracing of scoring by setting it to nonzero value
 	g.showscore = 0
 
@@ -252,13 +257,15 @@ bestmove.move
 	move = moves[i = i + 1,2]			:f(bestmove.sort)
 	best[i,1] = move
 	text(move)  = replace(perm(move),substr('1234567',1,size(rack)),rack) 	
-	best[i,2] = points(move)			:(bestmove.move)
+	best[i,2] = points(move)			
+	output = 'best ' i ' ' show.move(move)
+							:(bestmove.move)
 bestmove.sort
 	best = rsort(best,2);* sort with highest score first
 	i = 0
 bestmove.list
 	move = best[i = i + 1,1]			:f(return)
-	output = 'best ' lpad(i,2) ' ' show.move(move)	:(bestmove.list)
+*	output = 'best ' lpad(i,2) ' ' show.move(move)	:(bestmove.list)
 bestmove.nomove
 	output = 'best move found no moves -- time to swap or pass '	:(freturn)
 bestmove.end
@@ -466,6 +473,7 @@ find.cross.done
 	found = found + 1
 	fid(move) = found
 	find[found] = move
+*	output = 'find adding ' show.move(move)
 	fi = 0
 							:(find.perm)
 find.done
@@ -570,6 +578,14 @@ insert.done
 	insert = pack(insert)				:(return)
 insert.end
 
+	define('lcase(s)')				:(lcase.end)
+
+*	Convert argument to lower case.
+
+lcase
+	lcase = replace(s,&ucase,&lcase)		:(return)
+lcase.end
+	
 	define('less(str,ch)before,after')		:(less.end)
 
 *	Removes the first instance of character ch in str.
@@ -632,11 +648,10 @@ open.2
 	le(oscore(w),best.score)			:s(open.2)
 	best.word = w
 	best.score = oscore(w)
-	open = lt(size(best.word),6) '0808+' best.word ' ' best.score	:s(open.2)
+	open =  best.word ' ' best.score		:s(open.2)
 *	Here if longer open word, move a space to the left
-							:(open.2)
 open.finish						
-	open = '0807+' best.word ' ' best.score		:(return)
+	open = best.word ' ' best.score			:(return)
 open.end
 
 	define('oscore(word)i,c')			:(oscore.end)
@@ -681,8 +696,8 @@ placeword
 	c = c - 1
 placeword.1
 	w len(1) . ch =					:f(placeword.done)
-	g.board[r, c = c + 1] = ch
-	g.bonus[r, c] = 1;* clear bonus for this cell
+	g.board[r, c = c + 1] = ucase(ch)
+	g.bonus[r, c] = 1;* reset bonus for this cell to that of tile itself
 *	Mark self and adjoining squares as no longer alone
 	g.alone[r,c] = ' '    ;* self
 	g.alone[r - 1,c] = ' ';* cell to the north
@@ -697,6 +712,35 @@ placeword.done
 							:(return)
 placeword.end
 
+
+	define('playmove(move)text,i,ch')			:(playmove.end)
+
+*	Play move *move*, updating the board and related objects.
+
+playmove
+	text = text(move)
+playmove.ch
+	text len(1) . ch =				:f(playmove.done)
+	i = i + 1;* position in text
+	id = id(move)
+	gt(id,15)					:s(playmove.col)
+
+*	Here to play character in row
+
+	placeword(id,free(move)[i],ch)			
+							:(playmove.ch)
+playmove.col
+
+*	Here to play character in column
+
+	placeword(free(move)[i],id - 15,substr(text,i,1))		
+							:(playmove.ch)
+playmove.done
+							:(return)
+playmove.end
+	
+	
+	
 	define('prefix(str,pre)word')			:(prefix.end)
 prefix
 
@@ -717,26 +761,12 @@ prefix.end
 *	The Algorithm is based in that in section 16.1 of "Algorithms in SNOBOL4,"
 *	James F. Gimpel, John Wiley and Sons, 1976.
 
-*	Gimpel uses integer here, but need to have real.
-	random_var = convert(1,'real')
-
-							:(random.end)
-random	random_var = remdr(random_var * 4676, 414971)
-
-	random  = random_var / 414971
-	random = ne(n,0) convert(random * n,'integer') + 1
+random	
+	g.random_var = remdr(g.random_var * 4676, 414971)
+	random  = g.random_var / 414971.0
+	random = ne(n) convert(random * n,'integer') + 1
 							:(return)
 random.end
-
-	define('random_rack()i')			:(random_rack.end)
-
-*	Return random set of seven tiles from the initial set of tiles.
-*	This is used for testing.
-
-random_rack
-	gt(i = i + 1,7)					:s(return)
-	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
-random_rack.end
 
 	define('scan(pair,rack)num,line,alone,nopen,ai,first,max,n,last,p,move,moves,fi,lonely,avail,scanned')	:(scan.end)
 
@@ -888,6 +918,42 @@ subarray.1
 	gt(i = i + 1,len)				:s(return)
 	subarray[i] = copy(ara[start + i - 1])		:(subarray.1)		
 subarray.end
+
+	define('take(n)r,ch,consonants')			:(take.end)
+
+*	Remove at most *n* random tiles, or as many as remain,  
+*	from the tileset and return them as a string.
+
+*	The initial tileset has many more vowels than consonants, so if we
+*	just pick them randomly from the start, we will get racks with
+*	almost all vowels. To avoid this, we always take at least one consonant,
+*	and take two if n is greater than 4.
+
+take	
+	n = le(size(g.tileset),n) size(g.tileset)
+	n = n + 1
+	consonants = (gt(n,4) +2, +1)
+take.ch
+	le(n = n - 1)					:s(return)
+take.r
+	r = random(size(g.tileset))
+	ch = substr(g.tileset,r,1)
+	ch any('aeiou')					:s(take.vowel)f(take.consonant)
+take.vowel
+
+*	If see vowel and need a consonant, try another random tile.
+
+	ne(consonants)					:s(take.r)f(take.add)
+
+take.consonant
+	consonants = gt(consonants) consonants - 1
+take.add
+*	output = 'take ' r ' ' ch ' ' size(g.tileset) ' ' g.tileset
+	take = take ch
+	g.tileset = less(g.tileset,ch)			
+							:(take.ch)
+							:(take.1)
+take.end
 
 	define('ucase(s)')				:(ucase.end)
 

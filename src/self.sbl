@@ -1,0 +1,99 @@
+* This sofaware is licensed under the MIT License, contained in the file LICENSE.
+
+* Copyright (c) 2016 dave shields
+
+-include "words.sbl"
+-include "show.sbl"
+
+	define('rackout(rack,text)ch')			:(rackout.end)
+
+*	Remove the tiles in *text* from *rack*.
+
+rackout
+	rackout = rack
+rackout.ch
+	text len(1) . ch =				:f(return)
+	rackout = less(rackout,ch)			:(rackout.ch)
+rackout.end
+	
+*	Have fribble play itself.
+
+	init()
+	output = lpad('tileset',20) g.tileset
+	rack1 = take(7)
+	rack2 = take(7)
+	output = 'initial racks 1 ' rack1 '  2 ' rack2
+	output = lpad('tileset',20) g.tileset
+	
+*	player one makes opening move.
+
+	output = 'player one rack ' rack1
+	opn = open(rack1)
+	output = 'open returns<' opn '>'
+	opn break(' ') . open.word ' ' rem . open.score
+	output = 'opening word ' open.word
+	points1 = 'opening score ' open.score
+	ara = array(7);* free array for move
+	ara[1] = 8
+	ara[2] = 9
+	ara[3] = 10
+	ara[4] = 11
+	ara[5] = 12
+	ara[6] = 13
+	ara[7] = 14
+	output = 'move(8,' size(open.word) ',ara,' open.word ')'
+	move1 = move(8,size(open.word),ara,open.word,open.score)
+	output = 'opening move ' show.move(move1,'opening move')
+	playmove(move1);* play opening move
+*	output = 'open placed'
+*	output =  'player one opens: ' show.move(move1) ' for ' points(move1) ' points.'
+	show.board(g.board,
+.	 'player one opens: ' show.move(move1) ' for ' points(move1) ' points.')
+	output = 'board displayed'
+	rack1 = rackout(rack1,text(move1)) take(size(text(move1)))
+
+player.two
+
+*	player two makes next move.
+
+	moves = moves + 1
+	gt(moves, 70)			:s(many.moves)
+	output = 'player two rack ' rack2
+	moves2 = bestmove(rack2,g.tileset)
+	differ(moves2)					:s(player.two.1)
+*	2 has no move, go on to one
+	output = 'player two has no move - pass ' 	:(player.one)
+player.two.1
+	ident(moves2)					:s(no.moves)
+	move2 = moves2[1,2]
+	output = 'player 2 move ' show.move(move2)
+	points2 = points2 + points(move2)
+	playmove(move2,g.tileset)
+	show.board(g.board,
+.	 'player two: ' show.move(move2)) ' for ' points(move2) ' points. Score now ' points1 '/' points2 '.'
+	rack2 = rackout(rack2,text(move2)) take(size(text(move2)))
+
+player.one
+
+*	player one makes the next move.
+
+	moves = moves + 1
+	gt(moves, 70)			:s(many.moves)
+	output = 'player one rack ' rack1
+	moves1 = bestmove(rack1,g.tileset)
+	differ(moves1)					:s(player.one.1)
+*	player one has no move, pass.
+	output = 'player one has no move  - pass.'	:(player.two)
+	move1 = moves1[1,2]
+	points1 = points1 + points(move1)
+	playmove(move1,g.tileset)		
+	rack1 = rackout(rack1,text(move1)) take(size(text(move1)))
+	output = 'rack1 ' rack1
+
+							:(player.two)
+
+many.moves
+	output = 'too many moves.'
+no.moves
+	output = ' game over, player one ' lpad(points1,4) points1 ', player two ' lpad(points2,4) '.'
+end
