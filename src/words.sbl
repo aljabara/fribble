@@ -9,6 +9,8 @@
 
 *	g.board, array('15,15'), the playing board. Each entry is blank (' ') for unplayed cell, or is the letter played.
 
+*	g.empty.board is a copy of the initial g.board (a board with no cells occupied).
+	
 *	A play is a sequence of one or more cells, represented as an array.  The cells are ordered
 *	from left to right for a horizontal play, top to bottom for a vertical play.
 
@@ -42,7 +44,7 @@
 *		*text* is the string of tiles of the move; and
 *		*points* is the number of points won by playing this move.
 
-	data('move(id,count,free,text,points)')
+	data('move(id,count,free,text,points,fid)')
 
 *	g.bonus,array(15,15) gives the bonus values for the squares on the board:
 *		1 for the value of the letter itself,
@@ -53,8 +55,10 @@
 
 *	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
 
-*	A tagged line consists of a line number and an associated line.
-		data('tag(num, line)')
+*	A pairged line consists of a line number and an associated line. It is used when it is necessary
+*	to pass a line of text to a procedure along with line number from where it was derived.
+
+		data('pair(num, line)')
 
 *	g.showscore is used to enable tracing of scoring by setting it to nonzero value
 	g.showscore = 1
@@ -80,6 +84,7 @@ init.end
 init.main
 	g.dict = array(15)
 	g.board = array('15,15',' ')
+	g.empty.board = copy(g.board)
 	g.lines = lines(g.board)
 
 	g.alone = array('15,15','1')
@@ -234,21 +239,30 @@ init.value.update
 	g.value[c] = +v					:(init.value.update)
 init.value.end
 
-	define('bestmove(rack)i,moves,mov')					:(bestmove.end)
-
+	define('bestmove(rack,tiles)best,i,moves,mov,found')					:(bestmove.end) 
 *	Find the best move, or at least one with no higher score, given the rack *rack*.
 
 bestmove
 	g.lines = lines(g.board)
 	moves = find(copy(g.lines),rack);* pass copy since find will alter lines. :f(bestmove.nomove)
-bestmove.1
-	move = moves[i = i + 1,1]			:f(bestmove.2)
-	output = 'bestmove ' lpad(i,3) ' '    display.move(move) 
-							:(bestmove.1)
-bestmove.2
-							:(return)
+	best = array(prototype(moves))
+	i = 0
+bestmove.move
+	move = moves[i = i + 1,2]			:f(bestmove.sort)
+	best[i,1] = move
+	text(move) ? break('123456789')			:f(bestmove.move.1)
+*	Here if text contains permutation when it should contain text. Fix that
+	text(move)  = ucase(replace(text(move),substr('1234567',1,size(rack)),rack))
+bestmove.move.1
+	best[i,2] = points(move)			:(bestmove.move)
+bestmove.sort
+	best = rsort(best,2);* sort with highest score first
+	i = 0
+bestmove.list
+	move = best[i = i + 1,1]			:f(return)
+	output = 'best ' lpad(i,2) ' ' show.move(move)	:(bestmove.list)
 bestmove.nomove
-	output = 'best move found no moves ' 		:(freturn)
+	output = 'best move found no moves -- time to swap or pass '	:(freturn)
 bestmove.end
 
 	define('append(str,w)')				:(append.end)
@@ -297,12 +311,11 @@ bonus.lines.next
 	bonus.lines[i + 15] = vline(g.bonus,i)		:(bonus.lines.next)
 bonus.lines.end
 
-	define('checkline(line)word,lin')		:(checkline.end)
+	define('checkline(line)word')			:(checkline.end)
 
 *	Succeeds if all the words in the line are in the dictionary, fails otherwise.
 
 checkline
-	lin = line
 	empty(line)					:s(return)
 	line span(' ') =
 checkline.1
@@ -310,7 +323,7 @@ checkline.1
 	eq(size(word),1)				:s(checkline.1)
 	checkword(word)					:f(freturn)s(checkline.1)
 checkline.done
-*	output = 'checkline VALID ' display.line(lin)
+*	output = 'checkline VALID ' show.line(line)
 							:(return)
 checkline.end
 
@@ -323,27 +336,25 @@ checkword
 	differ(g.dict[size(w)][w])			:s(return)f(freturn)
 checkword.end
 
-	define('cline(lines,mov,p,ch)line,i,r,c')		:(cline.end)
+	define('cline(lines,mov,p,ch,rack)line,i,r,c')		:(cline.end)
 
 *	Return crossing line of p-th cell in move *mov*. *ch* gives tile to be played.
 
 cline
+	text(move) = ucase(place(text(move),rack))
 	gt(id(mov),15)					:s(cline.col)
 	line = lines[p + 15];* column p
 	r = id(mov)
 	line = (eq(r,1) '',substr(line,1,r - 1)) ch (eq(r,15) '', substr(line,r + 1)) 
-	cline = tag(p + 15,line)
-	:(cline.done)
-							:(return)
+	cline = pair(p + 15,line)			:(cline.done)
 cline.col
+	text(move) = ucase(place(text(move),rack))
 	line = lines[p];* row p
 	c = id(mov) - 15
 	line = (eq(c,1) '',substr(line,1,c - 1)) ch (eq(p,15) '', substr(line,c + 1))  
-	cline = tag(p,line)
-	:(cline.done)
-							:(return)
+	cline = pair(p,line)				:(cline.done)
 cline.done
-*	output = 'CLINE ' display.move(mov) ' p ' p  "'" ch "'" ' -> ' display.tag(cline)
+*	output = 'CLINE ' show.move(mov) ' p ' p  "'" ch "'" ' -> ' show.pair(cline)
 							:(return)
 cline.end
 
@@ -356,7 +367,7 @@ empty
 	ident(line)					:s(return)f(freturn)
 empty.end
 	
-	define('find(lines,rack)flines,fi,line,moves,mi,m,perms,permi,fline,tline,iline,sline')	:(find.end)
+	define('find(lines,rack)flines,fi,line,moves,mi,m,perms,permi,fline,tline,iline,sline,found')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -370,20 +381,18 @@ empty.end
 
 *FIND
 find
-	display.lines(lines,'find')
+	show.lines(lines,'find')
 	flines = array(8);* for line with move and its crossing lines.
 	fi = 0;* number of entries in flines
-*	plines = copy(lines);* for testing  permutation
 find.line
 	gt(num = num + 1,30)				:s(find.done)
 	line = lines[num]
-	moves = scan(tag(num,line),rack)			:f(find.line)
-*	display.moves(moves,'From scan')
-*	ne(g.showscore) differ(moves) display.moves(moves,'Scan line ' lpad(num,3),2)
+	moves = scan(pair(num,line),rack)			:f(find.line)
+	ne(g.showscore) differ(moves) show.moves(moves,'Scan line ' lpad(num,3),2)
 	mi = 0
 find.move
 	move = moves[mi = mi + 1,2]			:f(find.line)
-	output = ne(g.showscore) ' find.move mi ' mi ' ' display.move(move,'find')
+	output = ne(g.showscore) ' find.move mi ' mi ' ' show.move(move,'find')
 	points(move) = 
 	perms = g.permutations[size(rack) '?' count(move)]
 	permi = 0
@@ -404,17 +413,20 @@ find.perm
 *	Save the valid lines in *flines* for scoring if move proves valid.
 
 	text(move) = ucase(place(text(move),rack))
-	flines[fi = fi + 1] =  tag( id(move), insert(lines[num],move))
+	flines[fi = fi + 1] =  pair( id(move), insert(lines[num],move))
 	i = 0
+
+*	Check the crossing lines to make sure they are valid.
+
 find.cross
 	p = free(move)[i = i + 1]			:f(find.cross.done)
-	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1))
+	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1),rack)
 	checkline(line(cline))				:f(find.perm)
 
 *	Save the line for possible later scoring if move proves valid.
 
 	text(move) = ucase(place(text(move),rack))
-	flines[fi = fi + 1] = tag(
+	flines[fi = fi + 1] = pair(
 .		(le(id(move),15) id(move) + 15, id(move) - 15),
 .		insert(line(cline),move))		:(find.cross)
 	
@@ -423,14 +435,15 @@ find.cross.done
 *	Score the line by summing the scores of the lines saved in flines.
 	
 	move = copy(move)
-	ne(g.showscore) display.play(move,display.move(move))
-*	display.lines(lines,'Tally')
+	ne(g.showscore) show.play(move,show.move(move))
 	points(move) = +findscore(flines,fi)	
 
-	output = 'setting score for ' display.move(move) ' to ' points(move)
+*	output = 'setting score for ' show.move(move) ' to ' points(move)
 	find = ident(find) table();* create table if will have any entries.
-	output = 'find adding ' display.move(move) ' ' points(move)
-	find[move] = points(move)
+	found = found + 1
+	fid(move) = found
+	output = 'find adding ' show.move(move) 
+	find[found] = move
 	fi = 0
 							:(find.perm)
 find.done
@@ -438,8 +451,7 @@ find.done
 *	Fail if found no moves.
 
 	ident(find)					:s(freturn)
-	find = differ(find) rsort(find,2);* sort with highest scores first
-							:(return)
+	find = differ(find) convert(find,'array')	:(return)
 find.end
 	
 	define('findscore(flines,fn)i')			:(findscore.end)
@@ -460,7 +472,7 @@ findscore
 findscore.next
 	gt(i = i + 1,fn)				:s(return)
 	findscore = findscore + score(flines[i])	
-	output = ne(g.showscore) 'scoring AFTER  flines, ' display.tag(flines[i]) '  is ' findscore
+	output = ne(g.showscore) 'scoring AFTER  flines, ' show.pair(flines[i]) '  is ' findscore
 
 							:(findscore.next)
 findscore.end
@@ -698,15 +710,15 @@ random_rack
 	random_rack = random_rack substr(g.tileset,random(size(g.tileset)),1)	:(random_rack)
 random_rack.end
 
-	define('scan(tag,rack)num,line,alone,nopen,ai,first,max,n,last,p,mov,moves,fi,lonely,avail')	:(scan.end)
+	define('scan(pair,rack)num,line,alone,nopen,ai,first,max,n,last,p,move,moves,fi,lonely,avail,scanned')	:(scan.end)
 
 *	Scan the given line to find the places where a valid move can be made. At least one cell in 
 *	a move must be adjacent to an occupied cell.  *line* is the line to be scanned, and *num* gives its
 *	position on the board.
 
 scan
-	line = line(tag)
-	num = num(tag)
+	line = line(pair)
+	num = num(pair)
 	moves = 0
 	alone = g.alone.lines[num]
 
@@ -714,10 +726,9 @@ scan
 
 	avail = available(line)			:f(scan.done);* fail if no empty cells
 
-*	Set lonely to the alone-ness of the cells in avail. The i-th entry in lonely is the alone-ness of the
-*	cell correspondng to the i-th location in avail. As a result, the substring j..k of lonely has
-*	the alone-ness values for entries j..k in avail, so we can test aloneness of all the cells by
-*	extracting the appropriate substring of lonely.
+*	Set lonely to the alone-ness of the cells in avail, so that the i-th character is the
+*	alone attribute of the i-th position in the move. A valid move requires that at
+*	least cell in the move not be alone.
 
 	i = 0
 scan.lonely
@@ -752,14 +763,12 @@ scan.next.n
 	last = ai + n - 1				:f(scan.fail)
 	fi = first - 1
 
-*	Continue if all the cells in this move are alone, and no valid move is possible.
+*	Continue to the next postion if all the cells in this move are alone, and hence no valid move is possible.
 
 	substr(lonely,ai,n) ? span('1')		:s(scan.next)
-	m = move(num,n,subarray(avail,ai,n))
-	moves.n = moves.n + 1
+	move = move(num,n,subarray(avail,ai,n))
 	scan = ident(scan) table()
-	scan[moves.n] = m				:(scan.next.n)
-
+	scan[scanned = scanned + 1] = move		:(scan.next.n)
 scan.done
 	ident(scan)					:s(freturn)
 	scan = convert(scan,'array')				
@@ -768,7 +777,7 @@ scan.doner
 	output = 'move.doner'				:(end)
 scan.end
 
-	define('score(tag)cline,vline,word,words,n,start,wi,ch,i,bonus,mult,val')	:(score.end)
+	define('score(pair)cline,vline,word,words,n,start,wi,ch,i,bonus,mult,val')	:(score.end)
 
 *	Compute the score of a move on a given line. All the letters of the move will be in upper case on the board
 *	so the score of the move is the sum of the scores of all the words with upper case letters in them, for
@@ -777,26 +786,27 @@ scan.end
 
 *SCORE
 score
-	empty(line(tag))				:s(return)
-	output = ne(g.showscore) 'enter score ' display.tag(tag)
-	cline = line(tag)
-	bonusline = g.bonus.lines[num(tag)]
+	empty(line(pair))				:s(return)
+	output = ne(g.showscore) 'enter score ' show.pair(pair)
+	cline = line(pair)
+	bonusline = g.bonus.lines[num(pair)]
 
 	eq(g.showscore) 				:s(score.3)
-	vline = 
-score.1
-	gt(i = i + 1,size(cline))			:s(score.2)
-	vch = substr(cline,i,1)
-	vch = gt(g.value[vch],0) substr('123456789ABCDE',g.value[substr(cline,i,1)],1)
-	vline = vline vch				:(score.1)
-score.2
+*	vline = 
+*score.1
+*	gt(i = i + 1,size(cline))			:s(score.2)
+*	vch = substr(cline,i,1)
+*	vch = gt(g.value[vch],0) substr('123456789ABCDE',g.value[substr(cline,i,1)],1)
+*	vline = vline vch				:(score.1)
+*score.2
 *	output = 'score value ' vline
-*	output = 'score       ' cline
-*	output = 'score bonus ' bonusline  
+	output = 'score       ' cline
+	output = 'score bonus ' bonusline  
 score.3
 
 	cline break(&ucase)				:f(score.error)
 	words = words(cline)				:f(return)
+	wi = 0
 score.word
 	start = words[wi = wi + 1,1]			:f(return)
 	word = words[wi,2]
@@ -809,7 +819,7 @@ score.word
 
 	output = ne(g.showscore) 'scoring word ' word ' starting at ' start
 	line = substr(cline,start)
-	bonusline = substr(g.bonus.lines[num(tag)],start);* corresponding part of bonus line
+	bonusline = substr(g.bonus.lines[num(pair)],start);* corresponding part of bonus line
 	i = 0
 	mult = 1;* multiplier value for double and triple word cases.
 
@@ -832,11 +842,11 @@ score.char
 							:(score.char)
 score.char.done
 	score = score * mult
-*	output =  'result SCORE ' score ' for word ' word ' , for ' display.tag(tag)
+*	output =  'result SCORE ' score ' for word ' word ' , for ' show.pair(pair)
 							:(return)
 score.error
 	score = 0					:(return)
-*	output = 'error scoring line with no new move ' line(tag) :(end)
+*	output = 'error scoring line with no new move ' line(pair) :(end)
 score.end
 
 	define('subarray(ara,start,len)i')		:(subarray.end)

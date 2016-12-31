@@ -1,0 +1,204 @@
+
+	define('show.alone()b,r,c,l,line')				:(show.alone.end)
+
+*	Show the board on standard output
+
+show.alone
+	show.header('alone')
+show.alone.r
+	gt(r = r + 1,15) 				:s(show.alone.finish)
+	line = lpad(r,2) '|' 
+	c = 0
+show.alone.c
+	gt(c = c + 1,15)				:s(show.alone.l)
+	l = g.alone[r,c]
+	line = line lpad(l,2)		 		:s(show.alone.c)
+show.alone.l
+	output = line '|'				:(show.alone.r)
+show.alone.finish
+	output =					:(return)
+show.alone.end
+
+	define('show.board(board,title)b,r,c,ch,line')	:(show.board.end)
+
+*	Show the board on standard output
+
+show.board
+	title  = 'board' (differ(title) ' ' title, '')
+	show.header(title)
+show.board.r
+	gt(r = r + 1,15) 				:s(show.board.finish)
+	line = lpad(r,2) '|' 
+	c = 0
+show.board.c
+	gt(c = c + 1,15)				:s(show.board.margin)
+	ch = board[r,c]
+	b = g.bonus[r,c]
+	differ(ch,' ')					:s(show.board.ch)
+
+*	Here if empty cell, see if there is a bonus to be show.boarded.
+
+	ne(b,1)						:s(show.board.b)
+
+*	Here to show.board empty cell.
+
+	line = line ' -'				:(show.board.c)
+show.board.b
+
+* 	Here to show.board bonus.
+
+	ch = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
+	line = line ch 					:(show.board.c)
+show.board.margin
+	output = line '|'				:(show.board.r)
+show.board.ch
+	line  = line ' ' ch				:(show.board.c);* show.board tile
+show.board.finish
+	output =					:(return)
+show.board.end
+
+	define('show.bonus()b,r,c,l,line')			:(show.bonus.end)
+
+*	Show the board on standard output
+
+show.bonus
+	show.header('bonus')
+show.bonus.r
+	gt(r = r + 1,15) 				:s(show.bonus.finish)
+	line = lpad(r,2) '|'
+	c = 0
+show.bonus.c
+	gt(c = c + 1,15)				:s(show.bonus.l)
+	l = g.bonus[r,c]
+	line = differ(l,' ') line ' ' l 		:s(show.bonus.c)
+* Here for blank cell, show.bonus bonus if applicable
+	b = g.bonus[r,c]
+	eq(b)						:s(show.b)
+* 	Here to show bonus
+	l = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
+	line = line l 					:(show.bonus.c)
+show.bonus.b
+*	Here to show.bonus empty cell.
+	line = line ' -'				:(show.bonus.c)
+show.bonus.l
+	output = line '|'				:(show.bonus.r)
+show.bonus.finish
+	output =					:(return)
+show.bonus.end
+
+	define('show.pair(pair)')			:(show.pair.end)
+
+*	Show pairged item.
+
+
+show.pair
+	show.pair = '{' lineid(num(pair)) ',' "'" replace(line(pair),' ','.') "'" '}'	:(return)
+show.pair.end
+
+	define('show.header(label)')			:(show.header.end)
+show.header
+	output = ucase(label)
+	output = '                      1 1 1 1 1 1'
+	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
+show.header.end
+
+	define('show.clines(lines,title)i,line,num')		:(show.clines.end)
+
+*	Show the clines array of lines
+
+show.clines
+	title  = 'clines' (differ(title) ' ' title, '')
+	output = title
+	output = '    123456789012345'
+show.clines.n
+	num = lines[i = i + 1,1]			:f(return)
+	line = lines[i,2]
+	output = size(line)
+	output = lpad(lineid(num),2) ' '  replace(line,' ','.') :(show.clines.n)
+show.clines.end
+
+	define('show.hex(line)ch,i')				:(show.hex.end)
+
+*	Show line with blanks replaced by hex digits showing their position in the line.
+
+show.hex
+	ch = substr(line,i = i + 1,1)				:f(return)
+	show.hex = show.hex (ident(ch,' ') substr('0123456789ABCDEF',i,1), ch) :(show.hex)
+show.hex.end
+
+	define('show.line(line)')				:(show.line.end)
+
+*	Show a line with blanks replaced by '.'
+
+show.line
+	show.line = replace(line,' ','.')			:(return)
+show.line.end
+
+	define('show.lines(lines,title)i,line')		:(show.lines.end)
+
+*	Show the lines that are not empty in an array of lines
+
+show.lines
+	title  = 'lines' (differ(title) ' ' title, '')
+	output = title
+	output = '    123456789012345'
+show.lines.n
+	line = lines[i = i + 1]				:f(return)
+	empty(line)					:s(show.lines.n)
+	output = lpad(lineid(i),2) ' ' replace(line,' ','.') :(show.lines.n)
+show.lines.end
+
+	define('show.move(mov,title)f,i') 			:(show.move.end)
+
+*	Show a move.
+
+show.move
+	f = append(f,free(mov)[i = i + 1])		:s(show.move);* list the free cells
+	show.move = 	lineid(id(mov)) ':' f ':'
+	show.move = differ(text(mov)) show.move text(mov) 
+	show.move = differ(points(mov)) show.move  '+' points(mov)
+	show.move = differ(fid(mov)) show.move ':' fid(move)
+							:(return)
+show.move.end
+
+	define('show.moves(moves,title)i,mov')	:(show.moves.end)
+
+*	Show an array of moves. Assume each entry has 1) line num, 2) move
+
+show.moves
+	ident(moves)					:s(return)
+	output = 'MOVES ' title
+show.moves.loop
+	mov = moves[i = i + 1,2]			:f(return)
+	output = char(9) lpad(i,2) ' ' show.move(mov) :(show.moves.loop)
+show.moves.end
+	
+	define('show.play(mov,title)board,f,r,c,i')	:(show.play.end)
+
+*	Show the results of making move *mov*. 
+
+
+show.play
+	board = copy(g.board)
+	txt = text(mov)
+show.play.next
+	f = free(mov)[i = i + 1]			:f(show.play.done)
+	r = (lt(id(mov),15) id(mov), f)
+	c = (gt(id(mov),15) id(mov) - 15, f)
+*	output = 'show.play r ' r ' c ' c ' ch ' substr(txt,i,1)
+	board[r,c] = substr(txt,i,1)
+							:(show.play.next)
+show.play.done
+	show.board(board,title)			:(return)
+show.play.end
+
+	define('show.scores()ara,i')			:(show.scores.end)
+
+*	Show an array of scores.
+
+show.scores
+	output = 'show g.scores '
+	ara = rsort(g.scores,2)
+show.scores.next
+	output = ara[i = i + 1,1] ' ' lpad(ara[i,2],6)  :s(show.scores.next)f(return)
+show.scores.end
