@@ -16,33 +16,48 @@ rackout.ch
 	rackout = less(rackout,ch)			:(rackout.ch)
 rackout.end
 	
+	define('show(rack,player)')			:(show.end)
+
+*	Show state of board, alone and value grids before start of move.
+
+show
+	show.board(g.board,'player ' player ' to play')
+	output = 'rack ' rack
+	show.board(g.board,'player ' player)
+	show.alone()
+	show.board(g.bonus,'bonus')
+							:(return)
+show.end
+
 *	Have fribble play itself.
 
 	init()
-	output = lpad('tileset',20) g.tileset
+
 	rack1 = take(7)
 	rack2 = take(7)
-	output = 'initial racks 1 ' rack1 '  2 ' rack2
-	output = lpad('tileset',20) g.tileset
 	
 *	player one makes opening move.
 
-	output = 'player one rack ' rack1
+	show(rack1,'one')
 	opn = open(rack1)
 	output = 'open returns<' opn '>'
 	opn break(' ') . open.word ' ' rem . open.score
 	output = 'opening word ' open.word
 	points1 = 'opening score ' open.score
 	ara = array(7);* free array for move
-	ara[1] = 8
-	ara[2] = 9
-	ara[3] = 10
-	ara[4] = 11
-	ara[5] = 12
-	ara[6] = 13
-	ara[7] = 14
-	output = 'move(8,' size(open.word) ',ara,' open.word ')'
-	move1 = move(8,size(open.word),ara,open.word,open.score)
+*	Start word at position 8, unless word size greater than five, in which case move it to the left, but
+*	making sure move still covers double-word cell at position twelve.
+
+	offset = (lt(size(open.word) 5, 5 - size(open.word)))
+	ara[1] = 8 + offset
+	ara[2] = 9 + offset
+	ara[3] = 10 + offset
+	ara[4] = 11 + offset
+	ara[5] = 12 + offset
+	ara[6] = 13 + offset
+	ara[7] = 14 + offset
+	output = 'move(' 8 + offset ',' size(open.word) ',ara,' open.word ')' 
+	move1 = move(8 + offset,size(open.word),ara,open.word,open.score)
 	output = 'opening move ' show.move(move1,'opening move')
 	playmove(move1);* play opening move
 *	output = 'open placed'
@@ -58,20 +73,14 @@ player.two
 
 	moves = moves + 1
 	gt(moves, 70)			:s(many.moves)
-	output = 'player two rack ' rack2
-	moves2 = bestmove(rack2,g.tileset)
-	differ(moves2)					:s(player.two.1)
-*	2 has no move, go on to one
-	output = 'player two has no move - pass ' 	:(player.one)
-player.two.1
-	ident(moves2)					:s(no.moves)
-	move2 = moves2[1,2]
-	output = 'player 2 move ' show.move(move2)
-	points2 = points2 + points(move2)
-	playmove(move2,g.tileset)
+	show(rack2,'two')
+	move2 = find(g.lines,rack)			:f(two.nomove)
 	show.board(g.board,
 .	 'player two: ' show.move(move2)) ' for ' points(move2) ' points. Score now ' points1 '/' points2 '.'
 	rack2 = rackout(rack2,text(move2)) take(size(text(move2)))
+							:(player.one);* one's turn
+two.nomove
+	output ' player two has no move, pass.';* fall through to player one for their turn.
 
 player.one
 
@@ -79,18 +88,16 @@ player.one
 
 	moves = moves + 1
 	gt(moves, 70)			:s(many.moves)
+	show(rack1,'one')
 	output = 'player one rack ' rack1
-	moves1 = bestmove(rack1,g.tileset)
-	differ(moves1)					:s(player.one.1)
-*	player one has no move, pass.
-	output = 'player one has no move  - pass.'	:(player.two)
-	move1 = moves1[1,2]
+	move1 = find(g.lines,rack)			:f(one.nomove)
 	points1 = points1 + points(move1)
 	playmove(move1,g.tileset)		
 	rack1 = rackout(rack1,text(move1)) take(size(text(move1)))
 	output = 'rack1 ' rack1
-
 							:(player.two)
+one.nomove
+	output ' player one has no move, pass.'		:(player.two)
 
 many.moves
 	output = 'too many moves.'

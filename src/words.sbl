@@ -390,7 +390,7 @@ empty
 	ident(line)					:s(return)f(freturn)
 empty.end
 	
-	define('find(lines,rack)inlines,flines,fi,line,moves,mi,m,perms,permi,fline,tline,iline,sline,found')	:(find.end)
+	define('find(lines,rack)inlines,flines,fi,line,moves,mi,m,perms,permi,fline,tline,iline,sline,highest,lowest')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -401,15 +401,24 @@ empty.end
 *	If not, go on to the next permutation.
 *	If so, then add up the scores of all new words created by the move.
 
+*	From amongst the valid moves determine the best move as follows.
+*	If two moves have different scores, prefer the one with the higher score.
+*	The value of the move is the sum of the values of the tiles in the move.
+*	If two moves have the same score and different values, prefer the move with the lower value.
+*	If two moves have the same score and value, and one uses the letter 's' and the other doesn't, prefer
+*	the move that doesn't use the letter 's'.
+
+*	Find returns the best move as defined above, or null if no valid move is found.
 
 *FIND
 find
 	inlines = copy(lines)
 	flines = array(8);* for line with move and its crossing lines.
 	fi = 0;* number of entries in flines
-	found = 0;* number of moves found
+	highest = 0;* highest score
+	lowest = 0;* lowest value
 find.line
-	gt(num = num + 1,30)				:s(find.done)
+	gt(num = num + 1,30)				:s(return)
 	line = lines[num]
 	moves = scan(pair(num,line),rack)			:f(find.line)
 	ne(g.showscore) differ(moves) show.moves(moves,'Scan line ' lpad(num,3),2)
@@ -468,21 +477,38 @@ find.cross.done
 	ne(g.showscore) show.move(move)
 	points(move) = +findscore(flines,fi)	
 
-*	output = 'setting score for ' show.move(move) ' to ' points(move)
-	find = ident(find) table();* create table if will have any entries.
-	found = found + 1
-	fid(move) = found
-	find[found] = move
-*	output = 'find adding ' show.move(move)
-	fi = 0
+	lt(points(move),highest)			:s(find.perm)
+	gt(points(move),highest)			:s(find.new)
+
+*	Here if points equal, look for lower value
+
+	lt(value(move),lowest)				:s(find.new)
+	gt(value(move),lowest)				:s(find.perm)
+
+*	Here if same points and value, see if one uses 's' and the other doesn't.
+*	Continue search if current best doesn't use 's'.
+
+	text(find) ? break('s')				:f(find.perm)
+
+*	Here if current best uses an 's'. Continue if new move also uses 's'.
+
+	text(move) ? break('s')				:s(find.perm)
+
+find.new
+
+*	Here to add the new best move.
+
+	find = copy(move)
+	highest = points(move)
+	lowest = value(text(move))
+*	output = 'setting score for ' show.move(move) ' to ' points(move) '  least now ' lowest '.'
+	fi = 0;* reset for next permutation
 							:(find.perm)
-find.done
+find.fail
 
 *	Fail if found no moves.
 
 	ident(find)					:s(freturn)
-	find = differ(found) convert(find,'array')
-							:(return)
 find.end
 	
 	define('findscore(flines,fn)i,move')			:(findscore.end)
@@ -615,9 +641,12 @@ lineid.end
 lines
 	lines = array(30)
 lines.next
+
+*	Make sure all entries in lines are in lower case, since we enter moves in grid in upper case.
+
 	gt(i = i + 1,15)				:s(return)
-	lines[i] = hline(grid,i)
-	lines[i + 15] = vline(grid,i)			:(lines.next)
+	lines[i] = lcase(hline(grid,i))
+	lines[i + 15] = lcase(vline(grid,i))		:(lines.next)
 lines.end
 
 	define('open(tiles)best.score,best.word,n,w,start,key,permi')	:(open.end)
@@ -973,6 +1002,15 @@ unpack
 unpack.1
 	unpack[i = i + 1] = substr(line,i,1)		:s(unpack.1)f(return)
 unpack.end
+
+	define('value(text)ch')				:(value.end)
+
+*	Return the value of *text*, defined as the sum of the values of the tiles in *text*.
+
+value
+	text len(1) . ch =				:f(return)
+	value = value + g.value[ch]			:(value)
+value.end
 
 	define('vline(grid,c)')				:(vline.end)
 
