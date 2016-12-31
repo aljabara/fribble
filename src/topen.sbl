@@ -14,8 +14,8 @@
 	ara[1] = 2
 	ara[2] = 4
 	ara[3] = 5
-	m1 = move(1,3,ara,'dave',12)
-	output = show.move(m1)
+*	m1 = move(1,3,ara,'dave',12)
+*	output = show.move(m1)
 
 	init()
 
@@ -25,23 +25,23 @@
 	g.rack = 'inverts'
 	show.board(g.bonus,'g.bonus')
 *	placeword(1,4,'invert');* adding 'ed' at end will give triple word bonus
-	placeword(1,3,'invert');* adding 'ed' at end will give triple word bonus
-*	placeword(8,6,'invert')
+*	placeword(1,3,'invert');* adding 'ed' at end will give triple word bonus
+	placeword(8,6,'invert')
+	show.board(g.bonus,'g.bonus')
 	show.alone()
 
-	show.board(g.board,'g.board')
-	show.board(g.bonus,'g.bonus')
 	g.lines = lines(g.board);* update lines
 
-	show.lines(g.lines,'initial')
-	show.bonus(g.bonus,'bonus')
+*	show.lines(g.lines,'initial')
+*	show.bonus(g.bonus,'bonus')
+	show.board(g.board,'g.board')
 
 	output = 'end initial display'
 	
 *	rack = 'toe'
 	rack = 'si';* should make plural
-	rack = 'toxoedr'
 	rack = 'edto'
+	rack = 'toxoedr'
 *	&trace = 10000
 	trace('score','av')
 *	&ftrace = 1000009

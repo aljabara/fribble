@@ -44,7 +44,7 @@
 *		*text* is the string of tiles of the move; and
 *		*points* is the number of points won by playing this move.
 
-	data('move(id,count,free,text,points,fid)')
+	data('move(id,count,free,text,points,perm,fid)')
 
 *	g.bonus,array(15,15) gives the bonus values for the squares on the board:
 *		1 for the value of the letter itself,
@@ -61,7 +61,7 @@
 		data('pair(num, line)')
 
 *	g.showscore is used to enable tracing of scoring by setting it to nonzero value
-	g.showscore = 1
+	g.showscore = 0
 
 *	Utility functions
 
@@ -245,15 +245,13 @@ init.value.end
 bestmove
 	g.lines = lines(g.board)
 	moves = find(copy(g.lines),rack);* pass copy since find will alter lines. :f(bestmove.nomove)
+	output = 'best datatype ' datatype(moves)
 	best = array(prototype(moves))
 	i = 0
 bestmove.move
 	move = moves[i = i + 1,2]			:f(bestmove.sort)
 	best[i,1] = move
-	text(move) ? break('123456789')			:f(bestmove.move.1)
-*	Here if text contains permutation when it should contain text. Fix that
-	text(move)  = ucase(replace(text(move),substr('1234567',1,size(rack)),rack))
-bestmove.move.1
+	text(move)  = replace(perm(move),substr('1234567',1,size(rack)),rack) 	
 	best[i,2] = points(move)			:(bestmove.move)
 bestmove.sort
 	best = rsort(best,2);* sort with highest score first
@@ -311,19 +309,30 @@ bonus.lines.next
 	bonus.lines[i + 15] = vline(g.bonus,i)		:(bonus.lines.next)
 bonus.lines.end
 
-	define('checkline(line)word')			:(checkline.end)
+	define('checkline(line)iline,word')			:(checkline.end)
 
 *	Succeeds if all the words in the line are in the dictionary, fails otherwise.
 
 checkline
-	empty(line)					:s(return)
 	line span(' ') =
+	empty(line)					:s(return)
+	iline = line
+	line = line ' ';* to simplify breaking out words.
 checkline.1
-	line break(' ')  . word span(' ') =		:f(checkline.done);* if line exhausted
+	line span(' ') =
+	ident(line)					:s(return)
+	line break(' ')  . word ' ' =			:f(checkline.done);* if line exhausted
 	eq(size(word),1)				:s(checkline.1)
-	checkword(word)					:f(freturn)s(checkline.1)
+*	checkword(word)					:f(freturn)s(checkline.1)
+	checkword(word) :f(checkline.failed)
+*	output = 'checkword VALID<' word '>'  :(checkline.1)
+
+	checkword(word)					:s(checkline.1)
+
+checkline.failed
+				:(freturn)
 checkline.done
-*	output = 'checkline VALID ' show.line(line)
+*	output = 'checkline VALID ' show.line(iline)
 							:(return)
 checkline.end
 
@@ -333,28 +342,35 @@ checkline.end
 
 checkword
 	eq(size(w),1)					:s(return)
-	differ(g.dict[size(w)][w])			:s(return)f(freturn)
+	differ(g.dict[size(w)][w])			:f(freturn)s(return)
+*	output = 'checkword VALID ' w :(return)
+checkword.bad
+	output = 'invalid blank at start of checkword ' w :(end)
 checkword.end
 
-	define('cline(lines,mov,p,ch,rack)line,i,r,c')		:(cline.end)
+	define('cline(lines,move,p,ch,rack)line,i,r,c')		:(cline.end)
 
-*	Return crossing line of p-th cell in move *mov*. *ch* gives tile to be played.
+*	Return crossing line of p-th cell in move *move*. *ch* gives tile to be played.
 
 cline
-	text(move) = ucase(place(text(move),rack))
-	gt(id(mov),15)					:s(cline.col)
-	line = lines[p + 15];* column p
-	r = id(mov)
+*	text(move) = ucase(place(text(move),rack))
+
+	gt(id(move),15)					:s(cline.col)
+	r = id(move)
+	c = p;* crossing line is column p.
+	line = lines[c + 15];* column p
 	line = (eq(r,1) '',substr(line,1,r - 1)) ch (eq(r,15) '', substr(line,r + 1)) 
+*	output = 'cline ' num(move) ' p ' p '  c ' c
 	cline = pair(p + 15,line)			:(cline.done)
 cline.col
-	text(move) = ucase(place(text(move),rack))
-	line = lines[p];* row p
-	c = id(mov) - 15
+	r = p;* crossing line is row p
+	c = id(move) - 15
+	line = lines[p];* crossing line is row p.
 	line = (eq(c,1) '',substr(line,1,c - 1)) ch (eq(p,15) '', substr(line,c + 1))  
+*	output = 'cline ' num(move) ' p ' p '  c ' c
 	cline = pair(p,line)				:(cline.done)
 cline.done
-*	output = 'CLINE ' show.move(mov) ' p ' p  "'" ch "'" ' -> ' show.pair(cline)
+*	output = 'CLINE ' show.move(move) ' p ' p  "'" ch "'" ' -> ' show.pair(cline) ' ' show.hex(line(cline))
 							:(return)
 cline.end
 
@@ -367,7 +383,7 @@ empty
 	ident(line)					:s(return)f(freturn)
 empty.end
 	
-	define('find(lines,rack)flines,fi,line,moves,mi,m,perms,permi,fline,tline,iline,sline,found')	:(find.end)
+	define('find(lines,rack)inlines,flines,fi,line,moves,mi,m,perms,permi,fline,tline,iline,sline,found')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -381,9 +397,10 @@ empty.end
 
 *FIND
 find
-	show.lines(lines,'find')
+	inlines = copy(lines)
 	flines = array(8);* for line with move and its crossing lines.
 	fi = 0;* number of entries in flines
+	found = 0;* number of moves found
 find.line
 	gt(num = num + 1,30)				:s(find.done)
 	line = lines[num]
@@ -401,6 +418,8 @@ find.perm
 	score = fi = 0
 	perm = perms[permi = permi + 1]			:f(find.move)
 
+	lines = copy(inlines);* restore lines to condition on entry
+
 *	Insert the letters from the tileset corresponding to the permutation into the selected blank cells in the line. 
 *	The digit '1' selects the first tile, the digit '2' the second, and so on.
 *	Then see if the result gives a valid line. Move to the next permutation if not.
@@ -408,6 +427,8 @@ find.perm
 	text(move) = perm;* insert permutation digits into free cells
 	iline = insert(lines[num],move);* line with permutation digits entered
 	checkline(place(iline,rack))			:f(find.perm)
+
+	perm(move) = perm
 
 *	Move is valid on this line, so check validity on crossing lines.
 *	Save the valid lines in *flines* for scoring if move proves valid.
@@ -422,13 +443,14 @@ find.cross
 	p = free(move)[i = i + 1]			:f(find.cross.done)
 	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1),rack)
 	checkline(line(cline))				:f(find.perm)
-
 *	Save the line for possible later scoring if move proves valid.
 
 	text(move) = ucase(place(text(move),rack))
-	flines[fi = fi + 1] = pair(
-.		(le(id(move),15) id(move) + 15, id(move) - 15),
-.		insert(line(cline),move))		:(find.cross)
+	flines[fi = fi + 1] = cline
+*				pair(
+*.		(le(id(move),15) id(move) + 15, id(move) - 15),
+*.		insert(line(cline),move))		
+					:(find.cross)
 	
 find.cross.done
 
@@ -436,13 +458,13 @@ find.cross.done
 	
 	move = copy(move)
 	ne(g.showscore) show.play(move,show.move(move))
+	ne(g.showscore) show.move(move)
 	points(move) = +findscore(flines,fi)	
 
 *	output = 'setting score for ' show.move(move) ' to ' points(move)
 	find = ident(find) table();* create table if will have any entries.
 	found = found + 1
 	fid(move) = found
-	output = 'find adding ' show.move(move) 
 	find[found] = move
 	fi = 0
 							:(find.perm)
@@ -451,10 +473,11 @@ find.done
 *	Fail if found no moves.
 
 	ident(find)					:s(freturn)
-	find = differ(find) convert(find,'array')	:(return)
+	find = differ(found) convert(find,'array')
+							:(return)
 find.end
 	
-	define('findscore(flines,fn)i')			:(findscore.end)
+	define('findscore(flines,fn)i,move')			:(findscore.end)
 
 *	Find the score of a move by summing the scores of the lines affected by the move.
 
@@ -467,12 +490,18 @@ find.end
 findscore
 
 	i = 0
-	output = ne(g.showscore) ' enter findscore fn ' fn
+*	output = ne(g.showscore) ' ENTER findscore fn ' fn
+findscore.1
+	gt(i = i + 1,fn)				:s(findscore.2)
+	move = flines[i]
+*	output = 'findscore ' lpad(i,2) ' ' num(move) ' ' show.line(line(move)) :(findscore.1)
+findscore.2
+	i = 0
 
 findscore.next
 	gt(i = i + 1,fn)				:s(return)
 	findscore = findscore + score(flines[i])	
-	output = ne(g.showscore) 'scoring AFTER  flines, ' show.pair(flines[i]) '  is ' findscore
+*	output = ne(g.showscore) 'scoring AFTER  flines, ' show.pair(flines[i]) '  is ' findscore
 
 							:(findscore.next)
 findscore.end
@@ -532,7 +561,6 @@ hline.end
 *	Insert the text of a move into its free list of empty cells in the line of the move.
 
 insert
-	
 	insert = unpack(line)
 insert.1
 	gt(i = i + 1,count(mov))			:s(insert.done)

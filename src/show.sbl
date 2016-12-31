@@ -1,7 +1,7 @@
 
 	define('show.alone()b,r,c,l,line')				:(show.alone.end)
 
-*	Show the board on standard output
+*	Show the alone board.
 
 show.alone
 	show.header('alone')
@@ -21,7 +21,7 @@ show.alone.end
 
 	define('show.board(board,title)b,r,c,ch,line')	:(show.board.end)
 
-*	Show the board on standard output
+*	Show the board.
 
 show.board
 	title  = 'board' (differ(title) ' ' title, '')
@@ -59,7 +59,7 @@ show.board.end
 
 	define('show.bonus()b,r,c,l,line')			:(show.bonus.end)
 
-*	Show the board on standard output
+*	Show the board.
 
 show.bonus
 	show.header('bonus')
@@ -156,8 +156,9 @@ show.move
 	f = append(f,free(mov)[i = i + 1])		:s(show.move);* list the free cells
 	show.move = 	lineid(id(mov)) ':' f ':'
 	show.move = differ(text(mov)) show.move text(mov) 
+	show.move = differ(perm(mov)) show.move ':' perm(move)
 	show.move = differ(points(mov)) show.move  '+' points(mov)
-	show.move = differ(fid(mov)) show.move ':' fid(move)
+*	show.move = differ(fid(mov)) show.move ':' fid(move)
 							:(return)
 show.move.end
 
