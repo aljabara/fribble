@@ -1,4 +1,4 @@
-* This sofaware is licensed under the MIT License, contained in the file LICENSE.
+* This sofacosts ware is licensed under the MIT License, contained in the file LICENSE.
 
 * Copyright (c) 2016 dave shields
 
@@ -21,9 +21,9 @@ rackout.end
 *	Show state of board, alone and value grids before start of move.
 
 show
+	output = 'rack for player ' player ': ' rack
 	show.board(g.board,'player ' player ' to play')
-	output = 'rack ' rack
-	show.board(g.board,'player ' player)
+	show.lines(g.lines)
 	show.alone()
 	show.board(g.bonus,'bonus')
 							:(return)
@@ -35,20 +35,18 @@ show.end
 
 	rack1 = take(7)
 	rack2 = take(7)
+	points1 = points2 = 0
 	
 *	player one makes opening move.
 
 	show(rack1,'one')
 	opn = open(rack1)
-	output = 'open returns<' opn '>'
 	opn break(' ') . open.word ' ' rem . open.score
-	output = 'opening word ' open.word
-	points1 = 'opening score ' open.score
 	ara = array(7);* free array for move
 *	Start word at position 8, unless word size greater than five, in which case move it to the left, but
 *	making sure move still covers double-word cell at position twelve.
 
-	offset = (lt(size(open.word) 5, 5 - size(open.word)))
+	offset = (lt(size(open.word,5) 0, 5 - size(open.word)))
 	ara[1] = 8 + offset
 	ara[2] = 9 + offset
 	ara[3] = 10 + offset
@@ -56,15 +54,13 @@ show.end
 	ara[5] = 12 + offset
 	ara[6] = 13 + offset
 	ara[7] = 14 + offset
-	output = 'move(' 8 + offset ',' size(open.word) ',ara,' open.word ')' 
-	move1 = move(8 + offset,size(open.word),ara,open.word,open.score)
-	output = 'opening move ' show.move(move1,'opening move')
+
+	move1 = move(8 + offset,size(open.word), ara, open.word)
+	points(move1) = open.score
+	points1 = open.score
+*	output = 'move1 ' show.move(move1)
 	playmove(move1);* play opening move
-*	output = 'open placed'
-*	output =  'player one opens: ' show.move(move1) ' for ' points(move1) ' points.'
-	show.board(g.board,
-.	 'player one opens: ' show.move(move1) ' for ' points(move1) ' points.')
-	output = 'board displayed'
+	show.board(g.board,'player one played. ' show.move(move1))
 	rack1 = rackout(rack1,text(move1)) take(size(text(move1)))
 
 player.two
@@ -73,10 +69,17 @@ player.two
 
 	moves = moves + 1
 	gt(moves, 70)			:s(many.moves)
+	rack2 = 'poperab';* force to get 'popper'
 	show(rack2,'two')
-	move2 = find(g.lines,rack)			:f(two.nomove)
-	show.board(g.board,
-.	 'player two: ' show.move(move2)) ' for ' points(move2) ' points. Score now ' points1 '/' points2 '.'
+
+	move2 = find(g.lines,rack2)			:f(two.nomove)
+	output = 'datatype move2 ' datatype(move2)
+	points2 = points2 + points(move2)
+	output = 'two : ' show.move(move2)
+
+	playmove(move2);
+	output =  'player two: ' show.move(move2) ' for ' points(move2) ' points. Score now ' points1 '/' points2 '.'
+	show.board(g.board,'player two played. ' show.move(move2))
 	rack2 = rackout(rack2,text(move2)) take(size(text(move2)))
 							:(player.one);* one's turn
 two.nomove
@@ -89,12 +92,13 @@ player.one
 	moves = moves + 1
 	gt(moves, 70)			:s(many.moves)
 	show(rack1,'one')
-	output = 'player one rack ' rack1
-	move1 = find(g.lines,rack)			:f(one.nomove)
+	move1 = find(g.lines,rack1)			:f(one.nomove)
+	output = 'datatype move1 ' datatype(move1)
 	points1 = points1 + points(move1)
+	output = 'one : ' show.move(mover)
 	playmove(move1,g.tileset)		
+	output =  'player one: ' show.move(move1) ' for ' points(move1) ' points. Score now ' points1 '/' points2 '.'
 	rack1 = rackout(rack1,text(move1)) take(size(text(move1)))
-	output = 'rack1 ' rack1
 							:(player.two)
 one.nomove
 	output ' player one has no move, pass.'		:(player.two)

@@ -68,6 +68,8 @@
 *	g.showscore is used to enable tracing of scoring by setting it to nonzero value
 	g.showscore = 0
 
+	&anchor = &trim = 1
+
 *	Utility functions
 
 	define('init(dictfile,skip)c,i,j,s,t')		:(init.end)
@@ -327,12 +329,12 @@ checkline
 	line = line ' ';* to simplify breaking out words.
 checkline.1
 	line span(' ') =
-	ident(line)					:s(return)
+*	ident(line)					:s(checkline.done)
 	line break(' ')  . word ' ' =			:f(checkline.done);* if line exhausted
 	eq(size(word),1)				:s(checkline.1)
-*	checkword(word)					:f(freturn)s(checkline.1)
-	checkword(word) :f(checkline.failed)
-*	output = 'checkword VALID<' word '>'  :(checkline.1)
+	checkword(word)					:f(freturn)s(checkline.1)
+	output = 'checkword VALID<' word '>'  :(checkline.1)
+			:(checkline.1)
 
 	checkword(word)					:s(checkline.1)
 
@@ -349,10 +351,13 @@ checkline.end
 
 checkword
 	eq(size(w),1)					:s(return)
-	differ(g.dict[size(w)][w])			:f(freturn)s(return)
-*	output = 'checkword VALID ' w :(return)
+*	differ(g.dict[size(w)][w])			:f(freturn)s(return)
+	differ(g.dict[size(w)][w])			:f(freturn)s(checkword.good)
 checkword.bad
 	output = 'invalid blank at start of checkword ' w :(end)
+checkword.good
+	output =  'checkword VALID ' w			
+							:(return)
 checkword.end
 
 	define('cline(lines,move,p,ch,rack)line,i,r,c')		:(cline.end)
@@ -381,6 +386,16 @@ cline.done
 							:(return)
 cline.end
 
+
+	define('cost(text)')				:(cost.end)
+
+*	Return the cost of *text*, defined as the sum of the values of the tiles in *text*.
+
+cost
+	text len(1) . ch =				:f(return)
+	cost = cost + g.value[ch]			:(cost)
+cost.end
+
 	define('empty(line)')				:(empty.end)
 
 *	Test if line is empty (null or all blanks).
@@ -403,9 +418,10 @@ empty.end
 
 *	From amongst the valid moves determine the best move as follows.
 *	If two moves have different scores, prefer the one with the higher score.
-*	The value of the move is the sum of the values of the tiles in the move.
-*	If two moves have the same score and different values, prefer the move with the lower value.
-*	If two moves have the same score and value, and one uses the letter 's' and the other doesn't, prefer
+*	The 'cost' of a move is the sum of the values of the tiles in the move. 
+*	See to keep cost low to save valueable tiles for later moves.
+*	If two moves have the same score and different costs, prefer the move with the lower cose.
+*	If two moves have the same score and cose, and one uses the letter 's' and the other doesn't, prefer
 *	the move that doesn't use the letter 's'.
 
 *	Find returns the best move as defined above, or null if no valid move is found.
@@ -416,9 +432,9 @@ find
 	flines = array(8);* for line with move and its crossing lines.
 	fi = 0;* number of entries in flines
 	highest = 0;* highest score
-	lowest = 0;* lowest value
+	lowest = 0;* lowest cost
 find.line
-	gt(num = num + 1,30)				:s(return)
+	gt(num = num + 1,30)				:s(find.done)
 	line = lines[num]
 	moves = scan(pair(num,line),rack)			:f(find.line)
 	ne(g.showscore) differ(moves) show.moves(moves,'Scan line ' lpad(num,3),2)
@@ -476,16 +492,17 @@ find.cross.done
 	ne(g.showscore) show.play(move,show.move(move))
 	ne(g.showscore) show.move(move)
 	points(move) = +findscore(flines,fi)	
+	output = 'find found ' show.move(move)
 
 	lt(points(move),highest)			:s(find.perm)
 	gt(points(move),highest)			:s(find.new)
 
-*	Here if points equal, look for lower value
+*	Here if points equal, look for lower cost
 
-	lt(value(move),lowest)				:s(find.new)
-	gt(value(move),lowest)				:s(find.perm)
+	lt(cost(text(move)),lowest)				:s(find.new)
+	gt(cost(text(move)),lowest)				:s(find.perm)
 
-*	Here if same points and value, see if one uses 's' and the other doesn't.
+*	Here if same points and cost, see if one uses 's' and the other doesn't.
 *	Continue search if current best doesn't use 's'.
 
 	text(find) ? break('s')				:f(find.perm)
@@ -500,10 +517,12 @@ find.new
 
 	find = copy(move)
 	highest = points(move)
-	lowest = value(text(move))
-*	output = 'setting score for ' show.move(move) ' to ' points(move) '  least now ' lowest '.'
+	lowest = cost(text(move))
+	output = 'setting score for ' show.move(move) ' to ' points(move) '  least now ' lowest '.'
 	fi = 0;* reset for next permutation
 							:(find.perm)
+find.done
+	differ(find)					:s(return)
 find.fail
 
 *	Fail if found no moves.
@@ -662,9 +681,8 @@ open
 	n = 0;* number of tiles to play
 	best = 0;* best score
 	start = 8;* assume word will start in column 8
-	output = 'open ' tiles
 
-open.1	le(n = n + 1,7)					:f(open.finish)
+open.1	le(n = n + 1,7)					:f(return)
 	kind = size(tiles) '?' n
 	perms = g.permutations[kind]
 	permi = 0
@@ -677,10 +695,7 @@ open.2
 	le(oscore(w),best.score)			:s(open.2)
 	best.word = w
 	best.score = oscore(w)
-	open =  best.word ' ' best.score		:s(open.2)
-*	Here if longer open word, move a space to the left
-open.finish						
-	open = best.word ' ' best.score			:(return)
+	open =  best.word ' ' best.score		:(open.2)
 open.end
 
 	define('oscore(word)i,c')			:(oscore.end)
@@ -722,9 +737,11 @@ place.end
 *	Add a word to the board.
 
 placeword
+	output = 'enter placeword  r ' r '  c ' c '  <' ucase(w) '>'
 	c = c - 1
 placeword.1
 	w len(1) . ch =					:f(placeword.done)
+	output = 'placeword  r ' r '  c ' c '  <' ucase(ch) '>'
 	g.board[r, c = c + 1] = ucase(ch)
 	g.bonus[r, c] = 1;* reset bonus for this cell to that of tile itself
 *	Mark self and adjoining squares as no longer alone
@@ -742,26 +759,30 @@ placeword.done
 placeword.end
 
 
-	define('playmove(move)text,i,ch')			:(playmove.end)
+	define('playmove(move)txt,i,ch')			:(playmove.end)
 
 *	Play move *move*, updating the board and related objects.
 
 playmove
-	text = text(move)
+	output = 'playmove ' show.move(move)
+	txt = text(move)
 playmove.ch
-	text len(1) . ch =				:f(playmove.done)
+	txt len(1) . ch =				:f(playmove.done)
+	output = 'playmove char<' ch '>'
 	i = i + 1;* position in text
 	id = id(move)
 	gt(id,15)					:s(playmove.col)
 
 *	Here to play character in row
 
+	output = 'calling placeword row ' id ' ' free(move)[i] ' ' ch
 	placeword(id,free(move)[i],ch)			
 							:(playmove.ch)
 playmove.col
 
 *	Here to play character in column
 
+	output = 'calling placeword col ' id ' ' free(move)[i] ' ' ch
 	placeword(free(move)[i],id - 15,substr(text,i,1))		
 							:(playmove.ch)
 playmove.done
@@ -956,12 +977,12 @@ subarray.end
 *	The initial tileset has many more vowels than consonants, so if we
 *	just pick them randomly from the start, we will get racks with
 *	almost all vowels. To avoid this, we always take at least one consonant,
-*	and take two if n is greater than 4.
+*	and take two if n is greater than 5.
 
 take	
 	n = le(size(g.tileset),n) size(g.tileset)
 	n = n + 1
-	consonants = (gt(n,4) +2, +1)
+	consonants = (gt(n,5) +2, +1)
 take.ch
 	le(n = n - 1)					:s(return)
 take.r
@@ -1002,16 +1023,6 @@ unpack
 unpack.1
 	unpack[i = i + 1] = substr(line,i,1)		:s(unpack.1)f(return)
 unpack.end
-
-	define('value(text)ch')				:(value.end)
-
-*	Return the value of *text*, defined as the sum of the values of the tiles in *text*.
-
-value
-	text len(1) . ch =				:f(return)
-	value = value + g.value[ch]			:(value)
-value.end
-
 	define('vline(grid,c)')				:(vline.end)
 
 *	Return the vertical line of a grid corresponding to column c as a string.
