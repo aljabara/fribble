@@ -10,9 +10,11 @@
 *	Remove the tiles in *text* from *rack*.
 
 rackout
+	output = 'rackout ' rack ' ' text '.'
 	rackout = rack
 rackout.ch
 	text len(1) . ch =				:f(return)
+	output = 'rackout ch ' ch
 	rackout = less(rackout,lcase(ch))		:(rackout.ch)
 rackout.end
 	
@@ -23,7 +25,7 @@ rackout.end
 show
 	output = 'rack for player ' player ': ' rack
 	show.board(g.board,'player ' player ' to play')
-	show.grid(g.board)
+*	show.grid(g.board)
 	show.lines(g.lines)
 *	show.board(g.bonus,'bonus')
 *	show.grid(g.alone)
@@ -34,8 +36,8 @@ show.end
 
 	init()
 
-	maxmoves = 60
-	maxmoves = 10
+	maxmoves = 4
+	maxmoves = 80
 	output = 'MOVE ' (moves = moves + 1)
 	rack1 = take(7)
 	rack2 = take(7)
@@ -65,7 +67,9 @@ show.end
 	output = 'one ' show.move(move1)
 	placemove(move1);* play opening move
 	show.board(g.board,'player one played. ' show.move(move1))
+	output = 'rack before rackout '  rack ' ' text(move1)
 	rack1 = rackout(rack1,text(move1)) take(size(text(move1)))
+	output = 'rack after rackout/take ' rack1
 
 player.two
 
@@ -74,7 +78,7 @@ player.two
 	output = 'MOVE ' (moves = moves + 1)
 
 	gt(moves, maxmoves)					:s(many.moves)
-	rack2 = 'poperab';* force to get 'popper'
+*	rack2 = 'poperab';* force to get 'popper'
 	show(rack2,'two')
 
 	move2 = find(rack2)				:f(two.nomove)
@@ -86,6 +90,7 @@ player.two
 	output =  'player two: ' show.move(move2) ' for ' points(move2) ' points. Score now ' points1 '/' points2 '.'
 	show.board(g.board,'player two played. ' show.move(move2))
 	rack2 = rackout(rack2,text(move2)) take(size(text(move2)))
+	output = 'rack1 updated ' rack1
 							:(player.one);* one's turn
 two.nomove
 	output ' player two has no move, pass.';* fall through to player one for their turn.
@@ -106,11 +111,18 @@ player.one
 	output = 'one : ' show.move(move1)
 	placemove(move1,g.tileset)		
 	output =  'player one: ' show.move(move1) ' for ' points(move1) ' points. Score now ' points1 '/' points2 '.'
-	rack1 = rackout(rack1,text(move1))
-	output = 'rack1 after  rackout ' rack1
-	new1 = take(7 - size(rack1))
-	output = 'new1 ' new1
-	rack1 = rack1 new1
+	show.board(g.board,'player two played. ' show.move(move2))
+
+	rack1 = rackout(rack1,text(move1)) take(size(text(move1)))
+	output = 'rack1 updated ' rack1
+							:(player.two)
+
+*	rack1 = rackout(rack1,text(move1)) 
+*	rack1 = rack1 take(s - size(rack1))
+	output = 'rack1 updated ' rack1
+*	new1 = take(7 - size(rack1))
+*	output = 'new1 ' new1
+*	rack1 = rack1 new1
 * 	take(size(text(move1)))
 							:(player.two)
 one.nomove

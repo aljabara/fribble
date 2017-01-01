@@ -1,4 +1,24 @@
 
+	define('show.alone()b,r,c,l,line')				:(show.alone.end)
+
+*	Show the alone board.
+
+show.alone
+	show.header('alone')
+show.alone.r
+	gt(r = r + 1,15) 				:s(show.alone.finish)
+	line = lpad(r,2) '|' 
+	c = 0
+show.alone.c
+	gt(c = c + 1,15)				:s(show.alone.l)
+	l = g.alone[r,c]
+	line = line lpad(l,2)		 		:s(show.alone.c)
+show.alone.l
+	output = line '|'				:(show.alone.r)
+show.alone.finish
+	output =					:(return)
+show.alone.end
+
 	define('show.board(board,title)b,r,c,ch,line')	:(show.board.end)
 
 *	Show the board.
@@ -65,6 +85,15 @@ show.bonus.finish
 	output =					:(return)
 show.bonus.end
 
+	define('show.pair(pair)')			:(show.pair.end)
+
+*	Show pairged item.
+
+
+show.pair
+	show.pair = '{' lineid(num(pair)) ',' "'" replace(line(pair),' ','.') "'" '}'	:(return)
+show.pair.end
+
 	define('show.header(label)')			:(show.header.end)
 show.header
 	output = label
@@ -87,26 +116,6 @@ show.clines.n
 	output = lpad(lineid(num),2) ' '  replace(line,' ','.') :(show.clines.n)
 show.clines.end
 
-*	define('show.grid(g)b,r,c,l,line')				:(show.grid.end)
-*
-**	Show a grid.
-*
-*show.grid
-*	show.header('grid')
-*show.grid.r
-*	gt(r = r + 1,15) 				:s(show.grid.finish)
-*	line = lpad(r,2) '|' 
-*	c = 0
-*show.grid.c
-*	gt(c = c + 1,15)				:s(show.grid.l)
-*	l = g[r,c]
-*	line = line lpad(l,2)		 		:s(show.grid.c)
-*show.grid.l
-*	output = line '|'				:(show.grid.r)
-*show.grid.finish
-*	output =					:(return)
-*show.grid.end
-
 	define('show.hex(line)ch,i')				:(show.hex.end)
 
 *	Show line with blanks replaced by hex digits showing their position in the line.
@@ -115,33 +124,6 @@ show.hex
 	ch = substr(line,i = i + 1,1)				:f(return)
 	show.hex = show.hex (ident(ch,' ') substr('0123456789ABCDEF',i,1), ch) :(show.hex)
 show.hex.end
-
-	define('show.hline(g,row)line,ch')		:(show.hline.end)
-
-*	Returns the line corresponding to row *row* in grid *g* with two characters per cell.
-
-show.hline
-	line = hline(g,row)
-	show.hline = rpad(row,2) '|'
-show.hline.ch
-	line len(1) . ch = 				:f(show.hline.done)
-	show.hline = show.hline lpad(ch,2)		:(show.hline.ch)
-show.hline.done
-	show.hline = show.hline '|'
-show.hline.end
-
-	define('show.grid(g)r')				:(show.grid.end)
-
-*	Show a grid.
-
-show.grid
-	show.header('grid')
-show.grid.r
-	gt(r = r + 1,15) 				:s(return)
-	output = 'calling show.hline ' r
-	output = 'datatype grid ' datatype(g)
-	output = show.hline(g,r)			:(show.grid.r)		 
-show.grid.end
 
 	define('show.line(line)')				:(show.line.end)
 
@@ -193,14 +175,6 @@ show.moves.loop
 	output = char(9) lpad(i,2) ' ' show.move(move) :(show.moves.loop)
 show.moves.end
 	
-	define('show.pair(pair)')			:(show.pair.end)
-
-*	Show paired item.
-
-show.pair
-	show.pair = '{' lineid(num(pair)) ',' "'" replace(line(pair),' ','.') "'" '}'	:(return)
-show.pair.end
-
 	define('show.play(move,title)board,f,r,c,i')	:(show.play.end)
 
 *	Show the results of making move *mov*. 
