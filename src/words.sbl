@@ -65,6 +65,7 @@
 
 	g.random_var = 1
 
+*	g.found counts number of valid moves that were found.
 *	g.showscore is used to enable tracing of scoring by setting it to nonzero value
 	g.showscore = 0
 
@@ -251,7 +252,7 @@ init.value.end
 
 bestmove
 	g.lines = lines(g.board)
-	moves = find(copy(g.lines),rack);* pass copy since find will alter lines. :f(bestmove.nomove)
+	moves = find(rack);* pass copy since find will alter lines. :f(bestmove.nomove)
 	output = 'best datatype ' datatype(moves)
 	best = array(prototype(moves))
 	i = 0
@@ -356,7 +357,7 @@ checkword
 checkword.bad
 	output = 'invalid blank at start of checkword ' w :(end)
 checkword.good
-	output =  'checkword VALID ' w			
+*	output =  'checkword VALID ' w			
 							:(return)
 checkword.end
 
@@ -405,7 +406,7 @@ empty
 	ident(line)					:s(return)f(freturn)
 empty.end
 	
-	define('find(lines,rack)inlines,flines,fi,line,moves,mi,m,perms,permi,fline,tline,iline,sline,highest,lowest')	:(find.end)
+	define('find(rack)num,lines,inlines,flines,fi,line,moves,mi,m,perms,permi,fline,tline,iline,sline,highest,lowest,i,p,score')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -418,16 +419,18 @@ empty.end
 
 *	From amongst the valid moves determine the best move as follows.
 *	If two moves have different scores, prefer the one with the higher score.
-*	The 'cost' of a move is the sum of the values of the tiles in the move. 
-*	See to keep cost low to save valueable tiles for later moves.
+
+*	The 'cost' of a move is the sum of the values of the tiles in the move; so 
+*	want to keep cost low to save higher value tiles for later moves.
 *	If two moves have the same score and different costs, prefer the move with the lower cose.
-*	If two moves have the same score and cose, and one uses the letter 's' and the other doesn't, prefer
+*	If two moves have the same score and cost, while one uses the letter 's' and the other doesn't, prefer
 *	the move that doesn't use the letter 's'.
 
 *	Find returns the best move as defined above, or null if no valid move is found.
 
 *FIND
 find
+	lines = copy(g.lines)
 	inlines = copy(lines)
 	flines = array(8);* for line with move and its crossing lines.
 	fi = 0;* number of entries in flines
@@ -492,15 +495,16 @@ find.cross.done
 	ne(g.showscore) show.play(move,show.move(move))
 	ne(g.showscore) show.move(move)
 	points(move) = +findscore(flines,fi)	
-	output = 'find found ' show.move(move)
+	g.found = g.found + 1
+*	output = 'find found ' show.move(move)
 
 	lt(points(move),highest)			:s(find.perm)
 	gt(points(move),highest)			:s(find.new)
 
 *	Here if points equal, look for lower cost
 
-	lt(cost(text(move)),lowest)				:s(find.new)
-	gt(cost(text(move)),lowest)				:s(find.perm)
+	lt(cost(text(move)),lowest)			:s(find.new)
+	gt(cost(text(move)),lowest)			:s(find.perm)
 
 *	Here if same points and cost, see if one uses 's' and the other doesn't.
 *	Continue search if current best doesn't use 's'.
@@ -522,7 +526,7 @@ find.new
 	fi = 0;* reset for next permutation
 							:(find.perm)
 find.done
-	differ(find)					:s(return)
+							:(return)	
 find.fail
 
 *	Fail if found no moves.
@@ -732,16 +736,14 @@ place
 								:(return)
 place.end
 
-	define('placeword(r,c,w)ch')			:(placeword.end)
+	define('placecell(r,c,w)ch')			:(placecell.end)
 
 *	Add a word to the board.
 
-placeword
-	output = 'enter placeword  r ' r '  c ' c '  <' ucase(w) '>'
+placecell
 	c = c - 1
-placeword.1
-	w len(1) . ch =					:f(placeword.done)
-	output = 'placeword  r ' r '  c ' c '  <' ucase(ch) '>'
+placecell.ch
+	w len(1) . ch =					:f(return)
 	g.board[r, c = c + 1] = ucase(ch)
 	g.bonus[r, c] = 1;* reset bonus for this cell to that of tile itself
 *	Mark self and adjoining squares as no longer alone
@@ -750,44 +752,42 @@ placeword.1
 	g.alone[r,c + 1] = ' ';* cell to the east
 	g.alone[r,c - 1] = ' ';* cell to the west
 	g.alone[r + 1,c] = ' ';* cell to the south
-							:(placeword.1)
-placeword.done
+							:(placecell.ch)
+placecell.end
+
+
+	define('placemove(move)txt,i,ch')			:(placemove.end)
+
+*	Play move *move*, updating the board and related objects.
+
+placemove
+*	output = 'placemove ' show.move(move)
+	txt = text(move)
+placemove.ch
+	txt len(1) . ch =				:f(placemove.done)
+*	output = 'placemove char<' ch '>'
+	i = i + 1;* position in text
+	id = id(move)
+	gt(id,15)					:s(placemove.col)
+
+*	Here to play character in row
+
+*	output = 'calling placecell row ' id ' ' free(move)[i] ' ' ch
+	placecell(id,free(move)[i],ch)			
+							:(placemove.ch)
+placemove.col
+
+*	Here to play character in column
+
+*	output = 'calling placecell col ' id ' ' free(move)[i] ' ' ch
+	placecell(free(move)[i],id - 15,ch)		
+							:(placemove.ch)
+placemove.done
 	g.alone.lines = lines(g.alone)
 	g.lines = lines(g.board);* update g.lines so consistent with updated board.
 	g.bonus.lines = lines(g.bonus)
 							:(return)
-placeword.end
-
-
-	define('playmove(move)txt,i,ch')			:(playmove.end)
-
-*	Play move *move*, updating the board and related objects.
-
-playmove
-	output = 'playmove ' show.move(move)
-	txt = text(move)
-playmove.ch
-	txt len(1) . ch =				:f(playmove.done)
-	output = 'playmove char<' ch '>'
-	i = i + 1;* position in text
-	id = id(move)
-	gt(id,15)					:s(playmove.col)
-
-*	Here to play character in row
-
-	output = 'calling placeword row ' id ' ' free(move)[i] ' ' ch
-	placeword(id,free(move)[i],ch)			
-							:(playmove.ch)
-playmove.col
-
-*	Here to play character in column
-
-	output = 'calling placeword col ' id ' ' free(move)[i] ' ' ch
-	placeword(free(move)[i],id - 15,substr(text,i,1))		
-							:(playmove.ch)
-playmove.done
-							:(return)
-playmove.end
+placemove.end
 	
 	
 	

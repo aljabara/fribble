@@ -147,23 +147,23 @@ show.lines.n
 	output = lpad(lineid(i),2) ' ' replace(line,' ','.') :(show.lines.n)
 show.lines.end
 
-	define('show.move(mov,title)f,i') 			:(show.move.end)
+	define('show.move(move,title)f,i') 			:(show.move.end)
 
 *	Show a move.
 
 show.move
-	gt(i = i + 1,count(mov))			:s(show.move.f)
-	f = append(f,free(mov)[i])			:s(show.move);* list the free cells
+	gt(i = i + 1,count(move))			:s(show.move.f)
+	f = append(f,free(move)[i])			:s(show.move);* list the free cells
 show.move.f
-	show.move = lineid(id(mov)) ':' count(mov) ':' f ':'
-	show.move = differ(text(mov)) show.move text(mov) 
-	show.move = differ(perm(mov)) show.move ':' perm(move)
-	show.move = differ(points(mov)) show.move  '+' points(mov)
-*	show.move = differ(fid(mov)) show.move ':' fid(move)
+	show.move = lineid(id(move)) ':' count(move) ':' f ':'
+	show.move = differ(text(move)) show.move text(move) 
+	show.move = differ(perm(move)) show.move ':' perm(move)
+	show.move = differ(points(move)) show.move  '+' points(move)
+*	show.move = differ(fid(move)) show.move ':' fid(move)
 							:(return)
 show.move.end
 
-	define('show.moves(moves,title)i,mov')	:(show.moves.end)
+	define('show.moves(moves,title)i,move,text')	:(show.moves.end)
 
 *	Show an array of moves. Assume each entry has 1) line num, 2) move
 
@@ -171,23 +171,23 @@ show.moves
 	ident(moves)					:s(return)
 	output = 'MOVES ' title
 show.moves.loop
-	mov = moves[i = i + 1,2]			:f(return)
-	output = char(9) lpad(i,2) ' ' show.move(mov) :(show.moves.loop)
+	move = moves[i = i + 1,2]			:f(return)
+	output = char(9) lpad(i,2) ' ' show.move(move) :(show.moves.loop)
 show.moves.end
 	
-	define('show.play(mov,title)board,f,r,c,i')	:(show.play.end)
+	define('show.play(move,title)board,f,r,c,i')	:(show.play.end)
 
 *	Show the results of making move *mov*. 
 
 
 show.play
 	board = copy(g.board)
-	txt = text(mov)
+	text = text(move)
 show.play.next
-	f = free(mov)[i = i + 1]			:f(show.play.done)
-	r = (lt(id(mov),15) id(mov), f)
-	c = (gt(id(mov),15) id(mov) - 15, f)
-*	output = 'show.play r ' r ' c ' c ' ch ' substr(txt,i,1)
+	f = free(move)[i = i + 1]			:f(show.play.done)
+	r = (lt(id(move),15) id(move), f)
+	c = (gt(id(move),15) id(move) - 15, f)
+*	output = 'show.play r ' r ' c ' c ' ch ' substr(text,i,1)
 	board[r,c] = substr(txt,i,1)
 							:(show.play.next)
 show.play.done

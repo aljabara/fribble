@@ -23,9 +23,9 @@ rackout.end
 show
 	output = 'rack for player ' player ': ' rack
 	show.board(g.board,'player ' player ' to play')
-	show.lines(g.lines)
-	show.alone()
-	show.board(g.bonus,'bonus')
+*	show.lines(g.lines)
+*	show.alone()
+*	show.board(g.bonus,'bonus')
 							:(return)
 show.end
 
@@ -33,6 +33,8 @@ show.end
 
 	init()
 
+	maxmoves = 60
+	output = 'MOVE ' (moves = moves + 1)
 	rack1 = take(7)
 	rack2 = take(7)
 	points1 = points2 = 0
@@ -58,8 +60,8 @@ show.end
 	move1 = move(8 + offset,size(open.word), ara, open.word)
 	points(move1) = open.score
 	points1 = open.score
-*	output = 'move1 ' show.move(move1)
-	playmove(move1);* play opening move
+	output = 'one ' show.move(move1)
+	placemove(move1);* play opening move
 	show.board(g.board,'player one played. ' show.move(move1))
 	rack1 = rackout(rack1,text(move1)) take(size(text(move1)))
 
@@ -67,17 +69,18 @@ player.two
 
 *	player two makes next move.
 
-	moves = moves + 1
-	gt(moves, 70)			:s(many.moves)
+	output = 'MOVE ' (moves = moves + 1)
+
+	gt(moves, maxmoves)					:s(many.moves)
 	rack2 = 'poperab';* force to get 'popper'
 	show(rack2,'two')
 
-	move2 = find(g.lines,rack2)			:f(two.nomove)
-	output = 'datatype move2 ' datatype(move2)
+	move2 = find(rack2)				:f(two.nomove)
 	points2 = points2 + points(move2)
+	output = 'datatype move2 ' datatype(move2)
 	output = 'two : ' show.move(move2)
 
-	playmove(move2);
+	placemove(move2);
 	output =  'player two: ' show.move(move2) ' for ' points(move2) ' points. Score now ' points1 '/' points2 '.'
 	show.board(g.board,'player two played. ' show.move(move2))
 	rack2 = rackout(rack2,text(move2)) take(size(text(move2)))
@@ -89,22 +92,34 @@ player.one
 
 *	player one makes the next move.
 
-	moves = moves + 1
-	gt(moves, 70)			:s(many.moves)
+	output = 'MOVE ' (moves = moves + 1)
+	
+	gt(moves, maxmoves)			:s(many.moves)
 	show(rack1,'one')
-	move1 = find(g.lines,rack1)			:f(one.nomove)
+	move1 = find(rack1)			:f(one.nomove)
 	output = 'datatype move1 ' datatype(move1)
+	output = 'player one new move ' show.move(move1)
+	output = 'move1 showed'
 	points1 = points1 + points(move1)
-	output = 'one : ' show.move(mover)
-	playmove(move1,g.tileset)		
+	output = 'one : ' show.move(move1)
+	placemove(move1,g.tileset)		
 	output =  'player one: ' show.move(move1) ' for ' points(move1) ' points. Score now ' points1 '/' points2 '.'
-	rack1 = rackout(rack1,text(move1)) take(size(text(move1)))
+	rack1 = rackout(rack1,text(move1))
+	output = 'rack1 after  rackout ' rack1
+	new1 = take(7 - size(rack1))
+	output = 'new1 ' new1
+	rack1 = rack1 new1
+* 	take(size(text(move1)))
 							:(player.two)
 one.nomove
 	output ' player one has no move, pass.'		:(player.two)
 
 many.moves
-	output = 'too many moves.'
+	output = 'too many moves.'			:(done)
 no.moves
-	output = ' game over, player one ' lpad(points1,4) points1 ', player two ' lpad(points2,4) '.'
+	output = ' game over, player one ' lpad(points1,4) points1 ', player two ' lpad(points2,4) '.' :(done)
+done
+	output = lpad('moves made',30) 		lpad(moves,7)
+	output = lpad('valid moves found',30)	lpad(g.found,7)
+	output = lpad('tiles left'	,30)	lpad(size(g.tileset),7)
 end
