@@ -13,7 +13,7 @@ rackout
 	rackout = rack
 rackout.ch
 	text len(1) . ch =				:f(return)
-	rackout = less(rackout,ch)			:(rackout.ch)
+	rackout = less(rackout,lcase(ch))		:(rackout.ch)
 rackout.end
 	
 	define('show(rack,player)')			:(show.end)
@@ -23,9 +23,10 @@ rackout.end
 show
 	output = 'rack for player ' player ': ' rack
 	show.board(g.board,'player ' player ' to play')
-*	show.lines(g.lines)
-*	show.alone()
+	show.grid(g.board)
+	show.lines(g.lines)
 *	show.board(g.bonus,'bonus')
+*	show.grid(g.alone)
 							:(return)
 show.end
 
@@ -34,6 +35,7 @@ show.end
 	init()
 
 	maxmoves = 60
+	maxmoves = 10
 	output = 'MOVE ' (moves = moves + 1)
 	rack1 = take(7)
 	rack2 = take(7)

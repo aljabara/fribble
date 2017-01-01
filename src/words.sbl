@@ -600,16 +600,15 @@ grid.c
 grid.done						:(return)
 grid.end
 
-	define('hline(grid,r)')				:(hline.end)
+	define('hline(g,r)')				:(hline.end)
 
-*	Return the horizontal line of a grid corresponding to row r as a string.
+*	Return the horizontal line of a grid *g* corresponding to row r as a string.
 
 hline
 	r = +r
-	hline = grid[r,1] grid[r,2] grid[r,3] grid[r,4] grid[r,5] 
-.		grid[r,6] grid[r,7] grid[r,8] grid[r,9] grid[r,10]
-.		grid[r,11] grid[r,12] grid[r,13] grid[r,14] grid[r,15]
-							:(return)
+	hline = g[r,1] g[r,2] g[r,3] g[r,4] g[r,5]
+.		 g[r,6] g[r,7] g[r,8] g[r,9] g[r,10] 
+.		 g[r,11] g[r,12] g[r,13] g[r,14] g[r,15] :(return)
 hline.end
 
 
@@ -863,6 +862,7 @@ scan.next
 	max = nopen
 	max = gt(max,size(rack)) size(rack)
 	max = eq(max,7) 6
+	max = eq(max,7) 5;* max find rack
 	n = 0
 
 scan.next.n
@@ -1023,16 +1023,14 @@ unpack
 unpack.1
 	unpack[i = i + 1] = substr(line,i,1)		:s(unpack.1)f(return)
 unpack.end
-	define('vline(grid,c)')				:(vline.end)
+	define('vline(g,c)')				:(vline.end)
 
-*	Return the vertical line of a grid corresponding to column c as a string.
+*	Return the vertical line of a grid *g*corresponding to column *c* as a string.
 
 vline
 	c = +c
-	vline = grid[1,c] grid[2,c] grid[3,c] grid[4,c] grid[5,c] 
-.		grid[6,c] grid[7,c] grid[8,c] grid[9,c] grid[10,c]
-.		grid[11,c] grid[12,c] grid[13,c] grid[14,c] grid[15,c]
-							:(return)
+	vline = g[1,c] g[2,c] g[3,c] g[4,c] g[5,c] g[6,c] g[7,c] g[8,c] g[9,c] g[10,c]
+.		g[11,c] g[12,c] g[13,c] g[14,c] g[15,c] :(return)
 vline.end
 
 	define('wordcount(s)i,w')			:(wordcount.end)

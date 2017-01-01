@@ -29,7 +29,7 @@
 	placeword(8,6,'invert')
 	placeword(9,11,'order')
 	show.board(g.bonus,'g.bonus')
-	show.alone()
+	show.grid(g.alone)
 
 	g.lines = lines(g.board);* update lines
 
