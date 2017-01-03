@@ -1,24 +1,4 @@
 
-	define('show.alone()b,r,c,l,line')				:(show.alone.end)
-
-*	Show the alone board.
-
-show.alone
-	show.header('alone')
-show.alone.r
-	gt(r = r + 1,15) 				:s(show.alone.finish)
-	line = lpad(r,2) '|' 
-	c = 0
-show.alone.c
-	gt(c = c + 1,15)				:s(show.alone.l)
-	l = g.alone[r,c]
-	line = line lpad(l,2)		 		:s(show.alone.c)
-show.alone.l
-	output = line '|'				:(show.alone.r)
-show.alone.finish
-	output =					:(return)
-show.alone.end
-
 	define('show.board(board,title)b,r,c,ch,line')	:(show.board.end)
 
 *	Show the board.
@@ -41,17 +21,17 @@ show.board.c
 
 *	Here to show.board empty cell.
 
-	line = line ' -'				:(show.board.c)
+	line = line ' - '				:(show.board.c)
 show.board.b
 
 * 	Here to show.board bonus.
 
 	ch = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
-	line = line ch 					:(show.board.c)
+	line = line ch ' '				:(show.board.c)
 show.board.margin
 	output = line '|'				:(show.board.r)
 show.board.ch
-	line  = line ' ' ch				:(show.board.c);* show.board tile
+	line  = line ' ' ch ' '				:(show.board.c);* show.board tile
 show.board.finish
 	output =					:(return)
 show.board.end
@@ -85,20 +65,11 @@ show.bonus.finish
 	output =					:(return)
 show.bonus.end
 
-	define('show.pair(pair)')			:(show.pair.end)
-
-*	Show pairged item.
-
-
-show.pair
-	show.pair = '{' lineid(num(pair)) ',' "'" replace(line(pair),' ','.') "'" '}'	:(return)
-show.pair.end
-
 	define('show.header(label)')			:(show.header.end)
 show.header
 	output = label
-	output = '                      1 1 1 1 1 1'
-	output = '    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
+	output = '                               1  1  1  1  1  1'
+	output = '   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5'	:(return)
 show.header.end
 
 	define('show.clines(lines,title)i,line,num')		:(show.clines.end)
@@ -116,6 +87,19 @@ show.clines.n
 	output = lpad(lineid(num),2) ' '  replace(line,' ','.') :(show.clines.n)
 show.clines.end
 
+	define('show.grid(g)r')				:(show.grid.end)
+
+*	Show a grid.
+
+show.grid
+	show.header()
+show.grid.r
+	gt(r = r + 1,15) 				:s(show.grid.done)
+	output = show.hline(g,r)			:(show.grid.r)		 
+show.grid.done
+	output =					:(return)
+show.grid.end
+
 	define('show.hex(line)ch,i')				:(show.hex.end)
 
 *	Show line with blanks replaced by hex digits showing their position in the line.
@@ -125,6 +109,20 @@ show.hex
 	show.hex = show.hex (ident(ch,' ') substr('0123456789ABCDEF',i,1), ch) :(show.hex)
 show.hex.end
 
+	define('show.hline(g,row)line,ch')		:(show.hline.end)
+
+*	Returns the line corresponding to row *row* in grid *g* with two characters per cell.
+
+show.hline
+	line = hline(g,row)
+	show.hline = rpad(row,2) '|'
+show.hline.ch
+	line len(1) . ch = 				:f(show.hline.done)
+	show.hline = show.hline ' ' ch  ' '		:(show.hline.ch)
+show.hline.done
+	show.hline = show.hline '|'			:(return)
+show.hline.end
+
 	define('show.line(line)')				:(show.line.end)
 
 *	Show a line with blanks replaced by '.'
@@ -133,17 +131,20 @@ show.line
 	show.line = replace(line,' ','.')			:(return)
 show.line.end
 
-	define('show.lines(lines,title)i,line')		:(show.lines.end)
+	define('show.lines(lines,title)i,line,titled')	:(show.lines.end)
 
 *	Show the lines that are not empty in an array of lines
 
 show.lines
 	title  = 'lines' (differ(title) ' ' title, '')
 	output = title
-	output = '    123456789012345'
 show.lines.n
 	line = lines[i = i + 1]				:f(return)
 	empty(line)					:s(show.lines.n)
+	differ(titled)					:s(show.lines.titled)
+	output = '    123456789012345';* don't list header unless at least one non-empty line
+	titled = 1
+show.lines.titled
 	output = lpad(lineid(i),2) ' ' replace(line,' ','.') :(show.lines.n)
 show.lines.end
 
@@ -153,7 +154,7 @@ show.lines.end
 
 show.move
 	gt(i = i + 1,count(move))			:s(show.move.f)
-	f = append(f,free(move)[i])			:s(show.move);* list the free cells
+	f = append(f,free(move)[i],',')			:s(show.move);* list the free cells
 show.move.f
 	show.move = lineid(id(move)) ':' count(move) ':' f ':'
 	show.move = differ(text(move)) show.move text(move) 
@@ -175,6 +176,14 @@ show.moves.loop
 	output = char(9) lpad(i,2) ' ' show.move(move) :(show.moves.loop)
 show.moves.end
 	
+	define('show.pair(pair)')			:(show.pair.end)
+
+*	Show paired item.
+
+show.pair
+	show.pair = '{' lineid(num(pair)) ',' "'" replace(line(pair),' ','.') "'" '}'	:(return)
+show.pair.end
+
 	define('show.play(move,title)board,f,r,c,i')	:(show.play.end)
 
 *	Show the results of making move *mov*. 
@@ -194,13 +203,20 @@ show.play.done
 	show.board(board,title)			:(return)
 show.play.end
 
-	define('show.scores()ara,i')			:(show.scores.end)
+	define('show.player(player)')			:(show.player.end)
 
-*	Show an array of scores.
+*	Show player description.
 
-show.scores
-	output = 'show g.scores '
-	ara = rsort(g.scores,2)
-show.scores.next
-	output = ara[i = i + 1,1] ' ' lpad(ara[i,2],6)  :s(show.scores.next)f(return)
-show.scores.end
+show.player
+	output = 'player ' name(player) ', rack |' rack(player) '| score ' score(player) ', moves ' moves(player)
+							:(return)
+show.player.end
+
+	define('show.tiles(tiles)i')			:(show.tiles.end)
+
+*	Show a list of tiles, separated by blanks.
+
+show.tiles
+	gt(i = i + 1,size(tiles))			:s(return)
+	show.tiles = append(show.tiles, substr(tiles,i,1))	:(show.tiles)
+show.tiles.end

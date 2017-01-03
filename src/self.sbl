@@ -1,139 +1,35 @@
-* This sofacosts ware is licensed under the MIT License, contained in the file LICENSE.
+* This software is licensed under the MIT License, contained in the file LICENSE.
 
-* Copyright (c) 2016 dave shields
+* Copyright (c) 2017 dave shields
 
 -include "words.sbl"
 -include "show.sbl"
-
-	define('rackout(rack,text)ch')			:(rackout.end)
-
-*	Remove the tiles in *text* from *rack*.
-
-rackout
-	output = 'rackout ' rack ' ' text '.'
-	rackout = rack
-rackout.ch
-	text len(1) . ch =				:f(return)
-	output = 'rackout ch ' ch
-	rackout = less(rackout,lcase(ch))		:(rackout.ch)
-rackout.end
-	
-	define('show(rack,player)')			:(show.end)
-
-*	Show state of board, alone and value grids before start of move.
-
-show
-	output = 'rack for player ' player ': ' rack
-	show.board(g.board,'player ' player ' to play')
-*	show.grid(g.board)
-	show.lines(g.lines)
-*	show.board(g.bonus,'bonus')
-*	show.grid(g.alone)
-							:(return)
-show.end
 
 *	Have fribble play itself.
 
 	init()
 
-	maxmoves = 4
 	maxmoves = 80
-	output = 'MOVE ' (moves = moves + 1)
-	rack1 = take(7)
-	rack2 = take(7)
-	points1 = points2 = 0
+	maxmoves = 20
+
+	one = player('Jane Doe')
+	two = player('John Doe')
+	game(one,two,maxmoves)
+	output = 'Game over:'
+	output =  'Player ' name(one) ' scored ' total(one) ' points.'
+	output =  'Player ' name(two) ' scored ' total(two) ' points.'
+		:(done)	
 	
-*	player one makes opening move.
-
-	show(rack1,'one')
-	opn = open(rack1)
-	opn break(' ') . open.word ' ' rem . open.score
-	ara = array(7);* free array for move
-*	Start word at position 8, unless word size greater than five, in which case move it to the left, but
-*	making sure move still covers double-word cell at position twelve.
-
-	offset = (lt(size(open.word,5) 0, 5 - size(open.word)))
-	ara[1] = 8 + offset
-	ara[2] = 9 + offset
-	ara[3] = 10 + offset
-	ara[4] = 11 + offset
-	ara[5] = 12 + offset
-	ara[6] = 13 + offset
-	ara[7] = 14 + offset
-
-	move1 = move(8 + offset,size(open.word), ara, open.word)
-	points(move1) = open.score
-	points1 = open.score
-	output = 'one ' show.move(move1)
-	placemove(move1);* play opening move
-	show.board(g.board,'player one played. ' show.move(move1))
-	output = 'rack before rackout '  rack ' ' text(move1)
-	rack1 = rackout(rack1,text(move1)) take(size(text(move1)))
-	output = 'rack after rackout/take ' rack1
-
-player.two
-
-*	player two makes next move.
-
-	output = 'MOVE ' (moves = moves + 1)
-
-	gt(moves, maxmoves)					:s(many.moves)
-*	rack2 = 'poperab';* force to get 'popper'
-	show(rack2,'two')
-
-	move2 = find(rack2)				:f(two.nomove)
-	points2 = points2 + points(move2)
-	output = 'datatype move2 ' datatype(move2)
-	output = 'two : ' show.move(move2)
-
-	placemove(move2);
-	output =  'player two: ' show.move(move2) ' for ' points(move2) ' points. Score now ' points1 '/' points2 '.'
-	show.board(g.board,'player two played. ' show.move(move2))
-	rack2 = rackout(rack2,text(move2)) take(size(text(move2)))
-	output = 'rack1 updated ' rack1
-							:(player.one);* one's turn
-two.nomove
-	output ' player two has no move, pass.';* fall through to player one for their turn.
-
-player.one
-
-*	player one makes the next move.
-
-	output = 'MOVE ' (moves = moves + 1)
-	
-	gt(moves, maxmoves)			:s(many.moves)
-	show(rack1,'one')
-	move1 = find(rack1)			:f(one.nomove)
-	output = 'datatype move1 ' datatype(move1)
-	output = 'player one new move ' show.move(move1)
-	output = 'move1 showed'
-	points1 = points1 + points(move1)
-	output = 'one : ' show.move(move1)
-	placemove(move1,g.tileset)		
-	output =  'player one: ' show.move(move1) ' for ' points(move1) ' points. Score now ' points1 '/' points2 '.'
-	show.board(g.board,'player two played. ' show.move(move2))
-
-	rack1 = rackout(rack1,text(move1)) take(size(text(move1)))
-	output = 'rack1 updated ' rack1
-							:(player.two)
-
-*	rack1 = rackout(rack1,text(move1)) 
-*	rack1 = rack1 take(s - size(rack1))
-	output = 'rack1 updated ' rack1
-*	new1 = take(7 - size(rack1))
-*	output = 'new1 ' new1
-*	rack1 = rack1 new1
-* 	take(size(text(move1)))
-							:(player.two)
-one.nomove
-	output ' player one has no move, pass.'		:(player.two)
+nomove
+	output =  ' player ' name(p) ' has no move, pass.';* fall through to player one for their turn.
 
 many.moves
 	output = 'too many moves.'			:(done)
 no.moves
-	output = ' game over, player one ' lpad(points1,4) points1 ', player two ' lpad(points2,4) '.' :(done)
+	output = ' game over, player one ' lpad(total(one),4) total(one)
+.			 ', player ' name(two)  lpad(total(two),3) '.' :(done)
+	output =
+	output =
 done
-	output = lpad('moves made',30) 		lpad(moves,7)
-	output = lpad('valid moves found',30)	lpad(g.found,7)
-	output = lpad('tiles left'	,30)	lpad(size(g.tileset),7)
+	counters()
 end

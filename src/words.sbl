@@ -32,7 +32,7 @@
 
 *	g.rack, a string containing the current rack. Plays are made using the characters from the rack.
 
-*	g.tileset, a string containing all the characters in the initial bag of characters.
+*	g.tiles, a string containing all the characters in the initial bag of characters.
 
 *	g.value, a map from characters to the tile value of that character.
 
@@ -46,6 +46,17 @@
 
 	data('move(id,count,free,text,points,perm,fid)')
 
+*	A player is represented 
+
+	data('player(name,rack,total,moves)')
+
+*	where
+*		name is the player's name
+*		rack is the player's rack
+*		score is the player's current score
+*		moves counts the number of moves made by the player
+	
+
 *	g.bonus,array(15,15) gives the bonus values for the squares on the board:
 *		1 for the value of the letter itself,
 *		2 for double letter,
@@ -55,7 +66,7 @@
 
 *	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
 
-*	A pairged line consists of a line number and an associated line. It is used when it is necessary
+*	A paired line consists of a line number and an associated line. It is used when it is necessary
 *	to pass a line of text to a procedure along with line number from where it was derived.
 
 		data('pair(num, line)')
@@ -105,6 +116,7 @@ init.main
 	init.perm('../perm.txt')
 
 	init.tileset()
+	shuffle();* shuffle the tileset
 
 	init.value()
 
@@ -219,10 +231,10 @@ init.perm.end
 
 init.tileset
 	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
-	g.tileset =
+	g.tiles =
 init.tileset.1
 	s break(' ') . c ' ' break(' ') . n ' ' =	:f(return)
-	g.tileset = g.tileset dupl(c,n)			:(init.tileset.1)
+	g.tiles = g.tiles dupl(c,n)			:(init.tileset.1)
 init.tileset.end
 
 	define('init.value()s,c')			:(init.value.end)
@@ -247,39 +259,14 @@ init.value.update
 	g.value[c] = +v					:(init.value.update)
 init.value.end
 
-	define('bestmove(rack,tiles)best,i,moves,mov,found')					:(bestmove.end) 
-*	Find the best move, or at least one with no higher score, given the rack *rack*.
+	define('append(str,w,ch)')				:(append.end)
 
-bestmove
-	g.lines = lines(g.board)
-	moves = find(rack);* pass copy since find will alter lines. :f(bestmove.nomove)
-	output = 'best datatype ' datatype(moves)
-	best = array(prototype(moves))
-	i = 0
-bestmove.move
-	move = moves[i = i + 1,2]			:f(bestmove.sort)
-	best[i,1] = move
-	text(move)  = replace(perm(move),substr('1234567',1,size(rack)),rack) 	
-	best[i,2] = points(move)			
-	output = 'best ' i ' ' show.move(move)
-							:(bestmove.move)
-bestmove.sort
-	best = rsort(best,2);* sort with highest score first
-	i = 0
-bestmove.list
-	move = best[i = i + 1,1]			:f(return)
-*	output = 'best ' lpad(i,2) ' ' show.move(move)	:(bestmove.list)
-bestmove.nomove
-	output = 'best move found no moves -- time to swap or pass '	:(freturn)
-bestmove.end
-
-	define('append(str,w)')				:(append.end)
-
-*	Append word *w* to string *str*, prefixing with a space if *str* is not null.
+*	Append word *w* to string *str*, prefixing with *ch* if *str* is not null, using space if *ch* is null.
 
 append
+	ch = ident(ch) ' '
 	append = ident(str) w				:s(return)
-	append = str ' ' w				:(return)
+	append = str ch w				:(return)
 append.end
 
 	define('available(line)blanks,c,i')		:(available.end)
@@ -324,6 +311,7 @@ bonus.lines.end
 *	Succeeds if all the words in the line are in the dictionary, fails otherwise.
 
 checkline
+	count.checkline = count.chedckline + 1
 	line span(' ') =
 	empty(line)					:s(return)
 	iline = line
@@ -352,8 +340,9 @@ checkline.end
 
 checkword
 	eq(size(w),1)					:s(return)
-*	differ(g.dict[size(w)][w])			:f(freturn)s(return)
-	differ(g.dict[size(w)][w])			:f(freturn)s(checkword.good)
+	count.checkword = count.checkword + 1
+	differ(g.dict[size(w)][w])			:f(freturn)s(return)
+*	differ(g.dict[size(w)][w])			:f(freturn)s(checkword.good)
 checkword.bad
 	output = 'invalid blank at start of checkword ' w :(end)
 checkword.good
@@ -366,6 +355,7 @@ checkword.end
 *	Return crossing line of p-th cell in move *move*. *ch* gives tile to be played.
 
 cline
+	count.cline = count.cline + 1
 *	text(move) = ucase(place(text(move),rack))
 
 	gt(id(move),15)					:s(cline.col)
@@ -396,6 +386,33 @@ cost
 	text len(1) . ch =				:f(return)
 	cost = cost + g.value[ch]			:(cost)
 cost.end
+
+	define('counter(text,count)')			:(counter.end)
+
+*	Output the descriptive text *text* and value *n* of a counter.
+
+counter
+	output = lpad(text,30) lpad(count,7)		:(return)
+counter.end
+
+	define('counters()')				:(counters.end)
+
+*	Output the collected counter metrics.
+
+counters
+	output = 
+	output = 'Performance metrics:'
+	counter('placements found by scan'	, count.scan	)
+	counter('permutations examined'		, count.perm	)
+	counter('cells examined'		, count.cells	)
+	counter('potential moves found'		, count.moves 	)
+	counter('lines checked'			, count.checkline)
+	counter('words checked'			, count.checkword)
+	counter('clines lines checked'		, count.cline	)
+	counter('cross lines checked'		, count.cross	)
+	counter('valid moves found'		, count.valid	)
+							:(return)
+counters.end
 
 	define('empty(line)')				:(empty.end)
 
@@ -443,6 +460,7 @@ find.line
 	ne(g.showscore) differ(moves) show.moves(moves,'Scan line ' lpad(num,3),2)
 	mi = 0
 find.move
+	count.moves = count.moves + 1
 	move = moves[mi = mi + 1,2]			:f(find.line)
 	output = ne(g.showscore) ' find.move mi ' mi ' ' show.move(move,'find')
 	points(move) = 
@@ -452,6 +470,10 @@ find.move
 find.perm
 	score = fi = 0
 	perm = perms[permi = permi + 1]			:f(find.move)
+
+
+	count.perm = count.perm + 1
+	count.cells = count.cells + size(perm)
 
 	lines = copy(inlines);* restore lines to condition on entry
 
@@ -475,11 +497,10 @@ find.perm
 *	Check the crossing lines to make sure they are valid.
 
 find.cross
+	count.cross = count.cross + 1
 	p = free(move)[i = i + 1]			:f(find.cross.done)
 	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1),rack)
 	checkline(line(cline))				:f(find.perm)
-*	Save the line for possible later scoring if move proves valid.
-
 	text(move) = ucase(place(text(move),rack))
 	flines[fi = fi + 1] = cline
 *				pair(
@@ -491,6 +512,7 @@ find.cross.done
 
 *	Score the line by summing the scores of the lines saved in flines.
 	
+	count.valid = count.valid + 1
 	move = copy(move)
 	ne(g.showscore) show.play(move,show.move(move))
 	ne(g.showscore) show.move(move)
@@ -522,7 +544,6 @@ find.new
 	find = copy(move)
 	highest = points(move)
 	lowest = cost(text(move))
-	output = 'setting score for ' show.move(move) ' to ' points(move) '  least now ' lowest '.'
 	fi = 0;* reset for next permutation
 							:(find.perm)
 find.done
@@ -563,6 +584,65 @@ findscore.next
 							:(findscore.next)
 findscore.end
 
+	define('game(one,two,max)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li')	:(game.end)
+
+*	Play a game of fribble. *one* and *two* are players. *max* is the maximum number of moves.
+
+game
+*GAME
+
+	players = array(2)
+	players[1] = one
+	players[2] = two
+	total(one) = total(two) = moves(one) = moves(two) = 0
+	rack(one) = take(7)
+	rack(two) = take(7)
+
+	moves = 0
+game.round
+	i = 0
+game.turn
+	p = players[i = i + 1]				:f(game.round)
+	gt(moves = moves + 1,max)			:s(return)
+
+	move = (eq(moves,1) open(rack(p)), find(rack(p))) :f(nomove)
+	output = 'datatype move ' datatype(move)
+	total(p) = total(p) + points(move)
+
+	playmove(move)
+
+	output = 'Move ' moves ': Player ' name(p) ' played ' show.tiles(text(move)) ' for ' points(move) '.'
+.		' The score is now ' name(one) ' ' total(one) ', ' name(two) ' ' total(two) '.'
+
+	show.board(g.board)
+
+	show.grid(g.board)
+
+*	Update rack.
+
+	rack(p) = less(rack(p), lcase(text(move))) take(size(text(move)))
+
+*	Shuffle the tiles so the tile set changes according to the tiles played.
+
+	shuffle()
+
+*	Update lines affected by grid changes to maintain consistency.
+
+	g.alone.lines = lines(g.alone)
+	g.bonus.lines = lines(g.bonus)
+
+	g.lines = lines(g.board)
+
+*	Fold g.lines into lower case so only new moves made later will display in upper case.
+
+	li = 0
+game.fold						
+	g.lines[li = li + 1] = lcase(g.lines[li])	:s(game.fold)
+
+	g.board = grid(g.lines);* rebuild grid.
+							:(game.turn)
+game.end
+
 	define('grid(lines,start)i,r,c,line')		:(grid.end)
 
 *	Construct a grid from a sequence of lines beginning at index *start*,
@@ -600,29 +680,28 @@ grid.c
 grid.done						:(return)
 grid.end
 
-	define('hline(grid,r)')				:(hline.end)
+	define('hline(g,r)')				:(hline.end)
 
-*	Return the horizontal line of a grid corresponding to row r as a string.
+*	Return the horizontal line of a grid *g* corresponding to row *r* as a string.
 
 hline
 	r = +r
-	hline = grid[r,1] grid[r,2] grid[r,3] grid[r,4] grid[r,5] 
-.		grid[r,6] grid[r,7] grid[r,8] grid[r,9] grid[r,10]
-.		grid[r,11] grid[r,12] grid[r,13] grid[r,14] grid[r,15]
+	hline = g[r,1] g[r,2] g[r,3] g[r,4] g[r,5] 
+.		g[r,6] g[r,7] g[r,8] g[r,9] g[r,10]
+.		g[r,11] g[r,12] g[r,13] g[r,14] g[r,15]
 							:(return)
 hline.end
 
 
-	define('insert(line,mov)i,p,c,t')		:(insert.end)
+	define('insert(line,move)i')			:(insert.end)
 
 *	Insert the text of a move into its free list of empty cells in the line of the move.
 
 insert
 	insert = unpack(line)
 insert.1
-	gt(i = i + 1,count(mov))			:s(insert.done)
-	p = free(mov)[i]
-	insert[p] = substr(text(mov),i,1)		:(insert.1)
+	gt(i = i + 1,count(move))			:s(insert.done)
+	insert[free(move)[i]] = substr(text(move),i,1)	:(insert.1)
 insert.done
 	insert = pack(insert)				:(return)
 insert.end
@@ -635,17 +714,18 @@ lcase
 	lcase = replace(s,&ucase,&lcase)		:(return)
 lcase.end
 	
-	define('less(str,ch)before,after')		:(less.end)
+	define('less(str,sub)before,after')		:(less.end)
 
-*	Removes the first instance of character ch in str.
+*	Less removes the first instance of each character in *sub* from *str*, 
+*	where *sub* is a substring of *str*.
 
 less
 	ident(str)					:s(return)
-	str break(ch) . before len(1) rem . after	:f(less.1)
-	less = before after				:(return)
-less.1
-	less = ident(substr(s,1,1),ch) substr(s,2)	:s(return)
-	less = str					:(return)
+	less = str
+less.ch
+	sub len(1) . ch =				:f(return)	
+	less break(ch) . before  ch rem . after
+	less = before after				:(less.ch)
 less.end
 
 	define('lineid(num)')				:(lineid.end)
@@ -656,26 +736,29 @@ lineid
 	lineid = (le(num,15) 'r' lpad(num,2,0), 'c' lpad(num - 15,2,0)) :(return)
 lineid.end
 
-	define('lines(grid)i')				:(lines.end)
+	define('lines(g)i')				:(lines.end)
 
-*	Express the grid as a sequence of lines, with the first 15 consisting of the rows
+*	Express the grid *g* as a sequence of lines, with the first 15 consisting of the rows
 *	and the last 15 consisting of the columns.
 
 lines
 	lines = array(30)
 lines.next
 
-*	Make sure all entries in lines are in lower case, since we enter moves in grid in upper case.
+*	Make sure all entries in lines are in lower case, since we enter moves in g in upper case.
 
 	gt(i = i + 1,15)				:s(return)
-	lines[i] = lcase(hline(grid,i))
-	lines[i + 15] = lcase(vline(grid,i))		:(lines.next)
+	lines[i] = lcase(hline(g,i))
+	lines[i + 15] = lcase(vline(g,i))		:(lines.next)
 lines.end
 
-	define('open(tiles)best.score,best.word,n,w,start,key,permi')	:(open.end)
+	define('open(tiles)perm,perms,permi,oscore,free,offset,i,highest,lower,best,n,w,start,score,move')	:(open.end)
 
 *	Determine best opening move. At least one letter in this move must be in the center square (8,8).
 *	The only bonus available is double word, for any word of more than four characters.
+
+*	Find the move the highest score. Given two moves with the same score, prefer the one with
+*	the lowest tile cost.
 *
 *	The return value has the form 'm s' where m is the move and s is its score.
 *
@@ -683,23 +766,57 @@ lines.end
 
 open
 	n = 0;* number of tiles to play
-	best = 0;* best score
+	highest = lowest = 0;* best score, lowest cost
 	start = 8;* assume word will start in column 8
 
-open.1	le(n = n + 1,7)					:f(return)
+	
+	tiles break('s')				:f(open.n)
+	tiles = less(tiles,'s')
+
+open.n	gt(n = n + 1,6)					:s(open.done)
+*	play at most six tiles for now.
 	kind = size(tiles) '?' n
+*	output = 'open.n kind ' kind
 	perms = g.permutations[kind]
 	permi = 0
-open.2
+open.word
 *	get next word, check that valid, then see if new high score
-	perm = perms[permi = permi + 1]			:f(open.1)
+	perm = perms[permi = permi + 1]			:f(open.n)
 	w = replace(perm,substr('1234567',1,size(tiles)),tiles)
-	checkword(w)					:f(open.2)
+	checkword(w)					:f(open.word)
 	checkwords = checkwords + 1
-	le(oscore(w),best.score)			:s(open.2)
-	best.word = w
-	best.score = oscore(w)
-	open =  best.word ' ' best.score		:(open.2)
+	score = oscore(w)
+
+*	Add the first word found to set *highest* and *lowest*
+	eq(highest,0)					:s(open.new)
+
+	lt(score,highest)				:s(open.word)
+	gt(score,highest)				:s(open.new)
+
+*	Here if current best and new move have same score. Prefer the one with the lowest cost.
+
+	lt(cost(w),lowest)				:s(open.new)
+
+open.new
+	highest = score
+	lowest = cost(w)
+	best = w					:(open.word)
+open.done
+
+*	Start word at position 8, unless word size greater than five, in which case move it to the left, but
+*	making sure move still covers double-word cell at position twelve.
+
+	offset = (lt(size(best,5) 0, 5 - size(best)))
+
+*	Initialize free array for move.
+
+	free = array(size(best))
+	i = 0
+open.free
+	free[i = i + 1] = 7 + i  + offset			:s(open.free)
+
+	open = move(8 + offset,size(best),free,ucase(best),highest) :(return)
+
 open.end
 
 	define('oscore(word)i,c')			:(oscore.end)
@@ -715,16 +832,15 @@ oscore.finish
 	oscore = oscore + oscore			:(return)
 oscore.end
 
-	define('pack(chars),c,i')			:(pack.end)
+	define('pack(chars),i')			
+	:(pack.end)
 
-*	Pack an array of characters into a line
+*	Pack the array of characters *chars* into a line.
 
 pack
-	output = ne(+prototype(chars),15) ' ERROR - pack argument not length 15'	:s(end)
-	pack = 	chars[1] chars[2] chars[3] chars[4] chars[5]
-.		chars[6] chars[7] chars[8] chars[9] chars[10]
-.		chars[11] chars[12] chars[13] chars[14] chars[15]
-							:(return)
+
+pack.ch
+	pack = pack chars[i = i + 1]			:f(return)s(pack.ch)
 pack.end
 
 	define('place(txt,rack)')			:(place.end)
@@ -745,7 +861,7 @@ placecell
 placecell.ch
 	w len(1) . ch =					:f(return)
 	g.board[r, c = c + 1] = ucase(ch)
-	g.bonus[r, c] = 1;* reset bonus for this cell to that of tile itself
+	g.bonus[r, c] = ' ';* indicate bonus no longer available
 *	Mark self and adjoining squares as no longer alone
 	g.alone[r,c] = ' '    ;* self
 	g.alone[r - 1,c] = ' ';* cell to the north
@@ -756,40 +872,33 @@ placecell.ch
 placecell.end
 
 
-	define('placemove(move)txt,i,ch')			:(placemove.end)
+	define('playmove(move)txt,i,ch')			:(playmove.end)
 
 *	Play move *move*, updating the board and related objects.
 
-placemove
-*	output = 'placemove ' show.move(move)
+playmove
+*	output = 'playmove ' show.move(move)
 	txt = text(move)
-placemove.ch
-	txt len(1) . ch =				:f(placemove.done)
-*	output = 'placemove char<' ch '>'
+playmove.ch
+	txt len(1) . ch =				:f(return)
+*	output = 'playmove char<' ch '>'
 	i = i + 1;* position in text
 	id = id(move)
-	gt(id,15)					:s(placemove.col)
+	gt(id,15)					:s(playmove.col)
 
 *	Here to play character in row
 
 *	output = 'calling placecell row ' id ' ' free(move)[i] ' ' ch
 	placecell(id,free(move)[i],ch)			
-							:(placemove.ch)
-placemove.col
+							:(playmove.ch)
+playmove.col
 
 *	Here to play character in column
 
 *	output = 'calling placecell col ' id ' ' free(move)[i] ' ' ch
 	placecell(free(move)[i],id - 15,ch)		
-							:(placemove.ch)
-placemove.done
-	g.alone.lines = lines(g.alone)
-	g.lines = lines(g.board);* update g.lines so consistent with updated board.
-	g.bonus.lines = lines(g.bonus)
-							:(return)
-placemove.end
-	
-	
+							:(playmove.ch)
+playmove.end
 	
 	define('prefix(str,pre)word')			:(prefix.end)
 prefix
@@ -806,8 +915,8 @@ prefix.end
 
 	define('random(n)')				:(random.end)
 
-*	Return integer uniformly distributed in 1,2,...,n. If n=0 returns real uniformly distributed
-*	in the interval [0,1].
+*	Return integer uniformly distributed in 1,2,...,n. 
+*	If n=0 returns real uniformly distributed in the interval [0,1].
 *	The Algorithm is based in that in section 16.1 of "Algorithms in SNOBOL4,"
 *	James F. Gimpel, John Wiley and Sons, 1976.
 
@@ -818,7 +927,7 @@ random
 							:(return)
 random.end
 
-	define('scan(pair,rack)num,line,alone,nopen,ai,first,max,n,last,p,move,moves,fi,lonely,avail,scanned')	:(scan.end)
+	define('scan(pair,rack)num,line,alone,nopen,ai,first,max,n,last,p,move,moves,fi,lonely,avail')	:(scan.end)
 
 *	Scan the given line to find the places where a valid move can be made. At least one cell in 
 *	a move must be adjacent to an occupied cell.  *line* is the line to be scanned, and *num* gives its
@@ -876,7 +985,8 @@ scan.next.n
 	substr(lonely,ai,n) ? span('1')		:s(scan.next)
 	move = move(num,n,subarray(avail,ai,n))
 	scan = ident(scan) table()
-	scan[scanned = scanned + 1] = move		:(scan.next.n)
+	count.scanned = count.scanned + 1
+	scan[count.scanned] = move			:(scan.next.n)
 scan.done
 	ident(scan)					:s(freturn)
 	scan = convert(scan,'array')				
@@ -935,6 +1045,7 @@ score.char
 	gt(i = i + 1,n) 				:s(score.char.done)
 	ch = substr(word,i,1)
 	bonus = +substr(bonusline,i,1)
+	bonus = ident(bonus,' ') 1
 	val = +g.value[ch]
 *	output = ne(g.showscore) ch ' ' val ' ' bonus
 
@@ -957,6 +1068,41 @@ score.error
 *	output = 'error scoring line with no new move ' line(pair) :(end)
 score.end
 
+	define('show(rack,player)')			:(show.end)
+
+*	Show state of board, alone and value grids before start of move.
+
+show
+	output = 'rack for player ' player ': ' rack
+
+	show.board(g.board,'player ' player ' to play')
+	show.grid(g.board)
+	show.lines(g.lines)
+*	show.board(g.bonus,'bonus')
+	show.grid(g.alone)
+							:(return)
+show.end
+
+	define('shuffle()tiles,n,r1,r2,ch')		:(shuffle.end)
+
+*	Shuffle the remaining tiles by randomly swapping two tiles several times.
+
+shuffle	
+	tiles = unpack(g.tiles)
+	n = size(g.tiles)  * 2
+	lt(n,5)						:s(shuffle.done)
+shuffle.next
+	le(n = n - 1)					:s(shuffle.done)
+	r1 = random(n); r2 = random(n)
+	eq(r1,r2)					:s(shuffle.next)
+	ch = tiles[r1]
+	tiles[r1] = tiles[r2]	
+	tiles[r2] = ch					:(shuffle.next)
+shuffle.done
+	g.tiles = pack(tiles)
+							:(return)
+shuffle.end
+
 	define('subarray(ara,start,len)i')		:(subarray.end)
 
 *	Like substr, but returns the sub-array of *ara* starting at element *start* and
@@ -969,41 +1115,39 @@ subarray.1
 	subarray[i] = copy(ara[start + i - 1])		:(subarray.1)		
 subarray.end
 
-	define('take(n)r,ch,consonants')			:(take.end)
+	define('take(n)')				:(take.end)
 
-*	Remove at most *n* random tiles, or as many as remain,  
-*	from the tileset and return them as a string.
+*	Take *n* tiles from the tileset, unless there are fewer than *n* tiles left,
+*	in which case return the reamining tiles.
+
+take
+	n = gt(n,size(g.tiles)) size(g.tiles)
+	take = substr(g.tiles,1,n)
+	g.tiles = substr(g.tiles, n + 1)
+							:(return)
+take.end
 
 *	The initial tileset has many more vowels than consonants, so if we
 *	just pick them randomly from the start, we will get racks with
-*	almost all vowels. To avoid this, we always take at least one consonant,
-*	and take two if n is greater than 5.
-
-take	
-	n = le(size(g.tileset),n) size(g.tileset)
-	n = n + 1
-	consonants = (gt(n,5) +2, +1)
-take.ch
-	le(n = n - 1)					:s(return)
-take.r
-	r = random(size(g.tileset))
-	ch = substr(g.tileset,r,1)
-	ch any('aeiou')					:s(take.vowel)f(take.consonant)
-take.vowel
-
-*	If see vowel and need a consonant, try another random tile.
-
-	ne(consonants)					:s(take.r)f(take.add)
-
-take.consonant
-	consonants = gt(consonants) consonants - 1
-take.add
-*	output = 'take ' r ' ' ch ' ' size(g.tileset) ' ' g.tileset
-	take = take ch
-	g.tileset = less(g.tileset,ch)			
-							:(take.ch)
-							:(take.1)
-take.end
+*	almost all vowels. To avoid this, we always shuffle at least one consonant,
+*	and shuffle two if n is greater than 5.
+*	g.tiles = kk
+*	
+*	n = le(size(g.tiles),n) size(g.tiles)
+*	n = n + 1
+*	consonants = (gt(n,5) +2, +1)
+*	vowels = 'aeiou'
+*	consonants = less(g.tiles) vowels
+*	
+*	ch any('aeiou')					:s(shuffle.vowel)f(shuffle.consonant)
+*shuffle.vowel
+*
+**	If see vowel and need a consonant, try another random tile.
+*
+*	ne(consonants)					:s(shuffle.r)f(shuffle.add)
+*
+*shuffle.consonant
+*	consonants = gt(consonants) consonants - 1
 
 	define('ucase(s)')				:(ucase.end)
 
@@ -1015,23 +1159,24 @@ ucase.end
 	
 	define('unpack(line),c,i')			:(unpack.end)
 
-*	Unpack the characters of line to array of characters.
+*	Unpack the characters of line *line* to an array of characters.
 
 unpack
-	unpack = array(15)
-	output = ne(size(line),15) ' ERROR - unpack argument not length 15, but is ' size(line)	:s(end)
-unpack.1
-	unpack[i = i + 1] = substr(line,i,1)		:s(unpack.1)f(return)
+	unpack = array(size(line))
+unpack.ch
+	c = substr(line,i = i + 1,1)			:f(return)
+	unpack[i] = c					:(unpack.ch)
 unpack.end
-	define('vline(grid,c)')				:(vline.end)
 
-*	Return the vertical line of a grid corresponding to column c as a string.
+	define('vline(g,c)')				:(vline.end)
+
+*	Return the vertical line of a grid *g* corresponding to column *c* as a string.
 
 vline
 	c = +c
-	vline = grid[1,c] grid[2,c] grid[3,c] grid[4,c] grid[5,c] 
-.		grid[6,c] grid[7,c] grid[8,c] grid[9,c] grid[10,c]
-.		grid[11,c] grid[12,c] grid[13,c] grid[14,c] grid[15,c]
+	vline = g[1,c] g[2,c] g[3,c] g[4,c] g[5,c] 
+.		g[6,c] g[7,c] g[8,c] g[9,c] g[10,c]
+.		g[11,c] g[12,c] g[13,c] g[14,c] g[15,c]
 							:(return)
 vline.end
 
@@ -1072,4 +1217,5 @@ words.1
 words.done
 	words = convert(words,'array')			:(return)
 words.end
+
 
