@@ -11,7 +11,7 @@ show.board.r
 	c = 0
 show.board.c
 	gt(c = c + 1,15)				:s(show.board.margin)
-	ch = board[r,c]
+	ch = ucase(board[r,c])
 	b = g.bonus[r,c]
 	differ(ch,' ')					:s(show.board.ch)
 
@@ -148,20 +148,29 @@ show.lines.titled
 	output = lpad(lineid(i),2) ' ' replace(line,' ','.') :(show.lines.n)
 show.lines.end
 
-	define('show.move(move,title)f,i') 			:(show.move.end)
+	define('show.move(move,title)f,i,ff') 			:(show.move.end)
 
 *	Show a move.
 
 show.move
+	output = 'show.move ' title
 	gt(i = i + 1,count(move))			:s(show.move.f)
-	f = append(f,free(move)[i],',')			:s(show.move);* list the free cells
+	ff = free(move)[i]
+	ident(datatype(ff,'string'))	:s(show.fail)
+*	f = append(f,free(move)[i],',','B')			:s(show.move);* list the free cells
+	f = append(f,free(move)[i],',','B')			:s(show.move);* list the free cells
 show.move.f
+	f break(',') ',' ','				:s(show.funny)
 	show.move = lineid(id(move)) ':' count(move) ':' f ':'
 	show.move = differ(text(move)) show.move text(move) 
 	show.move = differ(perm(move)) show.move ':' perm(move)
 	show.move = differ(points(move)) show.move  '+' points(move)
 *	show.move = differ(fid(move)) show.move ':' fid(move)
 							:(return)
+show.funny
+	output = 'funny show.move ' f			:(end)
+show.fail
+	output = 'free ff failure '			:(end)
 show.move.end
 
 	define('show.moves(moves,title)i,move,text')	:(show.moves.end)
@@ -173,7 +182,7 @@ show.moves
 	output = 'MOVES ' title
 show.moves.loop
 	move = moves[i = i + 1,2]			:f(return)
-	output = char(9) lpad(i,2) ' ' show.move(move) :(show.moves.loop)
+	output = char(9) lpad(i,2) ' ' show.move(move,'J') :(show.moves.loop)
 show.moves.end
 	
 	define('show.pair(pair)')			:(show.pair.end)
@@ -218,5 +227,5 @@ show.player.end
 
 show.tiles
 	gt(i = i + 1,size(tiles))			:s(return)
-	show.tiles = append(show.tiles, substr(tiles,i,1))	:(show.tiles)
+	show.tiles = append(show.tiles, ucase(substr(tiles,i,1)),'C')	:(show.tiles)
 show.tiles.end

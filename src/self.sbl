@@ -9,16 +9,12 @@
 
 	init()
 
+	maxmoves = 4
 	maxmoves = 80
-	maxmoves = 20
 
 	one = player('Jane Doe')
 	two = player('John Doe')
-	game(one,two,maxmoves)
-	output = 'Game over:'
-	output =  'Player ' name(one) ' scored ' total(one) ' points.'
-	output =  'Player ' name(two) ' scored ' total(two) ' points.'
-		:(done)	
+	game(one,two,maxmoves)				:(done)	
 	
 nomove
 	output =  ' player ' name(p) ' has no move, pass.';* fall through to player one for their turn.
