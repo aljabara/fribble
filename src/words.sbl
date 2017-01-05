@@ -7,34 +7,26 @@
 *	Here are the global variables. Each has a name starting with 'g.' Their initial value is set in the
 *	procedure *init()*.
 
-*	g.board, array('15,15'), the playing board. Each entry is blank (' ') for unplayed cell, or is the letter played.
-
-*	g.empty.board is a copy of the initial g.board (a board with no cells occupied).
-	
 *	A play is a sequence of one or more cells, represented as an array.  The cells are ordered
 *	from left to right for a horizontal play, top to bottom for a vertical play.
 
-*	g.dict, array(15), is an array of hashtables  that are non-null for words in the dictionary.
 
 *	g.alone, array('15,15') tracks the *alone* cells in the board. A cell is *alone* if it is empty and all its
 *	neighbors are empty. A move made after the first move cannot consist only of cells that are alone. 
 *	That is, at least one tile in a valid move must be adjacent to a tile played in a previous move.
+*	g.board, array('15,15'), the playing board. Each entry is blank (' ') for unplayed cell, or is the letter played.
 
 *	g.alone.lines, array(30), is the array of lines defined by the rows and columns of the alone grid.
 
+*	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
+
+*	g.dict, array(15), is an array of hashtables  that are non-null for words in the dictionary.
+
+*	g.empty.board is a copy of the initial g.board (a board with no cells occupied).
+
+*	g.found counts number of valid moves that were found.
+	
 *	g.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
-
-*	g.permutations, a table of the permutations of n=1..7 things taken 1..k at a time.
-*	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time, as a string with
-*	entries separated by a space.
-
-*	g.permutations.count, a table giving the number of permutations of for a given *n* and *k*.
-
-*	g.rack, a string containing the current rack. Plays are made using the characters from the rack.
-
-*	g.tiles, a string containing all the characters in the initial bag of characters.
-
-*	g.value, a map from characters to the tile value of that character.
 
 *	A move is a sequence of empty cells in a row or column such that at least one cell in the sequence 
 *	is adjacent to an already occupied cell:
@@ -43,8 +35,6 @@
 *		*free* is an array of dimension *count* giving the empty cells to be filled by this move;
 *		*text* is the string of tiles of the move; and
 *		*points* is the number of points won by playing this move.
-
-	data('move(id,count,free,text,points,perm,fid)')
 
 *	A player is represented 
 
@@ -64,21 +54,42 @@
 *		4 for double word, and
 *		5 for triple word.
 
-*	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
+	data('move(id,count,free,text,points,perm,fid)')
 
 *	A paired line consists of a line number and an associated line. It is used when it is necessary
 *	to pass a line of text to a procedure along with line number from where it was derived.
 
 		data('pair(num, line)')
 
+*	g.move, the number of the current move.
+
+*	g.permutations, a table of the permutations of n=1..7 things taken 1..k at a time.
+*	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time, as a string with
+*	entries separated by a space.
+
+*	g.permutations.count, a table giving the number of permutations of for a given *n* and *k*.
+
+*	g.rack, a string containing the current rack. Plays are made using the characters from the rack.
+
 *	g.random_var is used by random() to compute the next pseudo-random value.
 *	Gimpel uses integer here, but need to have real.
 
 	g.random_var = 1
 
-*	g.found counts number of valid moves that were found.
 *	g.showscore is used to enable tracing of scoring by setting it to nonzero value
-	g.showscore = 1
+
+	g.showscore =
+
+*	g.tiles, a string containing all the characters in the initial bag of characters.
+
+*	g.trace, if not null, begin tracing at the start of move g.trace.
+
+	g.trace = 2
+	g.trace =
+
+*	g.tracing, set nonzero when tracing initiated by *g.trace* begins.
+
+*	g.value, a map from characters to the tile value of that character.
 
 	&anchor = &trim = 1
 
@@ -88,6 +99,7 @@
 
 *	Initialize global variables.
 
+*INIT*
 init
 	init.main(dictfile,skip)			:(return)
 
@@ -133,6 +145,7 @@ init.main.end
 *		4 for double word, and
 *		5 for triple word.
 
+*INIT.BONUS*
 init.bonus
 	g.bonus = array('15,15',+1)
 	s = 	'5 0104 3 0107 3 0109 5 0112 2 0203 4 0206 4 0210 2 0213 '
@@ -154,6 +167,7 @@ init.bonus.end
 
 *	Initialize the global dictionary g.dict.
 
+*INIT.DICT*
 init.dict
 
 *	Set hash table sizes according to output of ../study/gendict.sbl
@@ -203,7 +217,7 @@ init.dict.end
 
 *	Initialize the list of possible permutations from a file.
 
-*PERM
+*INIT.PERM*
 init.perm
 	g.permutations = table(7)
 	g.permutations.count = table(100)
@@ -224,20 +238,22 @@ init.perm.err
 	output = 'init.perm error, line ' lines '  '  line :(freturn)
 init.perm.end
 
-	define('init.tileset()s,n')			:(init.tileset.end)
+	define('init.tileset()ch,n,s')			:(init.tileset.end)
 
 * 	Initialize set of tiles, ignoring the 'blank' tiles for now.
 *	Initialize value map from letters to value, ignoring ' ' for now
 
+*INIT.TILESET*
 init.tileset
 	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
 	g.tiles =
-init.tileset.1
-	s break(' ') . c ' ' break(' ') . n ' ' =	:f(return)
-	g.tiles = g.tiles dupl(c,n)			:(init.tileset.1)
+init.tileset.ch
+	s break(' ') . ch ' ' break(' ') . n ' ' =	:f(return)
+	g.tiles = g.tiles dupl(ch,n)			:(init.tileset.ch)
 init.tileset.end
 
 	define('init.value()s,c')			:(init.value.end)
+*INIT.VALUE*
 init.value
 	g.value = table(52)
 	s = &lcase &ucase
@@ -263,8 +279,9 @@ init.value.end
 
 *	Append word *w* to string *str*, prefixing with *ch* if *str* is not null, using space if *ch* is null.
 
+*APPEND*
 append
-	ident(ch)	:s(append.fail)
+*	ident(ch)	:s(append.fail)
 	ch = ident(ch) ' '
 	append = ident(str) w				:s(return)
 	append = str ch w				:(return)
@@ -275,6 +292,8 @@ append.end
 	define('available(line)blanks,c,i')		:(available.end)
 
 *	Return array containing the indexes of the blank cells in line. Fails if no blanks.
+
+*AVAILABLE*
 available
 	c = substr(line, i = i + 1, 1)			:f(available.1)
 	differ(c,' ')					:s(available)
@@ -294,6 +313,7 @@ available.end
 
 *	Count number of blanks in line.
 
+*BLANKS*
 blanks
 	line len(1) . c =				:f(return)
 	blanks = ident(c,' ') blanks + 1		:(blanks)
@@ -301,6 +321,7 @@ blanks.end
 
 	define('bonus.lines()i')			:(bonus.lines.end)
 
+*BONUS.LINES*
 bonus.lines
 	bonus.lines = array(30)
 bonus.lines.next
@@ -313,20 +334,21 @@ bonus.lines.end
 
 *	Succeeds if all the words in the line are in the dictionary, fails otherwise.
 
+*CHECKLINE*
 checkline
 	count.checkline = count.checkline + 1
-*	output = 'checking line ' line
+*	output = gt(g.move,1) 'checking line ' line
 	line span(' ') =
 	empty(line)					:s(return)
 	iline = line
 	line = line ' ';* to simplify breaking out words.
 checkline.1
 	line span(' ') =
-*	ident(line)					:s(checkline.done)
+	ident(line)					:s(checkline.done)
 	line break(' ')  . word ' ' =			:f(checkline.done);* if line exhausted
 	eq(size(word),1)				:s(checkline.1)
 	checkword(word)					:f(freturn)s(checkline.1)
-	output = 'checkword VALID<' word '>'  :(checkline.1)
+*	output = gt(g.move,1) 'checkword VALID<' word '>'  :(checkline.1)
 			:(checkline.1)
 
 	checkword(word)					:s(checkline.1)
@@ -334,7 +356,7 @@ checkline.1
 checkline.failed
 				:(freturn)
 checkline.done
-*	output = 'checkline VALID ' show.line(iline)
+*	output = gt(g.move,1) 'checkline VALID ' iline
 							:(return)
 checkline.end
 
@@ -342,6 +364,7 @@ checkline.end
 
 *	Succeeds if w is in the global dictionary, fails otherwise.
 
+*CHECKWORD*0
 checkword
 	eq(size(w),1)					:s(return)
 	count.checkword = count.checkword + 1
@@ -358,9 +381,9 @@ checkword.end
 
 *	Return crossing line of p-th cell in move *move*. *ch* gives tile to be played.
 
+*CLINE*
 cline
 	count.cline = count.cline + 1
-*	text(move) = ucase(place(text(move),rack))
 
 	gt(id(move),15)					:s(cline.col)
 	r = id(move)
@@ -377,7 +400,7 @@ cline.col
 *	output = 'cline ' num(move) ' p ' p '  c ' c
 	cline = pair(p,line)				:(cline.done)
 cline.done
-*	output = 'CLINE ' show.move(move,'A') ' p ' p  "'" ch "'" ' -> ' show.pair(cline) ' ' show.hex(line(cline))
+*	output = 'CLINE ' show.move(move) ' p ' p  "'" ch "'" ' -> ' show.pair(cline) ' ' show.hex(line(cline))
 							:(return)
 cline.end
 
@@ -386,6 +409,7 @@ cline.end
 
 *	Return the cost of *text*, defined as the sum of the values of the tiles in *text*.
 
+*COST*
 cost
 	text len(1) . ch =				:f(return)
 	cost = cost + g.value[ch]			:(cost)
@@ -395,6 +419,7 @@ cost.end
 
 *	Output the descriptive text *text* and value *n* of a counter.
 
+*COUNTER*
 counter
 	output = lpad(text,30) lpad(count,7)		:(return)
 counter.end
@@ -403,6 +428,7 @@ counter.end
 
 *	Output the collected counter metrics.
 
+*COUNTERS*
 counters
 	output = 
 	output = 'Performance metrics:'
@@ -449,7 +475,7 @@ empty.end
 
 *	Find returns the best move as defined above, or null if no valid move is found.
 
-*FIND
+*FIND*
 find
 	lines = copy(g.lines)
 	inlines = copy(lines)
@@ -461,19 +487,21 @@ find.line
 	gt(num = num + 1,30)				:s(find.done)
 	line = lines[num]
 	moves = scan(pair(num,line),rack)			:f(find.line)
-	ne(g.showscore) differ(moves) show.moves(moves,'Scan line ' lpad(num,3),2)
+*	ne(g.showscore) differ(moves) show.moves(moves,'Scan line ' lpad(num,3),2)
 	mi = 0
 find.move
 	count.moves = count.moves + 1
 	move = moves[mi = mi + 1,2]			:f(find.line)
-	output = ne(g.showscore) ' find.move mi ' mi ' ' show.move(move,'find','B')
+*	output = ne(g.showscore) ' find.move mi ' mi ' ' show.move(move,'find')
 	points(move) = 
 	perms = g.permutations[size(rack) '?' count(move)]
+	ident(perms)					:s(find.move)
 	permi = 0
 	
 find.perm
 	score = fi = 0
 	perm = perms[permi = permi + 1]			:f(find.move)
+	ident(perm)					:s(find.move)
 
 *	output = 'findperm ' perm
 
@@ -489,26 +517,28 @@ find.perm
 	text(move) = perm;* insert permutation digits into free cells
 	iline = insert(lines[num],move);* line with permutation digits entered
 	checkline(place(iline,rack))			:f(find.perm)
-
 	perm(move) = perm
 
 *	Move is valid on this line, so check validity on crossing lines.
 *	Save the valid lines in *flines* for scoring if move proves valid.
 
-	text(move) = ucase(place(text(move),rack))
-	output = 'find valid move ' show.move(move,'C')
+	text(move) = place(text(move),rack)
+*	output = 'find valid move ' show.move(move)
 	flines[fi = fi + 1] =  pair( id(move), insert(lines[num],move))
 	i = 0
 
 *	Check the crossing lines to make sure they are valid.
 
 find.cross
-	output = 'find cross '
+*	output = 'find cross '
 	count.cross = count.cross + 1
 	p = free(move)[i = i + 1]			:f(find.cross.done)
 	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1),rack)
 	checkline(line(cline))				:f(find.perm)
-	text(move) = ucase(place(text(move),rack))
+
+*	output = 'valid checkline ' line(cline)
+
+	text(move) = place(text(move),ucase(rack))
 	flines[fi = fi + 1] = cline
 *				pair(
 *.		(le(id(move),15) id(move) + 15, id(move) - 15),
@@ -516,16 +546,15 @@ find.cross
 					:(find.cross)
 	
 find.cross.done
-	output = 'find scoring line'
 *	Score the line by summing the scores of the lines saved in flines.
 	
 	count.valid = count.valid + 1
 	move = copy(move)
-	ne(g.showscore) show.play(move,show.move(move,'D'))
-	ne(g.showscore) show.move(move,'E')
+*	ne(g.showscore) show.play(move,show.move(move))
+*	ne(g.showscore) show.move(move)
 	points(move) = +findscore(flines,fi)	
 	g.found = g.found + 1
-	output = 'find found ' show.move(move,'F')
+*	output = 'find found ' show.move(move)
 
 	lt(points(move),highest)			:s(find.perm)
 	gt(points(move),highest)			:s(find.new)
@@ -552,15 +581,14 @@ find.new
 	highest = points(move)
 	lowest = cost(text(move))
 	fi = 0;* reset for next permutation
-	output = 'find new best move ' show.move(move,'G')
+*	output = 'find new best move ' show.move(move)
 							:(find.perm)
 find.done
-	output = 'datatype find.done ' datatype(find)
-	output = 'find found move ' show.move(find,'H')
+	ident(find)					:s(find.fail)
 							:(return)	
 find.fail
 
-	output = 'find failed '
+*	output = 'find failed '
 
 *	If *find* is still null, then no move was found, so try to swap three tiles.
 *	In either event, take the failure return.
@@ -578,6 +606,7 @@ find.end
 *	the words containing an upper-case character. At most one word in each line of the new grid will
 *	contain an upper-case character.
 
+*FINDSCORE*
 findscore
 
 	i = 0
@@ -601,8 +630,8 @@ findscore.end
 
 *	Play a game of fribble. *one* and *two* are players. *max* is the maximum number of moves.
 
+*GAME*
 game
-*GAME
 
 	players = array(2)
 	players[1] = one
@@ -615,17 +644,21 @@ game
 game.round
 	i = 0
 game.turn
+	g.move = g.move + 1
+
+	differ(g.trace) tracer()
+
 	p = players[i = i + 1]				:f(game.round)
-	le(moves = moves + 1, max)			:s(game.continue)
+	le(g.move, max)			:s(game.continue)
 
 	output = 'Too many moves ( ' moves ').'		:(game.done)
 
 game.continue
-	output = 'Move ' moves ' for player ' name(p) ', with tiles ' show.tiles(rack(p)) '.'
+	output = 'Move ' g.move ' for player ' name(p) ', with tiles ' show.tiles(rack(p),'A') '.'
 
-	output = 'calling find'
-	move = (eq(moves,1) open(rack(p)), find(rack(p))) :s(game.move)
-	output = 'called find'
+*	output = 'calling find'
+	move = (eq(g.move,1) open(rack(p)), find(rack(p))) :s(game.move)
+*	output = 'called find'
 
 *	Here if no move found, in which case the return value is a set of swapped tiles.
 *	If *move* is null, then pass.
@@ -639,17 +672,19 @@ game.continue
 	output = 'Player ' name(one) ' passes.'		:(game.turn)
 	
 game.swap
-	rack(p) = move
-	output = 'Player ' name(p) ' swapped tiles.'	:(game.turn)
+	rack(p) = swap(rack(p),3)
+	output = 'Player ' name(p) ' swapped tiles.'	
+	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p))
+							:(game.turn)
 
 game.move
-	output = 'have move'
+*	output = 'have move'
 	total(p) = total(p) + points(move)
 
 	playmove(move)
 
-	output = 'played move'
-	output = name(p) ' played ' show.tiles(text(move)) ' for ' points(move) '.'
+*	output = 'played move'
+	output = name(p) ' played ' show.tiles(text(move),'B') ' for ' points(move) '.'
 .		' The score is now ' name(one) ' ' total(one) ', ' name(two) ' ' total(two) '.'
 
 	show.board(g.board)
@@ -657,15 +692,21 @@ game.move
 	show.grid(g.board)
 
 *	Update rack.
-	output =  'updating rack'
+*	output =  'updating rack'
 
-	rack(p) = less(rack(p), lcase(text(move))) take(size(text(move)))
+	rack(p) = less(rack(p), lcase(text(move))) take(size(text(move))) :s(game.shuffle)
+
+*	Here if can't take any new tiles, so fail for now.
+
+	output = 'out of tiles, end game. '		:(game.done)
+
+game.shuffle
 
 *	Shuffle the tiles so the tile set changes according to the tiles played.
+* Not for now, maintain repeatability
+*	shuffle()
 
-	shuffle()
-
-	output = 'shuffled'
+*	output = 'shuffled'
 *	Update lines affected by grid changes to maintain consistency.
 
 	g.alone.lines = lines(g.alone)
@@ -681,7 +722,7 @@ game.fold
 
 *	Rebuild board since lines have changed.
 
-	output = 'rebuilding board'
+*	output = 'rebuilding board'
 	g.board = grid(g.lines)				:(game.turn)
 game.done						
 	output = 'Game over:'
@@ -695,6 +736,7 @@ game.end
 *	Construct a grid from a sequence of lines beginning at index *start*,
 *	(1..15 for rows, 16..30 for columns.
 
+*GRID*
 grid
 	grid = array('15,15',' ')
 	start = ident(start) +1
@@ -731,6 +773,7 @@ grid.end
 
 *	Return the horizontal line of a grid *g* corresponding to row *r* as a string.
 
+*HLINE*
 hline
 	r = +r
 	hline = g[r,1] g[r,2] g[r,3] g[r,4] g[r,5] 
@@ -740,15 +783,17 @@ hline
 hline.end
 
 
-	define('insert(line,move)i')			:(insert.end)
+	define('insert(line,move)i,utext')		:(insert.end)
 
 *	Insert the text of a move into its free list of empty cells in the line of the move.
 
+*INSERT*
 insert
 	insert = unpack(line)
+	utext = ucase(text(move))
 insert.1
 	gt(i = i + 1,count(move))			:s(insert.done)
-	insert[free(move)[i]] = substr(text(move),i,1)	:(insert.1)
+	insert[free(move)[i]] = substr(utext,i,1)	:(insert.1)
 insert.done
 	insert = pack(insert)				:(return)
 insert.end
@@ -757,6 +802,7 @@ insert.end
 
 *	Convert argument to lower case.
 
+*LCASE*
 lcase
 	lcase = replace(s,&ucase,&lcase)		:(return)
 lcase.end
@@ -779,6 +825,7 @@ less.end
 
 *	Returns row or column id corresponding to line number *num*.
 
+*LINEID*
 lineid
 	lineid = (le(num,15) 'r' lpad(num,2,0), 'c' lpad(num - 15,2,0)) :(return)
 lineid.end
@@ -788,6 +835,7 @@ lineid.end
 *	Express the grid *g* as a sequence of lines, with the first 15 consisting of the rows
 *	and the last 15 consisting of the columns.
 
+*LINES*
 lines
 	lines = array(30)
 lines.next
@@ -811,7 +859,9 @@ lines.end
 *
 *	There are seven tiles, so we just try all permutations of length one up to seven.
 
+*OPEN*
 open
+	output = 'enter open'
 	n = 0;* number of tiles to play
 	highest = lowest = 0;* best score, lowest cost
 	start = 8;* assume word will start in column 8
@@ -823,13 +873,13 @@ open
 open.n	gt(n = n + 1,6)					:s(open.done)
 *	play at most six tiles for now.
 	kind = size(tiles) '?' n
-*	output = 'open.n kind ' kind
-	perms = g.permutations[kind]
+	perms = g.permutations[kind]			:f(open.n)
 	permi = 0
 open.word
 *	get next word, check that valid, then see if new high score
 	perm = perms[permi = permi + 1]			:f(open.n)
 	word = replace(perm,substr('1234567',1,size(tiles)),tiles)
+*	output = 'kind ' kind ' perm ' perm ' word ' word
 	checkword(word)					:f(open.word)
 	checkwords = checkwords + 1
 
@@ -851,7 +901,9 @@ open.word
 open.new
 	highest = score
 	lowest = cost(word)
-	best = word					:(open.word)
+	best = word					
+	output = 'updating move ' best ' ' highest ' ' lowest
+							:(open.word)
 open.done
 
 *	Start word at position 8, unless word size greater than five, in which case move it to the left, but
@@ -866,7 +918,7 @@ open.done
 open.free
 	free[i = i + 1] = 7 + i  + offset			:s(open.free)
 
-	open = move(8 + offset,size(best),free,ucase(best),highest) :(return)
+	open = move(8 + offset,size(best),free,best,highest) :(return)
 
 open.end
 
@@ -877,6 +929,7 @@ open.end
 *	a third of the words in the dictionary are plurals. Give 's' a value of 5 for
 *	the purpose of the sort.
 
+*ORDER*
 order
 	order = le(size(tiles),2) tiles					:s(return)
 	chars = unpack(tiles)
@@ -907,6 +960,7 @@ order.end
 
 *	Pack the array of characters *chars* into a line.
 
+*PACK*
 pack
 
 pack.ch
@@ -917,8 +971,9 @@ pack.end
 
 *	Place the permutation digits in *txt* with the corresponding tiles from *rack*.
 
+*PLACE
 place
-	place = replace(txt,substr('1234567',1,size(rack)),rack) 	
+	place = replace(txt,substr('1234567',1,size(rack)),rack)
 								:(return)
 place.end
 
@@ -926,11 +981,12 @@ place.end
 
 *	Add a word to the board.
 
+*PLACECELL*
 placecell
 	c = c - 1
 placecell.ch
 	w len(1) . ch =					:f(return)
-	g.board[r, c = c + 1] = ucase(ch)
+	g.board[r, c = c + 1] = ch
 	g.bonus[r, c] = ' ';* indicate bonus no longer available
 *	Mark self and adjoining squares as no longer alone
 	g.alone[r,c] = ' '    ;* self
@@ -946,8 +1002,9 @@ placecell.end
 
 *	Play move *move*, updating the board and related objects.
 
+*PLAYMOVE*
 playmove
-*	output = 'playmove ' show.move(move,'I')
+*	output = 'playmove ' show.move(move)
 	txt = text(move)
 playmove.ch
 	txt len(1) . ch =				:f(return)
@@ -971,6 +1028,7 @@ playmove.col
 playmove.end
 	
 	define('prefix(str,pre)word')			:(prefix.end)
+*PREFIX*
 prefix
 
 *	Prefix takes a list of space-separated words str and prefixes each
@@ -990,6 +1048,7 @@ prefix.end
 *	The Algorithm is based in that in section 16.1 of "Algorithms in SNOBOL4,"
 *	James F. Gimpel, John Wiley and Sons, 1976.
 
+*RANDOM*
 random	
 	g.random_var = remdr(g.random_var * 4676, 414971)
 	random  = g.random_var / 414971.0
@@ -1003,9 +1062,11 @@ random.end
 *	a move must be adjacent to an occupied cell.  *line* is the line to be scanned, and *num* gives its
 *	position on the board.
 
+*SCAN*
 scan
 	line = line(pair)
 	num = num(pair)
+	output = differ(g.tracing) 'SCANNING ' num ' ' show.hex(line)
 	moves = 0
 	alone = g.alone.lines[num]
 
@@ -1044,7 +1105,7 @@ scan.next
 * MAX
 	max = eq(max,7) 6
 	max = eq(max,7) 6
-	max = 4
+	max = 5
 	n = 0
 
 scan.next.n
@@ -1080,21 +1141,21 @@ scan.end
 *SCORE
 score
 	empty(line(pair))				:s(return)
-*	output = ne(g.showscore) 'enter score ' show.pair(pair)
+	output = ne(g.showscore) 'enter score ' show.pair(pair)
 	cline = line(pair)
 	bonusline = g.bonus.lines[num(pair)]
 
 	eq(g.showscore) 				:s(score.3)
-*	vline = 
-*score.1
-*	gt(i = i + 1,size(cline))			:s(score.2)
-*	vch = substr(cline,i,1)
-*	vch = gt(g.value[vch],0) substr('123456789ABCDE',g.value[substr(cline,i,1)],1)
-*	vline = vline vch				:(score.1)
-*score.2
-**	output = 'score value ' vline
-*	output = 'score       ' cline
-*	output = 'score bonus ' bonusline  
+	vline = 
+score.1
+	gt(i = i + 1,size(cline))			:s(score.2)
+	vch = substr(cline,i,1)
+	vch = gt(g.value[vch],0) substr('123456789ABCDE',g.value[substr(cline,i,1)],1)
+	vline = vline vch				:(score.1)
+score.2
+	output = 'score value ' vline
+	output = 'score       ' cline
+	output = 'score bonus ' bonusline  
 score.3
 
 	cline break(&ucase)				:f(score.error)
@@ -1110,7 +1171,7 @@ score.word
 	eq(n,1)						:s(score.word);* singletons aren't scored.
 	word break(&ucase)				:f(score.word)
 
-*	output = ne(g.showscore) 'scoring word ' word ' starting at ' start
+	output = ne(g.showscore) 'scoring word ' word ' starting at ' start
 	line = substr(cline,start)
 	bonusline = substr(g.bonus.lines[num(pair)],start);* corresponding part of bonus line
 	i = 0
@@ -1122,7 +1183,7 @@ score.char
 	bonus = +substr(bonusline,i,1)
 	bonus = ident(bonus,' ') 1
 	val = +g.value[ch]
-*	output = ne(g.showscore) ch ' ' val ' ' bonus
+	output = ne(g.showscore) ch ' ' val ' ' bonus
 
 *	Update score for letter
 
@@ -1132,11 +1193,11 @@ score.char
 
 	mult = gt(bonus,3) mult * (bonus - 2)
 
-*	output = ne(g.showscore) 'score ' ch ' added value ' val ' score now ' score ' mult ' mult
+	output = ne(g.showscore) 'score ' ch ' added value ' val ' score now ' score ' mult ' mult
 							:(score.char)
 score.char.done
 	score = score * mult
-*	output =  'result SCORE ' score ' for word ' word ' , for ' show.pair(pair)
+	output =  ne(g.showscore) 'result SCORE ' score ' for word ' word ' , for ' show.pair(pair)
 							:(return)
 score.error
 	score = 0					:(return)
@@ -1190,18 +1251,19 @@ subarray.1
 	subarray[i] = copy(ara[start + i - 1])		:(subarray.1)		
 subarray.end
 
-	define('swap(tiles,n)i')			:(swap.end)
+	define('swap(tiles,n)')				:(swap.end)
 
 *	Swap *n* files from the first *n* characters in *tiles*. If fewer than *n* tiles remain,
 *	set *n* to the size of the tileset.
 
 swap	
+	n = gt(n,size(tiles)) size(tiles)
 	n = gt(n,size(g.tiles)) size(g.tiles)
-	i = 0
+	eq(n)						:s(freturn)
 swap.next
 	swap = substr(g.tiles,1,n)
-	g.tiles = (eq(n,size(tiles)) '', substr(g.tiles,n + 1) substr(g.tiles,n + 1))
-							:(swap.next)	
+	g.tiles = substr(g.tiles,n + 1)  substr(tiles,1,n)
+							:(return)
 swap.end
 
 	define('take(n)')				:(take.end)
@@ -1213,6 +1275,7 @@ take
 	n = gt(n,size(g.tiles)) size(g.tiles)
 	take = order(substr(g.tiles,1,n))
 	g.tiles = substr(g.tiles, n + 1)
+*	output = 'take<' take '> g.tiles<' g.tiles '>'
 							:(return)
 take.end
 
@@ -1237,6 +1300,19 @@ take.end
 *
 *shuffle.consonant
 *	consonants = gt(consonants) consonants - 1
+
+	define('tracer()')				:(tracer.end)
+
+*	Initiate tracing at start of move *g.trace*.
+
+tracer
+	output = 'enter tracer g.trace ' g.trace ' move now ' g.move
+	ident(g.trace)					:s(return)
+	ne(g.move,g.trace)				:s(return)
+	&ftrace = &trace = g.tracing = 1000000		
+	output = 'start TRACING ' g.move ' ' g.tracing
+							:(return)
+tracer.end
 
 	define('ucase(s)')				:(ucase.end)
 

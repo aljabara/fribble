@@ -9,11 +9,13 @@
 
 	init()
 
-	maxmoves = 4
+	output = 'g.tiles ' g.tiles
 	maxmoves = 80
+	maxmoves = 6
 
 	one = player('Jane Doe')
 	two = player('John Doe')
+*	&dump = 3
 	game(one,two,maxmoves)				:(done)	
 	
 nomove

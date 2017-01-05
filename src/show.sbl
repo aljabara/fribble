@@ -153,7 +153,7 @@ show.lines.end
 *	Show a move.
 
 show.move
-	output = 'show.move ' title
+*	output = 'show.move ' title
 	gt(i = i + 1,count(move))			:s(show.move.f)
 	ff = free(move)[i]
 	ident(datatype(ff,'string'))	:s(show.fail)
@@ -227,5 +227,5 @@ show.player.end
 
 show.tiles
 	gt(i = i + 1,size(tiles))			:s(return)
-	show.tiles = append(show.tiles, ucase(substr(tiles,i,1)),'C')	:(show.tiles)
+	show.tiles = append(show.tiles, ucase(substr(tiles,i,1))) :(show.tiles)
 show.tiles.end
