@@ -281,12 +281,12 @@ init.value.end
 
 *APPEND*
 append
-*	ident(ch)	:s(append.fail)
+	ident(w)	:s(append.fail)
 	ch = ident(ch) ' '
 	append = ident(str) w				:s(return)
 	append = str ch w				:(return)
 append.fail
- output = 'null ch to append' :(end)
+	 output = 'null ch to append ' w :(end)
 append.end
 
 	define('available(line)blanks,c,i')		:(available.end)
@@ -1119,7 +1119,6 @@ scan.next.n
 	substr(lonely,ai,n) ? span('1')		:s(scan.next)
 *MOV
 	move = move(num,n,subarray(avail,ai,n))
-	show.move(move);*DAVE
 	scan = ident(scan) table()
 	count.scanned = count.scanned + 1
 	scan[count.scanned] = move			:(scan.next.n)

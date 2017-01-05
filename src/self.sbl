@@ -10,8 +10,8 @@
 	init()
 
 	output = 'g.tiles ' g.tiles
-	maxmoves = 80
 	maxmoves = 6
+	maxmoves = 80
 
 	one = player('Jane Doe')
 	two = player('John Doe')
