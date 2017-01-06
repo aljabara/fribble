@@ -1,4 +1,4 @@
-* This software is licensed under the MIT License, contained in the file LICENSE.
+* tThis software is licensed under the MIT License, contained in the file LICENSE.
 
 * Copyright (c) 2016 dave shields
 
@@ -61,7 +61,10 @@
 
 		data('pair(num, line)')
 
-*	g.move, the number of the current move.
+*	g.turn, the number of the current turn
+*	g.lastmove, the turn when the last move was made.
+
+	g.turn = g.lastmove = 0
 
 *	g.permutations, a table of the permutations of n=1..7 things taken 1..k at a time.
 *	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time, as a string with
@@ -337,7 +340,7 @@ bonus.lines.end
 *CHECKLINE*
 checkline
 	count.checkline = count.checkline + 1
-*	output = gt(g.move,1) 'checking line ' line
+*	output = gt(g.turn,1) 'checking line ' line
 	line span(' ') =
 	empty(line)					:s(return)
 	iline = line
@@ -348,7 +351,7 @@ checkline.1
 	line break(' ')  . word ' ' =			:f(checkline.done);* if line exhausted
 	eq(size(word),1)				:s(checkline.1)
 	checkword(word)					:f(freturn)s(checkline.1)
-*	output = gt(g.move,1) 'checkword VALID<' word '>'  :(checkline.1)
+*	output = gt(g.turn,1) 'checkword VALID<' word '>'  :(checkline.1)
 			:(checkline.1)
 
 	checkword(word)					:s(checkline.1)
@@ -356,7 +359,7 @@ checkline.1
 checkline.failed
 				:(freturn)
 checkline.done
-*	output = gt(g.move,1) 'checkline VALID ' iline
+*	output = gt(g.turn,1) 'checkline VALID ' iline
 							:(return)
 checkline.end
 
@@ -421,7 +424,7 @@ cost.end
 
 *COUNTER*
 counter
-	output = lpad(text,30) lpad(count,7)		:(return)
+	output = lpad(text,32) lpad(count,10)		:(return)
 counter.end
 
 	define('counters()')				:(counters.end)
@@ -432,7 +435,7 @@ counter.end
 counters
 	output = 
 	output = 'Performance metrics:'
-	counter('placements found by scan'	, count.scan	)
+	counter('placements found by scan'	, count.scanned	)
 	counter('permutations examined'		, count.perm	)
 	counter('cells examined'		, count.cells	)
 	counter('potential moves found'		, count.moves 	)
@@ -626,7 +629,7 @@ findscore.next
 							:(findscore.next)
 findscore.end
 
-	define('game(one,two,max)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed')	:(game.end)
+	define('game(one,two,max)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
 
 *	Play a game of fribble. *one* and *two* are players. *max* is the maximum number of moves.
 
@@ -640,24 +643,33 @@ game
 	rack(one) = take(7)
 	rack(two) = take(7)
 
-	moves = 0
+	g.turn = g.lastmove = 0
+
 game.round
 	i = 0
 game.turn
-	g.move = g.move + 1
+	g.turn = g.turn + 1
+
+	output = ne(max) gt(g.turn,max) 'Game over: too many turns.'  :s(game.over)
+
+	le(g.turn, g.lastmove + 5)			:s(g.turn.trace)
+
+*	output = 'Game over: too many turns with no move.'	:s(game.over)
+
+g.turn.trace
 
 	differ(g.trace) tracer()
 
 	p = players[i = i + 1]				:f(game.round)
-	le(g.move, max)			:s(game.continue)
+	le(g.turn, max)			:s(game.continue)
 
-	output = 'Too many moves ( ' moves ').'		:(game.done)
+	output = 'Too many moves ( ' moves ').'		:(game.over)
 
 game.continue
-	output = 'Move ' g.move ' for player ' name(p) ', with tiles ' show.tiles(rack(p),'A') '.'
+	output = 'Move ' g.turn ' for player ' name(p) ', with tiles ' show.tiles(rack(p),'A') '.'
 
 *	output = 'calling find'
-	move = (eq(g.move,1) open(rack(p)), find(rack(p))) :s(game.move)
+	move = (eq(g.turn,1) open(rack(p)), find(rack(p))) :s(game.move)
 *	output = 'called find'
 
 *	Here if no move found, in which case the return value is a set of swapped tiles.
@@ -667,7 +679,7 @@ game.continue
 
 	passed = passed + 1
 
-	output = gt(passed,6) ' Too many passed moves.'	:(game.done)
+	output = gt(passed,6) ' Too many passed moves.'	:s(game.over)
 
 	output = 'Player ' name(one) ' passes.'		:(game.turn)
 	
@@ -678,7 +690,8 @@ game.swap
 							:(game.turn)
 
 game.move
-*	output = 'have move'
+	g.lastmove = turn
+
 	total(p) = total(p) + points(move)
 
 	playmove(move)
@@ -689,16 +702,27 @@ game.move
 
 	show.board(g.board)
 
+*	Display move in grid with just this move in upper case by saving the board, playing the move with
+*	the text in upper case, showing it, and then restoring the board to its saves state.
+
+	board = copy (g.board)
+	text(move) = ucase(text(move))
+	playmove(move)
 	show.grid(g.board)
+	g.board = board
 
 *	Update rack.
 *	output =  'updating rack'
+
+*	Game over if no more tiles would remain.
+
+	output = le(size(rack(p), size(g.tiles))) 'Game over: no more tiles.'	:s(game.over)
 
 	rack(p) = less(rack(p), lcase(text(move))) take(size(text(move))) :s(game.shuffle)
 
 *	Here if can't take any new tiles, so fail for now.
 
-	output = 'out of tiles, end game. '		:(game.done)
+	output = 'Game over: out of tiles, end game. '		:(game.over)
 
 game.shuffle
 
@@ -724,8 +748,7 @@ game.fold
 
 *	output = 'rebuilding board'
 	g.board = grid(g.lines)				:(game.turn)
-game.done						
-	output = 'Game over:'
+game.over						
 	output =  'Player ' name(one) ' scored ' total(one) ' points.'
 	output =  'Player ' name(two) ' scored ' total(two) ' points.'
 							:(return)
@@ -849,7 +872,7 @@ lines.end
 
 	define('open(tiles)perm,perms,permi,free,offset,i,highest,lower,best,n,word,start,score,move')	:(open.end)
 
-*	Determine best opening move. At least one letter in this move must be in the center square (8,8).
+*	Determine best opening.turn. At least one letter in this move must be in the center square (8,8).
 *	The only bonus available is double word, for any word of more than four characters.
 
 *	Find the move the highest score. Given two moves with the same score, prefer the one with
@@ -902,7 +925,7 @@ open.new
 	highest = score
 	lowest = cost(word)
 	best = word					
-	output = 'updating move ' best ' ' highest ' ' lowest
+	output = 'updating.turn ' best ' ' highest ' ' lowest
 							:(open.word)
 open.done
 
@@ -1305,11 +1328,11 @@ take.end
 *	Initiate tracing at start of move *g.trace*.
 
 tracer
-	output = 'enter tracer g.trace ' g.trace ' move now ' g.move
+	output = 'enter tracer g.trace ' g.trace ' move now ' g.turn
 	ident(g.trace)					:s(return)
-	ne(g.move,g.trace)				:s(return)
+	ne(g.turn,g.trace)				:s(return)
 	&ftrace = &trace = g.tracing = 1000000		
-	output = 'start TRACING ' g.move ' ' g.tracing
+	output = 'start TRACING ' g.turn ' ' g.tracing
 							:(return)
 tracer.end
 
