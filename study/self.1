@@ -1,6 +1,8 @@
-* First successful run of fribble playing itself. 5 Jan 2016. 323 seconds of user time on old (2011) desktop.
+* First game of fribble vs. fribble with correct scoring, 6 Jan 2017, 309 secs. user time, on old (2012) desktop.
+* Oops - turns out there is bad word in column one...sigh.
 g.tiles ieoaysjaslaofateriatsdocemuqyakabtdnhemuholilecerlenghrgwuedoioulfvtddpermaeiauncustthhetoesobvceweeyh
 Move 1 for player Jane Doe, with tiles I E O A Y S J.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
 enter open
 updating.turn i 1 1
 updating.turn e 1 1
@@ -53,7 +55,8 @@ Jane Doe played J O E Y for 15. The score is now Jane Doe 15, John Doe 0.
 15|                                             |
 
 Move 2 for player John Doe, with tiles A A O A L F S.
-John Doe played A L F A S for 18. The score is now Jane Doe 15, John Doe 18.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played L A F S for 24. The score is now Jane Doe 15, John Doe 24.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -63,11 +66,11 @@ John Doe played A L F A S for 18. The score is now Jane Doe 15, John Doe 18.
  4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
  5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
  6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
  8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
- 9|tl  -  -  - dl  -  -  -  -  - dl  -  -  - tl |
-10| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
-11| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 9|tl  -  -  - dl  -  -  -  -  A dl  -  -  - tl |
+10| - dw  -  -  - tl  -  -  -  F  -  -  - dw  - |
+11| -  - dl  -  -  - dl  - dl  S  -  - dl  -  - |
 12|tw  -  - tl  -  -  - dw  -  -  - tl  -  - tw |
 13| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
 14| -  - tw  -  - dw  -  -  - dw  -  - dl  -  - |
@@ -82,18 +85,19 @@ John Doe played A L F A S for 18. The score is now Jane Doe 15, John Doe 18.
 4 |                                             |
 5 |                                             |
 6 |                                             |
-7 |                               A  L  F  A  S |
+7 |                            L                |
 8 |                      j  o  e  y             |
-9 |                                             |
-10|                                             |
-11|                                             |
+9 |                            A                |
+10|                            F                |
+11|                            S                |
 12|                                             |
 13|                                             |
 14|                                             |
 15|                                             |
 
 Move 4 for player Jane Doe, with tiles I A S T E R I.
-Jane Doe played A T I R E for 18. The score is now Jane Doe 33, John Doe 18.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played I E S T A for 12. The score is now Jane Doe 27, John Doe 24.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -103,12 +107,12 @@ Jane Doe played A T I R E for 18. The score is now Jane Doe 33, John Doe 18.
  4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
  5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
  6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  A |
- 9|tl  -  -  - dl  -  -  -  -  - dl  -  -  -  T |
-10| - dw  -  -  - tl  -  -  - tl  -  -  - dw  I |
-11| -  - dl  -  -  - dl  - dl  -  -  - dl  -  R |
-12|tw  -  - tl  -  -  - dw  -  -  - tl  -  -  E |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  -  -  -  A dl  -  -  - tl |
+10| - dw  -  -  - tl  -  -  -  F  I  E  S  T  A |
+11| -  - dl  -  -  - dl  - dl  S  -  - dl  -  - |
+12|tw  -  - tl  -  -  - dw  -  -  - tl  -  - tw |
 13| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
 14| -  - tw  -  - dw  -  -  - dw  -  - dl  -  - |
 15| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
@@ -122,18 +126,19 @@ Jane Doe played A T I R E for 18. The score is now Jane Doe 33, John Doe 18.
 4 |                                             |
 5 |                                             |
 6 |                                             |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y           A |
-9 |                                           T |
-10|                                           I |
-11|                                           R |
-12|                                           E |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                            a                |
+10|                            f  I  E  S  T  A |
+11|                            s                |
+12|                                             |
 13|                                             |
 14|                                             |
 15|                                             |
 
-Move 5 for player John Doe, with tiles O A A T O D S.
-John Doe played O T A S for 6. The score is now Jane Doe 33, John Doe 24.
+Move 5 for player John Doe, with tiles A O A A T D S.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played D T O S for 26. The score is now Jane Doe 27, John Doe 50.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -143,13 +148,13 @@ John Doe played O T A S for 6. The score is now Jane Doe 33, John Doe 24.
  4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
  5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
  6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  A |
- 9|tl  -  -  - dl  -  -  O  -  - dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  - tl  -  -  - dw  I |
-11| -  - dl  -  -  - dl  A dl  -  -  - dl  -  R |
-12|tw  -  - tl  -  -  -  S  -  -  - tl  -  -  E |
-13| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  -  -  -  A dl  -  -  -  D |
+10| - dw  -  -  - tl  -  -  -  F  I  E  S  T  A |
+11| -  - dl  -  -  - dl  - dl  S  -  - dl  -  T |
+12|tw  -  - tl  -  -  - dw  -  -  - tl  -  -  O |
+13| - dl  -  - dl  -  -  -  -  - dl  -  - dl  S |
 14| -  - tw  -  - dw  -  -  - dw  -  - dl  -  - |
 15| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
 
@@ -162,18 +167,19 @@ John Doe played O T A S for 6. The score is now Jane Doe 33, John Doe 24.
 4 |                                             |
 5 |                                             |
 6 |                                             |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y           a |
-9 |                      O                    t |
-10|                      T                    i |
-11|                      A                    r |
-12|                      S                    e |
-13|                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                            a              D |
+10|                            f  i  e  s  t  a |
+11|                            s              T |
+12|                                           O |
+13|                                           S |
 14|                                             |
 15|                                             |
 
-Move 7 for player Jane Doe, with tiles S I E U C M Q.
-Jane Doe played M Q U I S for 32. The score is now Jane Doe 65, John Doe 24.
+Move 7 for player Jane Doe, with tiles R I O E U C M.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played C R U M for 26. The score is now Jane Doe 53, John Doe 50.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -183,14 +189,14 @@ Jane Doe played M Q U I S for 32. The score is now Jane Doe 65, John Doe 24.
  4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
  5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
  6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  A |
- 9|tl  -  -  - dl  -  -  O  -  - dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  - tl  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  -  -  S  -  -  - tl  -  -  E |
-13| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
-14| -  - tw  -  - dw  -  -  - dw  -  - dl  -  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  -  -  -  A dl  -  -  -  D |
+10| - dw  -  -  - tl  -  -  -  F  I  E  S  T  A |
+11| -  - dl  -  -  - dl  - dl  S  -  -  C  -  T |
+12|tw  -  - tl  -  -  - dw  -  -  - tl  R  -  O |
+13| - dl  -  - dl  -  -  -  -  - dl  -  U dl  S |
+14| -  - tw  -  - dw  -  -  - dw  -  -  M  -  - |
 15| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
 
 
@@ -202,18 +208,19 @@ Jane Doe played M Q U I S for 32. The score is now Jane Doe 65, John Doe 24.
 4 |                                             |
 5 |                                             |
 6 |                                             |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y           a |
-9 |                      o                    t |
-10|                      t                    i |
-11|                   M  a  Q  U  I  S        r |
-12|                      s                    e |
-13|                                             |
-14|                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                            a              d |
+10|                            f  i  e  s  t  a |
+11|                            s        C     t |
+12|                                     R     o |
+13|                                     U     s |
+14|                                     M       |
 15|                                             |
 
-Move 8 for player John Doe, with tiles A O D A A Y K.
-John Doe played O K for 10. The score is now Jane Doe 65, John Doe 34.
+Move 8 for player John Doe, with tiles A A A A Y K Q.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played A K A Y Q for 25. The score is now Jane Doe 53, John Doe 75.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -222,15 +229,15 @@ John Doe played O K for 10. The score is now Jane Doe 65, John Doe 34.
  3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
  4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
  5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
- 6| - dw  -  -  - tl  -  -  - tl  -  -  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  -  O  -  - dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  - tl  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  -  -  S  -  -  - tl  -  -  E |
-13| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
-14| -  - tw  -  - dw  -  -  - dw  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  -  -  -  A dl  -  -  -  D |
+10| - dw  -  -  - tl  -  -  -  F  I  E  S  T  A |
+11| -  - dl  -  -  - dl  - dl  S  -  -  C  -  T |
+12|tw  -  - tl  -  -  - dw  -  -  - tl  R  -  O |
+13| - dl  -  - dl  -  -  -  -  - dl  A  U  K  S |
+14| -  - tw  -  - dw  -  -  - dw  -  -  M  -  - |
 15| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
 
 
@@ -241,19 +248,20 @@ John Doe played O K for 10. The score is now Jane Doe 65, John Doe 34.
 3 |                                             |
 4 |                                             |
 5 |                                             |
-6 |                                        O    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        K  a |
-9 |                      o                    t |
-10|                      t                    i |
-11|                   m  a  q  u  i  s        r |
-12|                      s                    e |
-13|                                             |
-14|                                             |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                            a              d |
+10|                            f  i  e  s  t  a |
+11|                            s        c     t |
+12|                                     r     o |
+13|                                  A  u  K  s |
+14|                                     m       |
 15|                                             |
 
-Move 10 for player Jane Doe, with tiles E C T D N H B.
-Jane Doe played N D E for 9. The score is now Jane Doe 74, John Doe 34.
+Move 10 for player Jane Doe, with tiles I O E A T D B.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played A B I D E for 23. The score is now Jane Doe 76, John Doe 75.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -262,15 +270,15 @@ Jane Doe played N D E for 9. The score is now Jane Doe 74, John Doe 34.
  3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
  4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
  5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
- 6| - dw  -  -  - tl  -  -  - tl  -  -  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  -  O  -  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  -  -  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
-14| -  - tw  -  - dw  -  -  - dw  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  -  -  -  A dl  -  -  -  D |
+10| - dw  -  -  - tl  -  -  -  F  I  E  S  T  A |
+11| -  - dl  -  -  - dl  - dl  S  -  -  C  -  T |
+12|tw  -  - tl  -  -  - dw  -  -  - tl  R  -  O |
+13| A  B  I  D  E  -  -  -  -  - dl  A  U  K  S |
+14| -  - tw  -  - dw  -  -  - dw  -  -  M  -  - |
 15| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
 
 
@@ -281,19 +289,20 @@ Jane Doe played N D E for 9. The score is now Jane Doe 74, John Doe 34.
 3 |                                             |
 4 |                                             |
 5 |                                             |
-6 |                                        o    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                      o     N              t |
-10|                      t     D              i |
-11|                   m  a  q  u  i  s        r |
-12|                      s     E              e |
-13|                                             |
-14|                                             |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                            a              d |
+10|                            f  i  e  s  t  a |
+11|                            s        c     t |
+12|                                     r     o |
+13| A  B  I  D  E                    a  u  k  s |
+14|                                     m       |
 15|                                             |
 
-Move 11 for player John Doe, with tiles A D A A Y E M.
-John Doe played A D A M for 16. The score is now Jane Doe 74, John Doe 50.
+Move 11 for player John Doe, with tiles A A E N U H M.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played M E N for 25. The score is now Jane Doe 76, John Doe 100.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -302,16 +311,16 @@ John Doe played A D A M for 16. The score is now Jane Doe 74, John Doe 50.
  3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
  4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
  5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
- 6| - dw  -  -  - tl  -  -  - tl  -  -  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  -  O  -  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  -  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  - dw  A  -  - dw  -  - dl  -  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  -  -  -  A dl  -  -  -  D |
+10| - dw  -  -  - tl  -  -  -  F  I  E  S  T  A |
+11| -  - dl  -  -  - dl  - dl  S  -  -  C  -  T |
+12|tw  -  M tl  -  -  - dw  -  -  - tl  R  -  O |
+13| A  B  I  D  E  -  -  -  -  - dl  A  U  K  S |
+14| -  -  E  -  - dw  -  -  - dw  -  -  M  -  - |
+15| -  -  N tw  -  - tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
@@ -321,19 +330,20 @@ John Doe played A D A M for 16. The score is now Jane Doe 74, John Doe 50.
 3 |                                             |
 4 |                                             |
 5 |                                             |
-6 |                                        o    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                      o     n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                   A  s     e              e |
-13|                   D                         |
-14|                   A                         |
-15|                   M                         |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                            a              d |
+10|                            f  i  e  s  t  a |
+11|                            s        c     t |
+12|       M                             r     o |
+13| a  b  i  d  e                    a  u  k  s |
+14|       E                             m       |
+15|       N                                     |
 
-Move 13 for player Jane Doe, with tiles C T H B O U H.
-Jane Doe played H T C H for 20. The score is now Jane Doe 94, John Doe 50.
+Move 13 for player Jane Doe, with tiles O T O I L L H.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played I L L for 14. The score is now Jane Doe 90, John Doe 100.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -342,16 +352,16 @@ Jane Doe played H T C H for 20. The score is now Jane Doe 94, John Doe 50.
  3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
  4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
  5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
- 6| - dw  -  -  - tl  -  -  - tl  -  -  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  -  O  -  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  -  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  -  - dl  -  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  -  -  -  A dl  -  -  -  D |
+10| - dw  -  -  - tl  -  -  -  F  I  E  S  T  A |
+11| -  - dl  -  -  - dl  - dl  S  -  -  C  -  T |
+12|tw  -  M tl  -  -  - dw  -  -  - tl  R  -  O |
+13| A  B  I  D  E  -  -  -  -  - dl  A  U  K  S |
+14| -  -  E  -  - dw  -  -  - dw  -  -  M  -  - |
+15| -  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
@@ -361,19 +371,20 @@ Jane Doe played H T C H for 20. The score is now Jane Doe 94, John Doe 50.
 3 |                                             |
 4 |                                             |
 5 |                                             |
-6 |                                        o    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                      o     n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                   a  s     e              e |
-13|                   d                         |
-14|                H  a  T  C  H                |
-15|                   m                         |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                            a              d |
+10|                            f  i  e  s  t  a |
+11|                            s        c     t |
+12|       m                             r     o |
+13| a  b  i  d  e                    a  u  k  s |
+14|       e                             m       |
+15|       n  I  L  L                            |
 
-Move 14 for player John Doe, with tiles A Y E I E L L.
-John Doe played Y A for 4. The score is now Jane Doe 94, John Doe 54.
+Move 14 for player John Doe, with tiles A A U H E E C.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played E C H for 21. The score is now Jane Doe 90, John Doe 121.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -382,16 +393,16 @@ John Doe played Y A for 4. The score is now Jane Doe 94, John Doe 54.
  3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
  4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
  5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
- 6| - dw  -  -  - tl  -  -  - tl  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  -  O  -  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  -  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  -  - dl  -  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  -  -  -  A dl  -  -  -  D |
+10| - dw  -  -  - tl  -  -  -  F  I  E  S  T  A |
+11| -  - dl  -  -  - dl  - dl  S  -  -  C  -  T |
+12| E  -  M tl  -  -  - dw  -  -  - tl  R  -  O |
+13| A  B  I  D  E  -  -  -  -  - dl  A  U  K  S |
+14| C  -  E  -  - dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
@@ -401,19 +412,20 @@ John Doe played Y A for 4. The score is now Jane Doe 94, John Doe 54.
 3 |                                             |
 4 |                                             |
 5 |                                             |
-6 |                               Y  A     o    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                      o     n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                   a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h                |
-15|                   m                         |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                            a              d |
+10|                            f  i  e  s  t  a |
+11|                            s        c     t |
+12| E     m                             r     o |
+13| a  b  i  d  e                    a  u  k  s |
+14| C     e                             m       |
+15| H     n  i  l  l                            |
 
-Move 16 for player Jane Doe, with tiles B O U E R L C.
-Jane Doe played B O for 6. The score is now Jane Doe 100, John Doe 54.
+Move 16 for player Jane Doe, with tiles O T O H R E L.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played O L T E R for 14. The score is now Jane Doe 104, John Doe 121.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -421,17 +433,17 @@ Jane Doe played B O for 6. The score is now Jane Doe 100, John Doe 54.
  2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
  3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
  4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  - |
- 6| - dw  -  -  - tl  -  -  - tl  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  -  O  -  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  -  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  -  - dl  -  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  -  O  -  A dl  -  -  -  D |
+10| - dw  -  -  - tl  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  - dl  T dl  S  -  -  C  -  T |
+12| E  -  M tl  -  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  -  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  - dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
@@ -440,38 +452,39 @@ Jane Doe played B O for 6. The score is now Jane Doe 100, John Doe 54.
 2 |                                             |
 3 |                                             |
 4 |                                             |
-5 |                                  B  O       |
-6 |                               y  a     o    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                      o     n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                   a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h                |
-15|                   m                         |
+5 |                                             |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                      O     a              d |
+10|                      L     f  i  e  s  t  a |
+11|                      T     s        c     t |
+12| e     m              E              r     o |
+13| a  b  i  d  e        R           a  u  k  s |
+14| c     e                             m       |
+15| h     n  i  l  l                            |
 
-Move 17 for player John Doe, with tiles E I E L L E N.
-John Doe played L E I for 6. The score is now Jane Doe 100, John Doe 60.
+Move 17 for player John Doe, with tiles A A U E N G H.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played E H for 9. The score is now Jane Doe 104, John Doe 130.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
  1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
  2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
  3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  - |
- 6| - dw  -  -  - tl  -  -  - tl  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  -  O  -  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  -  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  -  - dl  -  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  -  O  -  A dl  -  -  -  D |
+10| - dw  -  -  - tl  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  -  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  -  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  -  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  - dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
@@ -479,1303 +492,1419 @@ John Doe played L E I for 6. The score is now Jane Doe 100, John Doe 60.
 1 |                                             |
 2 |                                             |
 3 |                                             |
-4 |                                     L  E  I |
-5 |                                  b  o       |
-6 |                               y  a     o    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                      o     n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                   a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h                |
-15|                   m                         |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                      o     a              d |
+10|                      l     f  i  e  s  t  a |
+11|                   E  t  H  s        c     t |
+12| e     m              e              r     o |
+13| a  b  i  d  e        r           a  u  k  s |
+14| c     e                             m       |
+15| h     n  i  l  l                            |
 
-Move 19 for player Jane Doe, with tiles U E R L C G H.
-Jane Doe played H C for 7. The score is now Jane Doe 107, John Doe 60.
+Move 19 for player Jane Doe, with tiles O H R E U G W.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played W for 8. The score is now Jane Doe 112, John Doe 130.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
  1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
  2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  - tl  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  -  O  -  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  -  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  -  - dl  -  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  W  O  -  A dl  -  -  -  D |
+10| - dw  -  -  - tl  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  -  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  -  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  -  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  - dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
 1 |                                             |
 2 |                                             |
-3 |                                           H |
-4 |                                     l  e  i |
-5 |                                  b  o     C |
-6 |                               y  a     o    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                      o     n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                   a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h                |
-15|                   m                         |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                   W  o     a              d |
+10|                      l     f  i  e  s  t  a |
+11|                   e  t  h  s        c     t |
+12| e     m              e              r     o |
+13| a  b  i  d  e        r           a  u  k  s |
+14| c     e                             m       |
+15| h     n  i  l  l                            |
 
-Move 20 for player John Doe, with tiles E L E N R G W.
-John Doe played G W for 7. The score is now Jane Doe 107, John Doe 67.
+Move 20 for player John Doe, with tiles A A U N G D O.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played D for 4. The score is now Jane Doe 112, John Doe 134.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
  1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
  2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  - tl  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  -  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  -  - dl  -  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  W  O  -  A dl  -  -  -  D |
+10| - dw  -  -  - tl  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  -  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  -  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  - dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
 1 |                                             |
 2 |                                             |
-3 |                                           h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                               y  a     o    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   G  o  W  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                   a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h                |
-15|                   m                         |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                   w  o     a              d |
+10|                      l     f  i  e  s  t  a |
+11|                   e  t  h  s        c     t |
+12| e     m              e              r     o |
+13| a  b  i  d  e  D     r           a  u  k  s |
+14| c     e                             m       |
+15| h     n  i  l  l                            |
 
-Move 22 for player Jane Doe, with tiles U E R L G U E.
-Jane Doe played R for 3. The score is now Jane Doe 110, John Doe 67.
+Move 22 for player Jane Doe, with tiles O H R E U G I.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played H for 6. The score is now Jane Doe 118, John Doe 134.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
  1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
  2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  -  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  -  - dl  -  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  W  O  -  A dl  -  -  -  D |
+10| - dw  -  -  - tl  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  -  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  - dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
 1 |                                             |
 2 |                                             |
-3 |                                           h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            R  y  a     o    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                   a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h                |
-15|                   m                         |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                   w  o     a              d |
+10|                      l     f  i  e  s  t  a |
+11|                H  e  t  h  s        c     t |
+12| e     m              e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e                             m       |
+15| h     n  i  l  l                            |
 
-Move 23 for player John Doe, with tiles E L E N R D O.
-John Doe played E L E D for 7. The score is now Jane Doe 110, John Doe 74.
+Move 23 for player John Doe, with tiles A A U N G O O.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played U for 8. The score is now Jane Doe 118, John Doe 142.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
  1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
  2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  -  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  W  O  -  A dl  -  -  -  D |
+10| - dw  -  -  -  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  -  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  - dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
 1 |                                             |
 2 |                                             |
-3 |                                           h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                   a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h  E  L  E  D    |
-15|                   m                         |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                   w  o     a              d |
+10|                U     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m              e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e                             m       |
+15| h     n  i  l  l                            |
 
-Move 25 for player Jane Doe, with tiles U E L G U E I.
-Jane Doe played G for 3. The score is now Jane Doe 113, John Doe 74.
+Move 25 for player Jane Doe, with tiles O R E U G I U.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played R E for 2. The score is now Jane Doe 120, John Doe 142.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
  1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
  2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  G  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  W  O  -  A dl  -  -  -  D |
+10| - dw  -  -  -  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
 1 |                                             |
 2 |                                             |
-3 |                                           h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                G  a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h  e  l  e  d    |
-15|                   m                         |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                   w  o     a              d |
+10|                u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     R        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     E                       m       |
+15| h     n  i  l  l                            |
 
-Move 26 for player John Doe, with tiles N R O O U L F.
-John Doe played O for 2. The score is now Jane Doe 113, John Doe 76.
+Move 26 for player John Doe, with tiles A A N G O O L.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played N for 4. The score is now Jane Doe 120, John Doe 146.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
  1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
  2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  -  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  G  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  - dl  -  W  O  -  A dl  -  -  -  D |
+10| - dw  -  -  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
 1 |                                             |
 2 |                                             |
-3 |                                        O  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                               a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                g  a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h  e  l  e  d    |
-15|                   m                         |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |                   w  o     a              d |
+10|             N  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 28 for player Jane Doe, with tiles U E L U E I V.
-Jane Doe played V for 5. The score is now Jane Doe 118, John Doe 76.
+Move 28 for player Jane Doe, with tiles O U G I U F V.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played U for 6. The score is now Jane Doe 126, John Doe 146.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
  1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
  2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  G  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  -  U  -  W  O  -  A dl  -  -  -  D |
+10| - dw  -  -  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
 1 |                                             |
 2 |                                             |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         V     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                g  a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h  e  l  e  d    |
-15|                   m                         |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |             U     w  o     a              d |
+10|             n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 29 for player John Doe, with tiles N R O U L F T.
-John Doe played F for 4. The score is now Jane Doe 118, John Doe 80.
+Move 29 for player John Doe, with tiles A A G O O L T.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played G for 6. The score is now Jane Doe 126, John Doe 152.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
  1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
- 2| -  - dl  -  - dw  -  -  - dw  -  - dl  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  G  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  -  U  -  W  O  -  A dl  -  -  -  D |
+10| - dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
 1 |                                             |
-2 |                                        F    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                g  a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h  e  l  e  d    |
-15|                   m                         |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |                            l                |
+8 |                      j  o  e  y             |
+9 |             u     w  o     a              d |
+10|          G  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 31 for player Jane Doe, with tiles U E L U E I D.
-Jane Doe played E L for 3. The score is now Jane Doe 121, John Doe 80.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  -  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  - dl  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  G  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
-
+Move 31 for player Jane Doe, with tiles O G I U F V D.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played F for 8. The score is now Jane Doe 134, John Doe 152.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                        E  L |
-2 |                                        f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                g  a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h  e  l  e  d    |
-15|                   m                         |
-
-Move 32 for player John Doe, with tiles N R O U L T D.
-John Doe played D O for 4. The score is now Jane Doe 121, John Doe 84.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  G  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  - tw  -  -  M  - tl  -  - tw  -  -  - |
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  - dw  F  -  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  -  U  -  W  O  -  A dl  -  -  -  D |
+10| - dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     D  e  l |
-2 |                                     O  f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                g  a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h  e  l  e  d    |
-15|                   m                         |
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |                            l                |
+8 |             F        j  o  e  y             |
+9 |             u     w  o     a              d |
+10|          g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 34 for player Jane Doe, with tiles U U E I D P E.
-Jane Doe played E for 1. The score is now Jane Doe 122, John Doe 84.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  G  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  - tw  -  E  M  - tl  -  - tw  -  -  - |
-
+Move 32 for player John Doe, with tiles A A O O L T D.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played A T for 4. The score is now Jane Doe 134, John Doe 156.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                g  a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h  e  l  e  d    |
-15|                E  m                         |
-
-Move 35 for player John Doe, with tiles N R U L T R M.
-John Doe played M for 4. The score is now Jane Doe 122, John Doe 88.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  -  G  A  S  -  E  - tl  -  -  E |
-13| - dl  -  - dl  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  - tw  M  E  M  - tl  -  - tw  -  -  - |
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  - dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  -  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  -  U  -  W  O  -  A dl  -  -  -  D |
+10| - dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|                g  a  s     e              e |
-13|                   d                         |
-14|                h  a  t  c  h  e  l  e  d    |
-15|             M  e  m                         |
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |                            l                |
+8 |          A  f  T     j  o  e  y             |
+9 |             u     w  o     a              d |
+10|          g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 37 for player Jane Doe, with tiles U U I D P E A.
-Jane Doe played A D for 5. The score is now Jane Doe 127, John Doe 88.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  - tl  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  -  -  D  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  -  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  - tw  M  E  M  - tl  -  - tw  -  -  - |
-
+Move 34 for player Jane Doe, with tiles O G I U V D P.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played P for 8. The score is now Jane Doe 142, John Doe 156.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|             A  g  a  s     e              e |
-13|             D     d                         |
-14|                h  a  t  c  h  e  l  e  d    |
-15|             m  e  m                         |
-
-Move 38 for player John Doe, with tiles N R U L T R E.
-John Doe played R E T for 5. The score is now Jane Doe 127, John Doe 93.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  -  E  D  -  D  -  -  - dl  -  - dl  - |
-14| -  - tw  T  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  - tw  M  E  M  - tl  -  - tw  -  -  - |
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  P dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  -  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  -  U  -  W  O  -  A dl  -  -  -  D |
+10| - dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|          R  a  g  a  s     e              e |
-13|          E  d     d                         |
-14|          T     h  a  t  c  h  e  l  e  d    |
-15|             m  e  m                         |
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |          P                 l                |
+8 |          a  f  t     j  o  e  y             |
+9 |             u     w  o     a              d |
+10|          g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 40 for player Jane Doe, with tiles U U I P E I A.
-Jane Doe played P I U for 18. The score is now Jane Doe 145, John Doe 93.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  -  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| -  -  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
-
+Move 35 for player John Doe, with tiles A O O L D E R.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played D for 4. The score is now Jane Doe 142, John Doe 160.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|                   m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       P  e  d     d                         |
-14|       I  t     h  a  t  c  h  e  l  e  d    |
-15|       U     m  e  m                         |
-
-Move 41 for player John Doe, with tiles N U L R U N C.
-John Doe played C for 4. The score is now Jane Doe 145, John Doe 97.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  - tl  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| -  -  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  P dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  -  U  -  W  O  -  A dl  -  -  -  D |
+10| - dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|                      t     d              i |
-11|             C     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14|       i  t     h  a  t  c  h  e  l  e  d    |
-15|       u     m  e  m                         |
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |          p                 l                |
+8 |       D  a  f  t     j  o  e  y             |
+9 |             u     w  o     a              d |
+10|          g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 43 for player Jane Doe, with tiles U E I A T U S.
-Jane Doe played S I for 4. The score is now Jane Doe 149, John Doe 97.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| -  -  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
-
+Move 37 for player Jane Doe, with tiles O G I U V D M.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played M for 4. The score is now Jane Doe 146, John Doe 160.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             S  I     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14|       i  t     h  a  t  c  h  e  l  e  d    |
-15|       u     m  e  m                         |
-
-Move 44 for player John Doe, with tiles N U L R U N T.
-John Doe played N for 2. The score is now Jane Doe 149, John Doe 99.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| -  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| -  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  P dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  -  -  U  -  W  O  -  A dl  M  -  -  D |
+10| - dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14|    N  i  t     h  a  t  c  h  e  l  e  d    |
-15|       u     m  e  m                         |
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |          p                 l                |
+8 |       d  a  f  t     j  o  e  y             |
+9 |             u     w  o     a     M        d |
+10|          g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 46 for player Jane Doe, with tiles U E A T U H H.
-Jane Doe played U H for 5. The score is now Jane Doe 154, John Doe 99.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  -  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
-
+Move 38 for player John Doe, with tiles A O O L E R A.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played O for 2. The score is now Jane Doe 146, John Doe 162.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                                  b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| U  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| H     u     m  e  m                         |
-
-Move 47 for player John Doe, with tiles U L R U N T E.
-John Doe played E for 1. The score is now Jane Doe 154, John Doe 100.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  - dl  E  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  P dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9|tl  -  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| - dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                            E     b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| u  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| h     u     m  e  m                         |
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |          p                 l                |
+8 |       d  a  f  t     j  o  e  y             |
+9 |       O     u     w  o     a     m        d |
+10|          g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 49 for player Jane Doe, with tiles E A T U H T O.
-Jane Doe played H for 6. The score is now Jane Doe 160, John Doe 100.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  -  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  -  H  E  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
-
+Move 40 for player Jane Doe, with tiles O G I U V D E.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played G for 6. The score is now Jane Doe 152, John Doe 162.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                                     l  e  i |
-5 |                         H  e     b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| u  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| h     u     m  e  m                         |
-
-Move 50 for player John Doe, with tiles U L R U N T E.
-John Doe played U for 2. The score is now Jane Doe 160, John Doe 102.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  - dw  U  -  - tl  L  E  I |
- 5| -  - dl  -  -  - dl  -  H  E  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  P dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9|tl  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| - dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                         U           l  e  i |
-5 |                         h  e     b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| u  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| h     u     m  e  m                         |
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |          p                 l                |
+8 |       d  a  f  t     j  o  e  y             |
+9 |    G  o     u     w  o     a     m        d |
+10|          g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 52 for player Jane Doe, with tiles E A T U T O S.
-Jane Doe played O S T for 4. The score is now Jane Doe 164, John Doe 102.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  -  O  U  S  T tl  L  E  I |
- 5| -  - dl  -  -  - dl  -  H  E  -  B  O  -  C |
- 6| - dw  -  -  - tl  -  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  -  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
-
+Move 41 for player John Doe, with tiles A O L E R A I.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played L A for 7. The score is now Jane Doe 152, John Doe 169.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                      O  u  S  T     l  e  i |
-5 |                         h  e     b  o     c |
-6 |                            r  y  a     o    |
-7 |                         v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| u  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| h     u     m  e  m                         |
-
-Move 53 for player John Doe, with tiles L R U N T E O.
-John Doe played R U L E for 8. The score is now Jane Doe 164, John Doe 110.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  R  O  U  S  T tl  L  E  I |
- 5| -  - dl  -  -  -  U  -  H  E  -  B  O  -  C |
- 6| - dw  -  -  - tl  L  -  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  E  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  P dl  -  -  -  -  L dl  -  -  - dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                   R  o  u  s  t     l  e  i |
-5 |                   U     h  e     b  o     c |
-6 |                   L        r  y  a     o    |
-7 |                   E     v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| u  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| h     u     m  e  m                         |
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |          p                 l                |
+8 |       d  a  f  t     j  o  e  y             |
+9 | L  g  o     u     w  o     a     m        d |
+10| A        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 55 for player Jane Doe, with tiles E A U T B C V.
-Jane Doe played A B for 7. The score is now Jane Doe 171, John Doe 110.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  R  O  U  S  T tl  L  E  I |
- 5| -  - dl  -  -  -  U  -  H  E  -  B  O  -  C |
- 6| - dw  -  -  -  A  L  B  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  -  E  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
-
+Move 43 for player Jane Doe, with tiles O I U V D E A.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played U for 2. The score is now Jane Doe 154, John Doe 169.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                   r  o  u  s  t     l  e  i |
-5 |                   u     h  e     b  o     c |
-6 |                A  l  B     r  y  a     o    |
-7 |                   e     v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| u  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| h     u     m  e  m                         |
-
-Move 56 for player John Doe, with tiles N T O E E E W.
-John Doe played N W for 6. The score is now Jane Doe 171, John Doe 116.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  - dl  -  -  O  H |
- 4|tw  -  - tl  -  -  R  O  U  S  T tl  L  E  I |
- 5| -  - dl  -  -  N  U  -  H  E  -  B  O  -  C |
- 6| - dw  -  -  -  A  L  B  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  W  E  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  - tl  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  -  -  - dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                                        o  h |
-4 |                   r  o  u  s  t     l  e  i |
-5 |                N  u     h  e     b  o     c |
-6 |                a  l  b     r  y  a     o    |
-7 |                W  e     v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| u  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| h     u     m  e  m                         |
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                                             |
+7 |          p     U           l                |
+8 |       d  a  f  t     j  o  e  y             |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 58 for player Jane Doe, with tiles E U T C V Y H.
-Jane Doe played U H for 7. The score is now Jane Doe 178, John Doe 116.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  -  U  H  -  O  H |
- 4|tw  -  - tl  -  -  R  O  U  S  T tl  L  E  I |
- 5| -  - dl  -  -  N  U  -  H  E  -  B  O  -  C |
- 6| - dw  -  -  -  A  L  B  -  R  Y  A  -  O  - |
- 7|tl  -  -  - dl  W  E  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  -  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
-
+Move 44 for player John Doe, with tiles O E R A I U N.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played N for 8. The score is now Jane Doe 154, John Doe 177.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                               U  H     o  h |
-4 |                   r  o  u  s  t     l  e  i |
-5 |                n  u     h  e     b  o     c |
-6 |                a  l  b     r  y  a     o    |
-7 |                w  e     v     a  l  f  a  s |
-8 |                      j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| u  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| h     u     m  e  m                         |
-
-Move 59 for player John Doe, with tiles T O E E E.
-John Doe played O E for 3. The score is now Jane Doe 178, John Doe 119.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  -  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  -  U  H  -  O  H |
- 4|tw  -  - tl  -  -  R  O  U  S  T tl  L  E  I |
- 5| -  - dl  -  -  N  U  -  H  E  -  B  O  -  C |
- 6| - dw  -  -  -  A  L  B  -  R  Y  A  -  O  - |
- 7|tl  -  -  -  O  W  E  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  E  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  -  N  -  -  - tl  -  -  - dw  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  -  -  - dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                                     o  f    |
-3 |                               u  h     o  h |
-4 |                   r  o  u  s  t     l  e  i |
-5 |                n  u     h  e     b  o     c |
-6 |                a  l  b     r  y  a     o    |
-7 |             O  w  e     v     a  l  f  a  s |
-8 |             E        j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| u  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| h     u     m  e  m                         |
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |                N                            |
+7 |          p     u           l                |
+8 |       d  a  f  t     j  o  e  y             |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 61 for player Jane Doe, with tiles E T C V Y.
-Jane Doe played C for 4. The score is now Jane Doe 182, John Doe 119.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  C  -  O  F  - |
- 3| - dl  -  - dl  -  -  -  -  -  U  H  -  O  H |
- 4|tw  -  - tl  -  -  R  O  U  S  T tl  L  E  I |
- 5| -  - dl  -  -  N  U  -  H  E  -  B  O  -  C |
- 6| - dw  -  -  -  A  L  B  -  R  Y  A  -  O  - |
- 7|tl  -  -  -  O  W  E  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  E  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
-
+Move 46 for player Jane Doe, with tiles O I V D E A C.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played E V O I for 16. The score is now Jane Doe 170, John Doe 177.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                               C     o  f    |
-3 |                               u  h     o  h |
-4 |                   r  o  u  s  t     l  e  i |
-5 |                n  u     h  e     b  o     c |
-6 |                a  l  b     r  y  a     o    |
-7 |             o  w  e     v     a  l  f  a  s |
-8 |             e        j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| u  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| h     u     m  e  m                         |
-
-Move 62 for player John Doe, with tiles T E E.
-John Doe played T for 1. The score is now Jane Doe 182, John Doe 120.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  C  -  O  F  - |
- 3| - dl  -  - dl  -  -  T  -  -  U  H  -  O  H |
- 4|tw  -  - tl  -  -  R  O  U  S  T tl  L  E  I |
- 5| -  - dl  -  -  N  U  -  H  E  -  B  O  -  C |
- 6| - dw  -  -  -  A  L  B  -  R  Y  A  -  O  - |
- 7|tl  -  -  -  O  W  E  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  E  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  - dl  -  -  - dl  -  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  -  - dw  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  -  -  - dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                               c     o  f    |
-3 |                      T        u  h     o  h |
-4 |                   r  o  u  s  t     l  e  i |
-5 |                n  u     h  e     b  o     c |
-6 |                a  l  b     r  y  a     o    |
-7 |             o  w  e     v     a  l  f  a  s |
-8 |             e        j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| u  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| h     u     m  e  m                         |
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                                             |
+6 |             E  n  V  O  I                   |
+7 |          p     u           l                |
+8 |       d  a  f  t     j  o  e  y             |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
 
-Move 64 for player Jane Doe, with tiles E T V Y.
-Jane Doe played Y for 3. The score is now Jane Doe 185, John Doe 120.
-
-                               1  1  1  1  1  1
-   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
- 1| -  -  - tw  -  - tl  - tl  -  - tw  D  E  L |
- 2| -  - dl  -  - dw  -  -  - dw  C  -  O  F  - |
- 3| - dl  -  - dl  -  -  T  -  -  U  H  -  O  H |
- 4|tw  -  - tl  -  -  R  O  U  S  T tl  L  E  I |
- 5| -  - dl  -  -  N  U  -  H  E  -  B  O  -  C |
- 6| - dw  -  -  -  A  L  B  -  R  Y  A  -  O  - |
- 7|tl  -  -  Y  O  W  E  -  V  -  A  L  F  A  S |
- 8| -  -  - dw  E  -  -  J  O  E  Y dw  -  K  A |
- 9|tl  -  -  - dl  -  G  O  W  N dl  -  -  -  T |
-10| - dw  -  -  S  I  -  T  -  D  -  -  - dw  I |
-11| -  - dl  -  C  -  M  A  Q  U  I  S dl  -  R |
-12|tw  -  -  R  A  G  A  S  -  E  - tl  -  -  E |
-13| - dl  P  E  D  -  D  -  -  - dl  -  - dl  - |
-14| U  N  I  T  -  H  A  T  C  H  E  L  E  D  - |
-15| H  -  U tw  M  E  M  - tl  -  - tw  -  -  - |
-
+Move 47 for player John Doe, with tiles O E R A I U U.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played A for 3. The score is now Jane Doe 170, John Doe 180.
 
                                1  1  1  1  1  1
    1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
-1 |                                     d  e  l |
-2 |                               c     o  f    |
-3 |                      t        u  h     o  h |
-4 |                   r  o  u  s  t     l  e  i |
-5 |                n  u     h  e     b  o     c |
-6 |                a  l  b     r  y  a     o    |
-7 |          Y  o  w  e     v     a  l  f  a  s |
-8 |             e        j  o  e  y        k  a |
-9 |                   g  o  w  n              t |
-10|             s  i     t     d              i |
-11|             c     m  a  q  u  i  s        r |
-12|          r  a  g  a  s     e              e |
-13|       p  e  d     d                         |
-14| u  n  i  t     h  a  t  c  h  e  l  e  d    |
-15| h     u     m  e  m                         |
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  -  A  -  -  - dl  -  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  -  - dw  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  -  -  - dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
 
-Move 65 for player John Doe, with tiles E E.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                         A                   |
+6 |             e  n  v  o  i                   |
+7 |          p     u           l                |
+8 |       d  a  f  t     j  o  e  y             |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 49 for player Jane Doe, with tiles D A C T T H S.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played T T A C H for 24. The score is now Jane Doe 194, John Doe 180.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  - tl  -  - dw |
+ 5| -  - dl  -  -  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  -  - dw  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  -  -  - dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                             |
+5 |                         a  T  T  A  C  H    |
+6 |             e  n  v  o  i                   |
+7 |          p     u           l                |
+8 |       d  a  f  t     j  o  e  y             |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 50 for player John Doe, with tiles O E R I U U H.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played H R E for 14. The score is now Jane Doe 194, John Doe 194.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  -  H  -  - dw |
+ 5| -  - dl  -  -  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  R  - dw  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  E  -  - dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  -  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                  H          |
+5 |                         a  t  t  a  c  h    |
+6 |             e  n  v  o  i        R          |
+7 |          p     u           l     E          |
+8 |       d  a  f  t     j  o  e  y             |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 52 for player Jane Doe, with tiles D S E T O E S.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played S E D S for 8. The score is now Jane Doe 202, John Doe 194.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  -  H  -  S dw |
+ 5| -  - dl  -  -  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  R  -  E  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  E  -  D dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  S  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                  h     S    |
+5 |                         a  t  t  a  c  h    |
+6 |             e  n  v  o  i        r     E    |
+7 |          p     u           l     e     D    |
+8 |       d  a  f  t     j  o  e  y        S    |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 53 for player John Doe, with tiles O I U U O B V.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played B for 8. The score is now Jane Doe 202, John Doe 202.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  -  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  -  H  -  S dw |
+ 5| -  - dl  -  B  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  R  -  E  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  E  -  D dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  S  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                                             |
+2 |                                             |
+3 |                                             |
+4 |                                  h     s    |
+5 |             B           a  t  t  a  c  h    |
+6 |             e  n  v  o  i        r     e    |
+7 |          p     u           l     e     d    |
+8 |       d  a  f  t     j  o  e  y        s    |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 55 for player Jane Doe, with tiles T O E E E C W.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played C for 8. The score is now Jane Doe 210, John Doe 202.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  - dl  C  - dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  -  H  -  S dw |
+ 5| -  - dl  -  B  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  R  -  E  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  E  -  D dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  S  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                                             |
+2 |                                             |
+3 |                                  C          |
+4 |                                  h     s    |
+5 |             b           a  t  t  a  c  h    |
+6 |             e  n  v  o  i        r     e    |
+7 |          p     u           l     e     d    |
+8 |       d  a  f  t     j  o  e  y        s    |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 56 for player John Doe, with tiles O I U U O V E.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played E U for 7. The score is now Jane Doe 210, John Doe 209.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  -  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  -  E  C  U dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  -  H  -  S dw |
+ 5| -  - dl  -  B  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  R  -  E  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  E  -  D dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  S  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                                             |
+2 |                                             |
+3 |                               E  c  U       |
+4 |                                  h     s    |
+5 |             b           a  t  t  a  c  h    |
+6 |             e  n  v  o  i        r     e    |
+7 |          p     u           l     e     d    |
+8 |       d  a  f  t     j  o  e  y        s    |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 58 for player Jane Doe, with tiles T O E E E W Y.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played W for 8. The score is now Jane Doe 218, John Doe 209.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  - tw  -  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  W  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  -  E  C  U dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  -  H  -  S dw |
+ 5| -  - dl  -  B  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  R  -  E  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  E  -  D dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  S  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                                             |
+2 |                               W             |
+3 |                               e  c  u       |
+4 |                                  h     s    |
+5 |             b           a  t  t  a  c  h    |
+6 |             e  n  v  o  i        r     e    |
+7 |          p     u           l     e     d    |
+8 |       d  a  f  t     j  o  e  y        s    |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 59 for player John Doe, with tiles O I U O V H.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played O O H for 12. The score is now Jane Doe 218, John Doe 221.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  O  O  H  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  W  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  -  E  C  U dl  - |
+ 4|tw  -  - tl  -  -  - dw  -  -  -  H  -  S dw |
+ 5| -  - dl  -  B  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  R  -  E  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  E  -  D dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  S  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                               O  O  H       |
+2 |                               w             |
+3 |                               e  c  u       |
+4 |                                  h     s    |
+5 |             b           a  t  t  a  c  h    |
+6 |             e  n  v  o  i        r     e    |
+7 |          p     u           l     e     d    |
+8 |       d  a  f  t     j  o  e  y        s    |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 61 for player Jane Doe, with tiles T O E E E Y.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played O for 2. The score is now Jane Doe 220, John Doe 221.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  O  O  H  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  W  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  -  E  C  U dl  - |
+ 4|tw  -  - tl  O  -  - dw  -  -  -  H  -  S dw |
+ 5| -  - dl  -  B  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  R  -  E  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  E  -  D dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  S  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                               o  o  h       |
+2 |                               w             |
+3 |                               e  c  u       |
+4 |             O                    h     s    |
+5 |             b           a  t  t  a  c  h    |
+6 |             e  n  v  o  i        r     e    |
+7 |          p     u           l     e     d    |
+8 |       d  a  f  t     j  o  e  y        s    |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 62 for player John Doe, with tiles I U V.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played U for 2. The score is now Jane Doe 220, John Doe 223.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  O  O  H  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  W  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  -  E  C  U dl  - |
+ 4|tw  -  - tl  O  -  - dw  -  U  -  H  -  S dw |
+ 5| -  - dl  -  B  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  R  -  E  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  E  -  D dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  S  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                               o  o  h       |
+2 |                               w             |
+3 |                               e  c  u       |
+4 |             o              U     h     s    |
+5 |             b           a  t  t  a  c  h    |
+6 |             e  n  v  o  i        r     e    |
+7 |          p     u           l     e     d    |
+8 |       d  a  f  t     j  o  e  y        s    |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 64 for player Jane Doe, with tiles T E E E Y.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played Y for 12. The score is now Jane Doe 232, John Doe 223.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  O  O  H  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  W  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  -  E  C  U dl  - |
+ 4|tw  -  -  Y  O  -  - dw  -  U  -  H  -  S dw |
+ 5| -  - dl  -  B  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  R  -  E  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  E  -  D dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  S  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                               o  o  h       |
+2 |                               w             |
+3 |                               e  c  u       |
+4 |          Y  o              u     h     s    |
+5 |             b           a  t  t  a  c  h    |
+6 |             e  n  v  o  i        r     e    |
+7 |          p     u           l     e     d    |
+8 |       d  a  f  t     j  o  e  y        s    |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 65 for player John Doe, with tiles I V.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+John Doe played I for 1. The score is now Jane Doe 232, John Doe 224.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  O  O  H  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  W  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  -  E  C  U dl  - |
+ 4|tw  -  -  Y  O  -  - dw  -  U  -  H  -  S  I |
+ 5| -  - dl  -  B  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  R  -  E  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  E  -  D dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  S  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                               o  o  h       |
+2 |                               w             |
+3 |                               e  c  u       |
+4 |          y  o              u     h     s  I |
+5 |             b           a  t  t  a  c  h    |
+6 |             e  n  v  o  i        r     e    |
+7 |          p     u           l     e     d    |
+8 |       d  a  f  t     j  o  e  y        s    |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 67 for player Jane Doe, with tiles T E E E.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
+Jane Doe played T for 1. The score is now Jane Doe 233, John Doe 224.
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 1| -  -  - tw  -  - tl  - tl  -  O  O  H  -  - |
+ 2| -  - dl  -  - dw  -  -  - dw  W  - dl  -  - |
+ 3| - dl  -  - dl  -  -  -  -  -  E  C  U dl  T |
+ 4|tw  -  -  Y  O  -  - dw  -  U  -  H  -  S  I |
+ 5| -  - dl  -  B  - dl  -  A  T  T  A  C  H  - |
+ 6| - dw  -  -  E  N  V  O  I tl  -  R  -  E  - |
+ 7|tl  -  -  P dl  U  -  -  -  L dl  E  -  D dw |
+ 8| -  -  D  A  F  T  -  J  O  E  Y dw  -  S  - |
+ 9| L  G  O  -  U  -  W  O  -  A dl  M  -  -  D |
+10| A dw  -  G  N  U  -  L  -  F  I  E  S  T  A |
+11| -  - dl  -  -  H  E  T  H  S  -  -  C  -  T |
+12| E  -  M tl  R  -  -  E  -  -  - tl  R  -  O |
+13| A  B  I  D  E  D  -  R  -  - dl  A  U  K  S |
+14| C  -  E  -  E dw  -  -  - dw  -  -  M  -  - |
+15| H  -  N  I  L  L tl  - tl  -  - tw  -  -  - |
+
+
+                               1  1  1  1  1  1
+   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5
+1 |                               o  o  h       |
+2 |                               w             |
+3 |                               e  c  u     T |
+4 |          y  o              u     h     s  i |
+5 |             b           a  t  t  a  c  h    |
+6 |             e  n  v  o  i        r     e    |
+7 |          p     u           l     e     d    |
+8 |       d  a  f  t     j  o  e  y        s    |
+9 | l  g  o     u     w  o     a     m        d |
+10| a        g  n  u     l     f  i  e  s  t  a |
+11|                h  e  t  h  s        c     t |
+12| e     m     r        e              r     o |
+13| a  b  i  d  e  d     r           a  u  k  s |
+14| c     e     e                       m       |
+15| h     n  i  l  l                            |
+
+Move 68 for player John Doe, with tiles V.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
 Player John Doe swapped tiles.
-Player John Doe now has tiles E E
-Move 67 for player Jane Doe, with tiles E T V.
+Player John Doe now has tiles V
+Move 70 for player Jane Doe, with tiles E E E.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
 Player Jane Doe swapped tiles.
-Player Jane Doe now has tiles E T V
-Move 68 for player John Doe, with tiles E E.
+Player Jane Doe now has tiles E E E
+Move 71 for player John Doe, with tiles V.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
 Player John Doe swapped tiles.
-Player John Doe now has tiles E E
-Move 70 for player Jane Doe, with tiles E T V.
+Player John Doe now has tiles V
+Move 73 for player Jane Doe, with tiles E E E.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
 Player Jane Doe swapped tiles.
-Player Jane Doe now has tiles E T V
-Move 71 for player John Doe, with tiles E E.
+Player Jane Doe now has tiles E E E
+Move 74 for player John Doe, with tiles V.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
 Player John Doe swapped tiles.
-Player John Doe now has tiles E E
-Move 73 for player Jane Doe, with tiles E T V.
+Player John Doe now has tiles V
+Move 76 for player Jane Doe, with tiles E E E.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
 Player Jane Doe swapped tiles.
-Player Jane Doe now has tiles E T V
-Move 74 for player John Doe, with tiles E E.
+Player Jane Doe now has tiles E E E
+Move 77 for player John Doe, with tiles V.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
 Player John Doe swapped tiles.
-Player John Doe now has tiles E E
-Move 76 for player Jane Doe, with tiles E T V.
+Player John Doe now has tiles V
+Move 79 for player Jane Doe, with tiles E E E.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
 Player Jane Doe swapped tiles.
-Player Jane Doe now has tiles E T V
-Move 77 for player John Doe, with tiles E E.
+Player Jane Doe now has tiles E E E
+Move 80 for player John Doe, with tiles V.
+B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 
 Player John Doe swapped tiles.
-Player John Doe now has tiles E E
-Move 79 for player Jane Doe, with tiles E T V.
-Player Jane Doe swapped tiles.
-Player Jane Doe now has tiles E T V
-Move 80 for player John Doe, with tiles E E.
-Player John Doe swapped tiles.
-Player John Doe now has tiles E E
+Player John Doe now has tiles V
 Game over: too many turns.
-Player Jane Doe scored 185 points.
-Player John Doe scored 120 points.
+Player Jane Doe scored 233 points.
+Player John Doe scored 224 points.
 
 Performance metrics:
-        placements found by scan     28330
-           permutations examined  13068532
-                  cells examined  60130072
-           potential moves found     29722
-                   lines checked  15102840
-                   words checked  18489136
-            clines lines checked   2034308
-             cross lines checked   2336137
-               valid moves found    301829
+        placements found by scan     29030
+           permutations examined  13135972
+                  cells examined  60401464
+           potential moves found     30398
+                   lines checked  14231580
+                   words checked  15615631
+            clines lines checked   1095608
+             cross lines checked   1135007
+               valid moves found     39399

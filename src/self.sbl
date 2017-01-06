@@ -10,6 +10,7 @@
 	init()
 
 	output = 'g.tiles ' g.tiles
+	maxmoves = 4
 	maxmoves = 80
 
 	one = player('Jane Doe')

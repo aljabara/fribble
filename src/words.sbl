@@ -30,29 +30,32 @@
 
 *	A move is a sequence of empty cells in a row or column such that at least one cell in the sequence 
 *	is adjacent to an already occupied cell:
-*		*id* gives the line number, in the range 1..30;
-*		*count* is the number of free cells covered by this move;
-*		*free* is an array of dimension *count* giving the empty cells to be filled by this move;
-*		*text* is the string of tiles of the move; and
+*		*id*	 gives the line number, in the range 1..30;
+*		*count*	 is the number of free cells covered by this move;
+*		*free*	 is an array of dimension *count* giving the empty cells to be filled by this move;
+*		*text*	 is the string of tiles of the move; and
 *		*points* is the number of points won by playing this move.
 
-*	A player is represented 
+*	A player is represented by
 
-	data('player(name,rack,total,moves)')
+	data('player(name,rack,limit,moves,total)')
 
 *	where
-*		name is the player's name
-*		rack is the player's rack
-*		score is the player's current score
-*		moves counts the number of moves made by the player
-	
+*		*name* 	is the player's name
+*		*rack* 	is the player's rack
+*		*limit*	if not null, limits the player to playing *limit* tiles at a time
+*		*score*	is the player's current score
+*		*moves*	counts the number of moves made by the player
+*		*total*	is the players total score
+
+*	g.one and g.two are the players. A null name is used to indicate fribble should make the moves for the player.
 
 *	g.bonus,array(15,15) gives the bonus values for the squares on the board:
-*		1 for the value of the letter itself,
-*		2 for double letter,
-*		3 for triple letter, 
-*		4 for double word, and
-*		5 for triple word.
+*		1	for the value of the letter itself,
+*		2	for double letter,
+*		3	for triple letter, 
+*		4	for double word, and
+*		5	for triple word.
 
 	data('move(id,count,free,text,points,perm,fid)')
 
@@ -81,7 +84,8 @@
 
 *	g.showscore is used to enable tracing of scoring by setting it to nonzero value
 
-	g.showscore =
+	g.showscore = 1
+	g.showscore = 
 
 *	g.tiles, a string containing all the characters in the initial bag of characters.
 
@@ -392,7 +396,7 @@ cline
 	c = (le(id(move),15) p + 15, p);* index of cross line
 	line = lines[c];* cross line
 	p = (le(id(move),15) id(move), id(move) - 15);* position to insert character
-	line = (eq(p,1) '',substr(line,1,p - 1) ch (eq(p,15) '', substr(line,p + 1)))
+	line = (eq(p,1) '',substr(line,1,p - 1) ucase(ch) (eq(p,15) '', substr(line,p + 1)))
 	cline = pair(c,line)
 							:(return)
 cline.end
@@ -574,7 +578,7 @@ find.new
 	highest = points(move)
 	lowest = cost(text(move))
 	fi = 0;* reset for next permutation
-*	output = 'find new best move ' show.move(move)
+	output = ne(g.showscore) 'find NEW BEST move ' show.move(move)
 							:(find.perm)
 find.done
 	ident(find)					:s(find.fail)
@@ -603,18 +607,19 @@ find.end
 findscore
 
 	i = 0
-*	output = ne(g.showscore) ' ENTER findscore fn ' fn
+	findscorecount = ne(g.showscore) findscorecount + 1
+	output = ne(g.showscore) ' ENTER findscore:' findscorecount ': fn ' fn
 findscore.1
 	gt(i = i + 1,fn)				:s(findscore.2)
 	move = flines[i]
-*	output = 'findscore ' lpad(i,2) ' ' num(move) ' ' show.line(line(move)) :(findscore.1)
+*	output = 'findscore:' findscorecount ':' lpad(i,2) ' ' num(move) ' ' show.line(line(move)) :(findscore.1)
 findscore.2
 	i = 0
 
 findscore.next
 	gt(i = i + 1,fn)				:s(return)
 	findscore = findscore + score(flines[i])	
-*	output = ne(g.showscore) 'scoring AFTER  flines, ' show.pair(flines[i]) '  is ' findscore
+	output = ne(g.showscore) 'scoring AFTER  flines,:' findscorecount ': ' show.pair(flines[i]) '  is ' findscore
 
 							:(findscore.next)
 findscore.end
@@ -625,13 +630,14 @@ findscore.end
 
 *GAME*
 game
-
+	g.one = one
+	g.two = two
 	players = array(2)
-	players[1] = one
-	players[2] = two
-	total(one) = total(two) = moves(one) = moves(two) = 0
-	rack(one) = take(7)
-	rack(two) = take(7)
+	players[1] = g.one
+	players[2] = g.two
+	total(g.one) = total(g.two) = moves(g.one) = moves(g.two) = 0
+	rack(g.one) = take(7)
+	rack(g.two) = take(7)
 
 	g.turn = g.lastmove = 0
 
@@ -657,6 +663,7 @@ g.turn.trace
 
 game.continue
 	output = 'Move ' g.turn ' for player ' name(p) ', with tiles ' show.tiles(rack(p),'A') '.'
+	output = 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
 
 *	output = 'calling find'
 	move = (eq(g.turn,1) open(rack(p)), find(rack(p))) :s(game.move)
@@ -671,7 +678,7 @@ game.continue
 
 	output = gt(passed,6) ' Too many passed moves.'	:s(game.over)
 
-	output = 'Player ' name(one) ' passes.'		:(game.turn)
+	output = 'Player ' name(g.one) ' passes.'		:(game.turn)
 	
 game.swap
 	rack(p) = swap(rack(p),3)
@@ -688,7 +695,7 @@ game.move
 
 *	output = 'played move'
 	output = name(p) ' played ' show.tiles(text(move),'B') ' for ' points(move) '.'
-.		' The score is now ' name(one) ' ' total(one) ', ' name(two) ' ' total(two) '.'
+.		' The score is now ' name(g.one) ' ' total(g.one) ', ' name(g.two) ' ' total(g.two) '.'
 
 	show.board(g.board)
 
@@ -739,8 +746,8 @@ game.fold
 *	output = 'rebuilding board'
 	g.board = grid(g.lines)				:(game.turn)
 game.over						
-	output =  'Player ' name(one) ' scored ' total(one) ' points.'
-	output =  'Player ' name(two) ' scored ' total(two) ' points.'
+	output =  'Player ' name(g.one) ' scored ' total(g.one) ' points.'
+	output =  'Player ' name(g.two) ' scored ' total(g.two) ' points.'
 							:(return)
 game.end
 
@@ -1157,7 +1164,8 @@ score
 	cline = line(pair)
 	bonusline = g.bonus.lines[num(pair)]
 
-	eq(g.showscore) 				:s(score.3)
+*	eq(g.showscore) 				:s(score.3)
+							:(score.3)
 	vline = 
 score.1
 	gt(i = i + 1,size(cline))			:s(score.2)
@@ -1180,12 +1188,15 @@ score.word
 
 *	Single letters don't contribute to score since they result from an crossing line.
 
-	eq(n,1)						:s(score.word);* singletons aren't scored.
 	word break(&ucase)				:f(score.word)
+	score = eq(n,1) g.value[substr(word,1,1)]	:s(score.word)
+	eq(n,1)						:s(score.word);* singletons aren't scored.
 
 	output = ne(g.showscore) 'scoring word ' word ' starting at ' start
 	line = substr(cline,start)
 	bonusline = substr(g.bonus.lines[num(pair)],start);* corresponding part of bonus line
+	output = ne(g.showscore) 'score' char(9)  line
+	output = ne(g.showscore) 'bonus' char(9) bonusline
 	i = 0
 	mult = 1;* multiplier value for double and triple word cases.
 
@@ -1208,9 +1219,9 @@ score.char
 	output = ne(g.showscore) 'score ' ch ' added value ' val ' score now ' score ' mult ' mult
 							:(score.char)
 score.char.done
-	score = score * mult
+	score = ne(score) score * mult
 	output =  ne(g.showscore) 'result SCORE ' score ' for word ' word ' , for ' show.pair(pair)
-							:(return)
+							:(score.word)
 score.error
 	score = 0					:(return)
 *	output = 'error scoring line with no new move ' line(pair) :(end)
