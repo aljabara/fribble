@@ -438,6 +438,8 @@ counters
 	counter('clines lines checked'		, count.cline	)
 	counter('cross lines checked'		, count.cross	)
 	counter('valid moves found'		, count.valid	)
+	counter('contig inserts'		, count.insert.contig)
+	counter('split inserts'			, count.insert.split)
 							:(return)
 counters.end
 
@@ -803,17 +805,32 @@ hline
 hline.end
 
 
-	define('insert(line,move)i,utext')		:(insert.end)
+	define('insert(line,move)c,f,i,utext')		:(insert.end)
 
 *	Insert the text of a move into its free list of empty cells in the line of the move.
 
 *INSERT*
 insert
+	f = free(move)
+	c = count(move)
+	ne(f[c] - f[1], count - 1)			:s(insert.chars)
+
+*	Here if cells are contiguous. Insert text after part before it, and before part after it.
+
+	insert = substr(line, 1, f[1] - 1) text(move) substr(line, f[c] + 1)
+	output = ne(size(line),15) 'insert failure ' line		:s(end)
+	counter.insert.contig = counter.insert.contig + 1
+							:(return)
+insert.chars
+
+*	Here if cells not contiguous. Unpack the line, insert the move text, and pack it back up.
+
+	counter.insert.split = counter.insert.split + 1
 	insert = unpack(line)
 	utext = ucase(text(move))
-insert.1
+insert.ch
 	gt(i = i + 1,count(move))			:s(insert.done)
-	insert[free(move)[i]] = substr(utext,i,1)	:(insert.1)
+	insert[free(move)[i]] = substr(utext,i,1)	:(insert.ch)
 insert.done
 	insert = pack(insert)				:(return)
 insert.end
