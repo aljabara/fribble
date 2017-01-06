@@ -1,5 +1,11 @@
 -include 'words.sbl'
 
+ t1 = 
+	t2 = +t1
+	output = t1 ' ' t2
+end
+	output = date()
+end
 	init()
 	output = g.dict[7]['inserts']
 	s1 = lpad(' dave',15)
