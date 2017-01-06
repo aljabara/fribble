@@ -87,7 +87,7 @@
 
 *	g.trace, if not null, begin tracing at the start of move g.trace.
 
-	g.trace = 2
+	g.trace = 22
 	g.trace =
 
 *	g.tracing, set nonzero when tracing initiated by *g.trace* begins.
@@ -340,7 +340,6 @@ bonus.lines.end
 *CHECKLINE*
 checkline
 	count.checkline = count.checkline + 1
-*	output = gt(g.turn,1) 'checking line ' line
 	line span(' ') =
 	empty(line)					:s(return)
 	iline = line
@@ -351,15 +350,16 @@ checkline.1
 	line break(' ')  . word ' ' =			:f(checkline.done);* if line exhausted
 	eq(size(word),1)				:s(checkline.1)
 	checkword(word)					:f(freturn)s(checkline.1)
-*	output = gt(g.turn,1) 'checkword VALID<' word '>'  :(checkline.1)
-			:(checkline.1)
+
+*	output = 'checkword VALID<' word '>'  :(checkline.1)
+*			:(checkline.1)
 
 	checkword(word)					:s(checkline.1)
 
 checkline.failed
 				:(freturn)
 checkline.done
-*	output = gt(g.turn,1) 'checkline VALID ' iline
+*	output = gt(g.turn,21) 'checkline VALID ' iline
 							:(return)
 checkline.end
 
@@ -399,7 +399,7 @@ cline.col
 	r = p;* crossing line is row p
 	c = id(move) - 15
 	line = lines[p];* crossing line is row p.
-	line = (eq(c,1) '',substr(line,1,c - 1)) ch (eq(p,15) '', substr(line,c + 1))  
+	line = (eq(c,1) '',substr(line,1,c - 1)) ch (eq(c,15) '', substr(line,c + 1))  
 *	output = 'cline ' num(move) ' p ' p '  c ' c
 	cline = pair(p,line)				:(cline.done)
 cline.done
