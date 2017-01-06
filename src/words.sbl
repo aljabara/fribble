@@ -396,7 +396,7 @@ cline
 	c = (le(id(move),15) p + 15, p);* index of cross line
 	line = lines[c];* cross line
 	p = (le(id(move),15) id(move), id(move) - 15);* position to insert character
-	line = (eq(p,1) '',substr(line,1,p - 1) ucase(ch) (eq(p,15) '', substr(line,p + 1)))
+	line = substr(line,1,p - 1) ucase(ch) substr(line,p + 1)
 	cline = pair(c,line)
 							:(return)
 cline.end
