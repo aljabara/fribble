@@ -1,4 +1,4 @@
-* tThis software is licensed under the MIT License, contained in the file LICENSE.
+* This software is licensed under the MIT License, contained in the file LICENSE.
 
 * Copyright (c) 2016 dave shields
 
@@ -38,17 +38,20 @@
 
 *	A player is represented by
 
-	data('player(name,rack,limit,moves,total)')
+	data('player(name,rack,limit,fribble,moves,total)')
 
 *	where
 *		*name* 	is the player's name
 *		*rack* 	is the player's rack
 *		*limit*	if not null, limits the player to playing *limit* tiles at a time
+*		*fribble* if not null, requests that fribble make the moves
 *		*score*	is the player's current score
 *		*moves*	counts the number of moves made by the player
 *		*total*	is the players total score
 
-*	g.one and g.two are the players. A null name is used to indicate fribble should make the moves for the player.
+*	If the name is null, then *fribble* is set non-null, and the name is set to indicate fribble is making the moves.
+
+*	g.one and g.two are the players. 
 
 *	g.bonus,array(15,15) gives the bonus values for the squares on the board:
 *		1	for the value of the letter itself,
@@ -384,7 +387,7 @@ checkword.good
 							:(return)
 checkword.end
 
-	define('cline(lines,move,p,ch,rack)line,i,r,c')		:(cline.end)
+	define('cline(lines,move,p,ch,rack)line')	:(cline.end)
 
 *	Return crossing line of p-th cell in move *move*. *ch* gives tile to be played.
 
@@ -392,15 +395,13 @@ checkword.end
 cline
 	count.cline = count.cline + 1
 
-*	Crossline line of row r is column p. Cross line of column c is row p
-	c = (le(id(move),15) p + 15, p);* index of cross line
-	line = lines[c];* cross line
+*	Cross line line of row r is column p. Cross line of column c is row p
+	line = lines[(le(id(move),15) p + 15, p)];* cross line
 	p = (le(id(move),15) id(move), id(move) - 15);* position to insert character
 	line = substr(line,1,p - 1) ucase(ch) substr(line,p + 1)
 	cline = pair(c,line)
 							:(return)
 cline.end
-
 
 	define('cost(text)')				:(cost.end)
 
@@ -438,6 +439,7 @@ counters
 	counter('clines lines checked'		, count.cline	)
 	counter('cross lines checked'		, count.cross	)
 	counter('valid moves found'		, count.valid	)
+	counter('inserts'			, count.insert)
 	counter('contig inserts'		, count.insert.contig)
 	counter('split inserts'			, count.insert.split)
 							:(return)
@@ -632,6 +634,10 @@ findscore.end
 
 *GAME*
 game
+	fribble(one) = ident(name(one)) 1
+	fribble(two) = ident(name(two)) 1
+	name(one) = differ(fribble(one)) 'Fribble One'
+	name(two) = differ(fribble(two)) 'Fribble Two'
 	g.one = one
 	g.two = two
 	players = array(2)
@@ -646,6 +652,8 @@ game
 game.round
 	i = 0
 game.turn
+	p = players[i = i + 1]				:f(game.round)
+
 	g.turn = g.turn + 1
 
 	output = ne(max) gt(g.turn,max) 'Game over: too many turns.'  :s(game.over)
@@ -658,8 +666,7 @@ g.turn.trace
 
 	differ(g.trace) tracer()
 
-	p = players[i = i + 1]				:f(game.round)
-	le(g.turn, max)			:s(game.continue)
+	le(g.turn, max)					:s(game.continue)
 
 	output = 'Too many moves ( ' moves ').'		:(game.over)
 
@@ -668,7 +675,8 @@ game.continue
 	output = 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
 
 *	output = 'calling find'
-	move = (eq(g.turn,1) open(rack(p)), find(rack(p))) :s(game.move)
+	move = ident(fribble(p)) get()			:s(game.move)
+	move = differ(fribble(p)) (eq(g.turn,1) open(rack(p)), find(rack(p))) :s(game.move)
 *	output = 'called find'
 
 *	Here if no move found, in which case the return value is a set of swapped tiles.
@@ -753,6 +761,67 @@ game.over
 							:(return)
 game.end
 
+	define('get()line,kind,num,tiles,id,pos,f,fi,ch') :(get.end)
+
+*	Get move from user.
+
+*	A move is specified by a row/column indicator followed by one or more placements.
+
+*	A row indicator has the form 'rnn' where nn is a number in the range 1-15.
+*	A column indicator has the form 'cnn' where nn is a number in the range 1-15
+
+*	A placement has the form 'ntext' or 'nntext' where n specifies a position in the row or column, and
+*	text is a sequence of up to seven letters.
+
+*	For example, 
+
+*		r8 8start
+
+*	specifies a move in row 8, column 8, of the text 'start'. This could also be entered as
+
+*		r8 8s 9t 10a 11r 12t
+
+*	or
+
+*		r8 8st 10art
+
+*GET
+get
+	free = array(7)
+get.loop
+	line = input					:f(get.done)
+	line span(' ') =
+	output = ident(line) 'empty input, try again'	:s(get.invalid)
+
+*	Get row/column indicator
+
+	line any('rc') . kind  span('0123456789') . num =	:f(get.invalid)
+	output = lt(num,1) 'number less than one '	:s(get.invalid)
+	output = gt(num,15) 'number greater than fifteen '	:s(get.invalid)
+	id = (ident(kind,'r') num, num + 15)
+get.ind
+	line span(' ') =	
+	ident(line)					:s(get.done)
+	line span('0123456789') . num rem . tiles	:f(get.invalid)
+	output = lt(num,1) 'position less than one'	:s(get.invalid)
+	output = gt(num,15) 'position greater than fifteen' :s(get.invalid)
+	pos = num
+get.ch
+	tiles len(1) . ch =				:f(get.ind)
+	text = text ch
+	free(fi = fi + 1) = pos
+	pos = pos + 1					:(get.ch)
+get.done
+	ident(text)					:s(get.invalid)
+	free = subarray(free,1,size(text))
+	get = move(id,size(text),free,lcase(text))
+	line = insert(g.lines[id],move)
+	checkline(line)					:s(return)
+	output = 'move results in invalid line ' line
+get.invalid
+	output = 'invalid specification, try again.'	:(get.loop)
+get.end
+
 	define('grid(lines,start)i,r,c,line')		:(grid.end)
 
 *	Construct a grid from a sequence of lines beginning at index *start*,
@@ -811,6 +880,7 @@ hline.end
 
 *INSERT*
 insert
+	count.insert = count.insert + 1
 	f = free(move)
 	c = count(move)
 	ne(f[c] - f[1], count - 1)			:s(insert.chars)
@@ -819,13 +889,13 @@ insert
 
 	insert = substr(line, 1, f[1] - 1) text(move) substr(line, f[c] + 1)
 	output = ne(size(line),15) 'insert failure ' line		:s(end)
-	counter.insert.contig = counter.insert.contig + 1
+	count.insert.contig = count.insert.contig + 1
 							:(return)
 insert.chars
 
 *	Here if cells not contiguous. Unpack the line, insert the move text, and pack it back up.
 
-	counter.insert.split = counter.insert.split + 1
+	count.insert.split = count.insert.split + 1
 	insert = unpack(line)
 	utext = ucase(text(move))
 insert.ch
@@ -926,6 +996,7 @@ open.word
 	score = (lt(size(word),5) cost(word), 2 * cost(word))
 
 *	Add the first word found to set *highest* and *lowest*
+
 	eq(highest,0)					:s(open.new)
 
 	lt(score,highest)				:s(open.word)
@@ -939,7 +1010,6 @@ open.new
 	highest = score
 	lowest = cost(word)
 	best = word					
-	output = 'updating.turn ' best ' ' highest ' ' lowest
 							:(open.word)
 open.done
 
@@ -953,13 +1023,13 @@ open.done
 	free = array(size(best))
 	i = 0
 open.free
-	free[i = i + 1] = 7 + i  + offset			:s(open.free)
+	free[i = i + 1] = 7 + i  + offset		:s(open.free)
 
 	open = move(8 + offset,size(best),free,best,highest) :(return)
 
 open.end
 
-	define('order(tiles)chars,ch,c1,c2,swaps,i,v1,v2')		:(order.end)
+	define('order(tiles)chars,ch,c1,c2,swaps,i,v1,v2')	:(order.end)
 
 *	Sort the tiles in *tiles* according to their value, with least valuable first.
 *	Though 's' has a nominal value of 1, its actual value is greater, since almost
@@ -968,7 +1038,7 @@ open.end
 
 *ORDER*
 order
-	order = le(size(tiles),2) tiles					:s(return)
+	order = le(size(tiles),2) tiles			:s(return)
 	chars = unpack(tiles)
 							:(order.loop)
 order.next
@@ -1011,7 +1081,7 @@ pack.end
 *PLACE
 place
 	place = replace(txt,substr('1234567',1,size(rack)),rack)
-								:(return)
+							:(return)
 place.end
 
 	define('placecell(r,c,w)ch')			:(placecell.end)
@@ -1035,7 +1105,7 @@ placecell.ch
 placecell.end
 
 
-	define('playmove(move)txt,i,ch')			:(playmove.end)
+	define('playmove(move)txt,i,ch')		:(playmove.end)
 
 *	Play move *move*, updating the board and related objects.
 
@@ -1082,7 +1152,7 @@ prefix.end
 
 *	Return integer uniformly distributed in 1,2,...,n. 
 *	If n=0 returns real uniformly distributed in the interval [0,1].
-*	The Algorithm is based in that in section 16.1 of "Algorithms in SNOBOL4,"
+*	The Algorithm is based on that in section 16.1 of "Algorithms in SNOBOL4,"
 *	James F. Gimpel, John Wiley and Sons, 1976.
 
 *RANDOM*
@@ -1398,7 +1468,7 @@ wordcount.1
 	wordcount = +wordcount + 1			:(wordcount.1)
 wordcount.end
 
-	define('words(s)n,w,pos,i')					:(words.end)
+	define('words(s)n,w,pos,i')			:(words.end)
 
 *	Return array of the words in s, fail if no words.
 *	The first entry for an array is the starting index,

@@ -7,14 +7,25 @@
 
 *	Have fribble play itself.
 
-	init()
+loop
+	output = 'enter c to continue, q to quit:'
+	name = input					:f(over)
+	ident(name,'q')					:s(over)
 
+	output = 'enter first player name, or nothing to have fribble be the first player:'
+	name = input					:f(done)
+	name span(' ') =
+	one = player(name)
+	output = 'enter secone player name, or nothing to have fribble be the second player:'
+	name = input 					:f(over)
+	name span(' ') =
+	two = player(name)
+
+	init()
 	output = 'g.tiles ' g.tiles
-	maxmoves = 4
+	maxmoves = 9
 	maxmoves = 80
 
-	one = player('Jane Doe')
-	two = player('John Doe')
 *	&dump = 3
 	game(one,two,maxmoves)				:(done)	
 	
@@ -30,4 +41,7 @@ no.moves
 	output =
 done
 	counters()
+							:(loop)
+over
+	output = 'Game over -- good bye.'
 end
