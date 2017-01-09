@@ -16,17 +16,22 @@ loop
 	name = input					:f(done)
 	name span(' ') =
 	one = player(name)
-	output = 'enter secone player name, or nothing to have fribble be the second player:'
+	output = 'enter second player name, or nothing to have fribble be the second player:'
 	name = input 					:f(over)
 	name span(' ') =
 	two = player(name)
+	limit(one) = limit(two) = 6
 
 	init()
 	output = 'g.tiles ' g.tiles
-	maxmoves = 9
+	maxmoves = 7
+	maxmoves = 10
 	maxmoves = 80
 
 *	&dump = 3
+*	&ftrace = &trace  = 100000
+*	g.tracing = 1
+
 	game(one,two,maxmoves)				:(done)	
 	
 nomove

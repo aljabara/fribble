@@ -94,7 +94,7 @@
 
 *	g.trace, if not null, begin tracing at the start of move g.trace.
 
-	g.trace = 22
+	g.trace = 6
 	g.trace =
 
 *	g.tracing, set nonzero when tracing initiated by *g.trace* begins.
@@ -291,7 +291,7 @@ init.value.end
 
 *APPEND*
 append
-	ident(w)	:s(append.fail)
+*	ident(w)	:s(append.fail)
 	ch = ident(ch) ' '
 	append = ident(str) w				:s(return)
 	append = str ch w				:(return)
@@ -299,35 +299,30 @@ append.fail
 	 output = 'null ch to append ' w :(end)
 append.end
 
-	define('available(line)blanks,c,i')		:(available.end)
+	define('open(pair)line,num,spaces,c,i,oi')	:(open.end)
 
-*	Return array containing the indexes of the blank cells in line. Fails if no blanks.
+*	Return array containing the indexes of the open (blank) cells in line. Fails if no open cells.
 
-*AVAILABLE*
-available
-	c = substr(line, i = i + 1, 1)			:f(available.1)
-	differ(c,' ')					:s(available)
-	blanks = blanks + 1				:(available)
-available.1
-	eq(blanks,0)					:s(freturn)
-	available = array(blanks)
+*OPEN*
+open
+	line = line(pair)
+	num = num(pair)
+	spaces = spaces(line)
+	eq(spaces,0)					:s(freturn)
+	open = array(spaces)
 	i = ai = 0
-available.2
-	c = substr(line, i = i + 1, 1)			:f(return)
-	differ(c,' ')					:s(available.2)
-	available[ai = ai + 1] = +i				
-							:(available.2)
-available.end
-
-	define('blanks(line)n')				:(blanks.end)
-
-*	Count number of blanks in line.
-
-*BLANKS*
-blanks
-	line len(1) . c =				:f(return)
-	blanks = ident(c,' ') blanks + 1		:(blanks)
-blanks.end
+open.c
+	c = substr(line, i = i + 1, 1)			:f(open.done)
+	differ(c,' ')					:s(open.c)
+	open[oi = oi + 1] = +i				:(open.c)
+open.done
+	eq(g.tracing)					:s(return)
+	i = 0; c = 
+open.done.ch
+	c = c lpad(open[i = i + 1],3)		:s(open.done.ch)
+	output = ne(g.tracing) 'Open: ' lpad(lineid(num),3) ' '  show.hex(line) ':  :' show.line(line) ': is ' c
+							:(return)
+open.end
 
 	define('bonus.lines()i')			:(bonus.lines.end)
 
@@ -353,13 +348,12 @@ checkline
 	line = line ' ';* to simplify breaking out words.
 checkline.1
 	line span(' ') =
-	ident(line)					:s(checkline.done)
+	ident(iline)					:s(checkline.done)
 	line break(' ')  . word ' ' =			:f(checkline.done);* if line exhausted
 	eq(size(word),1)				:s(checkline.1)
 	checkword(word)					:f(freturn)s(checkline.1)
 
-*	output = 'checkword VALID<' word '>'  :(checkline.1)
-*			:(checkline.1)
+	output = ne(g.tracing) 'checkline VALID<' iline '>'  :(checkline.1)
 
 	checkword(word)					:s(checkline.1)
 
@@ -454,7 +448,7 @@ empty
 	ident(line)					:s(return)f(freturn)
 empty.end
 	
-	define('find(rack)num,lines,inlines,flines,fi,line,moves,mi,m,perms,permi,fline,tline,iline,sline,highest,lowest,i,p,score')	:(find.end)
+	define('find(rack,limit)num,lines,inlines,flines,fi,line,moves,mi,m,perms,permi,fline,tline,iline,sline,highest,lowest,i,p,score')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -478,6 +472,7 @@ empty.end
 
 *FIND*
 find
+*	
 	lines = copy(g.lines)
 	inlines = copy(lines)
 	flines = array(8);* for line with move and its crossing lines.
@@ -487,24 +482,20 @@ find
 find.line
 	gt(num = num + 1,30)				:s(find.done)
 	line = lines[num]
-	moves = scan(pair(num,line),rack)			:f(find.line)
-*	ne(g.showscore) differ(moves) show.moves(moves,'Scan line ' lpad(num,3),2)
+	moves = scan(pair(num,line),rack,limit)		:f(find.line)
 	mi = 0
 find.move
 	count.moves = count.moves + 1
 	move = moves[mi = mi + 1,2]			:f(find.line)
-*	output = ne(g.showscore) ' find.move mi ' mi ' ' show.move(move,'find')
+*	output = ne(g.tracing) 'find.move mi ' mi ' ' show.move(move,'find')
 	points(move) = 
-	perms = g.permutations[size(rack) '?' count(move)]
-	ident(perms)					:s(find.move)
+	perms = g.permutations[text(move)]
 	permi = 0
 	
 find.perm
 	score = fi = 0
 	perm = perms[permi = permi + 1]			:f(find.move)
 	ident(perm)					:s(find.move)
-
-*	output = 'findperm ' perm
 
 	count.perm = count.perm + 1
 	count.cells = count.cells + size(perm)
@@ -524,7 +515,6 @@ find.perm
 *	Save the valid lines in *flines* for scoring if move proves valid.
 
 	text(move) = place(text(move),rack)
-*	output = 'find valid move ' show.move(move)
 	flines[fi = fi + 1] =  pair( id(move), insert(lines[num],move))
 	i = 0
 
@@ -540,19 +530,22 @@ find.cross
 *	output = 'valid checkline ' line(cline)
 
 	text(move) = place(text(move),ucase(rack))
-	flines[fi = fi + 1] = cline
-*				pair(
-*.		(le(id(move),15) id(move) + 15, id(move) - 15),
-*.		insert(line(cline),move))		
-					:(find.cross)
+
+
+	flines[fi = fi + 1] = cline			:(find.cross)
 	
 find.cross.done
+*	output = ne(g.tracing) 'find valid move ' show.move(move)
+
 *	Score the line by summing the scores of the lines saved in flines.
 	
+*	output = ne(g.tracing) 'valid move :' line '  move '  id(move) ' ' count(move) '  '
+*.		free(move)[1] '...' free(move)[count(move)] ' ' text(move)
+ 
 	count.valid = count.valid + 1
 	move = copy(move)
-*	ne(g.showscore) show.play(move,show.move(move))
-*	ne(g.showscore) show.move(move)
+*	ne(g.tracing) show.move(move)
+*	ne(g.tracing) show.play(move,show.move(move))
 	points(move) = +findscore(flines,fi)	
 	g.found = g.found + 1
 *	output = 'find found ' show.move(move)
@@ -582,7 +575,7 @@ find.new
 	highest = points(move)
 	lowest = cost(text(move))
 	fi = 0;* reset for next permutation
-	output = ne(g.showscore) 'find NEW BEST move ' show.move(move)
+	output = ne(g.tracing) 'find NEW BEST move ' show.move(move)
 							:(find.perm)
 find.done
 	ident(find)					:s(find.fail)
@@ -611,7 +604,7 @@ find.end
 findscore
 
 	i = 0
-	findscorecount = ne(g.showscore) findscorecount + 1
+	findscorecount = ne(g.tracing) findscorecount + 1
 	output = ne(g.showscore) ' ENTER findscore:' findscorecount ': fn ' fn
 findscore.1
 	gt(i = i + 1,fn)				:s(findscore.2)
@@ -675,8 +668,9 @@ game.continue
 	output = 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
 
 *	output = 'calling find'
+	ne(g.tracing) show.grid(g.alone)
 	move = ident(fribble(p)) get()			:s(game.move)
-	move = differ(fribble(p)) (eq(g.turn,1) open(rack(p)), find(rack(p))) :s(game.move)
+	move = differ(fribble(p)) (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
 *	output = 'called find'
 
 *	Here if no move found, in which case the return value is a set of swapped tiles.
@@ -954,81 +948,6 @@ lines.next
 	lines[i + 15] = lcase(vline(g,i))		:(lines.next)
 lines.end
 
-	define('open(tiles)perm,perms,permi,free,offset,i,highest,lower,best,n,word,start,score,move')	:(open.end)
-
-*	Determine best opening.turn. At least one letter in this move must be in the center square (8,8).
-*	The only bonus available is double word, for any word of more than four characters.
-
-*	Find the move the highest score. Given two moves with the same score, prefer the one with
-*	the lowest tile cost.
-*
-*	The return value has the form 'm s' where m is the move and s is its score.
-*
-*	There are seven tiles, so we just try all permutations of length one up to seven.
-
-*OPEN*
-open
-	output = 'enter open'
-	n = 0;* number of tiles to play
-	highest = lowest = 0;* best score, lowest cost
-	start = 8;* assume word will start in column 8
-
-	
-	tiles break('s')				:f(open.n)
-	tiles = less(tiles,'s')
-
-open.n	gt(n = n + 1,6)					:s(open.done)
-*	play at most six tiles for now.
-	kind = size(tiles) '?' n
-	perms = g.permutations[kind]			:f(open.n)
-	permi = 0
-open.word
-*	get next word, check that valid, then see if new high score
-	perm = perms[permi = permi + 1]			:f(open.n)
-	word = replace(perm,substr('1234567',1,size(tiles)),tiles)
-*	output = 'kind ' kind ' perm ' perm ' word ' word
-	checkword(word)					:f(open.word)
-	checkwords = checkwords + 1
-
-*	Score is the value of the tiles unless the word has five or more characters, in which
-*	case the double word bonus at index twelve can be achieved.
-
-	score = (lt(size(word),5) cost(word), 2 * cost(word))
-
-*	Add the first word found to set *highest* and *lowest*
-
-	eq(highest,0)					:s(open.new)
-
-	lt(score,highest)				:s(open.word)
-	gt(score,highest)				:s(open.new)
-
-*	Here if current best and new move have same score. Prefer the one with the lowest cost.
-
-	lt(cost(word),lowest)				:s(open.new)
-
-open.new
-	highest = score
-	lowest = cost(word)
-	best = word					
-							:(open.word)
-open.done
-
-*	Start word at position 8, unless word size greater than five, in which case move it to the left, but
-*	making sure move still covers double-word cell at position twelve.
-
-	offset = (lt(size(best,5) 0, 5 - size(best)))
-
-*	Initialize free array for move.
-
-	free = array(size(best))
-	i = 0
-open.free
-	free[i = i + 1] = 7 + i  + offset		:s(open.free)
-
-	open = move(8 + offset,size(best),free,best,highest) :(return)
-
-open.end
-
 	define('order(tiles)chars,ch,c1,c2,swaps,i,v1,v2')	:(order.end)
 
 *	Sort the tiles in *tiles* according to their value, with least valuable first.
@@ -1090,17 +1009,19 @@ place.end
 
 *PLACECELL*
 placecell
+	output = ne(g.tracing) 'placecell r  ' r '  c ' c '  w ' w
 	c = c - 1
 placecell.ch
+	output = eq(r,13) eq(c,1) ' CHANGING 13 1'
 	w len(1) . ch =					:f(return)
 	g.board[r, c = c + 1] = ch
 	g.bonus[r, c] = ' ';* indicate bonus no longer available
 *	Mark self and adjoining squares as no longer alone
 	g.alone[r,c] = ' '    ;* self
-	g.alone[r - 1,c] = ' ';* cell to the north
-	g.alone[r,c + 1] = ' ';* cell to the east
-	g.alone[r,c - 1] = ' ';* cell to the west
-	g.alone[r + 1,c] = ' ';* cell to the south
+	g.alone[r - 1,c] = gt(c, 1) ' ';* cell to the north
+	g.alone[r,c + 1] = lt(c,15) ' ';* cell to the east
+	g.alone[r,c - 1] = gt(r, 1) ' ';* cell to the west
+	g.alone[r + 1,c] = lt(r,15) ' ';* cell to the south
 							:(placecell.ch)
 placecell.end
 
@@ -1111,10 +1032,10 @@ placecell.end
 
 *PLAYMOVE*
 playmove
-*	output = 'playmove ' show.move(move)
+	output = ne(g.tracing) 'playmove ' show.move(move)
 	txt = text(move)
 playmove.ch
-	txt len(1) . ch =				:f(return)
+	txt len(1) . ch =				:f(playmove.done)
 *	output = 'playmove char<' ch '>'
 	i = i + 1;* position in text
 	id = id(move)
@@ -1132,6 +1053,8 @@ playmove.col
 *	output = 'calling placecell col ' id ' ' free(move)[i] ' ' ch
 	placecell(free(move)[i],id - 15,ch)		
 							:(playmove.ch)
+playmove.done
+	output = ne(g.tracing) 'playmove returns'	:(return)
 playmove.end
 	
 	define('prefix(str,pre)word')			:(prefix.end)
@@ -1163,79 +1086,105 @@ random
 							:(return)
 random.end
 
-	define('scan(pair,rack)num,line,alone,nopen,ai,first,max,n,last,p,move,moves,fi,lonely,avail')	:(scan.end)
+	define('scan(pair,rack,limit)num,line,alone,open,nopen,n,p,move,alone,last')	:(scan.end)
 
 *	Scan the given line to find the places where a valid move can be made. At least one cell in 
 *	a move must be adjacent to an occupied cell.  *line* is the line to be scanned, and *num* gives its
-*	position on the board.
+*	position on the board. If not null, *limit* gives the most tiles that can be played.
 
 *SCAN*
 scan
+*	output = ne(g.tracing) 'Scan enter'
 	line = line(pair)
 	num = num(pair)
-	output = differ(g.tracing) 'SCANNING ' num ' ' show.hex(line)
-	moves = 0
+*	output = ne(g.tracing) 'Scan ' num ' ' show.hex(line)
 	alone = g.alone.lines[num]
 
-*	Allocate and fill in avail, an array giving the positions of the open cells.
+*	Allocate and fill in open, an array giving the positions of the open cells.
 
-	avail = available(line)			:f(scan.done);* fail if no empty cells
+	open = open(pair)				:f(scan.done);* fail if no empty cells
+	nopen = +prototype(open);* number of open cells in the line
 
-*	Set lonely to the alone-ness of the cells in avail, so that the i-th character is the
+*	Set alone to the alone-ness of the cells in open, so that the i-th character is the
 *	alone attribute of the i-th position in the move. A valid move requires that at
-*	least cell in the move not be alone.
+*	least one cell in the move not be alone.
 
 	i = 0
-scan.lonely
-	lonely = lonely substr(alone,avail[i = i + 1],1) :s(scan.lonely)
+scan.alone
+	alone = alone substr(alone,open[i = i + 1],1) :s(scan.alone)
 	
-	nopen = prototype(avail);* number of open cells
-
-*	Prepare for loop, since decrement nopen at start of search at a given empty cell.
-
+*	The number of moves that can be made starting at a given position *i* in *open* depends on
+*		limit,the most tiles that can be played in a move, or null if no limit.
+*		the number of remaining open cells in the line.
+*		the number of tiles in the rack.
+*		the number of remaining open spaces in the line
+	
 	nopen = nopen + 1
-	ai = 0
+	pi = 0
 
-scan.next
-*	Here to find all the possible moves starting at the next open cell, first.
+scan.p
+	p = open[pi = pi + 1]				:f(scan.done)
+	output = ne(g.tracing) 'Scan p=' p ' pi=' pi ' ' show.hex(line)
+	ne(g.tracing) show.open(open)
 
-	first = avail[ai = ai + 1]			:f(scan.done)
+	last = p;* last cell affected by this move
+	
+	nopen = nopen - 1
+	
 
-	nopen = nopen - 1;* count down since we are accounting for this open cell in this pass through the loop.
-	le(nopen)					:s(scan.done)
+*	We can't play a move with more cells than the number of tiles in the rack,
+*	or the number of remaining cells, or the limit number, or beyond the end of the line.
 
-*	Let max be the most tiles we can play on this line. We can't play more tiles than the number of 
-*	blank cells remaining in the line, and we can't play more tiles than we have.
+	output = gt(g.tracing) 'Scan p=' p ' size(rack)=' size(rack) ' limit=' limit '  nopen=' nopen   '  pi=' pi
+	n = +size(rack)
+	output = gt(g.tracing) 'Scan rack n=' n ' rack ' size(rack)
+	n = differ(limit) gt(n,limit) limit
+	output = gt(g.tracing) 'Scan limit n=' n ' limit=' limit
+	n = gt(n, nopen) +nopen
+	output = gt(g.tracing) 'Scan nopen n=' n ' nopen=' nopen
+	n = gt(p + n - 1, 15) 15 - p + 1
+	output = gt(g.tracing) 'Scan nopen p+n-1 n=' n ' p+n-1 ' (p + n - 1)
+*	output = gt(g.tracing) 'Scan  p+n-1=' (p + n - 1)
+	output = gt(g.tracing) 'Scan n=' n 
 
-	max = nopen
-	max = gt(max,size(rack)) size(rack)
-* MAX
-	max = eq(max,7) 6
-	max = eq(max,7) 6
-	max = 5
-	n = 0
+*	There can be moves of length 1..n starting at the current position p in the line.
 
-scan.next.n
-	gt(n = n + 1,max)				:s(scan.next)
+	i = 0
+scan.i
+	gt(i = i + 1,n)					:s(scan.p)
+	last = open[p + pi - 1]				:f(scan.p)
 
-	last = ai + n - 1				:f(scan.fail)
-	fi = first - 1
+*	Continue if move would extend pass end of line.
 
-*	Continue to the next postion if all the cells in this move are alone, and hence no valid move is possible.
+	gt(p + i - 1, 15)				:s(scan.p)
 
-	substr(lonely,ai,n) ? span('1')		:s(scan.next)
-*MOV
-	move = move(num,n,subarray(avail,ai,n))
+*	No move possible if all its cells would be alone.
+
+*	output = ne(g.tracing) 'Scan p ' p '  i ' i '  alone:' show.line(substr(alone,p, p + i - 1))
+
+	substr(alone,p,p + i - 1) ? span('1')		:s(scan.i)
+
+*	Set text of move to the permutation specification.
+	
+	move = move(num,i,subarray(open,p,i), size(rack) '?' i)
+	output = ne(g.tracing) 'Scan move ' show.move(move) ' n ' n  '  i ' i
 	scan = ident(scan) table()
 	count.scanned = count.scanned + 1
-	scan[count.scanned] = move			:(scan.next.n)
+	scan[count.scanned] = move			:(scan.i)
 scan.done
 	ident(scan)					:s(freturn)
-	scan = convert(scan,'array')				
+	scan = convert(scan,'array')			
+	eq(g.tracing)					:s(return)
+	output = 'Scan ' show.line(line)  ' ' 	show.hex(line)
+	output = 'Scan ' show.line(alone) ' ' 	show.hex(alone)
+	i = 0
+scan.done.i
+	output = 'Scan ' lpad(i = i + 1,2) ' ' show.move(scan[i,2]) 	:s(scan.done.i)
+	output = 'Scan exit'
 							:(return)
-scan.doner	
-	output = 'move.doner'				:(end)
+
 scan.end
+
 
 	define('score(pair)cline,vline,word,words,n,start,wi,ch,i,bonus,mult,val')	:(score.end)
 
@@ -1349,6 +1298,16 @@ shuffle.done
 							:(return)
 shuffle.end
 
+	define('spaces(line)n')				:(spaces.end)
+
+*	Count number of spaces in line.
+
+*SPACES*
+spaces
+	line len(1) . c =				:f(return)
+	spaces = ident(c,' ') spaces + 1		:(spaces)
+spaces.end
+
 	define('subarray(ara,start,len)i')		:(subarray.end)
 
 *	Like substr, but returns the sub-array of *ara* starting at element *start* and
@@ -1411,6 +1370,81 @@ take.end
 *shuffle.consonant
 *	consonants = gt(consonants) consonants - 1
 
+	define('start(tiles)perm,perms,permi,free,offset,i,highest,lower,best,n,word,start,score,move')	:(start.end)
+
+*	Determine best starting.turn. At least one letter in this move must be in the center square (8,8).
+*	The only bonus available is double word, for any word of more than four characters.
+
+*	Find the move the highest score. Given two moves with the same score, prefer the one with
+*	the lowest tile cost.
+*
+*	The return value has the form 'm s' where m is the move and s is its score.
+*
+*	There are seven tiles, so we just try all permutations of length one up to seven.
+
+*START*
+start
+	output = 'enter start'
+	n = 0;* number of tiles to play
+	highest = lowest = 0;* best score, lowest cost
+	start = 8;* assume word will start in column 8
+
+	
+	tiles break('s')				:f(start.n)
+	tiles = less(tiles,'s')
+
+start.n	gt(n = n + 1,6)					:s(start.done)
+*	play at most six tiles for now.
+	kind = size(tiles) '?' n
+	perms = g.permutations[kind]			:f(start.n)
+	permi = 0
+start.word
+*	get next word, check that valid, then see if new high score
+	perm = perms[permi = permi + 1]			:f(start.n)
+	word = replace(perm,substr('1234567',1,size(tiles)),tiles)
+*	output = 'kind ' kind ' perm ' perm ' word ' word
+	checkword(word)					:f(start.word)
+	checkwords = checkwords + 1
+
+*	Score is the value of the tiles unless the word has five or more characters, in which
+*	case the double word bonus at index twelve can be achieved.
+
+	score = (lt(size(word),5) cost(word), 2 * cost(word))
+
+*	Add the first word found to set *highest* and *lowest*
+
+	eq(highest,0)					:s(start.new)
+
+	lt(score,highest)				:s(start.word)
+	gt(score,highest)				:s(start.new)
+
+*	Here if current best and new move have same score. Prefer the one with the lowest cost.
+
+	lt(cost(word),lowest)				:s(start.new)
+
+start.new
+	highest = score
+	lowest = cost(word)
+	best = word					
+							:(start.word)
+start.done
+
+*	Start word at position 8, unless word size greater than five, in which case move it to the left, but
+*	making sure move still covers double-word cell at position twelve.
+
+	offset = (lt(size(best,5) 0, 5 - size(best)))
+
+*	Initialize free array for move.
+
+	free = array(size(best))
+	i = 0
+start.free
+	free[i = i + 1] = 7 + i  + offset		:s(start.free)
+
+	start = move(8 + offset,size(best),free,best,highest) :(return)
+
+start.end
+
 	define('tracer()')				:(tracer.end)
 
 *	Initiate tracing at start of move *g.trace*.
@@ -1419,7 +1453,8 @@ tracer
 	output = 'enter tracer g.trace ' g.trace ' move now ' g.turn
 	ident(g.trace)					:s(return)
 	ne(g.turn,g.trace)				:s(return)
-	&ftrace = &trace = g.tracing = 1000000		
+*	&ftrace = &trace = g.tracing = 1000000		
+	g.tracing = 1
 	output = 'start TRACING ' g.turn ' ' g.tracing
 							:(return)
 tracer.end
