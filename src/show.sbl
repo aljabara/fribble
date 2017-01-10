@@ -65,13 +65,6 @@ show.bonus.finish
 	output =					:(return)
 show.bonus.end
 
-	define('show.header(label)')			:(show.header.end)
-show.header
-	output = label
-	output = '                               1  1  1  1  1  1'
-	output = '   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5'	:(return)
-show.header.end
-
 	define('show.clines(lines,title)i,line,num')		:(show.clines.end)
 
 *	Show the clines array of lines
@@ -97,8 +90,16 @@ show.grid.r
 	gt(r = r + 1,15) 				:s(show.grid.done)
 	output = show.hline(g,r)			:(show.grid.r)		 
 show.grid.done
+	show.header()
 	output =					:(return)
 show.grid.end
+
+	define('show.header(label)')			:(show.header.end)
+show.header
+	output = differ(label) label
+	output = '                               1  1  1  1  1  1'
+	output = '   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5'	:(return)
+show.header.end
 
 	define('show.hex(line)ch,i')				:(show.hex.end)
 
@@ -153,6 +154,7 @@ show.lines.end
 *	Show a move.
 
 show.move
+	output = ident(move) title ' show.move null move ' :s(return)
 *	output = 'show.move ' title
 	gt(i = i + 1,count(move))			:s(show.move.f)
 	ff = free(move)[i]
