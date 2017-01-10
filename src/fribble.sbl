@@ -1,4 +1,4 @@
-* This software is licensed under the MIT License, contained in the file LICENSE.
+
 
 * Copyright (c) 2016 dave shields
 
@@ -159,17 +159,24 @@ main.end
 
 *	Utility functions
 
-	define('init(dictfile,skip)c,i,j,s,t')		:(init.end)
+	define('init(dictfile,skip,external)c,i,j,s,t')		:(init.end)
 
 *	Initialize global variables.
 
 *INIT*
 init
-	init.main(dictfile,skip)			:(return)
+	init.main(dictfile,skip)
 
 *	Free up code for initializers now that no longer needed.
 
-	init.bonus = init.main = init.dict = init.tileset = init.value = 	:(return)
+	init.bonus = init.main = init.dict = init.tileset = init.value = 
+			
+*	If *external* is not null, then another program is calling init to make use of its
+*	functions, so return. Otherwise, call the *main()* function to play a match. 
+
+
+	differ(external)				:s(return)
+	main()						:(end)
 init.end
 
 	define('init.main(dictfile,skip)c,i,j,s,t')	:(init.main.end)
@@ -1844,9 +1851,3 @@ words.1
 words.done
 	words = convert(words,'array')			:(return)
 words.end
-
-*	Call main program
-
-	main()
-
-end
