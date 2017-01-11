@@ -11,12 +11,7 @@
 *	from left to right for a horizontal play, top to bottom for a vertical play.
 
 
-*	g.alone, array('15,15') tracks the *alone* cells in the board. A cell is *alone* if it is empty and all its
-*	neighbors are empty. A move made after the first move cannot consist only of cells that are alone. 
-*	That is, at least one tile in a valid move must be adjacent to a tile played in a previous move.
 *	g.board, array('15,15'), the playing board. Each entry is blank (' ') for unplayed cell, or is the letter played.
-
-*	g.alone.lines, array(30), is the array of lines defined by the rows and columns of the alone grid.
 
 *	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
 
@@ -95,9 +90,14 @@
 *	g.trace, if not null, begin tracing at the start of move g.trace.
 
 	g.trace =
-	g.trace = 6
 
 *	g.tracing, set nonzero when tracing initiated by *g.trace* begins.
+
+*	g.used, array('15,15') tracks the cells in the board that have been used in a move
+*	A move made after the first move must have at least tile played in a square adjacent to
+*	one that has been used in a prior move.
+
+*	g.used.lines, array(30), is the array of lines defined by the rows and columns of the used grid.
 
 *	g.value, a map from characters to the tile value of that character.
 
@@ -109,6 +109,7 @@
 
 *MAIN*
 main
+	g.trace = 2
 
 main.loop
 
@@ -129,6 +130,7 @@ main.loop
 	output = 'g.tiles ' g.tiles
 	maxmoves = 7
 	maxmoves = 10
+	maxmoves = 4
 
 *	&dump = 3
 *	&ftrace = &trace  = 100000
@@ -185,8 +187,8 @@ init.main
 	g.empty.board = copy(g.board)
 	g.lines = lines(g.board)
 
-	g.alone = array('15,15','1')
-	g.alone.lines = lines(g.alone)
+	g.used = array('15,15',' ')
+	g.used.lines = lines(g.used)
 
 	init.bonus()
 
@@ -342,6 +344,19 @@ init.value.update
 	g.value[c] = +v					:(init.value.update)
 init.value.end
 
+	define('adjacent(r,c)')				:(adjacent.end)
+
+*	Test if the cell in row *r* and column *c* is adjacent to one that has been used.
+
+*ADJACENT*
+adjacent
+	differ(g.used[r - 1,c],' ')			:(return) ;* cell to the north
+	differ(g.used[r,c + 1],' ')			:(return) ;* cell to the east
+	differ(g.used[r,c - 1],' ')			:(return) ;* cell to the west
+	differ(g.used[r + 1,c],' ')			:(return) ;* cell to the south
+							:(freturn)
+adjacent.end
+
 	define('append(str,w,ch)')				:(append.end)
 
 *	Append word *w* to string *str*, prefixing with *ch* if *str* is not null, using space if *ch* is null.
@@ -355,31 +370,6 @@ append
 append.fail
 	 output = 'null ch to append ' w :(end)
 append.end
-
-	define('open(pair)line,num,spaces,c,i,oi')	:(open.end)
-
-*	Return array containing the indexes of the open (blank) cells in line. Fails if no open cells.
-
-*OPEN*
-open
-	line = line(pair)
-	num = num(pair)
-	spaces = spaces(line)
-	eq(spaces,0)					:s(freturn)
-	open = array(spaces)
-	i = ai = 0
-open.c
-	c = substr(line, i = i + 1, 1)			:f(open.done)
-	differ(c,' ')					:s(open.c)
-	open[oi = oi + 1] = +i				:(open.c)
-open.done
-	eq(g.tracing)					:s(return)
-	i = 0; c = 
-open.done.ch
-	c = c lpad(open[i = i + 1],3)		:s(open.done.ch)
-	output = ne(g.tracing) 'Open: ' lpad(lineid(num),3) ' '  show.hex(line) ':  :' show.line(line) ': is ' c
-							:(return)
-open.end
 
 	define('bonus.lines()i')			:(bonus.lines.end)
 
@@ -454,6 +444,15 @@ cline
 	cline = pair(c,line)
 							:(return)
 cline.end
+
+	define('column(num,pos)')			:(column.end)
+
+*	Returns column corresponding to position *pos* in line *num*.
+
+*COLUMN*
+column
+	column = ((gt(num,15) num - 15, pos))		:(return)
+column.end
 
 	define('cost(text)')				:(cost.end)
 
@@ -533,7 +532,7 @@ find
 *	
 	show.board(g.board)
 	show.lines(g.lines)
-	show.grid(g.alone)
+	show.grid(g.used)
 
 	lines = copy(g.lines)
 	inlines = copy(lines)
@@ -728,7 +727,7 @@ game.turn
 	output = ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
 
 *	output = 'calling find'
-*	ne(g.tracing) show.grid(g.alone)
+*	ne(g.tracing) show.grid(g.used)
 
 *	move = ident(fribble(p)) get()			:s(game.move)
 *	move = differ(fribble(p)) (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
@@ -768,8 +767,9 @@ game.move
 	playmove(move)
 	show.grid(g.board)
 	g.board = board
-	show.grid(g.alone)
 	show.lines(g.lines,'Lines')
+	show.grid(g.used)
+	g.used.lines = lines(g.used)
 
 *	Update rack.
 *	output =  'updating rack'
@@ -791,9 +791,9 @@ game.shuffle
 *	shuffle()
 
 *	output = 'shuffled'
+
 *	Update lines affected by grid changes to maintain consistency.
 
-	g.alone.lines = lines(g.alone)
 	g.bonus.lines = lines(g.bonus)
 
 	g.lines = lines(g.board)
@@ -1007,6 +1007,31 @@ lines.next
 	lines[i + 15] = lcase(vline(g,i))		:(lines.next)
 lines.end
 
+	define('open(pair)line,num,spaces,c,i,oi')	:(open.end)
+
+*	Return array containing the indexes of the open (blank) cells in line. Fails if no open cells.
+
+*OPEN*
+open
+	line = line(pair)
+	num = num(pair)
+	spaces = spaces(line)
+	eq(spaces,0)					:s(freturn)
+	open = array(spaces)
+	i = ai = 0
+open.c
+	c = substr(line, i = i + 1, 1)			:f(open.done)
+	differ(c,' ')					:s(open.c)
+	open[oi = oi + 1] = +i				:(open.c)
+open.done
+	eq(g.tracing)					:s(return)
+	i = 0; c = 
+open.done.ch
+	c = c lpad(open[i = i + 1],3)		:s(open.done.ch)
+	output = ne(g.tracing) 'Open: ' lpad(lineid(num),3) ' '  show.hex(line) ':  :' show.line(line) ': is ' c
+							:(return)
+open.end
+
 	define('order(tiles)chars,ch,c1,c2,swaps,i,v1,v2')	:(order.end)
 
 *	Sort the tiles in *tiles* according to their value, with least valuable first.
@@ -1062,28 +1087,33 @@ place
 							:(return)
 place.end
 
-	define('placecell(r,c,w)ch')			:(placecell.end)
+	define('placecell(num,pos,w)ch')		:(placecell.end)
 
-*	Add a word to the board.
+*	Add a word to the board starting in line *num* at position *pos*.
 
 *PLACECELL*
 placecell
-	output = ne(g.tracing) 'placecell r  ' r '  c ' c '  w ' w
-	c = c - 1
-placecell.ch
-	output = eq(r,13) eq(c,1) ' CHANGING 13 1'
-	w len(1) . ch =					:f(return)
-	g.board[r, c = c + 1] = ch
-	g.bonus[r, c] = ' ';* indicate bonus no longer available
-*	Mark self and adjoining squares as no longer alone
-	g.alone[r,c] = ' '    ;* self
-*	g.alone[r - 1,c] = gt(c, 1) ' ';* cell to the north
-*	g.alone[r,c + 1] = lt(c,15) ' ';* cell to the east
-*	g.alone[r,c - 1] = gt(r, 1) ' ';* cell to the west
-*	g.alone[r + 1,c] = lt(r,15) ' ';* cell to the south
-							:(placecell.ch)
-placecell.end
+	gt(num,15)					:s(placecell.c)
 
+*	Place word in row.
+
+placecell.r
+	w len(1) . ch =					:f(return)
+	g.board[r, c] = ch
+	g.used[r,c]   = '1'
+	g.bonus[r, c] = ' ';* indicate bonus no longer available
+	c = c + 1					:(placecell.r)
+
+placecell.c
+
+*	Place word in column. 
+
+	w len(1) . ch =					:f(return)
+	g.board[r, c] = ch
+	g.used[r,c]   = '1'
+	g.bonus[r, c] = ' ';* indicate bonus no longer available
+	r = r + 1					:(placecell.c)
+placecell.end
 
 	define('playmove(move)txt,i,ch')		:(playmove.end)
 
@@ -1145,7 +1175,16 @@ random
 							:(return)
 random.end
 
-	define('scan(pair,rack,limit)num,line,i,pi,alone,open,nopen,n,first,last,move,alone')	:(scan.end)
+	define('row(num,pos)')				:(row.end)
+
+*	Returns row corresponding to position *pos* in line *num*.
+
+*ROW*
+row
+	row = ((le(num,15) num, pos))		:(return)
+row.end
+
+	define('scan(pair,rack,limit)num,line,i,pi,used,open,oi,nopen,n,first,last,move')	:(scan.end)
 
 *	Scan the given line to find the places where a valid move can be made. At least one cell in 
 *	a move must be adjacent to an occupied cell.  *line* is the line to be scanned, and *num* gives its
@@ -1156,20 +1195,12 @@ scan
 	line = line(pair)
 	num = num(pair)
 	output = ne(g.tracing) 'Scan line ' lineid(num) ' ' show.line(line) ' ' show.hex(line)
-	alone = g.alone.lines[num]
+	used = g.used.lines[num]
 
 *	Allocate and fill in open, an array giving the positions of the open cells.
 
 	open = open(pair)				:f(scan.done);* fail if no empty cells
 	nopen = +prototype(open);* number of open cells in the line
-
-*	Set alone to the alone-ness of the cells in open, so that the i-th character is the
-*	alone attribute of the i-th position in the move. A valid move requires that at
-*	least one cell in the move not be alone.
-
-	i = 0
-scan.alone
-	alone = alone substr(alone,open[i = i + 1],1) :s(scan.alone)
 	
 *	The number of moves that can be made starting at a given position *i* in *open* depends on
 *		limit,the most tiles that can be played in a move, or null if no limit.
@@ -1197,17 +1228,11 @@ scan.p
 *	or the number of remaining cells, or the limit number, or beyond the end of the line.
 
 	n = +size(rack)
-*	output = gt(g.tracing) 'Scan rack n=' n ' rack ' size(rack)
 	n = differ(limit) gt(n,limit) limit
-*	output = gt(g.tracing) 'Scan limit n=' n ' limit=' limit
 	n = gt(n, nopen) +nopen
-*	output = gt(g.tracing) 'Scan nopen n=' n ' nopen=' nopen
 	n = gt(p + n - 1, 15) 15 - p + 1
-*	output = gt(g.tracing) 'Scan nopen first+n-1 n=' n ' first+n-1 ' (first + n - 1)
-*	output = gt(g.tracing) 'Scan  first+n-1=' (first + n - 1)
-*	output = gt(g.tracing) 'Scan n=' n 
 
-*	There can be moves of length 1..n starting at the current position p in the line.
+*	There can be moves of length i=1..n starting at position *first* in the line.
 
 	i = 0
 scan.i
@@ -1222,18 +1247,15 @@ scan.i
 
 	gt(last, 15)				:s(scan.p)
 
-*	No move possible if all its cells would be alone.
-
-
-*	output = ne(g.tracing) 'Scan.alone ' substr(alone,p,p + i - 1) '.'
-*	x1 = first + i - 1
-*	x2 = open[x1]
-*	x4 = last - first + 1
+*	At least one cell to be occupied by this move must be adjacent to a used cell.
 	
-*	output = ne(g.tracing) ' p=' first ' i=' i ' first + i - 1 ' x1 ' open(first + i - 1] ' x2 ' last=' last ' len=' (last - first + 1)
-	substr(alone,first,last - first + 1) ? span('1')		:s(scan.i)
+	oi = 0
+scan.used
+	gt(oi = oi + 1,i)					:s(scan.i)
+	adjacent(g.used[row(num,open[oi]),column(num,open[oi])])	:f(scan.used)
 
-*	Set text of move to the permutation specification.
+scan.text
+*	Here if adjacent cell found. Set text of move to the permutation specification.
 	
 	move = move(num,i,subarray(open,first,i), size(rack) '?' i)
 	output = ne(g.tracing) 'Scan move ' show.move(move) ' n ' n  '  i ' i
@@ -1246,7 +1268,7 @@ scan.done
 * :(return)
 	eq(g.tracing)					:s(return)
 	output = 'Scan ' show.line(line)  ' ' 	show.hex(line)
-*	output = 'Scan ' show.line(alone) ' ' 	show.hex(alone)
+*	output = 'Scan ' show.line(used) ' ' 	show.hex(used)
 	i = 0
 scan.done.i
 	output = 'Scan move' lpad(i = i + 1,2) ' ' show.move(scan[i,2]) 	:s(scan.done.i)
@@ -1334,7 +1356,7 @@ score.end
 
 	define('show(rack,player)')			:(show.end)
 
-*	Show state of board, alone and value grids before start of move.
+*	Show state of board, used and value grids before start of move.
 
 *SHOW*
 show
@@ -1344,7 +1366,7 @@ show
 	show.grid(g.board)
 	show.lines(g.lines)
 *	show.board(g.bonus,'bonus')
-	show.grid(g.alone)
+	show.grid(g.used)
 							:(return)
 show.end
 
