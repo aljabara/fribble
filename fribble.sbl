@@ -33,7 +33,7 @@
 
 *	A player is represented by
 
-	data('player(name,rack,limit,fribble,moves,total)')
+	data('player(name,rack,limit,fribble,moves,total,thirty,highest)')
 
 *	where
 *		*name* 	is the player's name
@@ -42,6 +42,8 @@
 *		*fribble* if not null, requests that fribble make the moves
 *		*score*	is the player's current score
 *		*moves*	counts the number of moves made by the player
+*		*thirty* is number of moves with scores of 30 or more points.
+*		*highest* is the player's highest move score.
 *		*total*	is the players total score
 
 *	If the name is null, then *fribble* is set non-null, and the name is set to indicate fribble is making the moves.
@@ -109,8 +111,13 @@
 
 *MAIN*
 main
+	&stlimit = -1
 	g.trace = 2
+	g.trace = 
 
+*	shuffle()
+*	output = g.tiles
+* :(end)
 main.loop
 
 	output = 'enter c to continue, q to quit:'
@@ -128,9 +135,10 @@ main.loop
 	limit(one) = limit(two) = 6
 
 	output = 'g.tiles ' g.tiles
-	maxmoves = 7
 	maxmoves = 10
+	maxmoves = 7
 	maxmoves = 4
+	maxmoves = 80
 
 *	&dump = 3
 *	&ftrace = &trace  = 100000
@@ -350,10 +358,11 @@ init.value.end
 
 *ADJACENT*
 adjacent
-	differ(g.used[r - 1,c],' ')			:(return) ;* cell to the north
-	differ(g.used[r,c + 1],' ')			:(return) ;* cell to the east
-	differ(g.used[r,c - 1],' ')			:(return) ;* cell to the west
-	differ(g.used[r + 1,c],' ')			:(return) ;* cell to the south
+* output = 'adjacent r=' r ' c=' c
+	gt(r,1) differ(g.used[r - 1,c],' ')			:s(return) ;* cell to the north
+	lt(c,15) differ(g.used[r,c + 1],' ')			:s(return) ;* cell to the east
+	gt(c,1) differ(g.used[r,c - 1],' ')			:s(return) ;* cell to the west
+	lt(r,15) differ(g.used[r + 1,c],' ')			:s(return) ;* cell to the south
 							:(freturn)
 adjacent.end
 
@@ -530,9 +539,9 @@ empty.end
 *FIND*
 find
 *	
-	show.board(g.board)
-	show.lines(g.lines)
-	show.grid(g.used)
+*	show.board(g.board)
+*	show.lines(g.lines)
+*	show.grid(g.used)
 
 	lines = copy(g.lines)
 	inlines = copy(lines)
@@ -725,14 +734,10 @@ game.turn
 
 	output = 'Move ' g.turn ' for player ' name(p) ', with tiles ' show.tiles(rack(p),'A') '.'
 	output = ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
-
-*	output = 'calling find'
-*	ne(g.tracing) show.grid(g.used)
-
-*	move = ident(fribble(p)) get()			:s(game.move)
-*	move = differ(fribble(p)) (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
-	move = (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
-	
+	move = ident(fribble(p)) get()			:s(game.move)
+	move = differ(fribble(p)) (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
+*	move = (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
+		
 	output = 'No move found.'
 
 *	Here if no move found, in which case the return value is a set of swapped tiles. If *move* is null, then pass.
@@ -750,12 +755,13 @@ game.move
 	output = ne(g.tracing) 'Game move ' show.move(move)
 	g.lastmove = turn
 	total(p) = total(p) + points(move)
+	thirty(p) = ge(points(move),30) thirty(p) + 1
+	highest(p) = gt(points(move),highest(p)) points(move)
 	playmove(move)
-
-*	output = 'played move'
-	output = 'Move ' g.turn ' ' name(p) ' played ' show.tiles(text(move),'B') ' for ' points(move) '.'
-.		' The score is now ' name(g.one) ' ' total(g.one) ', ' name(g.two) ' ' total(g.two) '.'
-
+	output = name(p) ' played ' show.tiles(text(move)) ' starting at ' lineid(id(move)) ', position ' free(move)[1]
+.	', for ' points(move) ' points.'
+	output = 'The score is now ' name(g.one) ' ' total(g.one)
+.	 ', ' name(g.two) ' ' total(g.two) ', with '  size(g.tiles) ' letters left.'
 	show.board(g.board)
 
 *	Display move in grid with just this move in upper case by saving the board, playing the move with
@@ -767,8 +773,8 @@ game.move
 	playmove(move)
 	show.grid(g.board)
 	g.board = board
-	show.lines(g.lines,'Lines')
-	show.grid(g.used)
+*	show.lines(g.lines,'Lines')
+*	show.grid(g.used)
 	g.used.lines = lines(g.used)
 
 *	Update rack.
@@ -776,13 +782,13 @@ game.move
 
 *	Game over if no more tiles would remain.
 
-	output = le(size(rack(p), size(g.tiles))) 'Game over: no more tiles.'	:s(game.over)
+*	output = le(size(rack(p), size(g.tiles))) 'Game over: no more tiles.'	:s(game.over)
 
 	rack(p) = less(rack(p), lcase(text(move))) take(size(text(move))) :s(game.shuffle)
 
 *	Here if can't take any new tiles, so fail for now.
 
-	output = 'Game over: out of tiles, end game. '		:(game.over)
+	output = eq(size(g.tiles)) 'Game over: no more tiles. '			:s(game.over)
 
 game.shuffle
 
@@ -809,8 +815,10 @@ game.fold
 *	output = 'rebuilding board'
 	g.board = grid(g.lines)				:(game.turn)
 game.over						
-	output =  'Player ' name(g.one) ' scored ' total(g.one) ' points.'
-	output =  'Player ' name(g.two) ' scored ' total(g.two) ' points.'
+	output =  'Player ' name(g.one) ' scored ' total(g.one) ' points. Highest move scored ' highest(g.one) ' points.'
+	output =  'Player ' name(g.two) ' scored ' total(g.two) ' points. Highest move scored ' highest(g.two) ' points.'
+	output = gt(thirty(g.one)) 'Player ' name(g.one) ' had ' thirty(g.one) ' moves of 30 or more points.'
+	output = gt(thirty(g.two)) 'Player ' name(g.two) ' had ' thirty(g.two) ' moves of 30 or more points.'
 							:(return)
 game.end
 
@@ -1007,14 +1015,13 @@ lines.next
 	lines[i + 15] = lcase(vline(g,i))		:(lines.next)
 lines.end
 
-	define('open(pair)line,num,spaces,c,i,oi')	:(open.end)
+	define('open(pair)line,spaces,c,i,oi')	:(open.end)
 
 *	Return array containing the indexes of the open (blank) cells in line. Fails if no open cells.
 
 *OPEN*
 open
 	line = line(pair)
-	num = num(pair)
 	spaces = spaces(line)
 	eq(spaces,0)					:s(freturn)
 	open = array(spaces)
@@ -1028,7 +1035,7 @@ open.done
 	i = 0; c = 
 open.done.ch
 	c = c lpad(open[i = i + 1],3)		:s(open.done.ch)
-	output = ne(g.tracing) 'Open: ' lpad(lineid(num),3) ' '  show.hex(line) ':  :' show.line(line) ': is ' c
+	output = ne(g.tracing) 'Open: ' lpad(lineid(num(pair)),3) ' '  show.hex(line) ':  :' show.line(line) ': is ' c
 							:(return)
 open.end
 
@@ -1087,60 +1094,23 @@ place
 							:(return)
 place.end
 
-	define('placecell(num,pos,w)ch')		:(placecell.end)
 
-*	Add a word to the board starting in line *num* at position *pos*.
-
-*PLACECELL*
-placecell
-	gt(num,15)					:s(placecell.c)
-
-*	Place word in row.
-
-placecell.r
-	w len(1) . ch =					:f(return)
-	g.board[r, c] = ch
-	g.used[r,c]   = '1'
-	g.bonus[r, c] = ' ';* indicate bonus no longer available
-	c = c + 1					:(placecell.r)
-
-placecell.c
-
-*	Place word in column. 
-
-	w len(1) . ch =					:f(return)
-	g.board[r, c] = ch
-	g.used[r,c]   = '1'
-	g.bonus[r, c] = ' ';* indicate bonus no longer available
-	r = r + 1					:(placecell.c)
-placecell.end
-
-	define('playmove(move)txt,i,ch')		:(playmove.end)
+	define('playmove(move)i,p,r,c,ch')		:(playmove.end)
 
 *	Play move *move*, updating the board and related objects.
 
 *PLAYMOVE*
 playmove
-	output = ne(g.tracing) 'playmove ' show.move(move)
-	txt = text(move)
-playmove.ch
-	txt len(1) . ch =				:f(playmove.done)
-*	output = 'playmove char<' ch '>'
-	i = i + 1;* position in text
 	id = id(move)
-	gt(id,15)					:s(playmove.col)
-
-*	Here to play character in row
-
-*	output = 'calling placecell row ' id ' ' free(move)[i] ' ' ch
-	placecell(id,free(move)[i],ch)			
+playmove.ch
+	p = free(move)[i = i + 1]			:f(playmove.done)
+	r = row(id,p)
+	c = column(id,p)
+	ch = substr(text(move),p,1)
+	g.board[r, c] = substr(text(move),i,1)
+	g.used[r,c]   = 1
+	g.bonus[r, c] = ' ';* indicate bonus no longer available
 							:(playmove.ch)
-playmove.col
-
-*	Here to play character in column
-
-*	output = 'calling placecell col ' id ' ' free(move)[i] ' ' ch
-	placecell(free(move)[i],id - 15,ch)		
 							:(playmove.ch)
 playmove.done
 	output = ne(g.tracing) 'playmove returns'	:(return)
@@ -1170,6 +1140,7 @@ prefix.end
 *RANDOM*
 random	
 	g.random_var = remdr(g.random_var * 4676, 414971)
+*	random  = g.random_var / convert(414971,'float')
 	random  = g.random_var / 414971.0
 	random = ne(n) convert(random * n,'integer') + 1
 							:(return)
@@ -1184,7 +1155,7 @@ row
 	row = ((le(num,15) num, pos))		:(return)
 row.end
 
-	define('scan(pair,rack,limit)num,line,i,pi,used,open,oi,nopen,n,first,last,move')	:(scan.end)
+	define('scan(pair,rack,limit)num,line,i,pi,open,oi,nopen,n,first,pos,move')	:(scan.end)
 
 *	Scan the given line to find the places where a valid move can be made. At least one cell in 
 *	a move must be adjacent to an occupied cell.  *line* is the line to be scanned, and *num* gives its
@@ -1195,7 +1166,6 @@ scan
 	line = line(pair)
 	num = num(pair)
 	output = ne(g.tracing) 'Scan line ' lineid(num) ' ' show.line(line) ' ' show.hex(line)
-	used = g.used.lines[num]
 
 *	Allocate and fill in open, an array giving the positions of the open cells.
 
@@ -1210,49 +1180,35 @@ scan
 	
 	nopen = nopen + 1
 	pi = 0
-
 scan.p
-	pi = pi + 1
+*	*first* is the starting position of the potential move.
 
-*	*first* is the starting position of the potential move, *last* the last.
-
-	first = open[pi]					
-	first = open[pi]					:f(scan.done)
-	output = ne(g.tracing) 'Scan.first first=' first '  pi=' pi
-	ne(g.tracing) show.open(open,'scan.p')
-
+	first = open[pi = pi + 1]			:f(scan.done)
 	nopen = nopen - 1
 	
-
 *	We can't play a move with more cells than the number of tiles in the rack,
 *	or the number of remaining cells, or the limit number, or beyond the end of the line.
 
 	n = +size(rack)
 	n = differ(limit) gt(n,limit) limit
 	n = gt(n, nopen) +nopen
-	n = gt(p + n - 1, 15) 15 - p + 1
 
-*	There can be moves of length i=1..n starting at position *first* in the line.
+*	Try for moves of length i=1..n starting at position *first* in the line.
 
 	i = 0
 scan.i
 	gt(i = i + 1,n)					:s(scan.p)
 
-*	Try to access the open entry for what would be the last cell. If this is beyond the end of the line,
-*	move on to the next position.
-
-	last = open[first + i - 1]				:f(scan.p)
-
-*	Continue if move would extend pass end of line.
-
-	gt(last, 15)				:s(scan.p)
+	output = ne(g.tracing) 'Scan n=' n ' i= ' i ' first=' first 
 
 *	At least one cell to be occupied by this move must be adjacent to a used cell.
 	
 	oi = 0
 scan.used
-	gt(oi = oi + 1,i)					:s(scan.i)
-	adjacent(g.used[row(num,open[oi]),column(num,open[oi])])	:f(scan.used)
+	gt(oi = oi + 1,i)				:s(scan.i)
+	pos = open[first + oi - 1]
+	output = ne(g.tracing) 'Scan oi=' oi ' pos=' pos
+	adjacent(row(num,pos),column(num,pos)) :f(scan.used)
 
 scan.text
 *	Here if adjacent cell found. Set text of move to the permutation specification.
@@ -1376,7 +1332,7 @@ show.end
 
 *SHOW.BOARD*
 show.board
-	show.header(title)
+	show.header()
 show.board.r
 	gt(r = r + 1,15) 				:s(show.board.finish)
 	line = lpad(r,2) '|' 
