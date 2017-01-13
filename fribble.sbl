@@ -20,6 +20,10 @@
 *	g.empty.board is a copy of the initial g.board (a board with no cells occupied).
 
 *	g.found counts number of valid moves that were found.
+
+*	g.maxmoves, maximum number of moves.
+
+	g.maxmoves = 60
 	
 *	g.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
 
@@ -105,16 +109,15 @@
 
 	&anchor = &trim = 1
 
-	define('main()name,one,two,maxmoves')	:(main.end)
+	define('main()name,one,two')	:(main.end)
 
 *	Main program.
 
 *MAIN*
 main
 	&stlimit = -1
-	g.trace = 13
 	g.trace = 
-	g.trace = 1
+	self() :(main.done)
 
 *	shuffle()
 *	output = g.tiles
@@ -122,8 +125,8 @@ main
 main.loop
 
 	output = 'enter c to continue, q to quit:'
-	name = input					:f(main.over)
-	ident(name,'q')					:s(main.over)
+	name = input					:f(main.done)
+	ident(name,'q')					:s(main.done)
 
 	output = 'enter first player name, or nothing to have fribble be the first player:'
 	name = input					:f(main.done)
@@ -136,16 +139,11 @@ main.loop
 	limit(one) = limit(two) = 6
 
 	output = 'g.tiles ' g.tiles
-	maxmoves = 7
-	maxmoves = 4
-	maxmoves = 10
-	maxmoves = 80
 
 *	&dump = 3
 *	&ftrace = &trace  = 100000
-*	g.tracing = 1
 
-	game(one,two,maxmoves)				:(main.done)	
+	game(one,two)				:(main.done)	
 	
 main.nomove
 	output =  ' player ' name(p) ' has no move, pass.';* fall through to player one for their turn.
@@ -158,10 +156,10 @@ main.no.moves
 	output =
 	output =
 main.done
+	output = 'Game over -- good bye.'
 	counters()
-							:(main.loop)
+							:(return)
 main.over
-	output = 'Game over -- good bye.'		:(return)
 main.end
 
 *	Utility functions
@@ -731,11 +729,11 @@ game.turn
 	p = players[i = i + 1]				:f(game.round)
 
 	g.turn = g.turn + 1
+	output = gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.' :(game.over)
 
 	differ(g.trace) tracer()
 
-	output = ne(max) gt(g.turn,max) 'Game over: too many turns.'  :s(game.over)
-*	output = gt(g.turn,g.lastmove + 5) 'Too many turns with no move.' :s(game.over)
+	output = ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.'  :s(game.over)
 
 	output = 'Move ' g.turn ' for player ' name(p) ', with tiles ' show.tiles(rack(p),'A') '.'
 	output = ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
@@ -784,7 +782,7 @@ game.move
 
 *	Game over if no more tiles.
 
-	output = eq(size(g.tiles)) 'Game over: no more tiles. '		:s(game.over)
+	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(game.over)
 
 *	Update rack.
 
@@ -823,6 +821,7 @@ game.over
 	output = gt(thirty(g.two)) 'Player ' name(g.two) ' had ' thirty(g.two) ' moves of 30 or more points.'
 							:(return)
 game.end
+
 
 	define('get()line,kind,num,tiles,id,pos,f,fi,ch') :(get.end)
 
@@ -1309,6 +1308,123 @@ score.error
 	score = 0					:(return)
 *	output = 'error scoring line with no new move ' line(pair) :(end)
 score.end
+
+	define('self(max)one,two,opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(self.end)
+
+*	Play a game of fribble, with fribble as both players.  *max* is the maximum number of moves.
+
+*SELF*
+self
+	one = player('Fribble One')
+	two = player('Fribble Two')
+	fribble(one) = 1
+	fribble(two) = 1
+	g.one = one
+	g.two = two
+	players = array(2)
+	players[1] = g.one
+	players[2] = g.two
+	total(g.one) = total(g.two) = moves(g.one) = moves(g.two) = 0
+	rack(g.one) = take(7)
+	rack(g.two) = take(7)
+
+	g.turn = g.lastmove = 0
+
+self.round
+	i = 0
+self.turn
+	p = players[i = i + 1]				:f(self.round)
+
+	g.turn = g.turn + 1
+	output = gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.' :s(self.over)
+	output = ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.'  :s(self.over)
+
+	differ(g.trace) tracer()
+
+	output = 'Move ' g.turn ' for player ' name(p) ', with tiles ' show.tiles(rack(p),'A') '.'
+	output = ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
+	move = (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(self.move)
+		
+	output = 'No move found.'
+
+*	Here if no move found, in which case the return value is a set of swapped tiles. If *move* is null, then pass.
+
+	differ(move)					:s(self.swap)
+	passed = passed + 1
+	output = gt(passed,6) ' Too many passed moves.'	:s(self.over)
+	output = 'Player ' name(g.one) ' passes.'		:(self.turn)
+	
+self.swap
+	rack(p) = swap(rack(p),3)
+	output = 'Player ' name(p) ' swapped tiles.'	
+	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(self.turn)
+self.move
+	output = ne(g.tracing) 'Game move ' show.move(move)
+	g.lastmove = g.turn
+	total(p) = total(p) + points(move)
+	thirty(p) = ge(points(move),30) thirty(p) + 1
+	highest(p) = gt(points(move),highest(p)) points(move)
+	playmove(move)
+	output = name(p) ' played ' show.tiles(text(move)) ' starting at ' lineid(id(move)) ', position ' free(move)[1]
+.	', for ' points(move) ' points.'
+	output = 'Score is now ' name(g.one) ' ' total(g.one)
+.	 ', ' name(g.two) ' ' total(g.two) ', with '  size(g.tiles) ' letters left.'
+	show.board(g.board)
+
+*	Display move in grid with just this move in upper case by saving the board, playing the move with
+*	the text in upper case, showing it, and then restoring the board to its saves state.
+
+	board = copy (g.board)
+	g.lines = lines(g.board)
+	text(move) = ucase(text(move))
+	playmove(move)
+	show.grid(g.board)
+	g.board = board
+*	show.lines(g.lines,'Lines')
+*	show.grid(g.used)
+	g.used.lines = lines(g.used)
+
+*	Game over if no more tiles.
+
+	output = eq(size(g.tiles)) 'Game over: no more tiles. '		:s(self.over)
+
+*	Update rack.
+
+	rack(p) = less(rack(p), lcase(text(move))) take(size(text(move))) :s(self.shuffle)
+
+self.shuffle
+
+*	Here if can't take any new tiles, so fail for now.
+
+
+*	Shuffle the tiles so the tile set changes according to the tiles played.
+* Not for now, maintain repeatability
+*	shuffle()
+*	output = 'shuffled'
+
+*	Update lines affected by grid changes to maintain consistency.
+
+	g.bonus.lines = lines(g.bonus)
+
+	g.lines = lines(g.board)
+
+*	Fold g.lines into lower case so only new moves made later will display in upper case.
+
+	li = 0
+self.fold						
+	g.lines[li = li + 1] = lcase(g.lines[li])	:s(self.fold)
+
+*	Rebuild board since lines have changed.
+
+*	output = 'rebuilding board'
+	g.board = grid(g.lines)				:(self.turn)
+self.over						
+	output =  'Player ' name(g.one) ' scored ' total(g.one) ' points. Highest move scored ' highest(g.one) ' points.'
+	output =  'Player ' name(g.two) ' scored ' total(g.two) ' points. Highest move scored ' highest(g.two) ' points.'
+	output = gt(thirty(g.one)) 'Player ' name(g.one) ' had ' thirty(g.one) ' moves of 30 or more points.'
+	output = gt(thirty(g.two)) 'Player ' name(g.two) ' had ' thirty(g.two) ' moves of 30 or more points.'
+							:(return)
+self.end
 
 	define('show(rack,player)')			:(show.end)
 
