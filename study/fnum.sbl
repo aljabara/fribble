@@ -1,7 +1,0 @@
-*	look for lines with sign preceding digit, a sign of error
-	&anchor = &trim = 1
-loop
-	line = input				:f(end)
-	line	breakx('+-') len(1) any('123456789')	:f(loop)
-	output = 'possible signed number error in ' line	:(loop)
-end
