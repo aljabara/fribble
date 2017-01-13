@@ -112,7 +112,8 @@
 *MAIN*
 main
 	&stlimit = -1
-	g.trace = 2
+	g.trace = 1
+	g.trace = 13
 	g.trace = 
 
 *	shuffle()
@@ -135,9 +136,9 @@ main.loop
 	limit(one) = limit(two) = 6
 
 	output = 'g.tiles ' g.tiles
-	maxmoves = 10
 	maxmoves = 7
 	maxmoves = 4
+	maxmoves = 10
 	maxmoves = 80
 
 *	&dump = 3
@@ -561,8 +562,12 @@ find.move
 	move = moves[mi = mi + 1,2]			:f(find.line)
 	output = ne(g.tracing) 'Find.move mi ' mi ' ' show.move(move,'find')
 	points(move) = 
-	perms = g.permutations[text(move)]
 	permi = 0
+	perms = g.permutations[text(move)]		:s(find.perm)
+
+*	Something must be wrong with the requested permutation
+
+	output = 'fatal permutation request ' text(move) :(end)
 	
 find.perm
 	score = fi = 0
@@ -760,7 +765,7 @@ game.move
 	playmove(move)
 	output = name(p) ' played ' show.tiles(text(move)) ' starting at ' lineid(id(move)) ', position ' free(move)[1]
 .	', for ' points(move) ' points.'
-	output = 'The score is now ' name(g.one) ' ' total(g.one)
+	output = 'Score is now ' name(g.one) ' ' total(g.one)
 .	 ', ' name(g.two) ' ' total(g.two) ', with '  size(g.tiles) ' letters left.'
 	show.board(g.board)
 
@@ -777,25 +782,22 @@ game.move
 *	show.grid(g.used)
 	g.used.lines = lines(g.used)
 
+*	Game over if no more tiles.
+
+	output = eq(size(g.tiles)) 'Game over: no more tiles. '		:s(game.over)
+
 *	Update rack.
-*	output =  'updating rack'
-
-*	Game over if no more tiles would remain.
-
-*	output = le(size(rack(p), size(g.tiles))) 'Game over: no more tiles.'	:s(game.over)
 
 	rack(p) = less(rack(p), lcase(text(move))) take(size(text(move))) :s(game.shuffle)
 
+game.shuffle
+
 *	Here if can't take any new tiles, so fail for now.
 
-	output = eq(size(g.tiles)) 'Game over: no more tiles. '			:s(game.over)
-
-game.shuffle
 
 *	Shuffle the tiles so the tile set changes according to the tiles played.
 * Not for now, maintain repeatability
 *	shuffle()
-
 *	output = 'shuffled'
 
 *	Update lines affected by grid changes to maintain consistency.
@@ -1035,7 +1037,7 @@ open.done
 	i = 0; c = 
 open.done.ch
 	c = c lpad(open[i = i + 1],3)		:s(open.done.ch)
-	output = ne(g.tracing) 'Open: ' lpad(lineid(num(pair)),3) ' '  show.hex(line) ':  :' show.line(line) ': is ' c
+	output = ne(g.tracing) 'Open: ' lpad(lineid(num(pair)),3) ' '  show.hex(line) '|  |' show.line(line) '| is ' c
 							:(return)
 open.end
 
@@ -1155,7 +1157,7 @@ row
 	row = ((le(num,15) num, pos))		:(return)
 row.end
 
-	define('scan(pair,rack,limit)num,line,i,pi,open,oi,nopen,n,first,pos,move')	:(scan.end)
+	define('scan(pair,rack,limit)num,line,i,pi,open,oi,nopen,n,first,pos,move,sub')	:(scan.end)
 
 *	Scan the given line to find the places where a valid move can be made. At least one cell in 
 *	a move must be adjacent to an occupied cell.  *line* is the line to be scanned, and *num* gives its
@@ -1167,53 +1169,50 @@ scan
 	num = num(pair)
 	output = ne(g.tracing) 'Scan line ' lineid(num) ' ' show.line(line) ' ' show.hex(line)
 
-*	Allocate and fill in open, an array giving the positions of the open cells.
+*	Allocate and fill in *open*, an array giving the positions of the open cells.
 
 	open = open(pair)				:f(scan.done);* fail if no empty cells
 	nopen = +prototype(open);* number of open cells in the line
 	
-*	The number of moves that can be made starting at a given position *i* in *open* depends on
+*	The number of moves *n* that can be made starting at a given position in *open* depends on
 *		limit,the most tiles that can be played in a move, or null if no limit.
 *		the number of remaining open cells in the line.
 *		the number of tiles in the rack.
 *		the number of remaining open spaces in the line
 	
-	nopen = nopen + 1
 	pi = 0
-scan.p
-*	*first* is the starting position of the potential move.
-
+scan.first
 	first = open[pi = pi + 1]			:f(scan.done)
-	nopen = nopen - 1
 	
+*	*first* is the position of the first letter in the move.
 *	We can't play a move with more cells than the number of tiles in the rack,
-*	or the number of remaining cells, or the limit number, or beyond the end of the line.
+*	or the number of remaining cells, or the limit number.
 
 	n = +size(rack)
 	n = differ(limit) gt(n,limit) limit
 	n = gt(n, nopen) +nopen
-
+	n = gt(n, nopen - pi) nopen - pi;* number of remaining open cells
+	
 *	Try for moves of length i=1..n starting at position *first* in the line.
 
 	i = 0
 scan.i
-	gt(i = i + 1,n)					:s(scan.p)
+	gt(i = i + 1,n)					:s(scan.first)
 
-	output = ne(g.tracing) 'Scan n=' n ' i= ' i ' first=' first 
+	output = ne(g.tracing) 'Scan first= ' first ' left =' (nopen - pi) ' n=' n ' i=' i  
 
 *	At least one cell to be occupied by this move must be adjacent to a used cell.
 	
 	oi = 0
 scan.used
 	gt(oi = oi + 1,i)				:s(scan.i)
-	pos = open[first + oi - 1]
+	pos = open[pi + oi - 1]				:f(scan.first)
 	output = ne(g.tracing) 'Scan oi=' oi ' pos=' pos
-	adjacent(row(num,pos),column(num,pos)) :f(scan.used)
-
+	adjacent(row(num,pos),column(num,pos)) 		:f(scan.used)s(scan.text)
 scan.text
 *	Here if adjacent cell found. Set text of move to the permutation specification.
-	
-	move = move(num,i,subarray(open,first,i), size(rack) '?' i)
+	sub = subarray(open,pi,i)			:f(scan.i)
+	move = move(num,i,sub,size(rack) '?' i)		:f(scan.i)
 	output = ne(g.tracing) 'Scan move ' show.move(move) ' n ' n  '  i ' i
 	scan = ident(scan) table()
 	count.scanned = count.scanned + 1
