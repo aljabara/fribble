@@ -635,6 +635,11 @@ find.cross.done
 *	ne(g.tracing) show.play(move,show.move(move))
 	output = ne(g.tracing) 'Find calling findscore'
 	points(move) = +findscore(flines,fi)	
+
+*	There is bonus of 35 points for playing all the tiles.
+
+	points(move)  = eq(count(move),7) points(move) + 35;
+
 	g.found = g.found + 1
 	output = ne(f.showscore) 'Find points(move) ' points(move) '  highest=' highest ' lowest=' lowest
 
