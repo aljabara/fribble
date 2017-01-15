@@ -503,9 +503,10 @@ endgame
 	output = gt(thirty(g.one)) 'Player ' name(g.one) ' had ' thirty(g.one) ' moves of 30 or more points.'
 	output = gt(thirty(g.two)) 'Player ' name(g.two) ' had ' thirty(g.two) ' moves of 30 or more points.'
 	counters()
+							:(return)
 endgame.end
 
-	define('find(rack,limit)num,lines,inlines,flines,fi,line,moves,mi,m,perms,perm,permi,fline,tline,iline,cline,highest,lowest,i,p,score,move')	:(find.end)
+	define('find(rack,limit)num,lines,inlines,flines,fi,line,moves,mi,m,perms,perm,permi,fline,tline,iline,cline,highest,lowest,i,p,score,move,tried')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -553,6 +554,13 @@ find.move
 	output = ne(g.tracing) 'Find.move mi ' mi ' ' show.move(move,'find')
 	points(move) = 
 	permi = 0
+
+*	The rack will almost always have at least two, and sometimes three, identical letters.
+*	Use tried to track texts that have been tried, to avoid duplicate testing for validity of
+*	the same text.
+	
+	tried = table(100)
+
 	perms = g.permutations[text(move)]		:s(find.perm)
 
 *	Something must be wrong with the requested permutation
@@ -563,6 +571,13 @@ find.perm
 	score = fi = 0
 	perm = perms[permi = permi + 1]			:f(find.move)
 	ident(perm)					:s(find.move)
+
+	text = place(perm,rack)
+
+*	See if we have already tested this text.
+
+	differ(tried[text])				:s(find.perm)
+	tried[text] = 1;* note that we have reviewed this text
 
 	count.perm = count.perm + 1
 	count.cells = count.cells + size(perm)
@@ -581,7 +596,7 @@ find.perm
 *	Move is valid on this line, so check validity on crossing lines.
 *	Save the valid lines in *flines* for scoring if move proves valid.
 
-	text(move) = place(text(move),rack)
+	text(move) = text
 	output = ne(g.tracing) 'Find valid first ' show.move(move) ' ' show.line(line)
 	flines[fi = fi + 1] =  pair( id(move), insert(lines[num],move))
 	i = 0
@@ -694,11 +709,20 @@ findscore.next
 							:(findscore.next)
 findscore.end
 
-	define('team(one,two)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(team.end)
+	define('team(one,two,first)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(team.end)
 
-*	Play a team of fribble. *one* and *two* are players. *max* is the maximum number of moves.
+*	Use fribble to help play another player. *one* and *two* are the two players, one of which will be fribble. 
+*	*first* indicates which player goes first.
 
-*GAME*
+*	Basic cycle is
+*	  loop
+*		get other's move
+*		update board and other player-related info
+*		make your move
+*		update your rack
+*			:(loop)
+
+*TEAM*
 team
 	players = array(2)
 	players[1] = g.one
