@@ -109,6 +109,15 @@
 
 *	g.value, a map from characters to the tile value of that character.
 
+*	The variables for row and column numbers are used
+*	for the input of moves. They map name to line number.
+
+	r01 = 1; r02 =  2; r03 =  3; r04 =  4; r05 =  5; r06 =  6; r07 =  7; r08 = 8;
+	r09 = 9; r10 = 10; r11 = 11; r12 = 12; r13 = 13; r14 = 14; r15 = 15;
+
+	c01 = 16; c02 = 17; c03 = 18; c04 = 19; c05 = 20; c06 = 21; c07 = 22; c08 = 23;
+	c09 = 24; c10 = 25; c11 = 26; c12 = 27; c13 = 28; c14 = 29; c30 = 30
+	
 *	Utility functions
 
 	define('init(dictfile,skip,external)c,i,j,s,t')		:(init.end)
@@ -677,117 +686,6 @@ findscore.next
 
 							:(findscore.next)
 findscore.end
-
-	define('match(home,away,first)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(match.end)
-
-*	Use fribble to play a match with another player. 
-*	*away* is the other player; *home* is you assisted by fribble.
-*	*first* indicates which player goes first.
-
-*	Basic cycle is
-*	  loop
-*		get other's move
-*		update board and other player-related info
-*		make your move
-*		update your rack
-*			:(loop)
-
-
-*MATCH*
-match
-
-*	See if we are to start the game.
-
-	differ(home,first)				:s(match.turn)
-
-*	We make the first move. Start by getting the rack
-
-	g.turn = 1
-	output = "Enter rack for first move:"
-	g.turn = 1
-	rack(home) = getrack()
-	output = 'Move ' g.turn ' for player ' name(home) ', with tiles ' show.tiles(rack(home)) '.'
-	move = start(rack(home))
-	makemove(home,move)
-
-match.turn
-
-*	A turn starts with the away team's move.
-
-	g.turn = g.turn + 1
-
-	differ(g.trace) tracer()
-
-	output = "Enter opponent's move:"
-	move = get()
-
-*	Need to see if move is valid
-
-*	Play the away team's move.
-
-	makemove(away,move)
-
-*	Get the current rack.
-
-	output = "Enter rack:"
-	rack = getrack()
-
-*	Make our move
-*
-
-	move = (eq(g.turn,1) start(rack(home)), find(rack(home),limit(home))) :s(match.home)
-
-	output = 'unable to get home move'			:s(end)
-
-	makemove(home,move)					:s(match.turn)
-	output = 'home makemove failed'				:s(end)
-match.home
-
-	makemove(move)
-
-*	Update rack info
-
-match.rack
-	output = 'Enter new rack:'
-
-	rack = input						:f(match.done)
-
-*	Order the rack.
-
-	rack = order(rack)
-
-*	On to next move.
-								:(match.turn)
-*
-*								:(match.fail)		
-match.move
-	makemove(p,move)
-
-*	Game over if no more tiles.
-
-	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(match.over)
-	getrack(p,move)					:(match.turn)
-
-match.fail
-
-*	Here if no move found.
-
-	output = 'No move found.'
-
-*	Here if no move found, in which case the return value is a set of swapped tiles. If *move* is null, then pass.
-
-	differ(move)					:s(match.swap)
-	passed = passed + 1
-	output = gt(passed,6) ' Too many passed moves.'	:s(match.over)
-	output = 'Player ' name(g.one) ' passes.'		:(match.turn)
-	
-match.swap
-	rack(p) = swap(rack(p),3)
-	output = 'Player ' name(p) ' swapped tiles.'	
-	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(match.turn)
-match.over						
-	endgame()					:(return)
-match.end
 
 	define('game(one,two)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
 
@@ -1602,12 +1500,12 @@ show.lines.end
 *SHOW.MOVE*
 show.move
 	output = ident(move) title ' show.move null move ' :s(return)
-*	output = 'show.move ' title
+	output = 'show.move ' title
+show.move.i
 	gt(i = i + 1,count(move))			:s(show.move.f)
 	ff = free(move)[i]
-	ident(datatype(ff,'string'))	:s(show.fail)
-*	f = append(f,free(move)[i],',','B')			:s(show.move);* list the free cells
-	f = append(f,free(move)[i],',','B')			:s(show.move);* list the free cells
+	ident(datatype(ff,'string'))			:s(show.fail)
+	f = append(f,ff,',')				:s(show.move.i)
 show.move.f
 	f break(',') ',' ','				:s(show.funny)
 	show.move = lineid(id(move)) ':' count(move) ':' f ':'
