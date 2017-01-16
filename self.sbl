@@ -2,39 +2,13 @@
 
 -include "lib.sbl"
 
-*	Main program.
 
-*MAIN*
-main
-	&stlimit = -1
-	&anchor = &trim = 1
-	init()
-
-	output = 'init done'
-	:(main.self)
-main.team
-
-*	Make us the home team
-
-	home = player('Dave')
-	away = player('Solo Wwf')
-	g.one = home
-	g.two = away
-
-*	When playing solo, home (we) make the first move.
-
-	match(home,away,home)				:s(main.match.done)f(main.match.fail)
-main.match.fail
-	output = 'failed match'				:(main.match.done)
-main.match.done
-	output = 'match over'
-main.match.over
-	counters()
-								:(end)
-
-main.self
 *	Have fribble play itself.
 
+	&stlimit = -1
+	&anchor = &trim = 1
+
+	init()
 
 	one = ident(one) player()
 	two = ident(two) player()
@@ -51,5 +25,4 @@ main.self
 	g.turn = g.lastmove = 0
 
 	game()							:(end)
-main.end
 end
