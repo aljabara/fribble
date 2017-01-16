@@ -121,6 +121,7 @@ main
 	&stlimit = -1
 	&anchor = &trim = 1
 
+	:(main.self)
 main.team
 
 *	Make us the home team

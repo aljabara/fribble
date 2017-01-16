@@ -1,0 +1,55 @@
+* Copyright (c) 2017 dave shields
+
+-include "lib.sbl"
+
+*	Main program.
+
+*MAIN*
+main
+	&stlimit = -1
+	&anchor = &trim = 1
+	init()
+
+	output = 'init done'
+	:(main.self)
+main.team
+
+*	Make us the home team
+
+	home = player('Dave')
+	away = player('Solo Wwf')
+	g.one = home
+	g.two = away
+
+*	When playing solo, home (we) make the first move.
+
+	match(home,away,home)				:s(main.match.done)f(main.match.fail)
+main.match.fail
+	output = 'failed match'				:(main.match.done)
+main.match.done
+	output = 'match over'
+main.match.over
+	counters()
+								:(end)
+
+main.self
+*	Have fribble play itself.
+
+
+	one = ident(one) player()
+	two = ident(two) player()
+	fribble(one) = ident(name(one)) 1
+	fribble(two) = ident(name(two)) 1
+	name(one) = differ(fribble(one)) 'Fribble One'
+	name(two) = differ(fribble(two)) 'Fribble Two'
+	g.one = one
+	g.two = two
+	total(g.one) = total(g.two) = moves(g.one) = moves(g.two) = 0
+	rack(g.one) = take(7)
+	rack(g.two) = take(7)
+
+	g.turn = g.lastmove = 0
+
+	game()							:(end)
+main.end
+end
