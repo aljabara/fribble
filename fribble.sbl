@@ -112,7 +112,7 @@
 *	g.value, a map from characters to the tile value of that character.
 
 
-	define('main()name,one,two')	:(main.end)
+	define('main()name,one,two,home,away')	:(main.end)
 
 *	Main program.
 
@@ -121,7 +121,29 @@ main
 	&stlimit = -1
 	&anchor = &trim = 1
 
+main.team
+
+*	Make us the home team
+
+	home = player('Dave')
+	away = player('Solo Wwf')
+	g.one = home
+	g.two = away
+
+*	When playing solo, home (we) make the first move.
+
+	match(home,away,home)				:s(main.match.done)f(main.match.fail)
+main.match.fail
+	output = 'failed match'				:(main.match.done)
+main.match.done
+	output = 'match over'
+main.match.over
+	counters()
+								:(end)
+
+main.self
 *	Have fribble play itself.
+
 
 	one = ident(one) player()
 	two = ident(two) player()
@@ -714,9 +736,10 @@ findscore.next
 							:(findscore.next)
 findscore.end
 
-	define('team(one,two,first)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(team.end)
+	define('match(home,away,first)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(match.end)
 
-*	Use fribble to help play another player. *one* and *two* are the two players, one of which will be fribble. 
+*	Use fribble to play a match with another player. 
+*	*away* is the other player; *home* is you assisted by fribble.
 *	*first* indicates which player goes first.
 
 *	Basic cycle is
@@ -727,39 +750,83 @@ findscore.end
 *		update your rack
 *			:(loop)
 
-*TEAM*
-team
-	players = array(2)
-	players[1] = g.one
-	players[2] = g.two
-team.round
-	i = 0
-team.turn
-	p = players[i = i + 1]				:f(team.round)
+
+*MATCH*
+match
+
+*	See if we are to start the game.
+
+	differ(home,first)				:s(match.turn)
+
+*	We make the first move. Start by getting the rack
+
+	g.turn = 1
+	output = "Enter rack for first move:"
+	g.turn = 1
+	rack(home) = getrack()
+	output = 'Move ' g.turn ' for player ' name(home) ', with tiles ' show.tiles(rack(home)) '.'
+	move = start(rack(home))
+	makemove(home,move)
+
+match.turn
+
+*	A turn starts with the away team's move.
 
 	g.turn = g.turn + 1
-	output = gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.' :s(team.over)
 
 	differ(g.trace) tracer()
 
-	output = ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.'  :s(team.over)
+	output = "Enter opponent's move:"
+	move = get()
 
-	output = 'Move ' g.turn ' for player ' name(p) ', with tiles ' show.tiles(rack(p),'A') '.'
-	output = ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
+*	Need to see if move is valid
 
-	move = ident(fribble(p)) get()			:s(team.move)
-	move = differ(fribble(p)) (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(team.move)
-*	move = (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(team.move)
-								:(team.fail)		
-team.move
+*	Play the away team's move.
+
+	makemove(away,move)
+
+*	Get the current rack.
+
+	output = "Enter rack:"
+	rack = getrack()
+
+*	Make our move
+*
+
+	move = (eq(g.turn,1) start(rack(home)), find(rack(home),limit(home))) :s(match.home)
+
+	output = 'unable to get home move'			:s(end)
+
+	makemove(home,move)					:s(match.turn)
+	output = 'home makemove failed'				:s(end)
+match.home
+
+	makemove(move)
+
+*	Update rack info
+
+match.rack
+	output = 'Enter new rack:'
+
+	rack = input						:f(match.done)
+
+*	Order the rack.
+
+	rack = order(rack)
+
+*	On to next move.
+								:(match.turn)
+*
+*								:(match.fail)		
+match.move
 	makemove(p,move)
 
 *	Game over if no more tiles.
 
-	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(team.over)
-	getrack(p,move)					:(team.turn)
+	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(match.over)
+	getrack(p,move)					:(match.turn)
 
-team.fail
+match.fail
 
 *	Here if no move found.
 
@@ -767,18 +834,18 @@ team.fail
 
 *	Here if no move found, in which case the return value is a set of swapped tiles. If *move* is null, then pass.
 
-	differ(move)					:s(team.swap)
+	differ(move)					:s(match.swap)
 	passed = passed + 1
-	output = gt(passed,6) ' Too many passed moves.'	:s(team.over)
-	output = 'Player ' name(g.one) ' passes.'		:(team.turn)
+	output = gt(passed,6) ' Too many passed moves.'	:s(match.over)
+	output = 'Player ' name(g.one) ' passes.'		:(match.turn)
 	
-team.swap
+match.swap
 	rack(p) = swap(rack(p),3)
 	output = 'Player ' name(p) ' swapped tiles.'	
-	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(team.turn)
-team.over						
+	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(match.turn)
+match.over						
 	endgame()					:(return)
-team.end
+match.end
 
 	define('game(one,two)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
 
@@ -883,27 +950,33 @@ get.ind
 	output = gt(num,15) 'position greater than fifteen' :s(get.invalid)
 	pos = num
 get.ch
-	tiles len(1) . ch =				:f(get.ind)
+	line len(1) . ch =				:f(get.done)
+	output = 'get.ch pos=' pos ' ch=' ch '.'
 	text = text ch
-	free(fi = fi + 1) = pos
+	free[fi = fi + 1] = pos
+	output = 'get free fi=' fi ' pos=' pos
 	pos = pos + 1					:(get.ch)
 get.done
 	ident(text)					:s(get.invalid)
 	free = subarray(free,1,size(text))
 	get = move(id,size(text),free,lcase(text))
+	output = 'get returns ' show.move(get)		:(return)
 	line = insert(g.lines[id],move)
 	checkline(line)					:s(return)
-	output = 'move results in invalid line ' line
+	output = 'move results in invalid line ' line	:s(end)
 get.invalid
 	output = 'invalid specification, try again.'	:(get.loop)
 get.end
 
-	define('getrack(p,move)')			:(getrack.end)
+	define('getrack(p,move)confirm')		:(getrack.end)
 
 *	Return rack for player *p* after making move.
+*	Get rack from input if *p* is null
 
 *GETRACK*
 getrack
+	ident(p)					:s(getrack.input)
+
 *	Update rack.
 
 	rack(p) = less(rack(p), lcase(text(move))) take(size(text(move))) 
@@ -914,8 +987,19 @@ getrack
 *	shuffle()
 *	output = 'shuffled'
 							:(return)
+getrack.input
+	getrack =
+	output = 'Enter rack:'
+	getrack = input					:f(end)
+	differ(getrack)					:s(getrack.confirm)
+	output = 'no input, retry'			:s(getrack.input)
+getrack.confirm
+	output = "rack now <" getrack ">  Is this correct (y or just ENTER to confirm)?"
+	confirm = input
+	ident(confirm)					:s(return)
+	differ(confirm,'y')				:s(getrack.input)
 getrack.end
-
+	
 
 	define('grid(lines,start)i,r,c,line')		:(grid.end)
 
