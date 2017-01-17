@@ -72,8 +72,9 @@
 
 *	g.turn, the number of the current turn
 *	g.lastmove, the turn when the last move was made.
+*	g.turnlimit, most allowed number of turns if non-zero.
 
-	g.turn = g.lastmove = 0
+	g.turn = g.lastmove = g.turnlimit = 0
 
 *	g.permutations, a table of the permutations of n=1..7 things taken 1..k at a time.
 *	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time, as a string with
@@ -504,9 +505,6 @@ endgame.end
 *FIND*
 find
 *	
-*	show.board(g.board)
-*	show.lines(g.lines)
-*	show.grid(g.used)
 
 	lines = copy(g.lines)
 	inlines = copy(lines)
@@ -605,7 +603,7 @@ find.cross.done
 	move = copy(move)
 	output = ne(g.tracing) 'Find cross ' show.move(move) '  text=' text(move)
 	ne(g.tracing) show.move(move)
-*	ne(g.tracing) show.play(move,show.move(move))
+	ne(g.tracing) show.play(move)
 	output = ne(g.tracing) 'Find calling findscore'
 	points(move) = +findscore(flines,fi)	
 
@@ -687,126 +685,6 @@ findscore.next
 							:(findscore.next)
 findscore.end
 
-	define('game(one,two)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
-
-*	Play a game of fribble. *one* and *two* are players. *max* is the maximum number of moves.
-
-*GAME*
-game
-	players = array(2)
-	players[1] = g.one
-	players[2] = g.two
-game.round
-	i = 0
-game.turn
-	p = players[i = i + 1]				:f(game.round)
-
-	g.turn = g.turn + 1
-	output = gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.' :s(game.over)
-
-	differ(g.trace) tracer()
-
-	output = ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.'  :s(game.over)
-
-	output = 'Move ' g.turn ' for player ' name(p) ', with tiles ' show.tiles(rack(p),'A') '.'
-	output = ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
-
-	move = ident(fribble(p)) get()			:s(game.move)
-	move = differ(fribble(p)) (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
-*	move = (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
-								:(game.fail)		
-game.move
-	makemove(p,move)
-
-*	Game over if no more tiles.
-
-	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(game.over)
-	getrack(p,move)					:(game.turn)
-
-game.fail
-
-*	Here if no move found.
-
-	output = 'No move found.'
-
-*	Here if no move found, in which case the return value is a set of swapped tiles. If *move* is null, then pass.
-
-	differ(move)					:s(game.swap)
-	passed = passed + 1
-	output = gt(passed,6) ' Too many passed moves.'	:s(game.over)
-	output = 'Player ' name(g.one) ' passes.'		:(game.turn)
-	
-game.swap
-	rack(p) = swap(rack(p),3)
-	output = 'Player ' name(p) ' swapped tiles.'	
-	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(game.turn)
-game.over						
-	endgame()					:(return)
-game.end
-
-	define('get()line,kind,num,tiles,id,pos,f,fi,ch') :(get.end)
-
-*	Get move from user.
-
-*	A move is specified by a row/column indicator followed by one or more placements.
-
-*	A row indicator has the form 'rnn' where nn is a number in the range 1-15.
-*	A column indicator has the form 'cnn' where nn is a number in the range 1-15
-
-*	A placement has the form 'ntext' or 'nntext' where n specifies a position in the row or column, and
-*	text is a sequence of up to seven letters.
-
-*	For example, 
-
-*		r8 8start
-
-*	specifies a move in row 8, column 8, of the text 'start'. This could also be entered as
-
-*		r8 8s 9t 10a 11r 12t
-
-*	or
-
-*		r8 8st 10art
-
-*GET
-get
-	free = array(7)
-get.loop
-	line = input					:f(get.done)
-	line span(' ') =
-	output = ident(line) 'empty input, try again'	:s(get.invalid)
-
-*	Get row/column indicator
-
-	line any('rc') . kind  span('0123456789') . num =	:f(get.invalid)
-	output = lt(num,1) 'number less than one '	:s(get.invalid)
-	output = gt(num,15) 'number greater than fifteen '	:s(get.invalid)
-	id = (ident(kind,'r') num, num + 15)
-get.ind
-	line span(' ') =	
-	ident(line)					:s(get.done)
-	line span('0123456789') . num rem . tiles	:f(get.invalid)
-	output = lt(num,1) 'position less than one'	:s(get.invalid)
-	output = gt(num,15) 'position greater than fifteen' :s(get.invalid)
-	pos = num
-get.ch
-	line len(1) . ch =				:f(get.done)
-	output = 'get.ch pos=' pos ' ch=' ch '.'
-	text = text ch
-	free[fi = fi + 1] = pos
-	output = 'get free fi=' fi ' pos=' pos
-	pos = pos + 1					:(get.ch)
-get.done
-	ident(text)					:s(get.invalid)
-	free = subarray(free,1,size(text))
-	get = move(id,size(text),free,lcase(text))
-	output = 'get returns ' show.move(get)		:(return)
-	line = insert(g.lines[id],move)
-	checkline(line)					:s(return)
-	output = 'move results in invalid line ' line	:s(end)
-get.invalid
-	output = 'invalid specification, try again.'	:(get.loop)
-get.end
 
 	define('getrack(p,move)confirm')		:(getrack.end)
 
@@ -989,7 +867,6 @@ makemove
 .	', for ' points(move) ' points.'
 	output = 'Score is now ' name(g.one) ' ' total(g.one)
 .	 ', ' name(g.two) ' ' total(g.two) ', with '  size(g.tiles) ' letters left.'
-	show.board(g.board)
 
 *	Display move in grid with just this move in upper case by saving the board, playing the move with
 *	the text in upper case, showing it, and then restoring the board to its saved state.
@@ -999,7 +876,7 @@ makemove
 	text(move) = ucase(text(move))
 	playmove(move)
 	text(move) = lcase(text(move));* restore
-	show.grid(g.board)
+*	show.grid(g.board)
 	g.board = board
 	g.lines = lines
 *	show.lines(g.lines,'Lines')
@@ -1325,7 +1202,6 @@ score.end
 show
 	output = 'rack for player ' player ': ' rack
 
-	show.board(g.board,'player ' player ' to play')
 	show.grid(g.board)
 	show.lines(g.lines)
 *	show.board(g.bonus,'bonus')
@@ -1340,6 +1216,7 @@ show.end
 *SHOW.BOARD*
 show.board
 	show.header()
+	output = 'show.board abandoned' :(return)
 show.board.r
 	gt(r = r + 1,15) 				:s(show.board.finish)
 	line = lpad(r,2) '|' 
@@ -1437,8 +1314,8 @@ show.grid.end
 *SHOW.HEADER*
 show.header
 	output = differ(label) label
-	output = '                               1  1  1  1  1  1'
-	output = '   1   2  3  4  5  6  7  8  9  0  1  2  3  4  5'	:(return)
+	output = '                     1 1 1 1 1 1'
+	output = '   1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'	:(return)
 show.header.end
 
 	define('show.hex(line)ch,i')				:(show.hex.end)
@@ -1458,15 +1335,15 @@ show.hex.end
 *SHOW.HLINE*
 show.hline
 	line = hline(g,row)
-	show.hline = rpad(row,2) '|'
+	show.hline = '|'
 show.hline.ch
 	line len(1) . ch = 				:f(show.hline.done)
-	show.hline = show.hline ' ' ch  ' '		:(show.hline.ch)
+	show.hline = show.hline ' ' ch  		:(show.hline.ch)
 show.hline.done
 	show.hline = show.hline '|'			:(return)
 show.hline.end
 
-	define('show.line(line)')				:(show.line.end)
+	define('show.line(line)')			:(show.line.end)
 
 *	Show a line with blanks replaced by '.'
 
@@ -1553,23 +1430,71 @@ show.pair
 	show.pair = '{' lineid(num(pair)) ',' "'" replace(line(pair),' ','.') "'" '}'	:(return)
 show.pair.end
 
-	define('show.play(move,title)board,f,r,c,i')	:(show.play.end)
+	define('show.play(move)plines,b,r,c,ch,line')	:(show.play.end)
 
-*	Show the results of making move *mov*. 
+*	Show the board.
 
 *SHOW.PLAY*
 show.play
-	board = copy(g.board)
-	text = text(move)
-show.play.next
-	f = free(move)[i = i + 1]			:f(show.play.done)
-	r = (lt(id(move),15) id(move), f)
-	c = (gt(id(move),15) id(move) - 15, f)
-*	output = 'show.play r ' r ' c ' c ' ch ' substr(text,i,1)
-	board[r,c] = substr(txt,i,1)
-							:(show.play.next)
-show.play.done
-	show.board(board,title)			:(return)
+
+*	Display move in grid with just this move in upper case by saving the board, playing the move with
+*	the text in upper case, showing it, and then restoring the board to its saved state.
+
+	board = copy (g.board)
+	lines = copy(g.lines)
+	text(move) = ucase(text(move))
+	playmove(move)
+	plines = lines(g.board);* capture lines with move letters in upper case
+	text(move) = lcase(text(move));* restore
+*	show.grid(g.board)
+	g.board = board
+	g.lines = lines
+*	show.lines(g.lines,'Lines')
+
+*	Collect the lines of the grid
+
+	lines = array(15)
+show.play.l
+	gt(r = r + 1,15) 				:s(show.play.ll)
+	plines[r] = show.hline(board,r)			:(show.play.l)
+show.play.ll
+	r = 0
+	output = lpad('',22) '1 1 1 1 1 1'
+.		 lpad('',20) '1 1 1 1 1 1'
+	output = lpad('', 4) '1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
+.		 lpad('', 2) '1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
+
+show.play.r
+	gt(r = r + 1,15) 				:s(show.play.finish)
+	line = lpad(r,2) '|' 
+	c = 0
+show.play.c
+	gt(c = c + 1,15)				:s(show.play.margin)
+	ch = ucase(board[r,c])
+	b = g.bonus[r,c]
+	differ(ch,' ')					:s(show.play.ch)
+
+*	Here if empty cell, see if there is a bonus to be show.played.
+
+	ne(b,1)						:s(show.play.b)
+
+*	Here to show.play empty cell.
+
+	line = line ' -'				:(show.play.c)
+show.play.b
+
+* 	Here to show.play bonus.
+
+	ch = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
+	line = line ch 					:(show.play.c)
+show.play.margin
+	output = line  plines[r]			:(show.play.r)
+show.play.ch
+	line  = line ' ' ch 				:(show.play.c);* show.play tile
+show.play.finish
+	output = lpad('', 4) '1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
+.		 lpad('', 2) '1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
+	output =					:(return)
 show.play.end
 
 	define('show.player(player)')			:(show.player.end)
