@@ -8,7 +8,6 @@
 *	A play is a sequence of one or more cells, represented as an array.  The cells are ordered
 *	from left to right for a horizontal play, top to bottom for a vertical play.
 
-
 *	g.board, array('15,15'), the playing board. Each entry is blank (' ') for unplayed cell, or is the letter played.
 
 *	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
@@ -111,6 +110,11 @@
 *	g.used.lines, array(30), is the array of lines defined by the rows and columns of the used grid.
 
 *	g.value, a map from characters to the tile value of that character.
+
+	g.clines = array(8);* for line with move and its crossing lines.
+	g.cli = 0;* number of entries in clines
+	g.highest = 0;* highest score
+	g.lowest = 0;* lowest cost
 
 *	The variables for row and column numbers are used
 *	for the input of moves. They map name to line number.
@@ -338,6 +342,7 @@ append.end
 
 *	Tests the score of a move to see if it the best yet seen in a turn.
 
+*BESTSCORE*
 bestscore
 	output = ne(f.showscore) 'Find points(move) ' points(move) '  highest=' g.highest ' lowest=' g.lowest
 
@@ -516,7 +521,7 @@ endgame
 							:(return)
 endgame.end
 
-	define('find(rack,limit)num,lines,inlines,flines,fi,line,moves,mi,m,perms,perm,permi,fline,tline,iline,cline,highest,lowest,i,p,score,move,tried')	:(find.end)
+	define('find(rack,limit)num,lines,inlines,line,moves,mi,m,perms,perm,permi,fline,tline,iline,cline,highest,lowest,i,p,score,move,tried')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -544,10 +549,8 @@ find
 
 	lines = copy(g.lines)
 	inlines = copy(lines)
-	flines = array(8);* for line with move and its crossing lines.
-	fi = 0;* number of entries in flines
-	g.highest = 0;* highest score
-	g.lowest = 0;* lowest cost
+	g.highest = 0;* highest score this turn
+	g.lowest = 0;* lowest cost this turn
 	num = 0
 find.line
 	gt(num = num + 1,30)				:s(find.done)
@@ -575,7 +578,7 @@ find.move
 	output = 'fatal permutation request ' text(move) :(end)
 	
 find.perm
-	score = fi = 0
+	score = g.cli = 0
 	perm = perms[permi = permi + 1]			:f(find.move)
 	ident(perm)					:s(find.move)
 
@@ -601,11 +604,11 @@ find.perm
 	perm(move) = perm
 
 *	Move is valid on this line, so check validity on crossing lines.
-*	Save the valid lines in *flines* for scoring if move proves valid.
+*	Save the valid lines in *clines* for scoring if move proves valid.
 
 	text(move) = text
 	output = ne(g.tracing) 'Find valid first ' show.move(move) ' ' show.line(line)
-	flines[fi = fi + 1] =  pair( id(move), insert(lines[num],move))
+	g.clines[g.cli = g.cli + 1] =  pair( id(move), insert(lines[num],move))
 	i = 0
 
 *	Check the crossing lines to make sure they are valid.
@@ -625,12 +628,12 @@ find.cross
 	output = ne(g.tracing) 'Find text ' text(move)
 
 
-	flines[fi = fi + 1] = cline			:(find.cross)
+	g.clines[g.cli = g.cli + 1] = cline			:(find.cross)
 	
 find.cross.done
 	output = ne(g.tracing) 'Find valid move ' show.move(move) ' in ' show.pair(pair(num,line))
 
-*	Score the line by summing the scores of the lines saved in flines.
+*	Score the line by summing the scores of the lines saved in clines.
 	
 *	output = ne(g.tracing) 'valid move :' line '  move '  id(move) ' ' count(move) '  '
 *.		free(move)[1] '...' free(move)[count(move)] ' ' text(move)
@@ -641,13 +644,13 @@ find.cross.done
 	ne(g.tracing) show.move(move)
 	ne(g.tracing) show.play(move)
 	output = ne(g.tracing) 'Find calling findscore'
-	points(move) = +findscore(flines,fi)	
+	points(move) = +findscore()	
 
 *	There is bonus of 35 points for playing all the tiles.
 
 	points(move)  = eq(count(move),7) points(move) + 35;
 	g.found = g.found + 1
-	fi = 0;* reset for next permutation
+	g.cli = 0;* reset for next permutation
 	bestscore(move)					:f(find.perm)
 
 *	Here if new best move.
@@ -666,7 +669,7 @@ find.fail
 							:(freturn)
 find.end
 	
-	define('findscore(flines,fn)i,move')			:(findscore.end)
+	define('findscore()i,move')			:(findscore.end)
 
 *	Find the score of a move by summing the scores of the lines affected by the move.
 
@@ -681,18 +684,18 @@ findscore
 
 	i = 0
 	findscorecount = ne(g.tracing) findscorecount + 1
-	output = ne(g.showscore) ' ENTER findscore:' findscorecount ': fn ' fn
+	output = ne(g.showscore) ' ENTER findscore:' findscorecount ': g.cli ' g.cli
 findscore.1
-	gt(i = i + 1,fn)				:s(findscore.2)
-	move = flines[i]
+	gt(i = i + 1,g.cli)				:s(findscore.2)
+	move = g.clines[i]
 *	output = 'findscore:' findscorecount ':' lpad(i,2) ' ' num(move) ' ' show.line(line(move)) :(findscore.1)
 findscore.2
 	i = 0
 
 findscore.next
-	gt(i = i + 1,fn)				:s(return)
-	findscore = findscore + score(flines[i])	
-	output = ne(g.showscore) 'scoring AFTER  flines,:' findscorecount ': ' show.pair(flines[i]) '  is ' findscore
+	gt(i = i + 1,g.cli)				:s(return)
+	findscore = findscore + score(g.clines[i])	
+	output = ne(g.showscore) 'scoring AFTER  g.clines,:' findscorecount ': ' show.pair(g.clines[i]) '  is ' findscore
 
 							:(findscore.next)
 findscore.end
