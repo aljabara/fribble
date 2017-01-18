@@ -334,6 +334,40 @@ append.fail
 	 output = 'null ch to append ' w :(end)
 append.end
 
+	define('bestscore(move)')			:(bestscore.end)
+
+*	Tests the score of a move to see if it the best yet seen in a turn.
+
+bestscore
+	output = ne(f.showscore) 'Find points(move) ' points(move) '  highest=' g.highest ' lowest=' g.lowest
+
+	lt(points(move),g.highest)			:s(freturn)
+	gt(points(move),g.highest)			:s(bestscore.new)
+
+*	Here if points equal, look for lower cost
+
+	lt(cost(text(move)),g.lowest)			:s(bestscore.new)
+	gt(cost(text(move)),g.lowest)			:s(freturn)
+
+*	Here if same points and cost, see if one uses 's' and the other doesn't.
+*	Continue search if current best doesn't use 's'.
+
+	text(find) ? break('s')				:f(freturn)
+
+*	Here if current best uses an 's'. Continue if new move also uses 's'.
+
+	text(move) ? break('s')				:s(freturn)
+
+bestscore.new
+
+*	Here to add the new best move.
+
+	g.highest = points(move)
+	g.lowest = cost(text(move))
+	output = ne(g.tracing) 'find NEW BEST move ' show.move(move)
+							:(return)
+bestscore.end
+
 	define('bonus.lines()i')			:(bonus.lines.end)
 
 *BONUS.LINES*
@@ -392,7 +426,7 @@ checkword.good
 							:(return)
 checkword.end
 
-	define('cline(lines,move,p,ch,rack)line')	:(cline.end)
+	define('cline(lines,move,p,ch)line')		:(cline.end)
 
 *	Return crossing line of p-th cell in move *move*. *ch* gives tile to be played.
 
@@ -512,8 +546,8 @@ find
 	inlines = copy(lines)
 	flines = array(8);* for line with move and its crossing lines.
 	fi = 0;* number of entries in flines
-	highest = 0;* highest score
-	lowest = 0;* lowest cost
+	g.highest = 0;* highest score
+	g.lowest = 0;* lowest cost
 	num = 0
 find.line
 	gt(num = num + 1,30)				:s(find.done)
@@ -580,7 +614,7 @@ find.cross
 *	output = 'find cross '
 	count.cross = count.cross + 1
 	p = free(move)[i = i + 1]			:f(find.cross.done)
-	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1),rack)
+	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1))
 *	output = ne(g.tracing) 'Find cross check ' line(cline)
 *	output = 'Find cross check ' line(cline)
 	checkline(line(cline))				:f(find.perm)
@@ -612,37 +646,13 @@ find.cross.done
 *	There is bonus of 35 points for playing all the tiles.
 
 	points(move)  = eq(count(move),7) points(move) + 35;
-
 	g.found = g.found + 1
-	output = ne(f.showscore) 'Find points(move) ' points(move) '  highest=' highest ' lowest=' lowest
-
-	lt(points(move),highest)			:s(find.perm)
-	gt(points(move),highest)			:s(find.new)
-
-*	Here if points equal, look for lower cost
-
-	lt(cost(text(move)),lowest)			:s(find.new)
-	gt(cost(text(move)),lowest)			:s(find.perm)
-
-*	Here if same points and cost, see if one uses 's' and the other doesn't.
-*	Continue search if current best doesn't use 's'.
-
-	text(find) ? break('s')				:f(find.perm)
-
-*	Here if current best uses an 's'. Continue if new move also uses 's'.
-
-	text(move) ? break('s')				:s(find.perm)
-
-find.new
-
-*	Here to add the new best move.
-
-	find = copy(move)
-	highest = points(move)
-	lowest = cost(text(move))
 	fi = 0;* reset for next permutation
-	output = ne(g.tracing) 'find NEW BEST move ' show.move(move)
-							:(find.perm)
+	bestscore(move)					:f(find.perm)
+
+*	Here if new best move.
+
+	find = copy(move)				:(find.perm)
 find.done
 	ident(find)					:s(find.fail)
 							:(return)	
