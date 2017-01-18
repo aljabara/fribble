@@ -27,10 +27,25 @@ game.turn
 	output = 'Move ' g.turn ' for player ' name(p) ', with tiles ' show.tiles(rack(p),'A') '.'
 	output = ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
 
-	move = ident(fribble(p)) get()			:s(game.move)
-	move = differ(fribble(p)) (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
-*	move = (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
-								:(game.fail)		
+	differ(fribble(p))				:s(game.fribble)
+
+game.you.move
+
+*	Here for you to make a move
+
+	output = 'make your move '
+	j
+	text = input				:f(game.eod)
+	output = 'you entered ' text
+	move = eval(text)
+	output = 'datatype move ' datatype(move)
+	ident(datatype(move),'MOVE')			:s(game.move)
+	output = 'need to enter a move '		:(game.you.move)
+
+game.fribble
+
+*	Here to have fribble make a move
+	move = (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
 game.move
 	makemove(p,move)
 	show.play(move)
@@ -57,6 +72,8 @@ game.swap
 	rack(p) = swap(rack(p),3)
 	output = 'Player ' name(p) ' swapped tiles.'	
 	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(game.turn)
+game.eof
+	output = 'end of input - game over'		:(game.over)
 game.over						
 	endgame()					:(return)
 game.end
@@ -68,8 +85,8 @@ game.end
 
 	init()
 
-	one = player(1,'Fribble One',1)
-	two = player(2,'Fribble Two',1)
+	one = player(1,'You')
+	two = player(2,'Fribble',1)
 	g.one = one
 	g.two = two
 	total(g.one) = total(g.two) = 0

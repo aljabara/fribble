@@ -13,20 +13,18 @@ main
 	mov = m(r08,8,'shields')
 	output = 'datatype move ' datatype(mov)
 	output = show.move(mov,'test')
-	mov = mf(r09,4,'7,8,11,12','dave')
+	mov = mf(r09,'7,8,11,12','dave')
 	output = show.move(mov,'test')
-							:(return)
-main.team
+	output = put.move(mov)
+ :(end)
 
-*	Make us the home team
+	you = player(1,'You',1)
+	foe = player(2,'Foe')
+	g.one = you
+	g.two = foe
 
-	home = player('Dave')
-	away = player('Solo Wwf')
-	g.one = home
-	g.two = away
-
-*	When playing solo, home (we) make the first move.
-	match(home,away,home)				:s(main.match.done)f(main.match.fail)
+*	When playing solo, you (we) make the first move.
+	match(you,foe)					:s(main.match.done)f(main.match.fail)
 main.match.fail
 	output = 'failed match'				:(main.match.done)
 main.match.done
@@ -36,18 +34,97 @@ main.match.over
 main.end
 
 
-	define('match(home,away,first)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(match.end)
+	define('solo(you,foe)first,opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(solo.end)
+
+*	Play a game with fribble.
+*	*foe* is fribble.
+
+
+
+*SOLO*
+solo
+
+*	See if we are to start the game.
+
+	ne(pid(you),1))					:s(solo.turn)
+
+*	We make the first move. Start by getting the rack
+
+	g.turn = 1
+	output = "Enter rack for first move:"
+	g.turn = 1
+	rack(you) = r()
+	output = 'Move ' g.turn ' for player ' name(you) ', with tiles ' show.tiles(rack(you)) '.'
+	move = start(rack(you))
+	makemove(you,move)
+	show.play(move)
+
+solo.turn
+
+*	On each turn, get the foes's move, make your move, and update your rack.
+
+	g.turn = g.turn + 1
+
+	differ(g.trace) tracer()
+
+	move = foe()						:f(foe.bad)
+	makemove(foe,move)				:s(return)f(freturn)
+	show.play(move)
+*	Need to see if move is valid
+
+*	Play the foe team's move.
+
+	makemove(foe,move)
+
+*	Get the current rack.
+
+	rack = order(r())
+	move = find(rack)					:f(you.bad)
+	makemove(you,move)
+	show.play(move)
+								:(solo.turn)
+foe.bad
+	output = 'foe is unable to make  move.'			:(freturn)
+you.bad
+	output = 'you are nable to make  move.'			:(freturn)
+solo.you
+
+	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(solo.over)
+	getrack(p,move)					:(solo.turn)
+
+solo.fail
+
+*	Here if no move found.
+
+	output = 'No move found.'
+
+*	Here if no move found, in which case the return value is a set of swapped tiles. If *move* is null, then pass.
+
+	differ(move)					:s(solo.swap)
+	passed = passed + 1
+	output = gt(passed,6) ' Too many passed moves.'	:s(solo.over)
+	output = 'Player ' name(g.one) ' passes.'		:(solo.turn)
+	
+solo.swap
+	rack(p) = swap(rack(p),3)
+	output = 'Player ' name(p) ' swapped tiles.'	
+	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(solo.turn)
+solo.over						
+	endgame()					:(return)
+solo.end
+
+	define('match(you,foe)first,opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(match.end)
 
 *	Use fribble to play a match with another player. 
-*	*away* is the other player; *home* is you assisted by fribble.
-*	*first* indicates which player goes first.
+*	*foe* is the other player; *you* is you assisted by fribble.
 
 *	Basic cycle is
 *	  loop
-*		get other's move
+*		enter foe's move
+*		list the tiles in your rack
+*		fribble makes your move
+*		enter your updated rack
 *		update board and other player-related info
-*		make your move
-*		update your rack
 *			:(loop)
 
 
@@ -56,72 +133,48 @@ match
 
 *	See if we are to start the game.
 
-	differ(home,first)				:s(match.turn)
+	ne(pid(you),1))					:s(match.turn)
 
 *	We make the first move. Start by getting the rack
 
 	g.turn = 1
 	output = "Enter rack for first move:"
 	g.turn = 1
-	rack(home) = getrack()
-	output = 'Move ' g.turn ' for player ' name(home) ', with tiles ' show.tiles(rack(home)) '.'
-	move = start(rack(home))
-	makemove(home,move)
+	rack(you) = r()
+	output = 'Move ' g.turn ' for player ' name(you) ', with tiles ' show.tiles(rack(you)) '.'
+	move = start(rack(you))
+	makemove(you,move)
+	show.play(move)
 
 match.turn
 
-*	A turn starts with the away team's move.
+*	On each turn, get the foes's move, make your move, and update your rack.
 
 	g.turn = g.turn + 1
 
 	differ(g.trace) tracer()
 
-	output = "Enter opponent's move:"
-	move = get()
-
+	move = foe()						:f(foe.bad)
+	makemove(foe,move)				:s(return)f(freturn)
+	show.play(move)
 *	Need to see if move is valid
 
-*	Play the away team's move.
+*	Play the foe team's move.
 
-	makemove(away,move)
+	makemove(foe,move)
 
 *	Get the current rack.
 
-	output = "Enter rack:"
-	rack = getrack()
-
-*	Make our move
-*
-
-	move = (eq(g.turn,1) start(rack(home)), find(rack(home),limit(home))) :s(match.home)
-
-	output = 'unable to get home move'			:s(end)
-
-	makemove(home,move)					:s(match.turn)
-	output = 'home makemove failed'				:s(end)
-match.home
-
-	makemove(move)
-
-*	Update rack info
-
-match.rack
-	output = 'Enter new rack:'
-
-	rack = input						:f(match.done)
-
-*	Order the rack.
-
-	rack = order(rack)
-
-*	On to next move.
+	rack = order(r())
+	move = find(rack)					:f(you.bad)
+	makemove(you,move)
+	show.play(move)
 								:(match.turn)
-*
-*								:(match.fail)		
-match.move
-	makemove(p,move)
-
-*	Game over if no more tiles.
+foe.bad
+	output = 'foe is unable to make  move.'			:(freturn)
+you.bad
+	output = 'you are nable to make  move.'			:(freturn)
+match.you
 
 	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(match.over)
 	getrack(p,move)					:(match.turn)
@@ -146,70 +199,4 @@ match.swap
 match.over						
 	endgame()					:(return)
 match.end
-	define('m(id,pos,text)f,fi')			:(m.end)
-
-*	Create move with given id, starting position and text.
-*	The move occupies consecutive cells.
-
-*M*
-m
-
-*	Build free cell list.
-
-	f = array(size(text))
-m.f
-	f[fi = fi + 1] = pos + (fi - 1)			:s(m.f)
-
-	m = move(id,size(text),f,text)			
-	output = 'm id ' id '  size ' size(text) ' f[1]' f[1] ' f[count]=' f[size(text)] ' text='  text
-							:(return)
-m.end
-
-	define('mf(id,pos,list,text)free,fi,pos,free')	:(mf.end)
-
-*	Define move from id, pos, list of free cells, and text.
-*	*f* is a comma-separated list of positions
-
-*MF*
-mf
-	list = list ',';* to assist loop
-	free = array(size(text))
-mf.l
-	list break(',') . pos ','  =			:f(mf.m)
-	free[fi = fi + 1] = pos				:(mf.l)
-mf.m
-	mf = move(id,size(text),free,text)		:(return)
-mf.end
-
-	define('a(move)')				:(a.end)
-
-*	Make move for away team.
-
-*A*
-a
-	makemove(away,move)				:s(return)f(freturn)
-a.end
-
-	define('h(move)')				:(h.end)
-
-*	Make move for home team.
-
-*H*
-h
-	makemove(home,move)				:s(return)f(freturn)
-h.end
-
-	define('r(tiles)')					:(r.end)
-
-*	Enter rack of home team.
-
-*R*
-r
-	outpt = 'enter home rack'	:(return)
-r.end
-
-*	call main program
-
-	main()
-end
 

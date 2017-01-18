@@ -35,17 +35,19 @@
 
 *	A player is represented by
 
-	data('player(name,rack,limit,fribble,moves,total,thirty,highest)')
+*	data('player(name,pid,fribble,rack,limit,moves,total,thirty,highest)')
+	data('player(pid,name,fribble,rack,limit,total,thirty,highest)')
 
 *	where
-*		*name* 	is the player's name
-*		*rack* 	is the player's rack
-*		*limit*	if not null, limits the player to playing *limit* tiles at a time
-*		*fribble* if not null, requests that fribble make the moves
-*		*score*	is the player's current score
-*		*moves*	counts the number of moves made by the player
-*		*thirty* is number of moves with scores of 30 or more points.
-*		*highest* is the player's highest move score.
+*		*pid*		is an integer identifier, either 1 or 2. Player 1 makes the first move
+*		*name* 		is the player's name
+*		*fribble* 	if not null, requests that fribble make the moves
+*		*rack* 		is the player's rack
+*		*limit*		if not null, limits the player to playing *limit* tiles at a time
+*		*score*		is the player's current score
+*		*moves*		counts the number of moves made by the player
+*		*thirty* 	is number of moves with scores of 30 or more points.
+*		*highest* 	is the player's highest move score.
 *		*total*	is the players total score
 
 *	There are three kinds of players.
@@ -1216,7 +1218,6 @@ show.end
 *SHOW.BOARD*
 show.board
 	show.header()
-	output = 'show.board abandoned' :(return)
 show.board.r
 	gt(r = r + 1,15) 				:s(show.board.finish)
 	line = lpad(r,2) '|' 
@@ -1369,6 +1370,7 @@ show.lines.n
 show.lines.titled
 	output = lpad(lineid(i),2) ' ' replace(line,' ','.') :(show.lines.n)
 show.lines.end
+
 
 	define('show.move(move,title)f,i,ff') 			:(show.move.end)
 
@@ -1752,3 +1754,114 @@ words.1
 words.done
 	words = convert(words,'array')			:(return)
 words.end
+
+	define('m(id,pos,text)f,fi')			:(m.end)
+
+*	Create move with given id, starting position and text.
+*	The move occupies consecutive cells.
+
+*M*
+m
+
+*	Build free cell list.
+
+	f = array(size(text))
+m.f
+	f[fi = fi + 1] = pos + (fi - 1)			:s(m.f)
+
+	m = move(id,size(text),f,text)			
+	output = 'm id ' id '  size ' size(text) ' f[1]' f[1] ' f[count]=' f[size(text)] ' text='  text
+							:(return)
+m.end
+
+	define('mf(id,list,text)free,fi,pos,free')	:(mf.end)
+
+*	Define move from id, list of free cells, and text.
+*	*f* is a comma-separated list of positions
+
+*MF*
+mf
+	list = list ',';* to assist loop
+	free = array(size(text))
+mf.l
+	list break(',') . pos ','  =			:f(mf.m)
+	free[fi = fi + 1] = pos				:(mf.l)
+mf.m
+	output = ne(fi, size(text)) 'mf size mismatch'	:s(end)
+	mf = move(id,size(text),free,text)		:(return)
+mf.end
+
+	define('foe()')					:(foe.end)
+
+*	Enter foe's move.
+
+*foe*
+foe
+	output = "enter foe's move"
+	foe = eval(input)				:f(you.fail)
+	output = differ(datatype(foe),'move') " need to enter foe's move, try again." :f(you)s(return)
+foe.end
+
+	define('you()')					:(you.end)
+
+*	Make your move
+
+*YOU*
+you
+	output = 'enter your move'
+	you = eval(input)				:f(you.fail)
+	output = differ(datatype(you),'move') " need to enter your move, try again." :s(you)
+	makemove(you,move)				:s(return)f(freturn)
+you.end
+
+	define('r()')					:(r.end)
+
+*	Enter your rack
+
+*R*
+r
+	output = 'enter your rack'	
+	r = input					:s(return)
+	output = 'no input, try again'			:(r)
+
+r.end
+	define('put.move(move)f,i,ff') 			:(put.move.end)
+
+*	Write move in form acceptable for later reading.
+
+*PUT.MOVE*
+put.move
+
+*	Test if all cells in move are contiguous.
+
+	ne(count(move) - 1, free(move)[count(move)] - free(move)[1])	:s(put.move.i)
+
+
+	put.move = 'm( ' lineid(id(move)) ',' free(move)[1] ",'" text(move) "')"	:(return)
+put.move.i
+	gt(i = i + 1,count(move))			:s(put.move.f)
+	ff = free(move)[i]
+	f = append(f,ff,',')				:s(put.move.i)
+put.move.f
+	put.move = 'mf(' lineid(id(move)) ',' "'" f "','" text(move) "')" :(return) 
+							:(return)
+put.move.end
+
+	define('put.player(p)')				:(put.player.end)
+
+*	Create player description in form acceptable for later reading
+	data('player(pid,name,fribble,rack,limit,total,thirty,highest)')
+
+put.player
+
+	put.player = "player(" pid ",'" name(p) "'," fribble(p) ",'" rack(p) "'," limit(p) ")"
+.							:(return)
+put.player.end
+
+	define('put.rack(p,r)')				:(put.rack.end)
+
+*	Create description of rack *r* of player *p* in format that can be read back.
+
+put.rack
+	putrack = "rack(" pid(p) ",'" rack(p) "')"	:(return)
+put.rack.end
