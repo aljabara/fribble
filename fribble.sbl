@@ -8,14 +8,30 @@ main
 	&stlimit = -1
 	&anchor = &trim = 1
 	init()
+	output = 'init done'
 
 	output = r01 ' ' c01
 	mov = m(r08,8,'shields')
-	output = 'datatype move ' datatype(mov)
 	output = show.move(mov,'test')
+	playmove(mov)
 	mov = mf(r09,'7,8,11,12','dave')
+	clines(mov)
+	show.clines()
 	output = show.move(mov,'test')
 	output = put.move(mov)
+	show.play(mov)
+*	mov = m(r12,1,'dave')
+	mov = m(r10,7,'o')
+	validmove(mov)		:s(move.ok)f(move.notok)
+move.ok
+	output = 'move ok'
+	show.play(mov)
+*	playmove(mov)
+ :(move.next)
+move.notok
+	output = 'move not ok'
+move.next
+
  :(end)
 
 	you = player(1,'You',1)
@@ -34,84 +50,84 @@ main.match.over
 main.end
 
 
-	define('solo(you,foe)first,opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(solo.end)
-
-*	Play a game with fribble.
-*	*foe* is fribble.
-
-
-
-*SOLO*
-solo
-
-*	See if we are to start the game.
-
-	ne(pid(you),1))					:s(solo.turn)
-
-*	We make the first move. Start by getting the rack
-
-	g.turn = 1
-	output = "Enter rack for first move:"
-	g.turn = 1
-	rack(you) = r()
-	output = 'Move ' g.turn ' for player ' name(you) ', with tiles ' show.tiles(rack(you)) '.'
-	move = start(rack(you))
-	makemove(you,move)
-	show.play(move)
-
-solo.turn
-
-*	On each turn, get the foes's move, make your move, and update your rack.
-
-	g.turn = g.turn + 1
-
-	differ(g.trace) tracer()
-
-	move = foe()						:f(foe.bad)
-	makemove(foe,move)				:s(return)f(freturn)
-	show.play(move)
-*	Need to see if move is valid
-
-*	Play the foe team's move.
-
-	makemove(foe,move)
-
-*	Get the current rack.
-
-	rack = order(r())
-	move = find(rack)					:f(you.bad)
-	makemove(you,move)
-	show.play(move)
-								:(solo.turn)
-foe.bad
-	output = 'foe is unable to make  move.'			:(freturn)
-you.bad
-	output = 'you are nable to make  move.'			:(freturn)
-solo.you
-
-	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(solo.over)
-	getrack(p,move)					:(solo.turn)
-
-solo.fail
-
-*	Here if no move found.
-
-	output = 'No move found.'
-
-*	Here if no move found, in which case the return value is a set of swapped tiles. If *move* is null, then pass.
-
-	differ(move)					:s(solo.swap)
-	passed = passed + 1
-	output = gt(passed,6) ' Too many passed moves.'	:s(solo.over)
-	output = 'Player ' name(g.one) ' passes.'		:(solo.turn)
-	
-solo.swap
-	rack(p) = swap(rack(p),3)
-	output = 'Player ' name(p) ' swapped tiles.'	
-	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(solo.turn)
-solo.over						
-	endgame()					:(return)
-solo.end
+*	define('solo(you,foe)first,opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(solo.end)
+*
+**	Play a game with fribble.
+**	*foe* is fribble.
+*
+*
+*
+**SOLO*
+*solo
+*
+**	See if we are to start the game.
+*
+*	ne(pid(you),1)					:s(solo.turn)
+*
+**	We make the first move. Start by getting the rack
+*
+*	g.turn = 1
+*	output = "Enter rack for first move:"
+*	g.turn = 1
+*	rack(you) = r()
+*	output = 'Move ' g.turn ' for player ' name(you) ', with tiles ' show.tiles(rack(you)) '.'
+*	move = start(rack(you))
+*	makemove(you,move)
+*	show.play(move)
+*
+*solo.turn
+*
+**	On each turn, get the foes's move, make your move, and update your rack.
+*
+*	g.turn = g.turn + 1
+*
+*	differ(g.trace) tracer()
+*
+*	move = foe()						:f(foe.bad)
+*	makemove(foe,move)				:s(return)f(freturn)
+*	show.play(move)
+**	Need to see if move is valid
+*
+**	Play the foe team's move.
+*
+*	makemove(foe,move)
+*
+**	Get the current rack.
+*
+*	rack = order(r())
+*	move = find(rack)					:f(you.bad)
+*	makemove(you,move)
+*	show.play(move)
+*								:(solo.turn)
+*foe.bad
+*	output = 'foe is unable to make  move.'			:(freturn)
+*you.bad
+*	output = 'you are nable to make  move.'			:(freturn)
+*solo.you
+*
+*	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(solo.over)
+*	getrack(p,move)					:(solo.turn)
+*
+*solo.fail
+*
+**	Here if no move found.
+*
+*	output = 'No move found.'
+*
+**	Here if no move found, in which case the return value is a set of swapped tiles. If *move* is null, then pass.
+*
+*	differ(move)					:s(solo.swap)
+*	passed = passed + 1
+*	output = gt(passed,6) ' Too many passed moves.'	:s(solo.over)
+*	output = 'Player ' name(g.one) ' passes.'		:(solo.turn)
+*	
+*solo.swap
+*	rack(p) = swap(rack(p),3)
+*	output = 'Player ' name(p) ' swapped tiles.'	
+*	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(solo.turn)
+*solo.over						
+*	endgame()					:(return)
+*solo.end
 
 	define('match(you,foe)first,opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(match.end)
 
@@ -133,7 +149,7 @@ match
 
 *	See if we are to start the game.
 
-	ne(pid(you),1))					:s(match.turn)
+	ne(pid(you),1)					:s(match.turn)
 
 *	We make the first move. Start by getting the rack
 
@@ -200,3 +216,5 @@ match.over
 	endgame()					:(return)
 match.end
 
+	main()
+end

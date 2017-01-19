@@ -112,7 +112,8 @@
 *	g.value, a map from characters to the tile value of that character.
 
 	g.clines = array(8);* for line with move and its crossing lines.
-	g.cli = 0;* number of entries in clines
+	g.cln = 0;* number of entries in clines.
+
 	g.highest = 0;* highest score
 	g.lowest = 0;* lowest cost
 
@@ -338,41 +339,6 @@ append.fail
 	 output = 'null ch to append ' w :(end)
 append.end
 
-	define('bestscore(move)')			:(bestscore.end)
-
-*	Tests the score of a move to see if it the best yet seen in a turn.
-
-*BESTSCORE*
-bestscore
-	output = ne(f.showscore) 'Find points(move) ' points(move) '  highest=' g.highest ' lowest=' g.lowest
-
-	lt(points(move),g.highest)			:s(freturn)
-	gt(points(move),g.highest)			:s(bestscore.new)
-
-*	Here if points equal, look for lower cost
-
-	lt(cost(text(move)),g.lowest)			:s(bestscore.new)
-	gt(cost(text(move)),g.lowest)			:s(freturn)
-
-*	Here if same points and cost, see if one uses 's' and the other doesn't.
-*	Continue search if current best doesn't use 's'.
-
-	text(find) ? break('s')				:f(freturn)
-
-*	Here if current best uses an 's'. Continue if new move also uses 's'.
-
-	text(move) ? break('s')				:s(freturn)
-
-bestscore.new
-
-*	Here to add the new best move.
-
-	g.highest = points(move)
-	g.lowest = cost(text(move))
-	output = ne(g.tracing) 'find NEW BEST move ' show.move(move)
-							:(return)
-bestscore.end
-
 	define('bonus.lines()i')			:(bonus.lines.end)
 
 *BONUS.LINES*
@@ -386,7 +352,7 @@ bonus.lines.end
 
 	define('checkline(line)iline,word')			:(checkline.end)
 
-*	Succeeds if all the words in the line are in the dictionary, fails otherwise.
+*	Test if all the words in a line are in the dictionary.
 
 *CHECKLINE*
 checkline
@@ -414,24 +380,24 @@ checkline.done
 							:(return)
 checkline.end
 
-	define('checkword(w)')				:(checkword.end)
+	define('checkword(word)')			:(checkword.end)
 
-*	Succeeds if w is in the global dictionary, fails otherwise.
+*	Test if a word is in the dictionary.
 
-*CHECKWORD*0
+*CHECKWORD*
 checkword
-	eq(size(w),1)					:s(return)
+
+*	Accept words of a single character since they can occur in crossing lines.
+
+	eq(size(word),1)				:s(return)
 	count.checkword = count.checkword + 1
-	differ(g.dict[size(w)][w])			:f(freturn)s(return)
-*	differ(g.dict[size(w)][w])			:f(freturn)s(checkword.good)
+	differ(g.dict[size(word)][word])		:f(freturn)s(return)
 checkword.bad
-	output = 'invalid blank at start of checkword ' w :(end)
-checkword.good
-*	output =  'checkword VALID ' w			
+	output = 'invalid blank at start of checkword ' word :(end)
 							:(return)
 checkword.end
 
-	define('cline(lines,move,p,ch)line')		:(cline.end)
+	define('cline(lines,move,p,ch)c,line')		:(cline.end)
 
 *	Return crossing line of p-th cell in move *move*. *ch* gives tile to be played.
 
@@ -439,13 +405,46 @@ checkword.end
 cline
 	count.cline = count.cline + 1
 
-*	Cross line line of row r is column p. Cross line of column c is row p
-	line = lines[(le(id(move),15) p + 15, p)];* cross line
+*	Cross line of row r, position p, is column p. Cross line of column c, position p, is row p.
+
+	c = (le(id(move),15) p + 15, p);* cross line id
+	line = lines[c];* cross line
 	p = (le(id(move),15) id(move), id(move) - 15);* position to insert character
 	line = substr(line,1,p - 1) ucase(ch) substr(line,p + 1)
-	cline = pair(c,line)
-							:(return)
+	cline = pair(c,line)				:(return)
 cline.end
+
+	define('clines(move)p,c,ch,line')		:(clines.end)
+
+*	Update g.clines to contain the line for move *move* and all
+*	its crossing lines.
+
+*CLINES*
+clines
+	line = g.lines[id(move)]
+	p = free(move)[1]
+*	First entry is for the line containing the move
+	g.cln = 1
+	g.clines[1] = pair(id(move), lcase(insert(g.lines[id(move)],move)))
+	i = 1
+
+*	On each pass through the loop, we compute the crossing line of the
+*	i-th character in the move.
+*
+
+clines.i
+	p = free(move)[i]
+
+*	Cross line of row r, position p,  is column p. Cross line of column c, position p, is row p.
+
+	c = (le(id(move),15) p + 15, p);* cross line
+	line = g.lines[c];* cross line
+	p = (le(id(move),15) id(move), id(move) - 15);* position to insert character
+	ch = substr(text(mov),i,1)
+	line = (gt(p,1) substr(line,1,p - 1),'')  ch (lt(p,15) substr(line,p + 1),'')
+	g.clines[g.cln = g.cln + 1] = pair(c, lcase(line))
+	le(i = i + 1, count(move))			:s(clines.i)f(return)
+clines.end
 
 	define('column(num,pos)')			:(column.end)
 
@@ -578,7 +577,7 @@ find.move
 	output = 'fatal permutation request ' text(move) :(end)
 	
 find.perm
-	score = g.cli = 0
+	score = g.cln = 0
 	perm = perms[permi = permi + 1]			:f(find.move)
 	ident(perm)					:s(find.move)
 
@@ -608,7 +607,7 @@ find.perm
 
 	text(move) = text
 	output = ne(g.tracing) 'Find valid first ' show.move(move) ' ' show.line(line)
-	g.clines[g.cli = g.cli + 1] =  pair( id(move), insert(lines[num],move))
+	g.clines[g.cln = g.cln + 1] =  pair( id(move), insert(lines[num],move))
 	i = 0
 
 *	Check the crossing lines to make sure they are valid.
@@ -628,7 +627,7 @@ find.cross
 	output = ne(g.tracing) 'Find text ' text(move)
 
 
-	g.clines[g.cli = g.cli + 1] = cline			:(find.cross)
+	g.clines[g.cln = g.cln + 1] = cline			:(find.cross)
 	
 find.cross.done
 	output = ne(g.tracing) 'Find valid move ' show.move(move) ' in ' show.pair(pair(num,line))
@@ -650,12 +649,8 @@ find.cross.done
 
 	points(move)  = eq(count(move),7) points(move) + 35;
 	g.found = g.found + 1
-	g.cli = 0;* reset for next permutation
-	bestscore(move)					:f(find.perm)
-
-*	Here if new best move.
-
-	find = copy(move)				:(find.perm)
+	g.cln = 0;* reset for next permutation
+	find = isbest(move) copy(move)			:(find.perm)
 find.done
 	ident(find)					:s(find.fail)
 							:(return)	
@@ -669,7 +664,7 @@ find.fail
 							:(freturn)
 find.end
 	
-	define('findscore()i,move')			:(findscore.end)
+	define('findscore()i,p')			:(findscore.end)
 
 *	Find the score of a move by summing the scores of the lines affected by the move.
 
@@ -684,16 +679,16 @@ findscore
 
 	i = 0
 	findscorecount = ne(g.tracing) findscorecount + 1
-	output = ne(g.showscore) ' ENTER findscore:' findscorecount ': g.cli ' g.cli
+	output = ne(g.showscore) ' ENTER findscore:' findscorecount ': g.cln ' g.cln
 findscore.1
-	gt(i = i + 1,g.cli)				:s(findscore.2)
-	move = g.clines[i]
-*	output = 'findscore:' findscorecount ':' lpad(i,2) ' ' num(move) ' ' show.line(line(move)) :(findscore.1)
+	gt(i = i + 1,g.cln)				:s(findscore.2)
+	p = g.clines[i]
+*	output = 'findscore:' findscorecount ':' lpad(i,2) ' ' num(p) ' ' show.line(line(p)) :(findscore.1)
 findscore.2
 	i = 0
 
 findscore.next
-	gt(i = i + 1,g.cli)				:s(return)
+	gt(i = i + 1,g.cln)				:s(return)
 	findscore = findscore + score(g.clines[i])	
 	output = ne(g.showscore) 'scoring AFTER  g.clines,:' findscorecount ': ' show.pair(g.clines[i]) '  is ' findscore
 
@@ -816,6 +811,41 @@ insert.ch
 insert.done
 	insert = pack(insert)				:(return)
 insert.end
+
+	define('isbest(move)')			:(isbest.end)
+
+*	Test the score of a move to see if it the best yet seen in a turn.
+
+*ISBERT*
+isbest
+	output = ne(f.showscore) 'Find points(move) ' points(move) '  highest=' g.highest ' lowest=' g.lowest
+
+	lt(points(move),g.highest)			:s(freturn)
+	gt(points(move),g.highest)			:s(isbest.new)
+
+*	Here if points equal, look for lower cost
+
+	lt(cost(text(move)),g.lowest)			:s(isbest.new)
+	gt(cost(text(move)),g.lowest)			:s(freturn)
+
+*	Here if same points and cost, see if one uses 's' and the other doesn't.
+*	Continue search if current best doesn't use 's'.
+
+	text(find) ? break('s')				:f(freturn)
+
+*	Here if current best uses an 's'. Continue if new move also uses 's'.
+
+	text(move) ? break('s')				:s(freturn)
+
+isbest.new
+
+*	Here to add the new best move.
+
+	g.highest = points(move)
+	g.lowest = cost(text(move))
+	output = ne(g.tracing) 'find NEW BEST move ' show.move(move)
+							:(return)
+isbest.end
 
 	define('lcase(s)')				:(lcase.end)
 
@@ -1292,19 +1322,22 @@ show.bonus.finish
 	output =					:(return)
 show.bonus.end
 
-	define('show.clines(lines,title)i,line,num')		:(show.clines.end)
+	define('show.clines(title)i,p,line,num')		:(show.clines.end)
 
 *	Show the clines array of lines
 
 *SHOW.CLINES*
 show.clines
+	show.board(g.board)
 	title  = 'clines' (differ(title) ' ' title, '')
 	output = title
 	output = '    123456789012345'
 show.clines.n
-	num = lines[i = i + 1,1]			:f(return)
-	line = lines[i,2]
-	output = size(line)
+	le(i = i + 1, g.cln)				:f(return)
+	p = g.clines[i]
+	num = num(p)					:f(return)
+	line = line(p) 
+*	output = size(line)
 	output = lpad(lineid(num),2) ' '  replace(line,' ','.') :(show.clines.n)
 show.clines.end
 
@@ -1714,6 +1747,35 @@ unpack.ch
 	c = substr(line,i = i + 1,1)			:f(return)
 	unpack[i] = c					:(unpack.ch)
 unpack.end
+
+	define('validmove(move)num,i,pos')		:(validmove.end)
+
+*	Test if move is valid.
+
+*VALIDMOVE*
+validmove
+
+*	At least one cell to be occupied by this move must be adjacent to a used cell.
+	
+	
+	num = num(g.clines[1])
+validmove.u
+	gt(i = i + 1,count(move))			:s(freturn)
+	pos = free(move)[i]
+	adjacent(row(num,pos),column(num,pos)) 		:f(validmove.u)s(validmove.used)
+
+*	Here if no adjacent cell found, fail.  *
+							:(freturn)
+validmove.used
+
+*	Test that line and all its crossing lines are valid.
+
+	clines(move);* get line and its crossing lines
+	i = 0
+validmove.i
+	gt(i = i + 1,g.cln)				:s(return)
+	checkline(line(g.clines[g.cln]))		:f(freturn)s(validmove.i)
+validmove.end
 
 	define('vline(g,c)')				:(vline.end)
 
