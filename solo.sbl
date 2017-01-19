@@ -33,20 +33,41 @@ game.you.move
 
 *	Here for you to make a move
 
+	show.board(g.board)
+	output = 'your tiles: ' show.tiles(rack(p))
 	output = 'make your move '
-	j
-	text = input				:f(game.eod)
+	text = input					:f(game.eof)
 	output = 'you entered ' text
+	ident(text,'quit')				:s(game.over)
+	ident(text,'resign')				:s(game.resign)
 	move = eval(text)
-	output = 'datatype move ' datatype(move)
-	ident(datatype(move),'MOVE')			:s(game.move)
-	output = 'need to enter a move '		:(game.you.move)
+	ident(datatype(move),'MOVE')			:s(game.validmove)
+	output = 'evaluating ' text
+	eval(text)
+							:(game.you.move)
+game.validmove
+	show.move(move)
+	validmove(move)					:s(game.scoremove)
+	output = 'invalid move ' show.move(move)	:(game.you.move)
 
+game.scoremove
+	
+	clines(move,1)
+	show.clines()
+*	g.showscore = 1
+	points(move) = findscore()
+	output = 'move is worth ' points(move) ' points.'
+	output = 'do you want to make this move (y or just ENTER for yes, no otherwise)?'
+	ans = input					:f(game.eod)
+	ident(ans)					:s(game.moveon)
+	ident(ans,'y')					:s(game.moveon)
+							:(game.you.move)
 game.fribble
 
 *	Here to have fribble make a move
 	move = (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
 game.move
+game.moveon
 	makemove(p,move)
 	show.play(move)
 
@@ -74,9 +95,19 @@ game.swap
 	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(game.turn)
 game.eof
 	output = 'end of input - game over'		:(game.over)
+game.resign
+	output = 'player ' name(p) ' resigns'
 game.over						
 	endgame()					:(return)
 game.end
+	define('sw()')					:(sw.end)
+
+*	Swap two tiles for player 'you'
+
+*SW*
+sw
+	rack(g.two) = swap(g.two,2)			:(return)
+sw.end
 
 *	Have fribble play itself.
 
@@ -85,8 +116,10 @@ game.end
 
 	init()
 
-	one = player(1,'You')
-	two = player(2,'Fribble',1)
+*	Have Fribble go first, so we don't have worry about handling the first-move case for other player.
+
+	one = player(1,'Fribble',1)
+	two = player(2,'You')
 	g.one = one
 	g.two = two
 	total(g.one) = total(g.two) = 0

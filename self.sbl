@@ -54,7 +54,7 @@ game.fail
 	output = 'Player ' name(g.one) ' passes.'		:(game.turn)
 	
 game.swap
-	rack(p) = swap(rack(p),3)
+	rack(p) = swap(p,3)
 	output = 'Player ' name(p) ' swapped tiles.'	
 	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(game.turn)
 game.over						

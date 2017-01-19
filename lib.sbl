@@ -120,11 +120,13 @@
 *	The variables for row and column numbers are used
 *	for the input of moves. They map name to line number.
 
-	r01 = 1; r02 =  2; r03 =  3; r04 =  4; r05 =  5; r06 =  6; r07 =  7; r08 = 8;
-	r09 = 9; r10 = 10; r11 = 11; r12 = 12; r13 = 13; r14 = 14; r15 = 15;
+	r01 = 1; r02 =  2; r03 =  3; r04 =  4; r05 =  5; r06 =  6; r07 =  7; r08 = 8; r09 = 9;
+	r1 = 1; r2 =  2; r3 =  3; r4 =  4; r5 =  5; r6 =  6; r7 =  7; r8 = 8; r9 = 9;
+	r10 = 10; r11 = 11; r12 = 12; r13 = 13; r14 = 14; r15 = 15;
 
-	c01 = 16; c02 = 17; c03 = 18; c04 = 19; c05 = 20; c06 = 21; c07 = 22; c08 = 23;
-	c09 = 24; c10 = 25; c11 = 26; c12 = 27; c13 = 28; c14 = 29; c30 = 30
+	c01 = 16; c02 = 17; c03 = 18; c04 = 19; c05 = 20; c06 = 21; c07 = 22; c08 = 23; c09 = 24; 
+	c1 = 16; c2 = 17; c3 = 18; c4 = 19; c5 = 20; c6 = 21; c7 = 22; c8 = 23; c9 = 24; 
+	c10 = 25; c11 = 26; c12 = 27; c13 = 28; c14 = 29; c30 = 30
 	
 *	Utility functions
 
@@ -414,10 +416,11 @@ cline
 	cline = pair(c,line)				:(return)
 cline.end
 
-	define('clines(move)p,c,ch,line')		:(clines.end)
+	define('clines(move,upper)p,c,ch,line')		:(clines.end)
 
 *	Update g.clines to contain the line for move *move* and all
-*	its crossing lines.
+*	its crossing lines. Express the letters of the move in upper case
+*	(for later scoring) if *upper* is not null.
 
 *CLINES*
 clines
@@ -425,7 +428,7 @@ clines
 	p = free(move)[1]
 *	First entry is for the line containing the move
 	g.cln = 1
-	g.clines[1] = pair(id(move), lcase(insert(g.lines[id(move)],move)))
+	g.clines[1] = pair(id(move), insert(g.lines[id(move)],move,1))
 	i = 1
 
 *	On each pass through the loop, we compute the crossing line of the
@@ -440,9 +443,9 @@ clines.i
 	c = (le(id(move),15) p + 15, p);* cross line
 	line = g.lines[c];* cross line
 	p = (le(id(move),15) id(move), id(move) - 15);* position to insert character
-	ch = substr(text(mov),i,1)
-	line = (gt(p,1) substr(line,1,p - 1),'')  ch (lt(p,15) substr(line,p + 1),'')
-	g.clines[g.cln = g.cln + 1] = pair(c, lcase(line))
+	ch = substr(text(move),i,1)
+	line = (gt(p,1) substr(line,1,p - 1),'')  (differ(upper) ucase(ch), ch) (lt(p,15) substr(line,p + 1),'')
+	g.clines[g.cln = g.cln + 1] = pair(c, (ident(upper) lcase(line), line))
 	le(i = i + 1, count(move))			:s(clines.i)f(return)
 clines.end
 
@@ -781,9 +784,10 @@ hline
 hline.end
 
 
-	define('insert(line,move)c,f,i,utext')		:(insert.end)
+	define('insert(line,move,upper)c,f,i,utext')		:(insert.end)
 
 *	Insert the text of a move into its free list of empty cells in the line of the move.
+*	Express the text in uppre case if *upper* is not null.
 
 *INSERT*
 insert
@@ -794,7 +798,7 @@ insert
 
 *	Here if cells are contiguous. Insert text after part before it, and before part after it.
 
-	insert = substr(line, 1, f[1] - 1) text(move) substr(line, f[c] + 1)
+	insert = substr(line, 1, f[1] - 1) (differ(upper) ucase(text(move)), text(move)) substr(line, f[c] + 1)
 	output = ne(size(line),15) 'insert failure ' line		:s(end)
 	count.insert.contig = count.insert.contig + 1
 							:(return)
@@ -1277,17 +1281,17 @@ show.board.c
 
 *	Here to show.board empty cell.
 
-	line = line ' - '				:(show.board.c)
+	line = line ' -'				:(show.board.c)
 show.board.b
 
 * 	Here to show.board bonus.
 
 	ch = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
-	line = line ch ' '				:(show.board.c)
+	line = line ch 					:(show.board.c)
 show.board.margin
 	output = line '|'				:(show.board.r)
 show.board.ch
-	line  = line ' ' ch ' '				:(show.board.c);* show.board tile
+	line  = line ' ' ch				:(show.board.c);* show.board tile
 show.board.finish
 	output =					:(return)
 show.board.end
@@ -1682,13 +1686,14 @@ subarray.1
 	subarray[i] = copy(ara[start + i - 1])		:(subarray.1)		
 subarray.end
 
-	define('swap(tiles,n)')				:(swap.end)
+	define('swap(p,n)tiles')			:(swap.end)
 
-*	Swap *n* files from the first *n* characters in *tiles*. If fewer than *n* tiles remain,
-*	set *n* to the size of the tileset.
+*	Swap *n* tiles from the first *n* characters in *tiles* of player *p*. 
+*	If fewer than *n* tiles remain, set *n* to the size of the tileset.
 
 *SWAP*
 swap	
+	tiles = rack(p)
 	n = gt(n,size(tiles)) size(tiles)
 	n = gt(n,size(g.tiles)) size(g.tiles)
 	eq(n)						:s(freturn)
@@ -1754,11 +1759,11 @@ unpack.end
 
 *VALIDMOVE*
 validmove
+	show.grid(g.used)
 
 *	At least one cell to be occupied by this move must be adjacent to a used cell.
 	
-	
-	num = num(g.clines[1])
+	num = id(move)
 validmove.u
 	gt(i = i + 1,count(move))			:s(freturn)
 	pos = free(move)[i]
@@ -1767,6 +1772,7 @@ validmove.u
 *	Here if no adjacent cell found, fail.  *
 							:(freturn)
 validmove.used
+	output = 'validmove used ok'
 
 *	Test that line and all its crossing lines are valid.
 
@@ -1900,6 +1906,16 @@ r
 	output = 'no input, try again'			:(r)
 
 r.end
+
+
+	define('resign()')				:(resign.end)
+
+*	Resign
+
+resign
+	
+
+resign.end
 	define('put.move(move)f,i,ff') 			:(put.move.end)
 
 *	Write move in form acceptable for later reading.
