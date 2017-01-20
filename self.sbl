@@ -2,7 +2,7 @@
 
 -include "lib.sbl"
 
-	define('game(one,two)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
+	define('game(one,two)player,opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
 
 *	Play a game of fribble. *one* and *two* are players. *max* is the maximum number of moves.
 
@@ -14,7 +14,7 @@ game
 game.round
 	i = 0
 game.turn
-	p = players[i = i + 1]				:f(game.round)
+	player = players[i = i + 1]				:f(game.round)
 
 	g.turn = g.turn + 1
 	output = ne(g.turnlimit) gt(g.turn,g.turnlimit) 'Game over -- too many turns (' g.turnlimit ').' :s(game.over)
@@ -24,21 +24,21 @@ game.turn
 
 	output = ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.'  :s(game.over)
 
-	output = 'Move ' g.turn ' for player ' name(p) ', with tiles ' show.tiles(rack(p),'A') '.'
+	output = 'Move ' g.turn ' for player ' name(player) ', with tiles ' show.tiles(rack(player),'A') '.'
 	output = ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
 
-	move = ident(fribble(p)) get()			:s(game.move)
-	move = differ(fribble(p)) (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
-*	move = (eq(g.turn,1) start(rack(p)), find(rack(p),limit(p))) :s(game.move)
+	move = ident(fribble(player)) get()			:s(game.move)
+	move = differ(fribble(player)) (eq(g.turn,1) start(player), find(player,limit(player))) :s(game.move)
+*	move = (eq(g.turn,1) start(player), find(player,limit(player))) :s(game.move)
 								:(game.fail)		
 game.move
-	makemove(p,move)
+	makemove(player,move)
 	show.play(move)
 
 *	Game over if no more tiles.
 
 	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(game.over)
-	getrack(p,move)					:(game.turn)
+	getrack(player,move)					:(game.turn)
 
 game.fail
 
@@ -51,12 +51,12 @@ game.fail
 	differ(move)					:s(game.swap)
 	passed = passed + 1
 	output = gt(passed,6) ' Too many passed moves.'	:s(game.over)
-	output = 'Player ' name(g.one) ' passes.'		:(game.turn)
+	output = 'Player ' name(player) ' passes.'		:(game.turn)
 	
 game.swap
-	rack(p) = swap(p,3)
-	output = 'Player ' name(p) ' swapped tiles.'	
-	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(game.turn)
+	rack(p) = swap(player,3)
+	output = 'Player ' name(player) ' swapped tiles.'	
+	output = 'Player ' name(player) ' now has tiles ' show.tiles(rack(player)) :(game.turn)
 game.over						
 	endgame()					:(return)
 game.end

@@ -126,7 +126,7 @@
 
 	c01 = 16; c02 = 17; c03 = 18; c04 = 19; c05 = 20; c06 = 21; c07 = 22; c08 = 23; c09 = 24; 
 	c1 = 16; c2 = 17; c3 = 18; c4 = 19; c5 = 20; c6 = 21; c7 = 22; c8 = 23; c9 = 24; 
-	c10 = 25; c11 = 26; c12 = 27; c13 = 28; c14 = 29; c30 = 30
+	c10 = 25; c11 = 26; c12 = 27; c13 = 28; c14 = 29; c15 = 30
 	
 *	Utility functions
 
@@ -189,7 +189,7 @@ init.bonus
 	s = 	'5 0104 3 0107 3 0109 5 0112 2 0203 4 0206 4 0210 2 0213 '
 .		'2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 4 0415 '
 .		'2 0503 2 0507 2 0509 2 0513 4 0602 3 0606 3 0610 4 0614 '
-.		'3 0701 2 0705 2 0711 4 0715 4 0804 4 0812 3 0901 2 0905 2 0911 3 0915 '
+.		'3 0701 2 0705 2 0711 3 0715 4 0804 4 0812 3 0901 2 0905 2 0911 3 0915 '
 .		'4 1002 3 1006 3 1010 4 1014 2 1103 2 1107 2 1109 2 1113 '
 .		'5 1201 3 1204 4 1208 3 1212 5 1215 2 1302 2 1305 2 1311 2 1314 '
 .		'5 1403 4 1406 4 1410 2 1413 5 1504 3 1507 3 1509 5 1512 '
@@ -393,6 +393,7 @@ checkword
 
 	eq(size(word),1)				:s(return)
 	count.checkword = count.checkword + 1
+	word = lcase(word);* in case upper case letters have wrongly crept it.
 	differ(g.dict[size(word)][word])		:f(freturn)s(return)
 checkword.bad
 	output = 'invalid blank at start of checkword ' word :(end)
@@ -523,7 +524,7 @@ endgame
 							:(return)
 endgame.end
 
-	define('find(rack,limit)num,lines,inlines,line,moves,mi,m,perms,perm,permi,fline,tline,iline,cline,highest,lowest,i,p,score,move,tried')	:(find.end)
+	define('find(player,limit)rack,num,lines,inlines,line,moves,mi,m,perms,perm,permi,fline,tline,iline,cline,highest,lowest,i,p,score,move,tried')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -549,6 +550,7 @@ endgame.end
 find
 *	
 
+	rack = rack(player)
 	lines = copy(g.lines)
 	inlines = copy(lines)
 	g.highest = 0;* highest score this turn
@@ -741,7 +743,7 @@ getrack.end
 grid
 	grid = array('15,15',' ')
 	start = ident(start) +1
-	start = (lt(start,15) 1, 16)
+	start = (le(start,15) 1, 16)
 	gt(start,15)					:s(grid.col)
 
 *	Here to build grid from the rows.
@@ -1326,22 +1328,22 @@ show.bonus.finish
 	output =					:(return)
 show.bonus.end
 
-	define('show.clines(title)i,p,line,num')		:(show.clines.end)
+	define('show.clines(move,title)i,p,line,num')		:(show.clines.end)
 
 *	Show the clines array of lines
 
 *SHOW.CLINES*
 show.clines
-	show.board(g.board)
-	title  = 'clines' (differ(title) ' ' title, '')
-	output = title
+*	show.board(g.board)
+*	title  = 'clines' (differ(title) ' ' title, '')
+*	output = title
+	output = differ(title) 'clines for ' show.move(move)
 	output = '    123456789012345'
 show.clines.n
 	le(i = i + 1, g.cln)				:f(return)
 	p = g.clines[i]
 	num = num(p)					:f(return)
 	line = line(p) 
-*	output = size(line)
 	output = lpad(lineid(num),2) ' '  replace(line,' ','.') :(show.clines.n)
 show.clines.end
 
@@ -1599,7 +1601,7 @@ spaces
 	spaces = ident(c,' ') spaces + 1		:(spaces)
 spaces.end
 
-	define('start(tiles)perm,perms,permi,free,offset,i,highest,lower,best,n,word,start,score,move')	:(start.end)
+	define('start(player)tiles,perm,perms,permi,free,offset,i,highest,lower,best,n,word,start,score,move')	:(start.end)
 
 *	Determine best starting.turn. At least one letter in this move must be in the center square (8,8).
 *	The only bonus available is double word, for any word of more than four characters.
@@ -1613,6 +1615,7 @@ spaces.end
 
 *START*
 start
+	tiles = rack(player)
 	n = 0;* number of tiles to play
 	highest = lowest = 0;* best score, lowest cost
 	start = 8;* assume word will start in column 8
