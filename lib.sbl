@@ -1216,7 +1216,7 @@ scoreline.end
 
 	define('scoremove()i,p')			:(scoremove.end)
 
-*	Find the score of a move by summing the scores of the lines affected by the move.
+*	A move's score is the sum of the scores of its own line and its crossing lines.
 
 *	In order to determine which words on the board would be formed by making this move,
 *	rebuild the board but with the new tiles in uppercase. This way, a word is new if and only if
@@ -1224,25 +1224,11 @@ scoreline.end
 *	the words containing an upper-case character. At most one word in each line of the new grid will
 *	contain an upper-case character.
 
+
 *SCOREMOVE*
 scoremove
-
-	i = 0
-	scoremovecount = ne(g.tracing) scoremovecount + 1
-	output = ne(g.showscore) ' ENTER scoremove:' scoremovecount ': g.cln ' g.cln
-scoremove.1
-	gt(i = i + 1,g.cln)				:s(scoremove.2)
-	p = g.clines[i]
-*	output = 'scoremove:' scoremovecount ':' lpad(i,2) ' ' num(p) ' ' show.line(line(p)) :(scoremove.1)
-scoremove.2
-	i = 0
-
-scoremove.next
 	gt(i = i + 1,g.cln)				:s(return)
-	scoremove = scoremove + scoreline(g.clines[i])	
-	output = ne(g.showscore) 'scoring AFTER  g.clines,:' scoremovecount ': ' show.pair(g.clines[i]) '  is ' scoremove
-
-							:(scoremove.next)
+	scoremove = scoremove + scoreline(g.clines[i])	:(scoremove)
 scoremove.end
 
 	define('show(rack,player)')			:(show.end)
