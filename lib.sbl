@@ -257,10 +257,12 @@ init.dict.end
 
 *INIT.PERM*
 init.perm
+
 	g.permutations = table(7)
 	g.permutations.count = table(100)
 	input(.ifile,4, filename)			:s(init.perm.next)
 	output = 'unable to open permutation file ' filename 	:(freturn)
+
 init.perm.next
 	line = ifile					:f(init.perm.done)
 	line break('?') . n '?' break(' ') . k ' ' rem . count :f(init.perm.err)
@@ -582,8 +584,20 @@ find.move
 *	Something must be wrong with the requested permutation
 
 	output = 'fatal permutation request ' text(move) :(end)
+
+*	NOTE: THE LOOP BELOW IS THE CRITICAL INNER LOOP OF THIS PROGRAM.
+*	ANY TIME SPENT SPEEDING THINGS UP ELSEWHERE WILL HAVE LITTLE EFFECT.
+*	
+*	For example, given a move of length 7 with a rack of 7 letters, we
+*	need to account for the slightly over 5000 permutations of the letters
+*	that can be used here. And note this is just for one possible move ...
+*
+*	Since most racks will contain duplicate, or even triplicate, instances of
+*	the same letter, the table *tried* is used below. This cut the running
+*	time of the program by a factor of two when first introduced.
 	
 find.perm
+
 	score = g.cln = 0
 	perm = perms[permi = permi + 1]			:f(find.move)
 	ident(perm)					:s(find.move)
@@ -603,6 +617,7 @@ find.perm
 *	Insert the letters from the tileset corresponding to the permutation into the selected blank cells in the line. 
 *	The digit '1' selects the first tile, the digit '2' the second, and so on.
 *	Then see if the result gives a valid line. Move to the next permutation if not.
+*	(This is a clever use of replace(), even if I do say so myself.)
 
 	text(move) = perm;* insert permutation digits into free cells
 	iline = insert(lines[num],move);* line with permutation digits entered
@@ -612,20 +627,24 @@ find.perm
 *	Move is valid on this line, so check validity on crossing lines.
 *	Save the valid lines in *clines* for scoring if move proves valid.
 
+*	We could use the clines() procedure for this, but in this loop every
+*	statement counts, so in effect we build clines on the fly.
+*	Since almost all permutations will result in junk, we want to detect
+*	junk as soon as possible so we can move on without wasting needless effort.
+
 	text(move) = text
 	output = ne(g.tracing) 'Find valid first ' show.move(move) ' ' show.line(line)
 	g.clines[g.cln = g.cln + 1] =  pair( id(move), insert(lines[num],move))
 	i = 0
 
-*	Check the crossing lines to make sure they are valid.
+*	Check the crossing lines, constructing them as needed,  to make sure they are valid.
 
 find.cross
 *	output = 'find cross '
 	count.cross = count.cross + 1
 	p = free(move)[i = i + 1]			:f(find.cross.done)
 	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1))
-*	output = ne(g.tracing) 'Find cross check ' line(cline)
-*	output = 'Find cross check ' line(cline)
+
 	checkline(line(cline))				:f(find.perm)
 
 	output = ne(g.tracing) 'Find valid checkline ' line(cline)
@@ -637,6 +656,7 @@ find.cross
 	g.clines[g.cln = g.cln + 1] = cline			:(find.cross)
 	
 find.cross.done
+
 	output = ne(g.tracing) 'Find valid move ' show.move(move) ' in ' show.pair(pair(num,line))
 
 *	Score the line by summing the scores of the lines saved in clines.
@@ -1150,18 +1170,13 @@ scan.end
 scoreline
 	scoreline = 0
 	line = line(pair)
-*	output = 'scoreline ' line '.'
 	empty(line)					:s(return)
-*	output = ne(g.showscoreline) 'enter scoreline ' show.pair(pair)
 	bonusline = g.bonus.lines[num(pair)]
 	line break(&ucase)				:f(scoreline.error)
 	words = words(line)				:f(scoreline.done)
-*	output = 'scoreline show.words:'
-*	show.words(words)
 scoreline.word
 	start = words[i = i + 1,1]			:f(scoreline.done)
 	word = words[i,2]
-*	output = 'scoreline word=' word '.'
 	word break(&ucase)				:f(scoreline.word)
 	n = size(word)
 
@@ -1169,14 +1184,8 @@ scoreline.word
 
 	eq(n,1)						:s(scoreline.word)
 
-*	output = ne(g.showscoreline) 'scoring word ' word ' starting at ' start
-*	output = 'scoring word ' word ' starting at ' start
 	line = substr(line,start)
 	bonusline = substr(g.bonus.lines[num(pair)],start);* corresponding part of bonus line
-*	output = ne(g.showscoreline) 'scoreline' char(9)  line
-*	output = 'scoreline' char(9)  line
-*	output = ne(g.showscoreline) 'bonus' char(9) bonusline
-*	output = 'bonus' char(9) bonusline
 
 	i = 0
 	mult = 1;* multiplier value for double and triple word cases.
@@ -1187,9 +1196,6 @@ scoreline.char
 	bonus = +substr(bonusline,i,1)
 	bonus = ident(bonus,' ') 1
 	val = +g.value[ch]
-*	output = 'val of <' ch '> is ' val ' bonus=' bonus
-*	output = ne(g.showscoreline) ch ' ' val ' ' bonus
-*	output = 'scoreline word ' word ' i=' i  ' ch=' ch ' val=' val ' bonus=' bonus
 
 *	Update scoreline according to value of  letter. Always get at least the value 
 *	of the letter, and may get double or triple the letter value.
@@ -1204,14 +1210,9 @@ scoreline.char
 	mult = eq(bonus,4) mult * 2;* double word
 	mult = eq(bonus,5) mult * 3;* triple word
 
-*	output = ne(g.showscoreline) 'scoreline bonus=' bonus ' ch=' ch ' added value ' val ' scoreline now ' scoreline ' mult ' mult
-*	output = 'scoreline ' ch ' added value ' val ' scoreline now ' scoreline ' mult ' mult
 							:(scoreline.char)
 scoreline.char.done
-	scoreline = ne(scoreline) scoreline * mult
-*	output =  ne(g.showscoreline) 'result SCORE ' scoreline ' for word ' word ' , for ' show.pair(pair)
-*	output =  'result SCORELINE ' scoreline ' for word ' word ' , for ' show.pair(pair)
-							:(scoreline.word)
+	scoreline = ne(scoreline) scoreline * mult	:(scoreline.word)
 scoreline.error
 	output = 'error scoring line with no new move ' line(pair) 
 	scoreline = 0					:(return)
@@ -1824,12 +1825,19 @@ words
 	s = ' ' s ' '
 	pos = 0	
 words.sp
+
+*	Account for blank(s) between words.
+
 	s span(' ') . sp =
 
 	ident(s)					:s(words.done)
 
 	pos = pos + size(sp);* point to start of next word
 words.w
+
+*	While it is customary to absorb the blank in the usage below, we leave it in 
+*	so there will be at least one blank to satisfy span() when loop back to words.sp
+
 	s break(' ') . w  = 	 			:f(words.done)
 	words[pos] = w					
 	pos = pos + size(w)				:(words.sp)
@@ -1877,7 +1885,7 @@ mf.end
 
 *	Enter foe's move.
 
-*foe*
+*FOE*
 foe
 	output = "enter foe's move"
 	foe = eval(input)				:f(you.fail)
@@ -1930,11 +1938,15 @@ put.move
 
 
 	put.move = 'm( ' lineid(id(move)) ',' free(move)[1] ",'" text(move) "')"	:(return)
+
 put.move.i
 	gt(i = i + 1,count(move))			:s(put.move.f)
+
 	ff = free(move)[i]
 	f = append(f,ff,',')				:s(put.move.i)
+
 put.move.f
+
 	put.move = 'mf(' lineid(id(move)) ',' "'" f "','" text(move) "')" :(return) 
 							:(return)
 put.move.end
@@ -1942,6 +1954,7 @@ put.move.end
 	define('put.player(p)')				:(put.player.end)
 
 *	Create player description in form acceptable for later reading
+
 	data('player(pid,name,fribble,rack,limit,total,thirty,highest)')
 
 put.player
