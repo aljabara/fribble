@@ -427,7 +427,9 @@ cline.end
 clines
 	line = g.lines[id(move)]
 	p = free(move)[1]
+
 *	First entry is for the line containing the move
+
 	g.cln = 1
 	g.clines[1] = pair(id(move), insert(g.lines[id(move)],move,1))
 	i = 1
@@ -647,8 +649,8 @@ find.cross.done
 	output = ne(g.tracing) 'Find cross ' show.move(move) '  text=' text(move)
 	ne(g.tracing) show.move(move)
 	ne(g.tracing) show.play(move)
-	output = ne(g.tracing) 'Find calling scoremove'
-	points(move) = +scoremove()	
+*	output = ne(g.tracing) 'Find calling scoremove'
+	points(move) = +scoremove(move)	
 
 *	There is bonus of 35 points for playing all the tiles.
 
@@ -1137,53 +1139,45 @@ scan.done.i
 
 scan.end
 
-	define('scoreline(pair)cline,vline,word,words,n,start,wi,ch,i,bonus,mult,val')	:(scoreline.end)
+	define('scoreline(pair)line,word,words,n,start,ch,i,bonus,mult,val')	:(scoreline.end)
 
 *	Compute the score of a move on a given line. All the letters of the move will be in upper case on the board
 *	so the score of the move is the sum of the scores of all the words with upper case letters in them, for
 *	both rows and columns. This function should only be called for lines which have an upper case letter in
 *	them as a result of the move.
 
-*SCORE
+*SCORELINE*
 scoreline
-	empty(line(pair))				:s(return)
-	output = ne(g.showscoreline) 'enter scoreline ' show.pair(pair)
-	cline = line(pair)
+	scoreline = 0
+	line = line(pair)
+*	output = 'scoreline ' line '.'
+	empty(line)					:s(return)
+*	output = ne(g.showscoreline) 'enter scoreline ' show.pair(pair)
 	bonusline = g.bonus.lines[num(pair)]
-
-*	eq(g.showscoreline) 				:s(scoreline.3)
-							:(scoreline.3)
-	vline = 
-scoreline.1
-	gt(i = i + 1,size(cline))			:s(scoreline.2)
-	vch = substr(cline,i,1)
-	vch = gt(g.value[vch],0) substr('123456789ABCDE',g.value[substr(cline,i,1)],1)
-	vline = vline vch				:(scoreline.1)
-scoreline.2
-	output = 'scoreline value ' vline
-	output = 'scoreline       ' cline
-	output = 'scoreline bonus ' bonusline  
-scoreline.3
-
-	cline break(&ucase)				:f(scoreline.error)
-	words = words(cline)				:f(return)
-	wi = 0
+	line break(&ucase)				:f(scoreline.error)
+	words = words(line)				:f(scoreline.done)
+*	output = 'scoreline show.words:'
+*	show.words(words)
 scoreline.word
-	start = words[wi = wi + 1,1]			:f(return)
-	word = words[wi,2]
+	start = words[i = i + 1,1]			:f(scoreline.done)
+	word = words[i,2]
+*	output = 'scoreline word=' word '.'
+	word break(&ucase)				:f(scoreline.word)
 	n = size(word)
 
-*	Single letters don't contribute to scoreline since they result from an crossing line.
+*	Words of just one letter don't contribute to scoreline since they result from a crossing line.
 
-	word break(&ucase)				:f(scoreline.word)
-	scoreline = eq(n,1) g.value[substr(word,1,1)]	:s(scoreline.word)
-	eq(n,1)						:s(scoreline.word);* singletons aren't scorelined.
+	eq(n,1)						:s(scoreline.word)
 
-	output = ne(g.showscoreline) 'scoring word ' word ' starting at ' start
-	line = substr(cline,start)
+*	output = ne(g.showscoreline) 'scoring word ' word ' starting at ' start
+*	output = 'scoring word ' word ' starting at ' start
+	line = substr(line,start)
 	bonusline = substr(g.bonus.lines[num(pair)],start);* corresponding part of bonus line
-	output = ne(g.showscoreline) 'scoreline' char(9)  line
-	output = ne(g.showscoreline) 'bonus' char(9) bonusline
+*	output = ne(g.showscoreline) 'scoreline' char(9)  line
+*	output = 'scoreline' char(9)  line
+*	output = ne(g.showscoreline) 'bonus' char(9) bonusline
+*	output = 'bonus' char(9) bonusline
+
 	i = 0
 	mult = 1;* multiplier value for double and triple word cases.
 
@@ -1193,42 +1187,62 @@ scoreline.char
 	bonus = +substr(bonusline,i,1)
 	bonus = ident(bonus,' ') 1
 	val = +g.value[ch]
-	output = ne(g.showscoreline) ch ' ' val ' ' bonus
+*	output = 'val of <' ch '> is ' val ' bonus=' bonus
+*	output = ne(g.showscoreline) ch ' ' val ' ' bonus
+*	output = 'scoreline word ' word ' i=' i  ' ch=' ch ' val=' val ' bonus=' bonus
 
-*	Update scoreline for letter
+*	Update scoreline according to value of  letter. Always get at least the value 
+*	of the letter, and may get double or triple the letter value.
+	
+	val = eq(bonus,2) val * 2
+	val = eq(bonus,3) val * 3
 
-	scoreline = lt(bonus,4) scoreline + bonus * val	
+	scoreline = scoreline + val
 
 *	Update double/word multiplier
 
-	mult = gt(bonus,3) mult * (bonus - 2)
+	mult = eq(bonus,4) mult * 2;* double word
+	mult = eq(bonus,5) mult * 3;* triple word
 
-	output = ne(g.showscoreline) 'scoreline ' ch ' added value ' val ' scoreline now ' scoreline ' mult ' mult
+*	output = ne(g.showscoreline) 'scoreline bonus=' bonus ' ch=' ch ' added value ' val ' scoreline now ' scoreline ' mult ' mult
+*	output = 'scoreline ' ch ' added value ' val ' scoreline now ' scoreline ' mult ' mult
 							:(scoreline.char)
 scoreline.char.done
 	scoreline = ne(scoreline) scoreline * mult
-	output =  ne(g.showscoreline) 'result SCORE ' scoreline ' for word ' word ' , for ' show.pair(pair)
+*	output =  ne(g.showscoreline) 'result SCORE ' scoreline ' for word ' word ' , for ' show.pair(pair)
+*	output =  'result SCORELINE ' scoreline ' for word ' word ' , for ' show.pair(pair)
 							:(scoreline.word)
 scoreline.error
+	output = 'error scoring line with no new move ' line(pair) 
 	scoreline = 0					:(return)
-*	output = 'error scoring line with no new move ' line(pair) :(end)
+scoreline.done
+*	output = 'scoreline returns ' scoreline
+							:(return)
 scoreline.end
 
-	define('scoremove()i,p')			:(scoremove.end)
+	define('scoremove(move)i,p')			:(scoremove.end)
 
 *	A move's score is the sum of the scores of its own line and its crossing lines.
 
+*SCOREMOVE*
+scoremove
+
 *	In order to determine which words on the board would be formed by making this move,
-*	rebuild the board but with the new tiles in uppercase. This way, a word is new if and only if
+*	rebuild *clines* but with the new tiles in uppercase. This way, a word is new if and only if
 *	it contains an upper case character. The score is then the sum over all the lines of the scores of
 *	the words containing an upper-case character. At most one word in each line of the new grid will
 *	contain an upper-case character.
 
-
-*SCOREMOVE*
-scoremove
+	clines(move,1);* generate move's line and its cross lines with move text in upper case.
+	show.clines()
+*	output = 'scoremove move=' show.move(move)
+*	output = 'g.cln=' g.cln
+	i = 0
+scoremove.line
+*	output = 'scoremove line' i
 	gt(i = i + 1,g.cln)				:s(return)
-	scoremove = scoremove + scoreline(g.clines[i])	:(scoremove)
+*	output = 'scoremove i=' i ' scoremove =' scoremove
+	scoremove = scoremove + scoreline(g.clines[i])	:(scoremove.line)
 scoremove.end
 
 	define('show(rack,player)')			:(show.end)
@@ -1417,7 +1431,6 @@ show.lines.end
 *SHOW.MOVE*
 show.move
 	output = ident(move) title ' show.move null move ' :s(return)
-	output = 'show.move ' title
 show.move.i
 	gt(i = i + 1,count(move))			:s(show.move.f)
 	ff = free(move)[i]
@@ -1556,6 +1569,16 @@ show.tiles
 	gt(i = i + 1,size(tiles))			:s(return)
 	show.tiles = append(show.tiles, ucase(substr(tiles,i,1))) :(show.tiles)
 show.tiles.end
+
+	define('show.words(words)i,pos')		:(show.words.end)
+
+*	Show results of words() call.
+
+show.words
+	pos = words[i = i + 1,1]			:f(return)
+	output = 'words ' lpad(pos,2) ' ' words[i,2]	:(show.words)
+show.words.end
+
 	define('shuffle()tiles,n,r1,r2,ch')		:(shuffle.end)
 
 *	Shuffle the remaining tiles by randomly swapping two tiles several times.
@@ -1785,42 +1808,31 @@ vline
 							:(return)
 vline.end
 
-	define('wordcount(s)i,w')			:(wordcount.end)
-
-*	Return number of words in s, fail if no words
-
-*WORDCOUNT*
-wordcount
-	s break(' ')					:f(freturn)
-	
-	wordcount = 0
-wordcount.1
-	s break(' ') . w span(' ') =			:f(return)
-	wordcount = +wordcount + 1			:(wordcount.1)
-wordcount.end
-
-	define('words(s)n,w,pos,i')			:(words.end)
+	define('words(s)n,w,pos,i,sp')			:(words.end)
 
 *	Return array of the words in s, fail if no words.
-*	The first entry for an array is the starting index,
-*	the second entry is the word itself.
+*	The first entry for an array element is the starting index;
+*	the second is the word itself.
 
 *WORDS*
 words
-	n = wordcount(s)				:f(freturn)
-	s = s ' '
+
+*	Make sure we'll have blank to start off so initial span() matches something, 
+*	and also one at end to break to in case last word extends to end of line.
+
 	words = table(n)
-	pos = 1	
-	s span(' ') . w =				:f(words.1)
-	pos = size(w) + 1;* point to start of first word
-words.1
-	s break(' ') . w ' ' = ' ' 			:f(words.done)
+	s = ' ' s ' '
+	pos = 0	
+words.sp
+	s span(' ') . sp =
+
+	ident(s)					:s(words.done)
+
+	pos = pos + size(sp);* point to start of next word
+words.w
+	s break(' ') . w  = 	 			:f(words.done)
 	words[pos] = w					
-	i = i + 1	
-	gt(i,n)						:s(words.done)
-	
-	pos = pos + size(w) + 1;* set to start of next word
-							:(words.1)
+	pos = pos + size(w)				:(words.sp)
 words.done
 	words = convert(words,'array')			:(return)
 words.end

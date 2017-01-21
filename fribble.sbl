@@ -1,121 +1,111 @@
 * Copyright (c) 2017 dave shields
 
 -include "lib.sbl"
-	define('main()')				:(main.end)
 
-*MAIN*
-main
-	&stlimit = -1
-	&anchor = &trim = 1
-	init()
-	output = 'init done'
+	define('game(one,two)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
 
-	output = r01 ' ' c01
-	mov = m(r08,8,'shields')
-	output = show.move(mov,'test')
-	playmove(mov)
-	mov = mf(r09,'7,8,11,12','dave')
-	clines(mov)
-	show.clines()
-	output = show.move(mov,'test')
-	output = put.move(mov)
-	show.play(mov)
-*	mov = m(r12,1,'dave')
-	mov = m(r10,7,'o')
-	validmove(mov)		:s(move.ok)f(move.notok)
-move.ok
-	output = 'move ok'
-	show.play(mov)
-*	playmove(mov)
- :(move.next)
-move.notok
-	output = 'move not ok'
-move.next
+*	Play a game of fribble. *one* and *two* are players. *max* is the maximum number of moves.
 
- :(end)
-
-	you = player(1,'You',1)
-	foe = player(2,'Foe')
-	g.one = you
-	g.two = foe
-
-*	When playing solo, you (we) make the first move.
-	match(you,foe)					:s(main.match.done)f(main.match.fail)
-main.match.fail
-	output = 'failed match'				:(main.match.done)
-main.match.done
-	output = 'match over'
-main.match.over
-	counters()					:(return)
-main.end
-
-	define('match(you,foe)first,opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(match.end)
-
-*	Use fribble to play a match with another player. 
-*	*foe* is the other player; *you* is you assisted by fribble.
-
-*	Basic cycle is
-*	  loop
-*		enter foe's move
-*		list the tiles in your rack
-*		fribble makes your move
-*		enter your updated rack
-*		update board and other player-related info
-*			:(loop)
-
-
-*MATCH*
-match
-
-*	See if we are to start the game.
-
-	ne(pid(you),1)					:s(match.turn)
-
-*	We make the first move. Start by getting the rack
-
-	g.turn = 1
-	output = "Enter rack for first move:"
-	g.turn = 1
-	rack(you) = r()
-	output = 'Move ' g.turn ' for player ' name(you) ', with tiles ' show.tiles(rack(you)) '.'
-	move = start(rack(you))
-	makemove(you,move)
-	show.play(move)
-
-match.turn
-
-*	On each turn, get the foes's move, make your move, and update your rack.
+*GAME*
+game
+	players = array(2)
+	players[1] = g.one
+	players[2] = g.two
+game.round
+	i = 0
+game.turn
+	player = players[i = i + 1]				:f(game.round)
 
 	g.turn = g.turn + 1
+	output = ne(g.turnlimit) gt(g.turn,g.turnlimit) 'Game over -- too many turns (' g.turnlimit ').' :s(game.over)
+	output = gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.' :s(game.over)
 
 	differ(g.trace) tracer()
 
-	move = foe()						:f(foe.bad)
-	makemove(foe,move)				:s(return)f(freturn)
+	output = ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.'  :s(game.over)
+
+	output = 'Move ' g.turn ' for player ' name(player) (ident(fribble(player)) ', with tiles ' show.tiles(rack(player),'A') '.', '.')
+*	output = ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
+	output = 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
+
+	differ(fribble(player))				:s(game.you.move)
+
+*	Current player is the foe. Enter their move from the wwf board.
+
+game.foe.move
+	show.board(g.board)
+	output = "enter foe's move"
+	text = input					:f(game.eof)
+	output = 'you entered ' text
+	move = eval(text)
+	ident(datatype(move),'MOVE')			:s(game.foe.validmove)
+							:(game.foe.move)
+game.foe.validmove
+	output = "Foe's move " show.move(move)
+*	clines(move)
+*	show.play(move)
+	validmove(move)					:s(game.foe.scoremove)
+	output = 'invalid move ' show.move(move)	:(game.foe.move)
+
+game.foe.scoremove
+*	g.showscore = 1
+	points(move) = scoremove(move)
+	output = 'move is worth ' points(move) ' points.'
+	output = 'do you want to make this move (y or just ENTER for yes, no otherwise)?'
+	ans = input					:f(game.eod)
+	ident(ans)					:s(game.foe.moveon)
+	ident(ans,'y')					:s(game.foe.moveon)
+							:(game.foe.move)
+
+game.foe.moveon
+	output = "Playing foe's move " show.move(move)
+	makemove(player,move)
 	show.play(move)
-*	Need to see if move is valid
+							:(game.turn)
+game.you.move
 
-*	Play the foe team's move.
+*	Here to make your move. 
+*	Enter current rack and then let fribble make the move.
 
-	makemove(foe,move)
-
-*	Get the current rack.
-
-	rack = order(r())
-	move = find(rack)					:f(you.bad)
-	makemove(you,move)
+	output = 'your move ' g.turn 
+	show.board(g.board)
+	rack(player) = enterrack()				:f(game.you.move)
+	output = 'entered rack ' rack(player)
+	move = (eq(g.turn,1) start(player), find(player,limit(player))) :s(game.you.playmove)
+	output = 'unable to find move - end of game ' 		:(game.over)
+game.you.playmove
+	output = 'fribble generated move ' show.move(move)
+	makemove(player,move)
 	show.play(move)
-								:(match.turn)
-foe.bad
-	output = 'foe is unable to make  move.'			:(freturn)
-you.bad
-	output = 'you are nable to make  move.'			:(freturn)
-match.you
+							:(game.turn)
+*game.scoremove
+*	
+*	clines(move,1)
+*	show.clines()
+**	g.showscore = 1
+*	points(move) = scoremove()
+*	output = 'move is worth ' points(move) ' points.'
+*	output = 'do you want to make this move (y or just ENTER for yes, no otherwise)?'
+*	ans = input					:f(game.eod)
+*	ident(ans)					:s(game.moveon)
+*	ident(ans,'y')					:s(game.moveon)
+*							:(game.you.move)
+*							:(game.you.move)
+game.fribble
 
-	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(match.over)
-	getrack(p,move)					:(match.turn)
-
-match.fail
+*	Here to have fribble make a move
+*	move = (eq(g.turn,1) start(player), find(player,limit(player))) :s(game.move)
+*game.move
+*game.moveon
+*	makemove(player,move)
+*	show.play(move)
+*
+**	Game over if no more tiles.
+*
+*	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(game.over)
+*	getrack(player,move)					:(game.turn)
+*
+game.fail
 
 *	Here if no move found.
 
@@ -123,18 +113,72 @@ match.fail
 
 *	Here if no move found, in which case the return value is a set of swapped tiles. If *move* is null, then pass.
 
-	differ(move)					:s(match.swap)
+	differ(move)					:s(game.swap)
 	passed = passed + 1
-	output = gt(passed,6) ' Too many passed moves.'	:s(match.over)
-	output = 'Player ' name(g.one) ' passes.'		:(match.turn)
+	output = gt(passed,6) ' Too many passed moves.'	:s(game.over)
+	output = 'Player ' name(player) ' passes.'		:(game.turn)
 	
-match.swap
-	rack(p) = swap(rack(p),3)
-	output = 'Player ' name(p) ' swapped tiles.'	
-	output = 'Player ' name(p) ' now has tiles ' show.tiles(rack(p)) :(match.turn)
-match.over						
+game.swap
+	rack(player) = swap(p,3)
+	output = 'Player ' name(player) ' swapped tiles.'	
+	output = 'Player ' name(player) ' now has tiles ' show.tiles(rack(player)) :(game.turn)
+game.eof
+	output = 'end of input - game over'		:(game.over)
+game.resign
+	output = 'player ' name(player) ' resigns'
+game.over						
 	endgame()					:(return)
-match.end
+game.end
+	define('sw()')					:(sw.end)
 
-	main()
+*	Swap two tiles for player 'you'
+
+*SW*
+sw
+	rack(g.two) = swap(g.two,2)			:(return)
+sw.end
+	define('enterrack()ans')			:(enterrack.end)
+
+*	Enter your rack
+
+enterrack
+	output = 'Enter your tiles'
+	enterrack = input				:f(game.eof)
+	output = 'you entered ' enterrack
+	output 'is this correct?' 
+	input = ans
+	ident(ans)					:s(return)
+	ident(ans,'y')					:s(return)
+
+*	Try again
+
+							:(enterrack)
+enterrack.done
+enterrack.end
+
+
+
+*	Play a game against a foe using Fribble to make your moves.
+*	You need to enter the opponent's moves and your rack (tileset) on each turn.
+
+	&stlimit = -1
+	&anchor = &trim = 1
+
+	init()
+
+*	w = words('  greedy ab ')
+*	show.words(w)
+
+*	You go first, so just enter your tiles and then use start()
+
+	one = player(1,'You',1)
+	two = player(2,'Foe')
+	g.one = one
+	g.two = two
+	total(g.one) = total(g.two) = 0
+
+	g.turn = g.lastmove = 0
+	g.turnlimit = 
+
+	game()							:(end)
 end
