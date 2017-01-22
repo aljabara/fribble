@@ -2,8 +2,8 @@
 
 *	Global Variables
 
-*	Here are the global variables. Each has a name starting with 'g.' Their initial value is set in the
-*	procedure *init()*.
+*	Global variables have names starting with 'g.' Their initial value is set in the
+*	procedure *init()* and its subfunctions.
 
 *	A play is a sequence of one or more cells, represented as an array.  The cells are ordered
 *	from left to right for a horizontal play, top to bottom for a vertical play.
@@ -13,8 +13,6 @@
 *	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
 
 *	g.dict, array(15), is an array of hashtables  that are non-null for words in the dictionary.
-
-*	g.empty.board is a copy of the initial g.board (a board with no cells occupied).
 
 *	g.found counts number of valid moves that were found.
 
@@ -151,9 +149,9 @@ init.end
 *	Initialize global variables.
 
 init.main
+
 	g.dict = array(15)
 	g.board = array('15,15',' ')
-	g.empty.board = copy(g.board)
 	g.lines = lines(g.board)
 
 	g.used = array('15,15',' ')
@@ -166,6 +164,7 @@ init.main
 	init.perm('perm.txt')
 
 	init.tileset()
+
 	shuffle();* shuffle the tileset
 
 	init.value()
@@ -390,16 +389,14 @@ checkline.end
 
 *CHECKWORD*
 checkword
+	count.checkword = count.checkword + 1
 
 *	Accept words of a single character since they can occur in crossing lines.
 
 	eq(size(word),1)				:s(return)
-	count.checkword = count.checkword + 1
+
 	word = lcase(word);* in case upper case letters have wrongly crept it.
 	differ(g.dict[size(word)][word])		:f(freturn)s(return)
-checkword.bad
-	output = 'invalid blank at start of checkword ' word :(end)
-							:(return)
 checkword.end
 
 	define('cline(lines,move,p,ch)c,line')		:(cline.end)
