@@ -20,7 +20,7 @@ game.turn
 	output = ne(g.turnlimit) gt(g.turn,g.turnlimit) 'Game over -- too many turns (' g.turnlimit ').' :s(game.over)
 	output = gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.' :s(game.over)
 
-	differ(g.trace) tracer()
+	eq(g.trace,g.turn) tracer()
 
 	output = ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.'  :s(game.over)
 
@@ -54,7 +54,7 @@ game.fail
 	output = 'Player ' name(player) ' passes.'		:(game.turn)
 	
 game.swap
-	rack(p) = swap(player,3)
+	rack(player) = swap(player,3)
 	output = 'Player ' name(player) ' swapped tiles.'	
 	output = 'Player ' name(player) ' now has tiles ' show.tiles(rack(player)) :(game.turn)
 game.over						
@@ -79,5 +79,6 @@ game.end
 	g.turn = g.lastmove = 0
 	g.turnlimit = 
 
+	g.trace = 16
 	game()							:(end)
 end

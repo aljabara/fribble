@@ -8,15 +8,14 @@
 
 ask
 	output = query
-	output = 'respond with 'y', 'yes', 'n', or 'no'
+	output = "respond with 'y', 'yes', 'n', or 'no'"
 ask.loop
 	input = response				:f(freturn)
-	response 'y'					:s(return)
-	response 'yes'					:s(return)
-	response 'no'					:s(freturn)
-	response 'n'					:s(freturn)
+	response any('yY')				:s(return)
+	response ( 'yes' | 'YES' )			:s(return)
+	response any('nN')				:s(freturn)
+	response ( 'no' | 'NO')				:s(freturn)
 							:(ask.loop)
-
 ask.end
 	define('game(one,two)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
 
@@ -38,7 +37,8 @@ game.turn
 	output = gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.' :s(game.over)
 	output = ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.'  :s(game.over)
 
-	differ(g.trace) tracer()
+	differ(g.trace) eq(g.trace,g.turn) tracer()
+
 
 	output = 'Move ' g.turn ' for player ' name(player) (ident(fribble(player)) ', with tiles ' show.tiles(rack(player),'A') '.', '.')
 *	output = ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
@@ -83,14 +83,16 @@ game.you.move
 	show.board(g.board)
 	rack(player) = enterrack()			:f(game.you.move)
 	output = 'entered rack ' rack(player)
+	output = 'computing ...'
 	move = (eq(g.turn,1) start(player), find(player,limit(player))) :s(game.you.playmove)
 	output = 'unable to find move - end of game ' 	:(game.over)
 game.you.playmove
+	output = '...computed'
 	output = 'fribble generated move ' show.move(move)
 	makemove(player,move)
 	show.play(move)
-	output = 'make your move on the wwf board.
-game,you.makemove
+game.you.makemove
+	output = 'Make your move on the wwf board.'
 	ask("Have you entered the move?")		:s(game.turn)f(game.you.makemove)
 game.fribble
 
@@ -120,7 +122,7 @@ game.fail
 	output = 'Player ' name(player) ' passes.'		:(game.turn)
 	
 game.swap
-	rack(player) = swap(p,3)
+	rack(player) = swap(player,3)
 	output = 'Player ' name(player) ' swapped tiles.'	
 	output = 'Player ' name(player) ' now has tiles ' show.tiles(rack(player)) :(game.turn)
 game.eof
@@ -145,13 +147,13 @@ sw.end
 enterrack
 	output = 'Enter your tiles'
 	enterrack = input				:f(game.eof)
-	ask("You entered: " enterrack ". Is this correct?") s:return)f(enterrack)
+	ask("You entered: " enterrack ". Is this correct?") :s(return)f(enterrack)
 enterrack.end
 
 *	Play a game against a foe using Fribble to make your moves.
 *	You need to enter the opponent's moves and your rack (tileset) on each turn.
 
-	&stlimit = -1
+*	&stlimit = -1
 	&anchor = &trim = 1
 
 	init()
@@ -169,6 +171,8 @@ enterrack.end
 
 	g.turn = g.lastmove = 0
 	g.turnlimit = 
+
+*	g.trace = 15
 
 	game()							:(end)
 end

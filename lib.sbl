@@ -76,12 +76,10 @@
 	g.turn = g.lastmove = g.turnlimit = 0
 
 *	g.permutations, a table of the permutations of n=1..7 things taken 1..k at a time.
-*	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time, as a string with
-*	entries separated by a space.
+*	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time. Each entry
+*	in the table is an array giving the desired set of permutations.
 
 *	g.permutations.count, a table giving the number of permutations of for a given *n* and *k*.
-
-*	g.rack, a string containing the current rack. Plays are made using the characters from the rack.
 
 *	g.random_var is used by random() to compute the next pseudo-random value.
 *	Gimpel uses integer here, but need to have real.
@@ -334,12 +332,8 @@ adjacent.end
 
 *APPEND*
 append
-*	ident(w)	:s(append.fail)
-	ch = ident(ch) ' '
 	append = ident(str) w				:s(return)
-	append = str ch w				:(return)
-append.fail
-	 output = 'null ch to append ' w :(end)
+	append = str (ident(ch) ' ' , ch) w		:(return)
 append.end
 
 	define('bonus.lines()i')			:(bonus.lines.end)
@@ -353,7 +347,7 @@ bonus.lines.next
 	bonus.lines[i + 15] = vline(g.bonus,i)		:(bonus.lines.next)
 bonus.lines.end
 
-	define('checkline(line)iline,word')			:(checkline.end)
+	define('checkline(line)word')			:(checkline.end)
 
 *	Test if all the words in a line are in the dictionary.
 
@@ -362,25 +356,12 @@ checkline
 	count.checkline = count.checkline + 1
 	line span(' ') =
 	empty(line)					:s(return)
-	iline = line
 	line = line ' ';* to simplify breaking out words.
 checkline.1
 	line span(' ') =
-	ident(iline)					:s(checkline.done)
-	line break(' ')  . word ' ' =			:f(checkline.done);* if line exhausted
+	line break(' ')  . word ' ' =			:f(return);* if line exhausted
 	eq(size(word),1)				:s(checkline.1)
-	checkword(word)					:f(checkline.failed)s(checkline.1)
-
-	output = ne(g.tracing) 'checkline VALID<' iline '>'  :(checkline.1)
-
-	checkword(word)					:s(checkline.1)
-
-checkline.failed
-*	output = ne(g.tracing) 'checkline INVALID<' iline '>' 
-							:(freturn)
-checkline.done
-*	output = ne(g.tracing) 'checkline VALID ' iline
-							:(return)
+	checkword(word)					:f(freturn)s(checkline.1)
 checkline.end
 
 	define('checkword(word)')			:(checkword.end)
@@ -560,13 +541,13 @@ find
 find.line
 	gt(num = num + 1,30)				:s(find.done)
 	line = lines[num]
-	output = ne(g.tracing) 'Find.line ' lpad(lineid(num),3) ' ' show.line(line)
+*	output = ne(g.tracing) 'Find.line ' lpad(lineid(num),3) ' ' show.line(line)
 	moves = scan(pair(num,line),rack,limit)		:f(find.line)
 	mi = 0
 find.move
 	count.moves = count.moves + 1
 	move = moves[mi = mi + 1,2]			:f(find.line)
-	output = ne(g.tracing) 'Find.move mi ' mi ' ' show.move(move,'find')
+*	output = ne(g.tracing) 'Find.move mi ' mi ' ' show.move(move,'find')
 	points(move) = 
 	permi = 0
 
@@ -580,7 +561,7 @@ find.move
 
 *	Something must be wrong with the requested permutation
 
-	output = 'fatal permutation request ' text(move) :(end)
+*	output = 'fatal permutation request ' text(move) :(end)
 
 *	NOTE: THE LOOP BELOW IS THE CRITICAL INNER LOOP OF THIS PROGRAM.
 *	ANY TIME SPENT SPEEDING THINGS UP ELSEWHERE WILL HAVE LITTLE EFFECT.
@@ -630,7 +611,7 @@ find.perm
 *	junk as soon as possible so we can move on without wasting needless effort.
 
 	text(move) = text
-	output = ne(g.tracing) 'Find valid first ' show.move(move) ' ' show.line(line)
+*	output = ne(g.tracing) 'Find valid first ' show.move(move) ' ' show.line(line)
 	g.clines[g.cln = g.cln + 1] =  pair( id(move), insert(lines[num],move))
 	i = 0
 
@@ -644,17 +625,16 @@ find.cross
 
 	checkline(line(cline))				:f(find.perm)
 
-	output = ne(g.tracing) 'Find valid checkline ' line(cline)
+*	output = ne(g.tracing) 'Find valid checkline ' line(cline)
 
 	text(move) = place(text(move),ucase(rack))
-	output = ne(g.tracing) 'Find text ' text(move)
-
+*	output = ne(g.tracing) 'Find text ' text(move)
 
 	g.clines[g.cln = g.cln + 1] = cline			:(find.cross)
 	
 find.cross.done
 
-	output = ne(g.tracing) 'Find valid move ' show.move(move) ' in ' show.pair(pair(num,line))
+*	output = ne(g.tracing) 'Find valid move ' show.move(move) ' in ' show.pair(pair(num,line))
 
 *	Score the line by summing the scores of the lines saved in clines.
 	
@@ -663,7 +643,7 @@ find.cross.done
  
 	count.valid = count.valid + 1
 	move = copy(move)
-	output = ne(g.tracing) 'Find cross ' show.move(move) '  text=' text(move)
+*	output = ne(g.tracing) 'Find cross ' show.move(move) '  text=' text(move)
 	ne(g.tracing) show.move(move)
 	ne(g.tracing) show.play(move)
 *	output = ne(g.tracing) 'Find calling scoremove'
@@ -684,7 +664,8 @@ find.fail
 
 *	If *find* is still null, then no move was found, so try to swap three tiles.
 *	In either event, take the failure return.
-	find = ident(find) order(swap(rack,3))
+
+	find = ident(find) order(swap(player,3))
 							:(freturn)
 find.end
 	
@@ -907,6 +888,8 @@ makemove
 	output = 'Score is now ' name(g.one) ' ' total(g.one)
 .	 ', ' name(g.two) ' ' total(g.two) ', with '  size(g.tiles) ' letters left.'
 
+	output = 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
+
 *	Display move in grid with just this move in upper case by saving the board, playing the move with
 *	the text in upper case, showing it, and then restoring the board to its saved state.
 
@@ -960,7 +943,7 @@ open.done
 	i = 0; c = 
 open.done.ch
 	c = c lpad(open[i = i + 1],3)		:s(open.done.ch)
-	output = ne(g.tracing) 'Open: ' lpad(lineid(num(pair)),3) ' '  show.hex(line) '|  |' show.line(line) '| is ' c
+*	output = ne(g.tracing) 'Open: ' lpad(lineid(num(pair)),3) ' '  show.hex(line) '|  |' show.line(line) '| is ' c
 							:(return)
 open.end
 
@@ -1038,7 +1021,8 @@ playmove.ch
 							:(playmove.ch)
 							:(playmove.ch)
 playmove.done
-	output = ne(g.tracing) 'playmove returns'	:(return)
+*	output = ne(g.tracing) 'playmove returns'
+							:(return)
 playmove.end
 	
 	define('prefix(str,pre)word')			:(prefix.end)
@@ -1090,7 +1074,7 @@ row.end
 scan
 	line = line(pair)
 	num = num(pair)
-	output = ne(g.tracing) 'Scan line ' lineid(num) ' ' show.line(line) ' ' show.hex(line)
+*	output = ne(g.tracing) 'Scan line ' lineid(num) ' ' show.line(line) ' ' show.hex(line)
 
 *	Allocate and fill in *open*, an array giving the positions of the open cells.
 
@@ -1118,7 +1102,7 @@ scan.first
 scan.len
 	le(len = len - 1)				:s(scan.first)
 
-	output = ne(g.tracing) 'Scan first=' first ' left =' (nopen - pi) ' n=' n ' len=' len  
+*	output = ne(g.tracing) 'Scan first=' first ' left =' (nopen - pi) ' n=' n ' len=' len  
 
 *	At least one cell to be occupied by this move must be adjacent to a used cell.
 	
@@ -1126,7 +1110,7 @@ scan.len
 scan.used
 	gt(oi = oi + 1,len)				:s(scan.len)
 	pos = open[pi + oi - 1]				:f(scan.first)
-	output = ne(g.tracing) 'Scan oi=' oi ' pos=' pos
+*	output = ne(g.tracing) 'Scan oi=' oi ' pos=' pos
 	adjacent(row(num,pos),column(num,pos)) 		:f(scan.used)s(scan.text)
 
 *	If a move of length *len* has no adjacent cells, then no move of lesser length can
@@ -1134,10 +1118,12 @@ scan.used
 
 							:(scan.first)
 scan.text
+
 *	Here if adjacent cell found. Set text of move to the permutation specification.
+
 	sub = subarray(open,pi,len)			:f(scan.len)
 	move = move(num,len,sub,size(rack) '?' len)	:f(scan.len)
-	output = ne(g.tracing) 'Scan move ' show.move(move)
+*	output = ne(g.tracing) 'Scan move ' show.move(move)
 	scan = ident(scan) table()
 	count.scanned = count.scanned + 1
 	scan[count.scanned] = move			:(scan.len)
@@ -1146,12 +1132,12 @@ scan.done
 	scan = convert(scan,'array')			
 * :(return)
 	eq(g.tracing)					:s(return)
-	output = 'Scan ' show.line(line)  ' ' 	show.hex(line)
+*	output = 'Scan ' show.line(line)  ' ' 	show.hex(line)
 *	output = 'Scan ' show.line(used) ' ' 	show.hex(used)
 	i = 0
 scan.done.i
-	output = 'Scan move' lpad(i = i + 1,2) ' ' show.move(scan[i,2]) 	:s(scan.done.i)
-	output = 'Scan exit'
+*	output = 'Scan move' lpad(i = i + 1,2) ' ' show.move(scan[i,2]) 	:s(scan.done.i)
+*	output = 'Scan exit'
 							:(return)
 
 scan.end
@@ -1232,7 +1218,7 @@ scoremove
 *	contain an upper-case character.
 
 	clines(move,1);* generate move's line and its cross lines with move text in upper case.
-	show.clines()
+*	show.clines()
 *	output = 'scoremove move=' show.move(move)
 *	output = 'g.cln=' g.cln
 	i = 0
@@ -1736,7 +1722,7 @@ tracer
 	output = 'TRACER tracer g.trace ' g.trace ' move now ' g.turn
 	ident(g.trace)					:s(return)
 	ne(g.turn,g.trace)				:s(return)
-*	&ftrace = &trace = g.tracing = 1000000		
+	&ftrace = &trace = g.tracing = 1500000
 	g.tracing = 1
 	output = 'start TRACING turn=' g.turn ' g.tracing=' g.tracing
 							:(return)
