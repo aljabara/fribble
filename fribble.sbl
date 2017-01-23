@@ -7,15 +7,16 @@
 *	Ask question until you get yes (success) or no (failure) answer.
 
 ask
-	output = query
+	out(query)
 	output = "respond with 'y', 'yes', 'n', or 'no'"
 ask.loop
-	input = response				:f(freturn)
-	response any('yY')				:s(return)
-	response ( 'yes' | 'YES' )			:s(return)
-	response any('nN')				:s(freturn)
-	response ( 'no' | 'NO')				:s(freturn)
-							:(ask.loop)
+	response = lcase(input)				:f(freturn)
+	response 'yes'					:s(return)
+	response 'ye'					:s(return)
+	response 'y'					:s(return)
+	response 'no'					:s(freturn)
+	response 'n'					:s(freturn)
+							:(ask)
 ask.end
 	define('game(one,two)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
 
@@ -33,16 +34,16 @@ game.turn
 
 	g.turn = g.turn + 1
 
-	output = ne(g.turnlimit) gt(g.turn,g.turnlimit) 'Game over -- too many turns (' g.turnlimit ').' :s(game.over)
-	output = gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.' :s(game.over)
-	output = ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.'  :s(game.over)
+	out(ne(g.turnlimit) gt(g.turn,g.turnlimit) 'Game over -- too many turns (' g.turnlimit ').') :s(game.over)
+	out(gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.') :s(game.over)
+	out(ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.')  :s(game.over)
 
 	differ(g.trace) eq(g.trace,g.turn) tracer()
 
 
-	output = 'Move ' g.turn ' for player ' name(player) (ident(fribble(player)) ', with tiles ' show.tiles(rack(player),'A') '.', '.')
-*	output = ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
-	output = 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
+	out('Move ' g.turn ' for player ' name(player) (ident(fribble(player)) ', with tiles ' show.tiles(rack(player),'A') '.', '.'))
+*	out(ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
+	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
 
 	differ(fribble(player))				:s(game.you.move)
 
@@ -50,27 +51,28 @@ game.turn
 
 game.foe.move
 	show.board(g.board)
-	output = "enter foe's move"
+	out("enter foe's move")
 	text = input					:f(game.eof)
-	output = 'you entered ' text
+	out('you entered ' text)
 	move = eval(text)
-	ident(datatype(move),'MOVE')			:s(game.foe.validmove)
+	out('datatype move ' datatype(move))
+	ident(datatype(move),'move')			:s(game.foe.validmove)
 							:(game.foe.move)
 game.foe.validmove
-	output = "Foe's move " show.move(move)
-*	clines(move)
-*	show.play(move)
+	out("Foe's move " show.move(move))
+	clines(move)
+	show.play(move)
 	validmove(move)					:s(game.foe.scoremove)
-	output = 'invalid move ' show.move(move)	:(game.foe.move)
+	out('invalid move ' show.move(move))	:(game.foe.move)
 
 game.foe.scoremove
 *	g.showscore = 1
 	points(move) = scoremove(move)
-	output = 'move is worth ' points(move) ' points.'
+	out('move is worth ' points(move) ' points.')
 	ask("Do you want to make this move?")		:s(game.foe.moveon)f(game.eod)
 
 game.foe.moveon
-	output = "Playing foe's move " show.move(move)
+	out("Playing foe's move " show.move(move))
 	makemove(player,move)
 	show.play(move)
 							:(game.turn)
@@ -79,20 +81,20 @@ game.you.move
 *	Here to make your move. 
 *	Enter current rack and then let fribble make the move.
 
-	output = 'your move ' g.turn 
+	out('your move ' g.turn)
 	show.board(g.board)
 	rack(player) = enterrack()			:f(game.you.move)
-	output = 'entered rack ' rack(player)
-	output = 'computing ...'
+	out('entered rack ' rack(player))
+	out('computing ...')
 	move = (eq(g.turn,1) start(player), find(player,limit(player))) :s(game.you.playmove)
-	output = 'unable to find move - end of game ' 	:(game.over)
+	out('unable to find move - end of game ') 	:(game.over)
 game.you.playmove
-	output = '...computed'
-	output = 'fribble generated move ' show.move(move)
+	out('...computed')
+	out('fribble generated move ' show.move(move))
 	makemove(player,move)
 	show.play(move)
 game.you.makemove
-	output = 'Make your move on the wwf board.'
+	out('Make your move on the wwf board.')
 	ask("Have you entered the move?")		:s(game.turn)f(game.you.makemove)
 game.fribble
 
@@ -105,30 +107,30 @@ game.fribble
 *
 **	Game over if no more tiles.
 *
-*	output = eq(size(g.tiles)) 'Game over - no more tiles. '		:s(game.over)
+*	out(eq(size(g.tiles)) 'Game over - no more tiles. ')		:s(game.over)
 *	getrack(player,move)					:(game.turn)
 *
 game.fail
 
 *	Here if no move found.
 
-	output = 'No move found.'
+	out('No move found.')
 
 *	Here if no move found, in which case the return value is a set of swapped tiles. If *move* is null, then pass.
 
 	differ(move)					:s(game.swap)
 	passed = passed + 1
-	output = gt(passed,6) ' Too many passed moves.'	:s(game.over)
-	output = 'Player ' name(player) ' passes.'		:(game.turn)
+	out(gt(passed,6) ' Too many passed moves.')	:s(game.over)
+	out('Player ' name(player) ' passes.')		:(game.turn)
 	
 game.swap
 	rack(player) = swap(player,3)
-	output = 'Player ' name(player) ' swapped tiles.'	
-	output = 'Player ' name(player) ' now has tiles ' show.tiles(rack(player)) :(game.turn)
+	out('Player ' name(player) ' swapped tiles.')
+	out('Player ' name(player) ' now has tiles ' show.tiles(rack(player))) :(game.turn)
 game.eof
-	output = 'end of input - game over'		:(game.over)
+	out('end of input - game over')		:(game.over)
 game.resign
-	output = 'player ' name(player) ' resigns'
+	out('player ' name(player) ' resigns')
 game.over						
 	endgame()					:(return)
 game.end
@@ -145,7 +147,7 @@ sw.end
 *	Enter your rack
 
 enterrack
-	output = 'Enter your tiles'
+	out( 'Enter your tiles')
 	enterrack = input				:f(game.eof)
 	ask("You entered: " enterrack ". Is this correct?") :s(return)f(enterrack)
 enterrack.end
