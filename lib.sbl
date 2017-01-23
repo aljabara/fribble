@@ -760,7 +760,7 @@ hline
 hline.end
 
 
-	define('insert(line,move,upper)c,f,i,utext')		:(insert.end)
+	define('insert(line,move,upper)c,f,i,text')		:(insert.end)
 
 *	Insert the text of a move into its free list of empty cells in the line of the move.
 *	Express the text in uppre case if *upper* is not null.
@@ -768,26 +768,28 @@ hline.end
 *INSERT*
 insert
 	count.insert = count.insert + 1
+	text = (differ(upper) ucase(text(move)), text(move))
 	f = free(move)
 	c = count(move)
-	ne(f[c] - f[1], count - 1)			:s(insert.chars)
+	ne(f[c] - f[1], c - 1)			:s(insert.chars)
 
 *	Here if cells are contiguous. Insert text after part before it, and before part after it.
 
-	insert = substr(line, 1, f[1] - 1) (differ(upper) ucase(text(move)), text(move)) substr(line, f[c] + 1)
-	output = ne(size(line),15) 'insert failure ' line		:s(end)
 	count.insert.contig = count.insert.contig + 1
+
+	insert = substr(line, 1, f[1] - 1) text substr(line, f[c] + 1)
+	output = ne(size(line),15) 'insert failure ' line		:s(end)
 							:(return)
 insert.chars
 
 *	Here if cells not contiguous. Unpack the line, insert the move text, and pack it back up.
 
 	count.insert.split = count.insert.split + 1
+
 	insert = unpack(line)
-	utext = ucase(text(move))
 insert.ch
 	gt(i = i + 1,count(move))			:s(insert.done)
-	insert[free(move)[i]] = substr(utext,i,1)	:(insert.ch)
+	insert[free(move)[i]] = substr(text,i,1)	:(insert.ch)
 insert.done
 	insert = pack(insert)				:(return)
 insert.end
@@ -1177,10 +1179,10 @@ scoreline.char
 	ch = substr(word,i,1)
 	bonus = +substr(bonusline,i,1)
 
-*	Update scoreline according to value of  letter. Always get at least the value 
+*	Update scoreline according to value of letter. Always get at least the value 
 *	of the letter, and may get double or triple the letter value.
 	
-	val = +g.value[ch]
+	val = g.value[ch]
 	scoreline = scoreline + (eq(bonus,2) val * 2,  eq(bonus,3) val * 3, val)
 
 *	Update double/triple word multiplier.
