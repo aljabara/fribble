@@ -182,7 +182,7 @@ init.main.end
 
 *INIT.BONUS*
 init.bonus
-	g.bonus = array('15,15',+1)
+	g.bonus = array('15,15','1')
 	s = 	'5 0104 3 0107 3 0109 5 0112 2 0203 4 0206 4 0210 2 0213 '
 .		'2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 4 0415 '
 .		'2 0503 2 0507 2 0509 2 0513 4 0602 3 0606 3 0610 4 0614 '
@@ -332,8 +332,7 @@ adjacent.end
 
 *APPEND*
 append
-	append = ident(str) w				:s(return)
-	append = str (ident(ch) ' ' , ch) w		:(return)
+	append = (ident(str) w, str (ident(ch) ' ' , ch) w)	:(return)
 append.end
 
 	define('bonus.lines()i')			:(bonus.lines.end)
@@ -363,6 +362,7 @@ checkline.1
 	eq(size(word),1)				:s(checkline.1)
 	checkword(word)					:f(freturn)s(checkline.1)
 checkline.end
+	checkwordn = 0
 
 	define('checkword(word)')			:(checkword.end)
 
@@ -487,7 +487,12 @@ counters.end
 
 *	Test if line is empty (null or all blanks).
 
-empty	
+*EMPTY*
+empty
+
+*	In most cases, the first character in line is not null.
+
+	differ(substr(line,1,1),' ')			:s(freturn)
 	line span(' ') =
 	ident(line)					:s(return)f(freturn)
 empty.end
@@ -561,7 +566,7 @@ find.move
 
 *	Something must be wrong with the requested permutation
 
-*	output = 'fatal permutation request ' text(move) :(end)
+	output = 'fatal permutation request ' text(move) :(end)
 
 *	NOTE: THE LOOP BELOW IS THE CRITICAL INNER LOOP OF THIS PROGRAM.
 *	ANY TIME SPENT SPEEDING THINGS UP ELSEWHERE WILL HAVE LITTLE EFFECT.
@@ -644,8 +649,8 @@ find.cross.done
 	count.valid = count.valid + 1
 	move = copy(move)
 *	output = ne(g.tracing) 'Find cross ' show.move(move) '  text=' text(move)
-	ne(g.tracing) show.move(move)
-	ne(g.tracing) show.play(move)
+*	ne(g.tracing) show.move(move)
+*	ne(g.tracing) show.play(move)
 *	output = ne(g.tracing) 'Find calling scoremove'
 	points(move) = +scoremove(move)	
 
@@ -1130,19 +1135,10 @@ scan.text
 scan.done
 	ident(scan)					:s(freturn)
 	scan = convert(scan,'array')			
-* :(return)
-	eq(g.tracing)					:s(return)
-*	output = 'Scan ' show.line(line)  ' ' 	show.hex(line)
-*	output = 'Scan ' show.line(used) ' ' 	show.hex(used)
-	i = 0
-scan.done.i
-*	output = 'Scan move' lpad(i = i + 1,2) ' ' show.move(scan[i,2]) 	:s(scan.done.i)
-*	output = 'Scan exit'
-							:(return)
-
+ 							:(return)
 scan.end
 
-	define('scoreline(pair)line,word,words,n,start,ch,i,bonus,mult,val')	:(scoreline.end)
+	define('scoreline(pair)line,word,words,wi,n,start,ch,i,bonus,mult,val')	:(scoreline.end)
 
 *	Compute the score of a move on a given line. All the letters of the move will be in upper case on the board
 *	so the score of the move is the sum of the scores of all the words with upper case letters in them, for
@@ -1157,9 +1153,12 @@ scoreline
 	bonusline = g.bonus.lines[num(pair)]
 	line break(&ucase)				:f(scoreline.error)
 	words = words(line)				:f(scoreline.done)
+	wi = 0
 scoreline.word
-	start = words[i = i + 1,1]			:f(scoreline.done)
-	word = words[i,2]
+	start = words[wi = wi + 1,1]			:f(scoreline.done)
+	word = words[wi,2]
+*	count.scoreline = count.scoreline + 1
+*	output = 'scoreline wi=' wi ' start=' start ' word=' word '.' ' count ' count.scoreline
 	word break(&ucase)				:f(scoreline.word)
 	n = size(word)
 
@@ -1177,23 +1176,18 @@ scoreline.char
 	gt(i = i + 1,n) 				:s(scoreline.char.done)
 	ch = substr(word,i,1)
 	bonus = +substr(bonusline,i,1)
-	bonus = ident(bonus,' ') 1
-	val = +g.value[ch]
 
 *	Update scoreline according to value of  letter. Always get at least the value 
 *	of the letter, and may get double or triple the letter value.
 	
-	val = eq(bonus,2) val * 2
-	val = eq(bonus,3) val * 3
+	val = +g.value[ch]
+	scoreline = scoreline + (eq(bonus,2) val * 2,  eq(bonus,3) val * 3, val)
 
-	scoreline = scoreline + val
+*	Update double/triple word multiplier.
 
-*	Update double/word multiplier
+	mult = gt(bonus,3) mult * (bonus - 2)		:(scoreline.char)
 
-	mult = eq(bonus,4) mult * 2;* double word
-	mult = eq(bonus,5) mult * 3;* triple word
 
-							:(scoreline.char)
 scoreline.char.done
 	scoreline = ne(scoreline) scoreline * mult	:(scoreline.word)
 scoreline.error
@@ -1706,6 +1700,7 @@ swap.end
 
 *TAKE*
 take
+	g.tracing = 0
 	n = gt(n,size(g.tiles)) size(g.tiles)
 	take = order(substr(g.tiles,1,n))
 	g.tiles = substr(g.tiles, n + 1)
@@ -1713,20 +1708,27 @@ take
 							:(return)
 take.end
 
-	define('tracer()')				:(tracer.end)
+	define('traceoff()')				:(traceoff.end)
 
-*	Initiate tracing at start of move *g.trace*.
+*	Initiate tracing.
 
-*TRACER*
-tracer
-	output = 'TRACER tracer g.trace ' g.trace ' move now ' g.turn
-	ident(g.trace)					:s(return)
-	ne(g.turn,g.trace)				:s(return)
-	&ftrace = &trace = g.tracing = 1500000
+*TRACEOFF*
+traceoff
+	&ftrace = &trace = g.tracing = 
+	output = 'stop TRACING '
+traceoff.end
+
+	define('traceon()')				:(traceon.end)
+
+*	Initiate tracing.
+
+*TRACEON*
+traceon
+	output = 'start TRACING'
+	&ftrace = &trace = 1500000
 	g.tracing = 1
-	output = 'start TRACING turn=' g.turn ' g.tracing=' g.tracing
 							:(return)
-tracer.end
+traceon.end
 
 	define('ucase(s)')				:(ucase.end)
 

@@ -17,6 +17,7 @@ game.turn
 	player = players[i = i + 1]				:f(game.round)
 
 	g.turn = g.turn + 1
+	collect()
 	output = ne(g.turnlimit) gt(g.turn,g.turnlimit) 'Game over -- too many turns (' g.turnlimit ').' :s(game.over)
 	output = gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.' :s(game.over)
 
@@ -79,6 +80,8 @@ game.end
 	g.turn = g.lastmove = 0
 	g.turnlimit = 
 
-	g.trace = 16
+*	g.trace = 16
+*	eq(g.turn,16) traceon()
+	eq(checkwords.count,8285000) traceon()
 	game()							:(end)
 end
