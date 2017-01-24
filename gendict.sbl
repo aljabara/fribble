@@ -40,7 +40,7 @@ init.2
 
 *	wwf is list of words not in enable1.txt word list but known to be accepted as valid by wwf.
 
-	wwf = 'qi brr zen zep marie ' 
+	wwf = 'qi brr zen zep marie texting ' 
 
 wwf
 	wwf break(' ') . w ' ' =			:f(wwf.done)

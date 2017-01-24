@@ -1,0 +1,172 @@
+* Copyright (c) 2017 dave shields
+
+-include "lib.sbl"
+
+*	s.ops is the list of shell commands. s.opabbrev lists the acceptable abbreviations for
+*	operations (at least the first two letters must be given).
+
+	s.ops = 'board letters move quit score set tiles valid '
+	s.opabbrev = table(100)
+
+	s.letters = &lcase &ucase
+
+	define('shell.init()')				:(shell.init.end)
+
+shell.init()
+
+*	Initialize the shell.
+
+shell.init
+	op.init()
+							:(return)
+shell.init.end
+
+	define('op.init()ops,key,op')			:(op.init.end)
+
+*	Initialize s.optable to acceptable abbreviations for shell operations. 
+*	Acceptable abbreviations consist of the initial two or more characters
+*	of the operation, up to the full command name itself.
+
+
+op.init
+	ops = s.ops
+op.init.next
+	ops break(' ') . op ' ' =			:f(return)
+	key = op
+	out('key=' key)
+op.init.op
+	lt(size(key),2)					:f(op.init.next)
+	s.opabbrev[key] = op
+	out('key=' key ' op=' op)
+	key = substr(key,1,size(key) - 1)		:(op.init.op)
+op.init.end
+
+
+*	Simple shell for fribble.
+
+	&stlimit = -1
+	&anchor = &trim = 1
+
+
+	shell.init()
+
+	g.dict = g.permutations = 
+	&dump = 3
+ :(end)
+	init()
+*	Simple 'shell' for fribble. Read commands from terminal and execute them. This is meant mainly for debugging
+*	and testing. There is only one player, 'you'.
+
+
+	one = player(1,'You')
+	g.one = one
+	total(g.one) = g.turn = g.lastmove = g.turnlimit = 0
+
+	shell.init()
+
+*	Fribble shell.
+
+	out('starting shell')
+shell
+	out('op?')
+	linein = input					:f(end)
+	out('linein ' linein)
+	linein span(s.letters) . opin span(' ') rem . args
+	out('opin ' opin ' args ' args '.')
+	opin = lcase(opin)
+	out('op is ' opin)
+	op = s.opabbrev[opin]
+	differ(op)					:s(shell.op)
+	out('unknown op: ' op)				:(shell)
+
+shell.op						:($('shell.' op))
+
+shell.board
+	show.board()					:s(loop)
+
+shell.eval
+	out('evaluating ' args)
+	eval(args)					
+							:(shell)
+	
+shell.letters
+	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
+							:(shell)
+
+shell.move
+	out('move not implemented')	
+							:(shell)
+
+shell.quit
+	out('exiting')					:(end)
+
+shell.score
+	out('score not implemented')			:(shell)
+
+*	Complete assignment statemtn
+
+	op break(' ') span(' ') =
+	out('evaluating ' op)
+	exp = eval(op)					:(shell)
+
+shell.tiles
+
+*	Read tiles from rest of command line.
+
+	op break(' ') span(' ') =
+	rack(player) = tiles
+	out('rack now ' tiles)
+							:(shell)
+
+	differ(g.trace) tracer()
+
+	out(ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.')  :s(shell.over)
+
+	out('Move ' g.turn ' for player ' name(player) ', with tiles ' show.tiles(rack(player),'A') '.')
+	differ(fribble(player))				:s(shell.fribble)
+
+shell.you.move
+
+*	Here for you to make a move
+
+	show.board(g.board)
+	out('your tiles: ' show.tiles(rack(player)))
+	out('make your move ')
+	text = input					:f(shell.eof)
+	out('you entered ' text)
+	ident(text,'quit')				:s(shell.over)
+	ident(text,'resign')				:s(shell.resign)
+	move = eval(text)
+	ident(datatype(move),'MOVE')			:s(shell.validmove)
+	out('evaluating ' text)
+	eval(text)
+							:(shell.you.move)
+shell.validmove
+	show.move(move)
+	out((validmove(move) ' valid move','invalid move'))	:(shell)
+
+shell.scoremove
+	
+	clines(move,1)
+	show.clines()
+*	g.showscore = 1
+	points(move) = findscore()
+	out('move is worth ' points(move) ' points.')
+							:(shell)
+	out('do you want to make this move (y or just ENTER for yes, no otherwise)?')
+	ans = input					:f(shell.eod)
+	ident(ans)					:s(shell.moveon)
+	ident(ans,'y')					:s(shell.moveon)
+							:(shell.you.move)
+*shell.move
+shell.moveon
+	makemove(player,move)
+	show.play(move)
+							:(shell)
+*shell.swap
+*	rack(player) = swap(player,3)
+*	out('Player ' name(player) ' swapped tiles.')
+*	out('Player ' name(player) ' now has tiles ' show.tiles(rack(player))) :(shell.turn)
+shell.eof
+	out('end of input - shell over')		:(return)
+end
