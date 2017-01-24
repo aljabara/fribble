@@ -9,7 +9,7 @@
 *	s.ops is the list of shell commands. 
 
 	s.ops = 
-. 'board clear eval help init letters move quit score search start tiles valid '
+. 'board clear eval help init letters move quit remove score search start tiles valid '
 
 *	s.opabbrev maps abbreviated input to corresponding op.
 *	You need specify only first one or more characters
@@ -130,7 +130,8 @@ shell.help
 	out(rpad('letters',14)  tab 'show values of letters')
 	out(rpad('move' ,14)	tab 'enter move')
 	out(rpad('quit' ,14) 	tab 'exit shell')
-	out(rpad('score' ,14) 	tab 'score move')
+	out(rpad('remove' ,14) 	tab 'remove (undo) last move played')
+	out(rpad('score' ,14) 	tab 'score last move entered')
 	out(rpad('search' ,14)	tab 'search dictionary for matching words')
 	out(rpad('start' ,14) 	tab 'make starting move')
 	out(rpad('rack tiles',14) 	tab 'set rack to tiles, default "fribble"')
@@ -144,20 +145,44 @@ shell.letters
 							:(shell.next)
 
 shell.move
-	out('move not implemented')	
-							:(shell.next)
+
+*	Get move, assume user knows about 'mf' and 'm' functions.
+
+	move = eval(operand)
+	out('Last move now ' show.move(move)) 		:(shell.next)
 
 shell.quit
 	out('exiting')					:(end)
 
+shell.remove
+	
+*	Remove (undo) last move played, by setting its free cells to unused
+
+							:(shell.next)
 shell.score
-	out('score not implemented')			:(shell.next)
 
-*	Complete assignment statemtn
+*	Show score computation for last move entered.
 
-	op break(' ') span(' ') =
-	out('evaluating ' op)
-	exp = eval(op)					:(shell.next)
+	g.showscore = 1
+	out('Scoring ' show.move(move))
+	clines(move,1)
+	show.clines()
+	score = scoremove(move)
+	g.showscore = 0
+	out('Move ' show.move(move) ' scores ' score ' points.') :(shell.next)
+
+
+shell.scoremove
+	
+*	g.showscore = 1
+	points(move) = findscore()
+	out('move is worth ' points(move) ' points.')
+							:(shell.next)
+	out('do you want to make this move (y or just ENTER for yes, no otherwise)?')
+	ans = input					:f(shell.eod)
+	ident(ans)					:s(shell.moveon)
+	ident(ans,'y')					:s(shell.moveon)
+							:(shell.you.move)
 
 shell.search
 
@@ -177,7 +202,7 @@ shell.start
 
 shell.tiles
 
-*	Read tiles from rest of command line.
+*	Get rack from operand.
 
 	tiles = operand
 	gt(size(tiles,7)) out('truncating to seven tiles')
@@ -186,55 +211,15 @@ shell.tiles
 	out('rack now ' tiles)
 							:(shell.next)
 
-	differ(g.trace) tracer()
-
-	out(ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.')  :s(shell.over)
-
-	out('Move ' g.turn ' for player ' name(player) ', with tiles ' show.tiles(rack(player),'A') '.')
-	differ(fribble(player))				:s(shell.fribble)
-
-shell.you.move
-
-*	Here for you to make a move
-
-	show.board(g.board)
-	out('your tiles: ' show.tiles(rack(player)))
-	out('make your move ')
-	text = input					:f(shell.eof)
-	out('you entered ' text)
-	ident(text,'quit')				:s(shell.over)
-	ident(text,'resign')				:s(shell.resign)
-	move = eval(text)
-	ident(datatype(move),'MOVE')			:s(shell.validmove)
-	out('evaluating ' text)
-	eval(text)
-							:(shell.you.move)
 shell.validmove
 	show.move(move)
 	out((validmove(move) ' valid move','invalid move'))	:(shell.next)
 
-shell.scoremove
-	
-	clines(move,1)
-	show.clines()
-*	g.showscore = 1
-	points(move) = findscore()
-	out('move is worth ' points(move) ' points.')
-							:(shell.next)
-	out('do you want to make this move (y or just ENTER for yes, no otherwise)?')
-	ans = input					:f(shell.eod)
-	ident(ans)					:s(shell.moveon)
-	ident(ans,'y')					:s(shell.moveon)
-							:(shell.you.move)
 *shell.move
 shell.moveon
 	makemove(player,move)
 	show.play(move)
 							:(shell.next)
-*shell.swap
-*	rack(player) = swap(player,3)
-*	out('Player ' name(player) ' swapped tiles.')
-*	out('Player ' name(player) ' now has tiles ' show.tiles(rack(player))) :(shell.turn)
 shell.eof
-	out('end of input - shell over')		:(return)
+	out('end of input - bye')			:(return)
 end
