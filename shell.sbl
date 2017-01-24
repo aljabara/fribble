@@ -9,7 +9,7 @@
 *	s.ops is the list of shell commands. 
 
 	s.ops = 
-. 'board clear eval help init letters move quit remove score search start tiles valid '
+. 'board clear eval help init letters move play quit remove score search start tiles valid '
 
 *	s.opabbrev maps abbreviated input to corresponding op.
 *	You need specify only first one or more characters
@@ -151,10 +151,18 @@ shell.move
 	move = eval(operand)
 	out('Last move now ' show.move(move)) 		:(shell.next)
 
+shell.play
+
+*	Play last move entered.
+
+	makemove(g.one,move)
+	show.play(move)
+							:(shell.next)
 shell.quit
 	out('exiting')					:(end)
 
 shell.remove
+	out('remove not yet implemented')		:(shell.next)
 	
 *	Remove (undo) last move played, by setting its free cells to unused
 
@@ -168,6 +176,7 @@ shell.score
 	clines(move,1)
 	show.clines()
 	score = scoremove(move)
+	points(move) = score
 	g.showscore = 0
 	out('Move ' show.move(move) ' scores ' score ' points.') :(shell.next)
 

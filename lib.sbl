@@ -16,6 +16,11 @@
 
 *	g.found counts number of valid moves that were found.
 
+*	g.log is set to append a copy of standard output to
+*	log file 'fribble.log'.
+
+	g.log = 1
+
 *	g.maxmoves, maximum number of moves.
 
 	g.maxmoves = 60
@@ -135,7 +140,17 @@ init
 
 	init.main(dictfile,skip)
 
+	ident(g.log)					:s(init.clean)
+
+*	Open log file for append.
+
+	output(.logfile,2,'fribble.log[-a]')		:s(init.clean)
+	out('unable to open log file')
+
+init.clean
+
 *	Free up code for initializers now that no longer needed.
+
 
 	init.bonus = init.main = init.dict = init.tileset = init.value = 
 			
@@ -990,8 +1005,13 @@ order.end
 
 *	Output a line.
 
+*OUT*
 out
-	output = line					:(return)
+	output = line					
+	ident(g.log)					:s(return)
+	logfile = line
+							:(return)
+	
 out.end
 
 	define('pack(chars),i')			
@@ -1167,7 +1187,7 @@ scoreline.word
 	start = words[wi = wi + 1,1]			:f(scoreline.done)
 	word = words[wi,2]
 *	count.scoreline = count.scoreline + 1
-*	out('scoreline wi=' wi ' start=' start ' word=' word '.' ' count ' count.scoreline)
+	ne(g.showscore) out('scoreline wi=' wi ' start=' start ' word=' word '.' ' count ' count.scoreline)
 	word break(&ucase)				:f(scoreline.word)
 	n = size(word)
 
@@ -1192,18 +1212,21 @@ scoreline.char
 	val = g.value[ch]
 	scoreline = scoreline + (eq(bonus,2) val * 2,  eq(bonus,3) val * 3, val)
 
+	ne(g.showscore) out('ch=' ch ' val=' val)
 *	Update double/triple word multiplier.
 
 	mult = gt(bonus,3) mult * (bonus - 2)		:(scoreline.char)
 
 
 scoreline.char.done
-	scoreline = ne(scoreline) scoreline * mult	:(scoreline.word)
+	scoreline = ne(scoreline) scoreline * mult	
+	ne(g.showscore) out('scoreline=' scoreline)
+						:(scoreline.word)
 scoreline.error
 	out('error scoring line with no new move ' line(pair))
 	scoreline = 0					:(return)
 scoreline.done
-*	out('scoreline returns ' scoreline)
+*	ne(g.scoremove) out('scoreline returns ' scoreline)
 							:(return)
 scoreline.end
 
@@ -1227,9 +1250,12 @@ scoremove
 	i = 0
 scoremove.line
 *	out('scoremove line' i)
-	gt(i = i + 1,g.cln)				:s(return)
+	gt(i = i + 1,g.cln)				:s(scoremove.done)
 *	out('scoremove i=' i ' scoremove =' scoremove)
 	scoremove = scoremove + scoreline(g.clines[i])	:(scoremove.line)
+scoremove.done
+	ne(g.showscore) out('scoremove returns ' scoremove)
+							:(return)
 scoremove.end
 
 	define('show(rack,player)')			:(show.end)
