@@ -2,24 +2,34 @@
 
 -include "lib.sbl"
 
-*	s.ops is the list of shell commands. s.opabbrev lists the acceptable abbreviations for
-*	operations (at least the first two letters must be given).
+*	s.ok is set to one if last 'eval' command succeeded, zero if it failed.
 
-	s.ops = 'board letters move quit score set tiles valid '
+	s.ok = 0
+
+*	s.ops is the list of shell commands. 
+
+	s.ops = 
+. 'board clear eval help init letters move quit score search start tiles valid '
+
+*	s.opabbrev maps abbreviated input to corresponding op.
+*	You need specify only first one or more characters
+*	in the operation name.
+
 	s.opabbrev = table(100)
 
 	s.letters = &lcase &ucase
 
-	define('shell.init()')				:(shell.init.end)
+*	s.v is set to value of last 'eval' operation.
 
-shell.init()
+	define('shell.setup()')				:(shell.setup.end)
+
+shell.setup
 
 *	Initialize the shell.
 
-shell.init
 	op.init()
 							:(return)
-shell.init.end
+shell.setup.end
 
 	define('op.init()ops,key,op')			:(op.init.end)
 
@@ -33,90 +43,148 @@ op.init
 op.init.next
 	ops break(' ') . op ' ' =			:f(return)
 	key = op
-	out('key=' key)
+	s.opabbrev[substr(key,1,1)] = op
 op.init.op
-	lt(size(key),2)					:f(op.init.next)
 	s.opabbrev[key] = op
-	out('key=' key ' op=' op)
-	key = substr(key,1,size(key) - 1)		:(op.init.op)
+	key = substr(key,1,size(key) - 1)	:f(op.init.next)
+	gt(size(key),1)			:s(op.init.op)f(op.init.next)
 op.init.end
 
 
-*	Simple shell for fribble.
+*	Simple 'shell' for fribble. 
+
+*	Read commands from terminal and execute them. 
+*	This is meant mainly for debugging, testing
+*	and as a way to learn how fribble operates.
+
+*	There is only one player, 'you'.
+
 
 	&stlimit = -1
 	&anchor = &trim = 1
 
+	shell.setup()
 
-	shell.init()
+*	g.dict = g.permutations = 
+*	&dump = 3
 
-	g.dict = g.permutations = 
-	&dump = 3
- :(end)
 	init()
-*	Simple 'shell' for fribble. Read commands from terminal and execute them. This is meant mainly for debugging
-*	and testing. There is only one player, 'you'.
 
 
 	one = player(1,'You')
 	g.one = one
+	g.two = player(2,'Nobody')
 	total(g.one) = g.turn = g.lastmove = g.turnlimit = 0
+	total(g.two) = 0
 
-	shell.init()
+	shell.setup()
 
 *	Fribble shell.
 
+	tab = char(9)
 	out('starting shell')
 shell
+
+shell.next
 	out('op?')
-	linein = input					:f(end)
-	out('linein ' linein)
-	linein span(s.letters) . opin span(' ') rem . args
-	out('opin ' opin ' args ' args '.')
+	linein = input ' '					:f(shell.end)
+*	out('linein =' linein '.')
+	linein span(s.letters) . opin span(' ') rem . operand :s(shell.next.ok)
+	operand = trim(operand)
+	out('fail opin =' opin ' operand=' operand '.') :(shell.next)
+shell.next.ok
 	opin = lcase(opin)
-	out('op is ' opin)
 	op = s.opabbrev[opin]
+	out('op ' opin ' operand ' operand '.')
+*	out('op abbrev =' op)
 	differ(op)					:s(shell.op)
-	out('unknown op: ' op)				:(shell)
+	out('unknown op: ' op)				:(shell.next)
 
 shell.op						:($('shell.' op))
 
 shell.board
-	show.board()					:s(loop)
+	show.board(g.board)				:s(loop)
 
+shell.clear
+
+*	Clear the board
+	g.board = array('15,15',' ')			:(shell.next)
+
+shell.end
+	out('shell end of input - bye')		:(end)
 shell.eval
-	out('evaluating ' args)
-	eval(args)					
-							:(shell)
+	out('evaluating ' operand)
+	s.v = eval(operand)				:s(shell.eval.succeed)f(shell.eval.fail)
+shell.eval.succeed
+	s.ok = 1					:(shell.next)
+shell.eval.fail
+	out('eval failed, ' &errtext)
+	s.ok = 0					:(shell.next)
+
+shell.help
+	out(rpad('board',14) 	tab  'show board')
+	out(rpad('clear',14) 	tab  'clear board')
+	out(rpad('eval' ,14) 	tab 'evaluation expression')
+	out(rpad('help' ,14) 	tab 'help')
+	out(rpad('init' ,14) 	tab 're-initialize global variable')
+	out(rpad('letters',14)  tab 'show values of letters')
+	out(rpad('move' ,14)	tab 'enter move')
+	out(rpad('quit' ,14) 	tab 'exit shell')
+	out(rpad('score' ,14) 	tab 'score move')
+	out(rpad('search' ,14)	tab 'search dictionary for matching words')
+	out(rpad('start' ,14) 	tab 'make starting move')
+	out(rpad('rack tiles',14) 	tab 'set rack to tiles, default "fribble"')
+	out(rpad('valid' ,14) 	tab 'validate move')
+							:(shell.next)
+shell.init
+	init()						:(shell.next)
 	
 shell.letters
 	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
-							:(shell)
+							:(shell.next)
 
 shell.move
 	out('move not implemented')	
-							:(shell)
+							:(shell.next)
 
 shell.quit
 	out('exiting')					:(end)
 
 shell.score
-	out('score not implemented')			:(shell)
+	out('score not implemented')			:(shell.next)
 
 *	Complete assignment statemtn
 
 	op break(' ') span(' ') =
 	out('evaluating ' op)
-	exp = eval(op)					:(shell)
+	exp = eval(op)					:(shell.next)
+
+shell.search
+
+*	Search dictionary for matching words
+
+	out('search not yet implemented')
+
+shell.start
+
+*	Make starting move using current tiles, default to 'fribble'
+
+	rack(g.one) = ident(rack(g.one)) 'fribble'
+	move = start(g.one)
+	makemove(g.one,move)
+	show.play(move)
+							:(shell.next)
 
 shell.tiles
 
 *	Read tiles from rest of command line.
 
-	op break(' ') span(' ') =
-	rack(player) = tiles
+	tiles = operand
+	gt(size(tiles,7)) out('truncating to seven tiles')
+	tiles = gt(size(tiles,7)) substr(tiles,1,7)
+	rack(g.one) = tiles
 	out('rack now ' tiles)
-							:(shell)
+							:(shell.next)
 
 	differ(g.trace) tracer()
 
@@ -143,7 +211,7 @@ shell.you.move
 							:(shell.you.move)
 shell.validmove
 	show.move(move)
-	out((validmove(move) ' valid move','invalid move'))	:(shell)
+	out((validmove(move) ' valid move','invalid move'))	:(shell.next)
 
 shell.scoremove
 	
@@ -152,7 +220,7 @@ shell.scoremove
 *	g.showscore = 1
 	points(move) = findscore()
 	out('move is worth ' points(move) ' points.')
-							:(shell)
+							:(shell.next)
 	out('do you want to make this move (y or just ENTER for yes, no otherwise)?')
 	ans = input					:f(shell.eod)
 	ident(ans)					:s(shell.moveon)
@@ -162,7 +230,7 @@ shell.scoremove
 shell.moveon
 	makemove(player,move)
 	show.play(move)
-							:(shell)
+							:(shell.next)
 *shell.swap
 *	rack(player) = swap(player,3)
 *	out('Player ' name(player) ' swapped tiles.')
