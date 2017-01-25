@@ -9,7 +9,8 @@
 *	s.ops is the list of shell commands. 
 
 	s.ops = 
-. 'board clear eval help init letters move play quit remove score search start tiles valid '
+. 	'board clear eval help init letters move play quit '
+.	'remove replay score search start tiles valid '
 
 *	s.opabbrev maps abbreviated input to corresponding op.
 *	You need specify only first one or more characters
@@ -18,6 +19,10 @@
 	s.opabbrev = table(100)
 
 	s.letters = &lcase &ucase
+
+*	s.replay is set to read commands from file 'term' before asking for key board input.
+
+	s.replay =
 
 *	s.v is set to value of last 'eval' operation.
 
@@ -86,8 +91,17 @@ op.init.end
 shell
 
 shell.next
+	ident(s.replay)						:s(shell.term)
+	linein = termfile					:s(shell.line)
+	linein 'q'						:s(shell.next)
+	s.replay =
+	endfile(3)
+	output(.termfile,3,'term[-a]')
+shell.term
 	out('op?')
-	linein = input ' '					:f(shell.end)
+	linein = terminal ' '					:f(shell.end)
+shell.line
+	termfile = differ(termfile) linein;* save line
 *	out('linein =' linein '.')
 	linein span(s.letters) . opin span(' ') rem . operand :s(shell.next.ok)
 	operand = trim(operand)
@@ -166,6 +180,15 @@ shell.remove
 	
 *	Remove (undo) last move played, by setting its free cells to unused
 
+							:(shell.next)
+shell.replay.
+
+*	Replay input saved in 'term' from prior run.
+*	To main user confident in our programming skills,
+*	don't replay the 'quit' op.
+
+	s.replay = 1
+	input(.termfile,3,'term')
 							:(shell.next)
 shell.score
 
