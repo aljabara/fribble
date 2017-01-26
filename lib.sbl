@@ -12,6 +12,12 @@
 
 *	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
 
+*	g.dealer determines how tiles are dealt out. 
+*	If not null, the program manages the tiles and updates the player racks after each turn.
+*	If null, then you manually update the racks.
+
+	g.dealer =
+
 *	g.dict, array(15), is an array of hashtables  that are non-null for words in the dictionary.
 
 *	g.found counts number of valid moves that were found.
@@ -710,9 +716,11 @@ getrack
 	p = g.players[pid]
 	ident(p)					:s(getrack.input)
 
-*	Update rack.
+*	Update rack, by removing tiles just played and then replenishing.
 
-	rack(p) = less(rack(p), lcase(text(move))) take(size(text(move))) 
+	rack(p) = less(rack(p), lcase(text(move)))
+	rack(p) = replenish(pid)
+
 *	Here if can't take any new tiles, so fail for now.
 
 *	Shuffle the tiles so the tile set changes according to the tiles played.
@@ -869,6 +877,7 @@ lcase.end
 *	Less removes the first instance of each character in *sub* from *str*, 
 *	where *sub* is a substring of *str*.
 
+*LESS*
 less
 	ident(str)					:s(return)
 	less = str
@@ -1102,6 +1111,34 @@ random
 	random = ne(n) convert(random * n,'integer') + 1
 							:(return)
 random.end
+
+	define('replenish(pid)player,rack')			:(replenish.end)
+
+*	Replenish a player's rack. Do this from the tileset is g.dealer is
+*	set, or get the new tileset from the user otherwise.
+
+*REPLENISH*
+replenish
+	player = g.players[pid]
+	differ(g.dealer)				:s(replenish.auto)
+
+	out('enter rack for player: ' show.player(pid))
+	rack(player) = input				:f(replenish.eof)
+	out('rack is now ' rack(player))		:(return)
+replenish.eof
+	out('end of data on input - bye ')		:(end)
+
+replenish.auto
+
+	replenish = rack(player)
+
+*	Do nothing if need do nothing.
+
+	eq(size(replenish),7)				:s(return)
+
+	replenish = replenish take(7 - size(replenish))
+							:(return)
+replenish.end
 
 	define('row(num,pos)')				:(row.end)
 
@@ -1758,7 +1795,6 @@ take
 	n = gt(n,size(g.tiles)) size(g.tiles)
 	take = order(substr(g.tiles,1,n))
 	g.tiles = substr(g.tiles, n + 1)
-*	out('take<' take '> g.tiles<' g.tiles '>')
 							:(return)
 take.end
 

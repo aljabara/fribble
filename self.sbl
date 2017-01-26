@@ -33,7 +33,12 @@ game.move
 *	Game over if no more tiles.
 
 	out(eq(size(g.tiles)) 'Game over - no more tiles. ')		:s(game.over)
-	getrack(pid,move)			:(game.turn)
+
+	rack(player) = less(rack(player), lcase(text(move)))
+	
+	rack(player) = replenish(pid)
+
+								:(game.turn)
 
 game.fail
 
@@ -68,8 +73,14 @@ game.end
 	g.players[1] = g.one
 	g.players[2] = g.two
 	total(g.one) = total(g.two) = 0
+
+*	Let the program manage the racks
+
+	g.dealer = 1
 	rack(g.one) = take(7)
 	rack(g.two) = take(7)
+
+
 
 	g.turn = g.lastmove = 0
 	g.turnlimit = 
