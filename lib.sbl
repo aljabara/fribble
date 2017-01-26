@@ -37,20 +37,16 @@
 
 *	A player is represented by
 
-*	data('player(name,pid,fribble,rack,limit,moves,total,thirty,highest)')
-	data('player(pid,name,fribble,rack,limit,total,thirty,highest)')
+	data('player(pid,name,fribble,rack,total,thirty,highest)')
 
 *	where
 *		*pid*		is an integer identifier, either 1 or 2. Player 1 makes the first move
 *		*name* 		is the player's name
 *		*fribble* 	if not null, requests that fribble make the moves
 *		*rack* 		is the player's rack
-*		*limit*		if not null, limits the player to playing *limit* tiles at a time
-*		*score*		is the player's current score
-*		*moves*		counts the number of moves made by the player
+*		*total*		is the player's current score
 *		*thirty* 	is number of moves with scores of 30 or more points.
 *		*highest* 	is the player's highest move score.
-*		*total*	is the players total score
 
 *	There are three kinds of players.
 
@@ -59,6 +55,13 @@
 	player.team   = 3	;* you are fribble are playing as a team against another player.
 
 *	g.one and g.two are the players. 
+
+	g.one = player(1)
+	g.two = player(2)
+
+	g.players = array(2)	
+	g.players[1] = g.one
+	g.players[2] = g.two
 
 *	g.bonus,array(15,15) gives the bonus values for the squares on the board:
 *		1	for the value of the letter itself,
@@ -525,7 +528,7 @@ endgame
 							:(return)
 endgame.end
 
-	define('find(player,limit)rack,num,lines,inlines,line,moves,mi,m,perms,perm,permi,fline,tline,iline,cline,highest,lowest,i,p,score,move,tried')	:(find.end)
+	define('find(pid)player,rack,num,lines,inlines,line,moves,mi,m,perms,perm,permi,fline,tline,iline,cline,highest,lowest,i,p,score,move,tried')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -550,7 +553,7 @@ endgame.end
 *FIND*
 find
 *	
-
+	player = g.players[pid]
 	rack = rack(player)
 	lines = copy(g.lines)
 	inlines = copy(lines)
@@ -561,7 +564,7 @@ find.line
 	gt(num = num + 1,30)				:s(find.done)
 	line = lines[num]
 *	out(ne(g.tracing) 'Find.line ' lpad(lineid(num),3) ' ' show.line(line))
-	moves = scan(pair(num,line),rack,limit)		:f(find.line)
+	moves = scan(pair(num,line),rack)		:f(find.line)
 	mi = 0
 find.move
 	count.moves = count.moves + 1
@@ -683,19 +686,22 @@ find.fail
 
 *	If *find* is still null, then no move was found, so try to swap three tiles.
 *	In either event, take the failure return.
+	
+	output = ident(find) 'find FAILED, no move found.'
 
 	find = ident(find) order(swap(player,3))
 							:(freturn)
 find.end
 	
 
-	define('getrack(p,move)confirm')		:(getrack.end)
+	define('getrack(pid,move)confirm')		:(getrack.end)
 
-*	Return rack for player *p* after making move.
+*	Return rack for player with id *pid* after making move.
 *	Get rack from input if *p* is null
 
 *GETRACK*
 getrack
+	p = g.players[pid]
 	ident(p)					:s(getrack.input)
 
 *	Update rack.
@@ -892,19 +898,21 @@ lines.next
 	lines[i + 15] = lcase(vline(g,i))		:(lines.next)
 lines.end
 
-	define('makemove(p,move)board,lines')		:(makemove.end)
+	define('makemove(pid,move)player,board,lines')		:(makemove.end)
 
-*	Make a move for player *p*.
+*	Make a move for player with id *pid*, and return its value.
 
 *MAKEMOVE*
 makemove
+	player = g.players[pid]
+	makemove = move
 	out(ne(g.tracing) 'Game move ' show.move(move))
 	g.lastmove = g.turn
-	total(p) = total(p) + points(move)
-	thirty(p) = ge(points(move),30) thirty(p) + 1
-	highest(p) = gt(points(move),highest(p)) points(move)
+	total(player)	= total(player) + points(move)
+	thirty(player)	= ge(points(move),30) thirty(player) + 1
+	highest(player) = gt(points(move),highest(player)) points(move)
 	playmove(move)
-	out(name(p) ' played ' show.tiles(text(move)) ' starting at ' lineid(id(move)) ', position ' free(move)[1]
+	out(name(player) ' played ' show.tiles(text(move)) ' starting at ' lineid(id(move)) ', position ' free(move)[1]
 .	', for ' points(move) ' points.')
 	out('Score is now ' name(g.one) ' ' total(g.one)
 .	 ', ' name(g.two) ' ' total(g.two) ', with '  size(g.tiles) ' letters left.')
@@ -1098,11 +1106,11 @@ row
 	row = ((le(num,15) num, pos))		:(return)
 row.end
 
-	define('scan(pair,rack,limit)num,line,i,pi,open,oi,nopen,n,first,pos,move,sub,len')	:(scan.end)
+	define('scan(pair,rack)num,line,i,pi,open,oi,nopen,n,first,pos,move,sub,len')	:(scan.end)
 
 *	Scan the given line to find the places where a valid move can be made. At least one cell in 
 *	a move must be adjacent to an occupied cell.  *line* is the line to be scanned, and *num* gives its
-*	position on the board. If not null, *limit* gives the most tiles that can be played.
+*	position on the board.
 
 *SCAN*
 scan
@@ -1123,11 +1131,9 @@ scan.first
 
 *	The number of moves *n* that can be made starting at a given position in *open* depends on
 *		the number of tiles in the rack.
-*		limit,the most tiles that can be played in a move, or null if no limit.
 *		the number of remaining open cells in the line.
 	
 	n = +size(rack)
-	n = differ(limit) gt(n,limit) limit
 	n = gt(n, nopen - pi) nopen - pi;* number of remaining open cells
 	
 *	Try for moves of length len=n,n-1...1 starting at position *first* in the line.
@@ -1563,13 +1569,18 @@ show.play.finish
 	out()						:(return)
 show.play.end
 
-	define('show.player(player)')			:(show.player.end)
+	define('show.player(pid)player')		:(show.player.end)
 
 *	Show player description.
 
 *SHOW.PLAYER*
 show.player
-	out('player ' name(player) ', rack |' rack(player) '| score ' score(player) ', moves ' moves(player))
+	output = 'show.player pid=' pid
+	player = g.players[pid]
+	out(	 'pid='  pid(player)	' " name(player) "' 
+.		(differ(rack(player))	' rack |'	rack(player) '|','')
+.		(gt(total(player))	' total '	total(player)   ,'')
+.		(gt(highest(player))	' highest '	highest(player) ,''))
 							:(return)
 show.player.end
 
@@ -1623,7 +1634,7 @@ spaces
 	spaces = ident(c,' ') spaces + 1		:(spaces)
 spaces.end
 
-	define('start(player)tiles,perm,perms,permi,free,offset,i,highest,lower,best,n,word,start,score,move')	:(start.end)
+	define('start(pid)player,tiles,perm,perms,permi,free,offset,i,highest,lower,best,n,word,start,score,move')	:(start.end)
 
 *	Determine best starting.turn. At least one letter in this move must be in the center square (8,8).
 *	The only bonus available is double word, for any word of more than four characters.
@@ -1637,6 +1648,7 @@ spaces.end
 
 *START*
 start
+	player = g.players[pid]
 	tiles = rack(player)
 	n = 0;* number of tiles to play
 	highest = lowest = 0;* best score, lowest cost
@@ -1711,13 +1723,14 @@ subarray.1
 	subarray[i] = copy(ara[start + i - 1])		:(subarray.1)		
 subarray.end
 
-	define('swap(p,n)tiles')			:(swap.end)
+	define('swap(pid,n)player,tiles')		:(swap.end)
 
-*	Swap *n* tiles from the first *n* characters in *tiles* of player *p*. 
+*	Swap *n* tiles from the first *n* characters in *tiles* of player with id *pid*. 
 *	If fewer than *n* tiles remain, set *n* to the size of the tileset.
 
 *SWAP*
 swap	
+	player = g.players[pid]
 	tiles = rack(p)
 	n = gt(n,size(tiles)) size(tiles)
 	n = gt(n,size(g.tiles)) size(g.tiles)
@@ -1971,22 +1984,24 @@ put.move.f
 							:(return)
 put.move.end
 
-	define('put.player(p)')				:(put.player.end)
+	define('put.player(pid)player')				:(put.player.end)
 
 *	Create player description in form acceptable for later reading
 
-	data('player(pid,name,fribble,rack,limit,total,thirty,highest)')
+*	data('player(pid,name,fribble,rack,total,thirty,highest)')
 
 put.player
 
-	put.player = "player(" pid ",'" name(p) "'," fribble(p) ",'" rack(p) "'," limit(p) ")"
+	player = g.players[pid]
+	put.player = "player(" pid ",'" name(p) "'," fribble(p) ",'" rack(p)  ")"
 .							:(return)
 put.player.end
 
-	define('put.rack(p,r)')				:(put.rack.end)
+	define('put.rack(pid,r)player')				:(put.rack.end)
 
-*	Create description of rack *r* of player *p* in format that can be read back.
+*	Create description of rack *r* of player with id *pid* in format that can be read back.
 
 put.rack
+	player = g.players[pid]
 	putrack = "rack(" pid(p) ",'" rack(p) "')"	:(return)
 put.rack.end

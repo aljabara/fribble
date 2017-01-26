@@ -9,7 +9,7 @@
 *	s.ops is the list of shell commands. 
 
 	s.ops = 
-. 	'board clear eval help init letters move play quit '
+. 	'board clear eval help init letters move pass play quit '
 .	'remove replay score search start tiles valid '
 
 *	s.opabbrev maps abbreviated input to corresponding op.
@@ -62,8 +62,6 @@ op.init.end
 *	This is meant mainly for debugging, testing
 *	and as a way to learn how fribble operates.
 
-*	There is only one player, 'you'.
-
 
 	&stlimit = -1
 	&anchor = &trim = 1
@@ -79,6 +77,8 @@ op.init.end
 	one = player(1,'You')
 	g.one = one
 	g.two = player(2,'Nobody')
+	g.players[1] = g.one
+	g.players[2] = g.two
 	total(g.one) = g.turn = g.lastmove = g.turnlimit = 0
 	total(g.two) = 0
 
@@ -164,6 +164,15 @@ shell.move
 
 	move = eval(operand)
 	out('Last move now ' show.move(move)) 		:(shell.next)
+
+shell.pass
+	
+*	Pass from making a move. This is typically used when the player with pid=1
+*	does not want to make the first move.
+
+shell.pass
+
+	g.turn = g.turn + 1
 
 shell.play
 

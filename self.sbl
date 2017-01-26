@@ -2,19 +2,24 @@
 
 -include "lib.sbl"
 
-	define('game(one,two)player,opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
+	define('game()players,player,opn,move,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
 
-*	Play a game of fribble. *one* and *two* are players. *max* is the maximum number of moves.
+*	Play a game of fribble. *max* is the maximum number of moves.
 
 *GAME*
 game
+
+*	*players* is like g.players, but uses player id's.
+
 	players = array(2)
-	players[1] = g.one
-	players[2] = g.two
+	players[1] = 1
+	players[2] = 2
+
 game.round
 	i = 0
 game.turn
-	player = players[i = i + 1]				:f(game.round)
+	pid = players[i = i + 1]				:f(game.round)
+	player = g.players[pid]
 
 	g.turn = g.turn + 1
 	collect()
@@ -28,18 +33,15 @@ game.turn
 	out('Move ' g.turn ' for player ' name(player) ', with tiles ' show.tiles(rack(player),'A') '.')
 	out(ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
 
-	move = ident(fribble(player)) get()			:s(game.move)
-	move = differ(fribble(player)) (eq(g.turn,1) start(player), find(player,limit(player))) :s(game.move)
-*	move = (eq(g.turn,1) start(player), find(player,limit(player))) :s(game.move)
+	move = differ(fribble(player)) (eq(g.turn,1) start(pid), find(pid)) :s(game.move)
 								:(game.fail)		
 game.move
-	makemove(player,move)
-	show.play(move)
+	show.play(makemove(pid,move))
 
 *	Game over if no more tiles.
 
 	out(eq(size(g.tiles)) 'Game over - no more tiles. ')		:s(game.over)
-	getrack(player,move)					:(game.turn)
+	getrack(pid,move)			:(game.turn)
 
 game.fail
 
@@ -69,10 +71,10 @@ game.end
 
 	init()
 
-	one = player(1,'Fribble One',1)
-	two = player(2,'Fribble Two',1)
-	g.one = one
-	g.two = two
+	g.one = player(1,'Fribble One',1)
+	g.two = player(2,'Fribble Two',1)
+	g.players[1] = g.one
+	g.players[2] = g.two
 	total(g.one) = total(g.two) = 0
 	rack(g.one) = take(7)
 	rack(g.two) = take(7)
