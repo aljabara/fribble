@@ -27,11 +27,14 @@
 	
 *	g.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
 
-*	A move is a sequence of empty cells in a row or column such that at least one cell in the sequence 
-*	is adjacent to an already occupied cell:
+*	A move consists of a sequence of empty cells in a row or column such that at least one cell in the sequence 
+*	is adjacent to an already occupied cell, with each cell occupied by one of the tiles in the player's rack.
+
+	data('move(id,count,free,text,points,perm,fid)')
+
 *		*id*	 gives the line number, in the range 1..30;
 *		*count*	 is the number of free cells covered by this move;
-*		*free*	 is an array of dimension *count* giving the empty cells to be filled by this move;
+*		*free*	 is an array of dimension *count* giving the positions of the empty cells;
 *		*text*	 is the string of tiles of the move; and
 *		*points* is the number of points won by playing this move.
 
@@ -40,19 +43,13 @@
 	data('player(pid,name,fribble,rack,total,thirty,highest)')
 
 *	where
-*		*pid*		is an integer identifier, either 1 or 2. Player 1 makes the first move
-*		*name* 		is the player's name
-*		*fribble* 	if not null, requests that fribble make the moves
-*		*rack* 		is the player's rack
-*		*total*		is the player's current score
-*		*thirty* 	is number of moves with scores of 30 or more points.
+*		*pid*		is an integer identifier, either 1 or 2;
+*		*name* 		is the player's name;
+*		*fribble* 	if not null, requests that fribble make the moves;
+*		*rack* 		is the player's rack;
+*		*total*		is the player's current score;
+*		*thirty* 	is number of moves with scores of 30 or more points; and
 *		*highest* 	is the player's highest move score.
-
-*	There are three kinds of players.
-
-	player.frible = 1	;* fribble playing on its own
-	player.self   = 2	;* you playing against fribble, managed by fribble.
-	player.team   = 3	;* you are fribble are playing as a team against another player.
 
 *	g.one and g.two are the players. 
 
@@ -63,14 +60,23 @@
 	g.players[1] = g.one
 	g.players[2] = g.two
 
+*	g.pid is the player of the current player.
+*	g.pid is initially one, since that player goes first.
+
+	g.pid = 1
+
+*	There are three kinds of players. (THIS NOT YET IMPLEMENTED)
+
+	player.frible = 1	;* fribble playing on its own
+	player.self   = 2	;* you playing against fribble, managed by fribble.
+	player.team   = 3	;* you are fribble are playing as a team against another player.
+
 *	g.bonus,array(15,15) gives the bonus values for the squares on the board:
 *		1	for the value of the letter itself,
 *		2	for double letter,
 *		3	for triple letter, 
 *		4	for double word, and
 *		5	for triple word.
-
-	data('move(id,count,free,text,points,perm,fid)')
 
 *	A paired line consists of a line number and an associated line. It is used when it is necessary
 *	to pass a line of text to a procedure along with line number from where it was derived.
@@ -912,7 +918,7 @@ makemove
 	thirty(player)	= ge(points(move),30) thirty(player) + 1
 	highest(player) = gt(points(move),highest(player)) points(move)
 	playmove(move)
-	out(name(player) ' played ' show.tiles(text(move)) ' starting at ' lineid(id(move)) ', position ' free(move)[1]
+	out('Player ' pid ', ' name(player) ', played ' show.tiles(text(move)) ' starting at ' lineid(id(move)) ', position ' free(move)[1]
 .	', for ' points(move) ' points.')
 	out('Score is now ' name(g.one) ' ' total(g.one)
 .	 ', ' name(g.two) ' ' total(g.two) ', with '  size(g.tiles) ' letters left.')
