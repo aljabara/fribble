@@ -106,10 +106,10 @@
 
 	g.random_var = 1
 
-*	g.showscore is used to enable tracing of scoring by setting it to nonzero value
+*	g.scoring is used to enable tracing of scoring by setting it to nonzero value
 
-	g.showscore = 1
-	g.showscore = 
+	g.scoring = 1
+	g.scoring = 
 
 *	g.tiles, a string containing all the characters in the initial bag of characters.
 
@@ -486,7 +486,7 @@ cost.end
 
 *COUNTER*
 counter
-	out(lpad(text,32) lpad(count,10))		:(return)
+	out(lpad(text,26) lpad(count,12))		:(return)
 counter.end
 
 	define('counters()')				:(counters.end)
@@ -497,18 +497,18 @@ counter.end
 counters
 	out()
 	out('Performance metrics:')
-	counter('placements found by scan'	, count.scanned	)
-	counter('permutations examined'		, count.perm	)
-	counter('cells examined'		, count.cells	)
-	counter('potential moves found'		, count.moves 	)
-	counter('lines checked'			, count.checkline)
-	counter('words checked'			, count.checkword)
-	counter('clines lines checked'		, count.cline	)
-	counter('cross lines checked'		, count.cross	)
-	counter('valid moves found'		, count.valid	)
-	counter('inserts'			, count.insert)
-	counter('contig inserts'		, count.insert.contig)
-	counter('split inserts'			, count.insert.split)
+	counter('placements found by scan'	, thousands(count.scanned))
+	counter('permutations examined'		, thousands(count.perm))
+	counter('cells examined'		, thousands(count.cells))
+	counter('potential moves found'		, thousands(count.moves	))
+	counter('lines checked'			, thousands(count.checkline))
+	counter('words checked'			, thousands(count.checkword))
+	counter('clines lines checked'		, thousands(count.cline))
+	counter('cross lines checked'		, thousands(count.cross	))
+	counter('valid moves found'		, thousands(count.valid))
+	counter('inserts'			, thousands(count.insert))
+	counter('contig inserts'		, thousands(count.insert.contig))
+	counter('split inserts'			, thousands(count.insert.split))
 							:(return)
 counters.end
 
@@ -704,43 +704,6 @@ find.fail
 	find = ident(find) order(swap(player,3))
 							:(freturn)
 find.end
-	
-
-	define('getrack(pid,move)confirm')		:(getrack.end)
-
-*	Return rack for player with id *pid* after making move.
-*	Get rack from input if *p* is null
-
-*GETRACK*
-getrack
-	p = g.players[pid]
-	ident(p)					:s(getrack.input)
-
-*	Update rack, by removing tiles just played and then replenishing.
-
-	rack(p) = less(rack(p), lcase(text(move)))
-	rack(p) = replenish(pid)
-
-*	Here if can't take any new tiles, so fail for now.
-
-*	Shuffle the tiles so the tile set changes according to the tiles played.
-* Not for now, maintain repeatability
-*	shuffle()
-*	out('shuffled')
-							:(return)
-getrack.input
-	getrack =
-	out('Enter rack:')
-	getrack = input					:f(end)
-	differ(getrack)					:s(getrack.confirm)
-	out('no input, retry')				:s(getrack.input)
-getrack.confirm
-	out("rack now <" getrack ">  Is this correct (y or just ENTER to confirm)?")
-	confirm = input
-	ident(confirm)					:s(return)
-	differ(confirm,'y')				:s(getrack.input)
-getrack.end
-	
 
 	define('grid(lines,start)i,r,c,line')		:(grid.end)
 
@@ -1236,7 +1199,7 @@ scoreline.word
 	start = words[wi = wi + 1,1]			:f(scoreline.done)
 	word = words[wi,2]
 *	count.scoreline = count.scoreline + 1
-	ne(g.showscore) out('scoreline wi=' wi ' start=' start ' word=' word '.' ' count ' count.scoreline)
+	ne(g.scoring) out('scoreline wi=' wi ' start=' start ' word=' word '.' ' count ' count.scoreline)
 	word break(&ucase)				:f(scoreline.word)
 	n = size(word)
 
@@ -1259,17 +1222,19 @@ scoreline.char
 *	of the letter, and may get double or triple the letter value.
 	
 	val = g.value[ch]
-	scoreline = scoreline + (eq(bonus,2) val * 2,  eq(bonus,3) val * 3, val)
+	val = (eq(bonus,2) val * 2, eq(bonus,3) val * 3, val)
+	ne(g.scoring) out('ch=' ch ' val=' val)
+	scoreline = scoreline + val
 
-	ne(g.showscore) out('ch=' ch ' val=' val)
 *	Update double/triple word multiplier.
 
 	mult = gt(bonus,3) mult * (bonus - 2)		:(scoreline.char)
 
 
 scoreline.char.done
+	ne(g.scoring) out('mult=' mult ' scoreline=' scoreline)
 	scoreline = ne(scoreline) scoreline * mult	
-	ne(g.showscore) out('scoreline=' scoreline)
+	ne(g.scoring) out('scoreline=' scoreline)
 						:(scoreline.word)
 scoreline.error
 	out('error scoring line with no new move ' line(pair))
@@ -1293,17 +1258,17 @@ scoremove
 *	contain an upper-case character.
 
 	clines(move,1);* generate move's line and its cross lines with move text in upper case.
-*	show.clines()
-*	out('scoremove move=' show.move(move))
-*	out('g.cln=' g.cln)
+	ne(g.scoring) show.clines()
+	ne(g.scoring) out('scoremove move=' show.move(move))
+	ne(g.scoring) out('g.cln=' g.cln)
 	i = 0
 scoremove.line
-*	out('scoremove line' i)
+	ne(g.scoring) out('scoremove line' i)
 	gt(i = i + 1,g.cln)				:s(scoremove.done)
-*	out('scoremove i=' i ' scoremove =' scoremove)
+	ne(g.scoring) out('scoremove i=' i ' scoremove =' scoremove)
 	scoremove = scoremove + scoreline(g.clines[i])	:(scoremove.line)
 scoremove.done
-	ne(g.showscore) out('scoremove returns ' scoremove)
+	ne(g.scoring) out('scoremove returns ' scoremove)
 							:(return)
 scoremove.end
 
@@ -1798,6 +1763,17 @@ take
 							:(return)
 take.end
 
+	define('thousands(s)n')			:(thousands.end)
+
+*	Format s with comma's every three digits from right.
+
+*THOUSANDS*
+thousands	
+	n = size(s)
+	thousands = le(n,3) s			:s(return)
+	thousands = thousands(substr(s,1,n - 3)) ',' substr(s, n - 2, 3) :(return)
+thousands.end
+
 	define('traceoff()')				:(traceoff.end)
 
 *	Initiate tracing.
@@ -1815,7 +1791,7 @@ traceoff.end
 *TRACEON*
 traceon
 	out('start TRACING')
-	&ftrace = &trace = 1500000
+*	&ftrace = &trace = 1500000
 	g.tracing = 1
 							:(return)
 traceon.end

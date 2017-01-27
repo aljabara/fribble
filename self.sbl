@@ -2,9 +2,10 @@
 
 -include "lib.sbl"
 
-	define('game()players,player,opn,move,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
+	define('game(mode)players,player,opn,move,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
 
 *	Play a game of fribble. *max* is the maximum number of moves.
+*	Mode is one to let you play against fribble, two to let fribble play itself.
 
 *GAME*
 game
@@ -18,27 +19,50 @@ game.turn
 	out(ne(g.turnlimit) gt(g.turn,g.turnlimit) 'Game over -- too many turns (' g.turnlimit ').') :s(game.over)
 	out(gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.') :s(game.over)
 
-	eq(g.trace,g.turn) tracer()
+	eq(g.trace,g.turn) traceon()
 
 	out(ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.')  :s(game.over)
 
 	out('Move ' g.turn ' for player ' name(player) ', with tiles ' show.tiles(rack(player),'A') '.')
 	out(ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
 
-	move = differ(fribble(player)) (eq(g.turn,1) start(pid), find(pid)) :s(game.move)
+	eq(mode,1)						:s(game.turn.solo)
+	eq(mode,2)						:s(game.turn.self)
+	out('unknown mode ' mode)				:s(end)
+
+game.turn.self
+	eq(mode,1) out('computing move...')
+	move = (eq(g.turn,1) start(pid), find(pid)) 
+	eq(mode,1) out('... computed')
+								:(game.move)
+
+game.turn.solo
+	differ(fribble(player))					:s(game.turn.self)
+	move = eq(g.turn,1) start(1)				:s(game.move)
+
+*	Here to enter a move
+	out('enter your move')
+game.turn.solo.in
+	line = terminal						:f(end)
+	move = eval(line)					:f(game.turn.solo.error)
+	ident(datatype(move),'move')				:s(game.move)
+	out('need to enter a move')				:(game.turn.solo)
+
+game.turn.solo.error
+	out('eval error ' &errtext)				:(game.turn.solo)
+
 								:(game.fail)		
 game.move
 	show.play(makemove(pid,move))
 
 *	Game over if no more tiles.
 
-	out(eq(size(g.tiles)) 'Game over - no more tiles. ')		:s(game.over)
+	out(eq(size(g.tiles)) 'Game over - no more tiles. ')	:s(game.over)
+
+*	Remove tiles played on move and then replenish the rack.
 
 	rack(player) = less(rack(player), lcase(text(move)))
-	
-	rack(player) = replenish(pid)
-
-								:(game.turn)
+	rack(player) = replenish(pid)				:(game.turn)
 
 game.fail
 
@@ -68,25 +92,54 @@ game.end
 
 	init()
 
-	g.one = player(1,'Fribble One',1)
-	g.two = player(2,'Fribble Two',1)
-	g.players[1] = g.one
-	g.players[2] = g.two
-	total(g.one) = total(g.two) = 0
 
-*	Let the program manage the racks
+*	The program can now run in two modes.
+*	s.mode = 1 for solo mode, where you play against fribble.
+*	s.mode = 2 for self mode, where fribble moves for both players.
+	
+	s.mode = 1
+	s.mode = 2
+
+
+	options = host(0) ' '
+	output = 'host <' options '>'
+
+options.loop
+	options break(' ') . opt ' ' =			:f(options.loop.done)
+	output = 'option ' opt
+	s.mode = ident(opt,'self') 2			:s(options.loop)
+	s.mode = ident(opt,'solo') 1			:s(options.loop)
+	output = 'unknown option ' opt
+							:(options.loop)
+options.loop.done
+
+
+	eq(s.mode,2)					:s(setup.2)
+
+*	Setup for mode 1
+	g.one = player(1,'You')
+	g.two = player(2,'Fribble',1)
+							:s(setup.done)
+setup.2
+	g.one = player(1,'Fribble I',1)
+	g.two = player(2,'Fribble II',1)
+setup.done
+	g.players[1] = g.one; g.players[2] = g.two
+
+*	Program manages the racks.
 
 	g.dealer = 1
 	rack(g.one) = take(7)
 	rack(g.two) = take(7)
 
-
-
 	g.turn = g.lastmove = 0
 	g.turnlimit = 
 
-*	g.trace = 16
-*	eq(g.turn,16) traceon()
-	eq(checkwords.count,8285000) traceon()
-	game()							:(end)
+*	g.trace = 22
+*	eq(g.turn,22) traceon()
+*	g.showscore = eq(g.turn,22) 1
+*	eq(g.turn,23) traceoff()
+*	g.showscore = eq(g.turn,23) 0
+
+	game(s.mode)							:(end)
 end

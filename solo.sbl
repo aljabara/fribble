@@ -2,7 +2,7 @@
 
 -include "lib.sbl"
 
-	define('game(one,two)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
+	define('game()pid,opn,move,player,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
 
 *	Play a game of fribble. *one* and *two* are players. *max* is the maximum number of moves.
 
@@ -11,10 +11,9 @@ game
 	players = array(2)
 	players[1] = g.one
 	players[2] = g.two
-game.round
-	i = 0
 game.turn
-	player = players[i = i + 1]				:f(game.round)
+	pid = (eq(pid,1) 2, 1)
+	player = g.players[pid]
 
 	g.turn = g.turn + 1
 	out(ne(g.turnlimit) gt(g.turn,g.turnlimit) 'Game over -- too many turns (' g.turnlimit ').') :s(game.over)
@@ -68,13 +67,15 @@ game.fribble
 	move = (eq(g.turn,1) start(player), find(player,limit(player))) :s(game.move)
 game.move
 game.moveon
-	makemove(player,move)
+	makemove(pid,move)
 	show.play(move)
 
 *	Game over if no more tiles.
 
 	out(eq(size(g.tiles)) 'Game over - no more tiles. ')		:s(game.over)
-	getrack(player,move)					:(game.turn)
+
+	rack(player) = less(rack(player), lcase(text(move)))
+	rack(player) = replenish(pid)					:(game.turn)
 
 game.fail
 
