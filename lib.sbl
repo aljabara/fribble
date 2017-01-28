@@ -12,11 +12,11 @@
 
 *	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
 
-*	g.dealer determines how tiles are dealt out. 
+*	g.tilemanager determines how tiles are dealt out. 
 *	If not null, the program manages the tiles and updates the player racks after each turn.
 *	If null, then you manually update the racks.
 
-	g.dealer =
+	g.tilemanager =
 
 *	g.dict, array(15), is an array of hashtables  that are non-null for words in the dictionary.
 
@@ -190,7 +190,7 @@ init.main
 
 	init.tileset()
 
-	shuffle();* shuffle the tileset
+	differ(g.tilemanager) shuffle();* shuffle the tileset
 
 	init.value()
 
@@ -694,9 +694,6 @@ find.fail
 
 *	out('find failed ')
 
-*	If *find* is still null, then no move was found, so try to swap three tiles.
-*	In either event, take the failure return.
-	
 	output = ident(find) 'find FAILED, no move found.'
 
 							:(freturn)
@@ -1074,13 +1071,13 @@ random.end
 
 	define('replenish(pid)player,rack')			:(replenish.end)
 
-*	Replenish a player's rack. Do this from the tileset is g.dealer is
+*	Replenish a player's rack. Do this from the tileset is g.tilemanager is
 *	set, or get the new tileset from the user otherwise.
 
 *REPLENISH*
 replenish
 	player = g.players[pid]
-	differ(g.dealer)				:s(replenish.auto)
+	differ(g.tilemanager)				:s(replenish.auto)
 
 	out('enter rack for player: ' show.player(pid))
 	rack(player) = input				:f(replenish.eof)

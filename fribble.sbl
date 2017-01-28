@@ -3,7 +3,7 @@
 -include "lib.sbl"
 
 
-	define('turn(pid)')						:(turn.end)
+	define('turn(pid,mode)')						:(turn.end)
 
 *	Play a turn in a game.
 
@@ -31,12 +31,17 @@ turn
 	
 
 turn.move
+	out('turn.move')
 
 *	2.	Find or enter the move to be played.
 
 *	Here to pick the next move.
 
+	out('mode=' mode)
+	eq(mode,3)						:s(turn.fribble)
 	ident(fribble(player))					:s(turn.move.manual)
+
+turn.fribble
 
 *	Here to have fribble determine the move
 	ne(f.trace) out('fribble making move.')
@@ -51,9 +56,10 @@ turn.move.manual
 turn.manual
 
 turn.manual.in
-	out('enter  move')
+	out('enter move')
 	line = terminal						:f(end)
 	move = eval(line)					:f(turn.manual.error)
+	out('input: ' show.move(move) ' datatype ' datatype(move) )
 	ident(datatype(move),'move')				:s(turn.validate)
 	out('need to enter a move')				:(turn.manual)
 
@@ -64,8 +70,9 @@ turn.validate
 *	See if move is valid, except no test needed for initial move.
 
 	g.move = move
-	eq(g.turn,1)						:s(turn.move)
-	valid(g.move)						:s(turn.move)
+	eq(g.turn,1)						:s(turn.make)
+	out('validating gturn=' g.turn)
+	valid(g.move)						:s(turn.make)
 
 	out('invalid move - try again')				:(turn.manual.in)
 
@@ -122,6 +129,7 @@ game
 game.turn
 	pid = (eq(pid,1) 2, 1)
 	player = g.players[pid]
+	out('g.tilemanager=' g.tilemanager)
 
 	g.turn = g.turn + 1
 
@@ -135,11 +143,13 @@ game.turn
 	eq(g.trace,g.turn) traceon()
 
 
-	out('Move ' g.turn ' for player ' name(player) ', with tiles ' show.tiles(rack(player),'A') '.')
+	out('Move ' g.turn ' for player ' name(player) 
+.		 (differ(g.tilemanager) ', with tiles ' show.tiles(rack(player),'A'),'')	'.')
 	out(ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
+	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
 
 
-	turn(pid)					:s(game.turn)
+	turn(pid,mode)					:s(game.turn)
 
 *	Here if turn failed because no move could be found. Try to swap three tiles
 
@@ -177,11 +187,13 @@ game.end
 
 
 *	The program can now run in two modes.
-*	s.mode = 1 for solo mode, where you play against fribble.
-*	s.mode = 2 for self mode, where fribble moves for both players.
+*	f.mode = 1 for solo mode, where you play against fribble.
+*	f.mode = 2 for self mode, where fribble moves for both players.
+*	f.mode = 3 for match mode, where you use fribble to play another player.
 	
-	s.mode = 1
-	s.mode = 2
+	f.mode = 1
+	f.mode = 2
+	f.mode = 3
 
 
 	options = host(0) ' '
@@ -190,28 +202,52 @@ game.end
 options.loop
 	options break(' ') . opt ' ' =			:f(options.loop.done)
 	output = 'option ' opt
-	s.mode = ident(opt,'self') 2			:s(options.loop)
-	s.mode = ident(opt,'solo') 1			:s(options.loop)
+	f.mode = ident(opt,'self') 2			:s(options.loop)
+	f.mode = ident(opt,'solo') 1			:s(options.loop)
+	f.mode = ident(opt,'foe')  3
 	output = 'unknown option ' opt
 							:(options.loop)
 options.loop.done
 
 
-	eq(s.mode,2)					:s(setup.2)
+	out('fribble mode=' f.mode)
+
+	eq(f.mode,1)					:s(setup.1)
+	eq(f.mode,2)					:s(setup.2)
+	eq(f.mode,3)					:s(setup.3)
+
+setup.1
 
 *	Setup for mode 1
+
 	g.one = player(1,'You')
 	g.two = player(2,'Fribble',1)
-							:s(setup.done)
+	g.tilemanager = 1
+							:(setup.done)
 setup.2
+
+*	Setup for mode 2
 	g.one = player(1,'Fribble I',1)
 	g.two = player(2,'Fribble II',1)
+	g.tilemanager = 1
+							:(setup.done)
+
+setup.3
+
+*	Setup for mode 3
+
+	g.one = player(1,'You')
+	g.two = player(2,'Foe')
+	g.tilemanager 
+							:(setup.done)
 setup.done
+
+	differ(g.tilemanager) shuffle()
+
 	g.players[1] = g.one; g.players[2] = g.two
 
 *	Program manages the racks.
 
-	g.dealer = 1
 	rack(g.one) = take(7)
 	rack(g.two) = take(7)
 
@@ -222,5 +258,5 @@ setup.done
 
 	f.trace =
 
-	game(s.mode)							:(end)
+	game(f.mode)							:(end)
 end
