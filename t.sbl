@@ -1,5 +1,8 @@
 	t = host(0)
-	output =  ' host :' t ':'
+	output =  ' host(0) :' t ':'
+	t = host(1)
+	output =  ' host(1) :' t ':'
+	output 
 end
 
 	s = 'abcdefghij'

@@ -16,43 +16,52 @@ game.turn
 	player = g.players[pid]
 
 	g.turn = g.turn + 1
-	out(ne(g.turnlimit) gt(g.turn,g.turnlimit) 'Game over -- too many turns (' g.turnlimit ').') :s(game.over)
-	out(gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.') :s(game.over)
+
+	out(ne(g.turnlimit) gt(g.turn,g.turnlimit) 
+.			'Game over -- too many turns (' g.turnlimit ').') :s(game.over)
+	out(gt(g.turn,g.lastmove + 5) 
+.			'Game over - too many turns with no move.') :s(game.over)
+	out(ne(g.maxmoves) gt(g.turn,g.maxmoves) 
+.			'Game over -  too many turns.')  :s(game.over)
 
 	eq(g.trace,g.turn) traceon()
 
-	out(ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.')  :s(game.over)
 
 	out('Move ' g.turn ' for player ' name(player) ', with tiles ' show.tiles(rack(player),'A') '.')
 	out(ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
 
-	eq(mode,1)						:s(game.turn.solo)
-	eq(mode,2)						:s(game.turn.self)
-	out('unknown mode ' mode)				:s(end)
+	ident(fribble(player))						:s(game.turn.solo)
 
 game.turn.self
-	eq(mode,1) out('computing move...')
-	move = (eq(g.turn,1) start(pid), find(pid)) 
-	eq(mode,1) out('... computed')
+*	eq(mode,1) out('computing move...')
+	move = find(pid,g.turn)
+*	eq(mode,1) out('... computed')
 								:(game.move)
 
 game.turn.solo
-	differ(fribble(player))					:s(game.turn.self)
-	move = eq(g.turn,1) start(1)				:s(game.move)
+	out("Your turn")
 
-*	Here to enter a move
-	out('enter your move')
 game.turn.solo.in
+	out('enter your move')
 	line = terminal						:f(end)
 	move = eval(line)					:f(game.turn.solo.error)
-	ident(datatype(move),'move')				:s(game.move)
+	ident(datatype(move),'move')				:s(game.valid)
 	out('need to enter a move')				:(game.turn.solo)
+game.valid
+
+*	See if move is valid, except no test needed for initial move.
+
+	eq(g.turn,1)						:s(game.move)
+	valid(move)						:s(game.move)
+
+	out('invalid move - try again')				:(game.turn.solo.in)
 
 game.turn.solo.error
 	out('eval error ' &errtext)				:(game.turn.solo)
 
 								:(game.fail)		
 game.move
+	points(move) = scoremove(move)
 	show.play(makemove(pid,move))
 
 *	Game over if no more tiles.
@@ -97,12 +106,12 @@ game.end
 *	s.mode = 1 for solo mode, where you play against fribble.
 *	s.mode = 2 for self mode, where fribble moves for both players.
 	
-	s.mode = 1
 	s.mode = 2
+	s.mode = 1
 
 
 	options = host(0) ' '
-	output = 'host <' options '>'
+*	output = 'host <' options '>'
 
 options.loop
 	options break(' ') . opt ' ' =			:f(options.loop.done)
@@ -132,7 +141,7 @@ setup.done
 	rack(g.one) = take(7)
 	rack(g.two) = take(7)
 
-	g.turn = g.lastmove = 0
+	g.turn = g.lastmove = total(g.one) = total(g.two) = 0
 	g.turnlimit = 
 
 *	g.trace = 22

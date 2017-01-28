@@ -214,7 +214,7 @@ init.main.end
 init.bonus
 	g.bonus = array('15,15','1')
 	s = 	'5 0104 3 0107 3 0109 5 0112 2 0203 4 0206 4 0210 2 0213 '
-.		'2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 4 0415 '
+.		'2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 5 0415 '
 .		'2 0503 2 0507 2 0509 2 0513 4 0602 3 0606 3 0610 4 0614 '
 .		'3 0701 2 0705 2 0711 3 0715 4 0804 4 0812 3 0901 2 0905 2 0911 3 0915 '
 .		'4 1002 3 1006 3 1010 4 1014 2 1103 2 1107 2 1109 2 1113 '
@@ -540,7 +540,7 @@ endgame
 							:(return)
 endgame.end
 
-	define('find(pid)player,rack,num,lines,inlines,line,moves,mi,m,perms,perm,permi,fline,tline,iline,cline,highest,lowest,i,p,score,move,tried')	:(find.end)
+	define('find(pid,turn)player,rack,num,lines,inlines,line,moves,mi,m,perms,perm,permi,fline,tline,iline,cline,highest,lowest,i,p,score,move,tried')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -565,6 +565,11 @@ endgame.end
 *FIND*
 find
 *	
+
+*	See if first move, in which case call start()
+
+	find = eq(turn,1) start(pid)				:s(return)
+
 	player = g.players[pid]
 	rack = rack(player)
 	lines = copy(g.lines)
@@ -682,10 +687,6 @@ find.cross.done
 *	ne(g.tracing) show.play(move)
 *	out(ne(g.tracing) 'Find calling scoremove')
 	points(move) = +scoremove(move)	
-
-*	There is bonus of 35 points for playing all the tiles.
-
-	points(move)  = eq(count(move),7) points(move) + 35;
 	g.found = g.found + 1
 	g.cln = 0;* reset for next permutation
 	find = isbest(move) copy(move)			:(find.perm)
@@ -1199,7 +1200,7 @@ scoreline.word
 	start = words[wi = wi + 1,1]			:f(scoreline.done)
 	word = words[wi,2]
 *	count.scoreline = count.scoreline + 1
-	ne(g.scoring) out('scoreline wi=' wi ' start=' start ' word=' word '.' ' count ' count.scoreline)
+	ne(g.tracing) out('scoreline wi=' wi ' start=' start ' word=' word '.' ' count ' count.scoreline)
 	word break(&ucase)				:f(scoreline.word)
 	n = size(word)
 
@@ -1223,8 +1224,8 @@ scoreline.char
 	
 	val = g.value[ch]
 	val = (eq(bonus,2) val * 2, eq(bonus,3) val * 3, val)
-	ne(g.scoring) out('ch=' ch ' val=' val)
 	scoreline = scoreline + val
+	ne(g.tracing) out('ch=' ch ' val=' val ' scoreline now ' scoreline)
 
 *	Update double/triple word multiplier.
 
@@ -1232,12 +1233,11 @@ scoreline.char
 
 
 scoreline.char.done
-	ne(g.scoring) out('mult=' mult ' scoreline=' scoreline)
 	scoreline = ne(scoreline) scoreline * mult	
-	ne(g.scoring) out('scoreline=' scoreline)
+	ne(g.tracing) out('mult=' mult ' scoreline=' scoreline)
 						:(scoreline.word)
 scoreline.error
-	out('error scoring line with no new move ' line(pair))
+	out('error tracing line with no new move ' line(pair))
 	scoreline = 0					:(return)
 scoreline.done
 *	ne(g.scoremove) out('scoreline returns ' scoreline)
@@ -1258,17 +1258,22 @@ scoremove
 *	contain an upper-case character.
 
 	clines(move,1);* generate move's line and its cross lines with move text in upper case.
-	ne(g.scoring) show.clines()
-	ne(g.scoring) out('scoremove move=' show.move(move))
-	ne(g.scoring) out('g.cln=' g.cln)
+	ne(g.tracing) show.clines()
+	ne(g.tracing) out('scoremove move=' show.move(move))
+	ne(g.tracing) out('g.cln=' g.cln)
 	i = 0
 scoremove.line
-	ne(g.scoring) out('scoremove line' i)
+	ne(g.tracing) out('scoremove line' i)
 	gt(i = i + 1,g.cln)				:s(scoremove.done)
-	ne(g.scoring) out('scoremove i=' i ' scoremove =' scoremove)
+	ne(g.tracing) out('scoremove i=' i ' scoremove =' scoremove)
 	scoremove = scoremove + scoreline(g.clines[i])	:(scoremove.line)
 scoremove.done
-	ne(g.scoring) out('scoremove returns ' scoremove)
+
+*	There is a bonus of 35 points for playing seven tiles in one move.
+
+	scoremove  = eq(count(move),7) scoremove + 35;
+
+	ne(g.tracing) out('scoremove returns ' scoremove)
 							:(return)
 scoremove.end
 
@@ -1585,7 +1590,7 @@ show.play.end
 show.player
 	output = 'show.player pid=' pid
 	player = g.players[pid]
-	out(	 'pid='  pid(player)	' " name(player) "' 
+	out(	 'pid='  pid(player)	' "' name(player) '"' 
 .		(differ(rack(player))	' rack |'	rack(player) '|','')
 .		(gt(total(player))	' total '	total(player)   ,'')
 .		(gt(highest(player))	' highest '	highest(player) ,''))
@@ -1656,6 +1661,7 @@ spaces.end
 
 *START*
 start
+	out('enter start')
 	player = g.players[pid]
 	tiles = rack(player)
 	n = 0;* number of tiles to play
@@ -1780,7 +1786,8 @@ thousands.end
 
 *TRACEOFF*
 traceoff
-	&ftrace = &trace = g.tracing = 
+	&ftrace = &trace = 
+	g.scoring = g.tracing = 0
 	out('stop TRACING ')
 traceoff.end
 
@@ -1792,7 +1799,7 @@ traceoff.end
 traceon
 	out('start TRACING')
 *	&ftrace = &trace = 1500000
-	g.tracing = 1
+	g.scoring = g.tracing = 1
 							:(return)
 traceon.end
 
@@ -1817,35 +1824,35 @@ unpack.ch
 	unpack[i] = c					:(unpack.ch)
 unpack.end
 
-	define('validmove(move)num,i,pos')		:(validmove.end)
+	define('valid(move)num,i,pos')		:(valid.end)
 
 *	Test if move is valid.
 
-*VALIDMOVE*
-validmove
-	show.grid(g.used)
+*VALID*
+valid
+*	show.grid(g.used)
 
 *	At least one cell to be occupied by this move must be adjacent to a used cell.
 	
 	num = id(move)
-validmove.u
+valid.u
 	gt(i = i + 1,count(move))			:s(freturn)
 	pos = free(move)[i]
-	adjacent(row(num,pos),column(num,pos)) 		:f(validmove.u)s(validmove.used)
+	adjacent(row(num,pos),column(num,pos)) 		:f(valid.u)s(valid.used)
 
 *	Here if no adjacent cell found, fail.  *
 							:(freturn)
-validmove.used
-	out('validmove used ok')
+valid.used
+	out('valid used ok')
 
 *	Test that line and all its crossing lines are valid.
 
 	clines(move);* get line and its crossing lines
 	i = 0
-validmove.i
+valid.i
 	gt(i = i + 1,g.cln)				:s(return)
-	checkline(line(g.clines[g.cln]))		:f(freturn)s(validmove.i)
-validmove.end
+	checkline(line(g.clines[i]))			:f(freturn)s(valid.i)
+valid.end
 
 	define('vline(g,c)')				:(vline.end)
 

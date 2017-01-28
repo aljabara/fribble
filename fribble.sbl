@@ -86,7 +86,9 @@ game.you.move
 	rack(player) = enterrack()			:f(game.you.move)
 	out('entered rack ' rack(player))
 	out('computing ...')
-	move = (eq(g.turn,1) start(player), find(player,limit(player))) :s(game.you.playmove)
+
+	move = find(pid,g.turn)				:s(game.you.playmove)
+
 	out('unable to find move - end of game ') 	:(game.over)
 game.you.playmove
 	out('...computed')
@@ -99,7 +101,7 @@ game.you.makemove
 game.fribble
 
 *	Here to have fribble make a move
-*	move = (eq(g.turn,1) start(player), find(player,limit(player))) :s(game.move)
+
 *game.move
 *game.moveon
 *	makemove(player,move)
