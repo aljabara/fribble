@@ -2,116 +2,150 @@
 
 -include "lib.sbl"
 
-	define('ask(query)response')			:(ask.end)
 
-*	Ask question until you get yes (success) or no (failure) answer.
+	define('turn(pid)')						:(turn.end)
 
-ask
-	out(query)
-	output = "respond with 'y', 'yes', 'n', or 'no'"
-ask.loop
-	response = lcase(input)				:f(freturn)
-	response 'yes'					:s(return)
-	response 'ye'					:s(return)
-	response 'y'					:s(return)
-	response 'no'					:s(freturn)
-	response 'n'					:s(freturn)
-							:(ask)
-ask.end
-	define('game(one,two)opn,move,players,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
+*	Play a turn in a game.
 
-*	Play a game of fribble. *one* and *two* are players. *max* is the maximum number of moves.
+*	Steps are
+
+*	1.	Replenish tiles before making the move if managing the tiles by hand.
+
+*	2.	Find or enter the move to be played.
+
+*	3.	Make the move by updating the data structures, scores, etc.
+
+*	4.	If not managing the tiles by hand, use fribble to update the rack.
+
+turn
+	ne(f.trace) out('enter turn pid=' pid)
+	player = g.players[pid]
+
+*	Replenish tiles before making the move. This is needed if 
+*	managing the player's tiles manually.
+
+	fribble(player)							:s(turn.move)
+
+	rack(player) = replenish(pid)
+	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
+	
+
+turn.move
+
+*	2.	Find or enter the move to be played.
+
+*	Here to pick the next move.
+
+	ident(fribble(player))					:s(turn.move.manual)
+
+*	Here to have fribble determine the move
+	ne(f.trace) out('fribble making move.')
+
+	g.move = find(pid,g.turn)				:s(turn.make)f(turn.fail)
+
+turn.move.manual
+
+	ne(f.trace) out('getting move manually')
+*	Here to enter the move manually
+
+turn.manual
+
+turn.manual.in
+	out('enter  move')
+	line = terminal						:f(end)
+	move = eval(line)					:f(turn.manual.error)
+	ident(datatype(move),'move')				:s(turn.validate)
+	out('need to enter a move')				:(turn.manual)
+
+
+turn.validate
+
+	ne(f.trace) out('validating move ' show.move(move))
+*	See if move is valid, except no test needed for initial move.
+
+	g.move = move
+	eq(g.turn,1)						:s(turn.move)
+	valid(g.move)						:s(turn.move)
+
+	out('invalid move - try again')				:(turn.manual.in)
+
+turn.manual.error
+	out('eval error ' &errtext)				:(turn.manual)
+
+turn.make
+
+*	3.	Make the move by updating the data structures, scores, etc.
+
+
+	points(g.move) = scoremove(g.move)
+	ne(f.trace) out('making move ' show.move(g.move))
+	show.play(makemove(pid,g.move))
+
+turn.replenish
+
+*	4.	Replenish the tiles if managing the tiles automatically.
+
+
+*	Replenish tiles if necessary. If doing this manually, don't do it here,
+*	but at start of next turn.
+
+*	out('replenishing pid= ' pid ' ' show.player(player))
+	ne(f.trace) out('replenishing pid= ' pid )
+	ident(fribble(player))					:s(turn.done)
+
+
+*	Here to update rack when fribble is managing the tiles.
+*	Remove tiles played on move and then replenish the rack.
+
+	ne(f.trace) out('updating rack pid=' pid)
+	rack(player) = less(rack(player), lcase(text(g.move)))
+	rack(player) = replenish(pid)			
+	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
+
+turn.done
+	ne(f.trace) out('turn done')
+								:(return)
+turn.fail
+	out('turn failed - unable to find move.')		:(freturn)
+turn.end 
+
+	define('game(mode)players,player,opn,move,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
+
+*	Play a game of fribble. *max* is the maximum number of moves.
+*	Mode is one to let you play against fribble, two to let fribble play itself.
 
 *GAME*
 game
-	players = array(2)
-	players[1] = g.one
-	players[2] = g.two
-game.round
-	i = 0
+
+	pid = 2;* set to two so will become one when loop first entered
+
 game.turn
-	player = players[i = i + 1]				:f(game.round)
+	pid = (eq(pid,1) 2, 1)
+	player = g.players[pid]
 
 	g.turn = g.turn + 1
 
-	out(ne(g.turnlimit) gt(g.turn,g.turnlimit) 'Game over -- too many turns (' g.turnlimit ').') :s(game.over)
-	out(gt(g.turn,g.lastmove + 5) 'Game over - too many turns with no move.') :s(game.over)
-	out(ne(g.maxmoves) gt(g.turn,g.maxmoves) 'Game over -  too many turns.')  :s(game.over)
+	out(ne(g.turnlimit) gt(g.turn,g.turnlimit) 
+.			'Game over -- too many turns (' g.turnlimit ').') :s(game.over)
+	out(gt(g.turn,g.lastmove + 5) 
+.			'Game over - too many turns with no move.') :s(game.over)
+	out(ne(g.maxmoves) gt(g.turn,g.maxmoves) 
+.			'Game over -  too many turns.')  :s(game.over)
 
-	differ(g.trace) eq(g.trace,g.turn) tracer()
+	eq(g.trace,g.turn) traceon()
 
 
-	out('Move ' g.turn ' for player ' name(player) (ident(fribble(player)) ', with tiles ' show.tiles(rack(player),'A') '.', '.'))
-*	out(ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
-	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
+	out('Move ' g.turn ' for player ' name(player) ', with tiles ' show.tiles(rack(player),'A') '.')
+	out(ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
 
-	differ(fribble(player))				:s(game.you.move)
 
-*	Current player is the foe. Enter their move from the wwf board.
+	turn(pid)					:s(game.turn)
 
-game.foe.move
-	show.board(g.board)
-	out("enter foe's move")
-	text = input					:f(game.eof)
-	out('you entered ' text)
-	move = eval(text)
-	out('datatype move ' datatype(move))
-	ident(datatype(move),'move')			:s(game.foe.validmove)
-							:(game.foe.move)
-game.foe.validmove
-	out("Foe's move " show.move(move))
-	clines(move)
-	show.play(move)
-	validmove(move)					:s(game.foe.scoremove)
-	out('invalid move ' show.move(move))	:(game.foe.move)
+*	Here if turn failed because no move could be found. Try to swap three tiles
 
-game.foe.scoremove
-*	g.showscore = 1
-	points(move) = scoremove(move)
-	out('move is worth ' points(move) ' points.')
-	ask("Do you want to make this move?")		:s(game.foe.moveon)f(game.eod)
-
-game.foe.moveon
-	out("Playing foe's move " show.move(move))
-	makemove(player,move)
-	show.play(move)
-							:(game.turn)
-game.you.move
-
-*	Here to make your move. 
-*	Enter current rack and then let fribble make the move.
-
-	out('your move ' g.turn)
-	show.board(g.board)
-	rack(player) = enterrack()			:f(game.you.move)
-	out('entered rack ' rack(player))
-	out('computing ...')
-
-	move = find(pid,g.turn)				:s(game.you.playmove)
-
-	out('unable to find move - end of game ') 	:(game.over)
-game.you.playmove
-	out('...computed')
-	out('fribble generated move ' show.move(move))
-	makemove(player,move)
-	show.play(move)
-game.you.makemove
-	out('Make your move on the wwf board.')
-	ask("Have you entered the move?")		:s(game.turn)f(game.you.makemove)
-game.fribble
-
-*	Here to have fribble make a move
-
-*game.move
-*game.moveon
-*	makemove(player,move)
-*	show.play(move)
-*
-**	Game over if no more tiles.
-*
-*	out(eq(size(g.tiles)) 'Game over - no more tiles. ')		:s(game.over)
-*	getrack(player,move)					:(game.turn)
-*
+	out('no move, swapping tiles.')
+	rack(player) = swap(pid,3)			:(game.turn)
+	
 game.fail
 
 *	Here if no move found.
@@ -126,57 +160,67 @@ game.fail
 	out('Player ' name(player) ' passes.')		:(game.turn)
 	
 game.swap
-	rack(player) = swap(player,3)
+	out('swapping tiles pid=' pid)
+	rack(player) = swap(pid,3)
 	out('Player ' name(player) ' swapped tiles.')
 	out('Player ' name(player) ' now has tiles ' show.tiles(rack(player))) :(game.turn)
-game.eof
-	out('end of input - game over')		:(game.over)
-game.resign
-	out('player ' name(player) ' resigns')
 game.over						
 	endgame()					:(return)
 game.end
-	define('sw()')					:(sw.end)
 
-*	Swap two tiles for player 'you'
+*	Have fribble play itself.
 
-*SW*
-sw
-	rack(g.two) = swap(g.two,2)			:(return)
-sw.end
-	define('enterrack()ans')			:(enterrack.end)
-
-*	Enter your rack
-
-enterrack
-	out( 'Enter your tiles')
-	enterrack = input				:f(game.eof)
-	ask("You entered: " enterrack ". Is this correct?") :s(return)f(enterrack)
-enterrack.end
-
-*	Play a game against a foe using Fribble to make your moves.
-*	You need to enter the opponent's moves and your rack (tileset) on each turn.
-
-*	&stlimit = -1
+	&stlimit = -1
 	&anchor = &trim = 1
 
 	init()
 
-*	w = words('  greedy ab ')
-*	show.words(w)
 
-*	You go first, so just enter your tiles and then use start()
+*	The program can now run in two modes.
+*	s.mode = 1 for solo mode, where you play against fribble.
+*	s.mode = 2 for self mode, where fribble moves for both players.
+	
+	s.mode = 1
+	s.mode = 2
 
-	one = player(1,'You',1)
-	two = player(2,'Foe')
-	g.one = one
-	g.two = two
-	total(g.one) = total(g.two) = 0
 
-	g.turn = g.lastmove = 0
+	options = host(0) ' '
+*	output = 'host <' options '>'
+
+options.loop
+	options break(' ') . opt ' ' =			:f(options.loop.done)
+	output = 'option ' opt
+	s.mode = ident(opt,'self') 2			:s(options.loop)
+	s.mode = ident(opt,'solo') 1			:s(options.loop)
+	output = 'unknown option ' opt
+							:(options.loop)
+options.loop.done
+
+
+	eq(s.mode,2)					:s(setup.2)
+
+*	Setup for mode 1
+	g.one = player(1,'You')
+	g.two = player(2,'Fribble',1)
+							:s(setup.done)
+setup.2
+	g.one = player(1,'Fribble I',1)
+	g.two = player(2,'Fribble II',1)
+setup.done
+	g.players[1] = g.one; g.players[2] = g.two
+
+*	Program manages the racks.
+
+	g.dealer = 1
+	rack(g.one) = take(7)
+	rack(g.two) = take(7)
+
+	g.turn = g.lastmove = total(g.one) = total(g.two) = 0
 	g.turnlimit = 
+	
+*	Set f.trace to trace fribble.
 
-*	g.trace = 15
+	f.trace =
 
-	game()							:(end)
+	game(s.mode)							:(end)
 end

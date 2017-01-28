@@ -44,6 +44,8 @@
 *		*text*	 is the string of tiles of the move; and
 *		*points* is the number of points won by playing this move.
 
+*	g.move is the current/last move.
+
 *	A player is represented by
 
 	data('player(pid,name,fribble,rack,total,thirty,highest)')
@@ -71,13 +73,8 @@
 
 	g.pid = 1
 
-*	There are three kinds of players. (THIS NOT YET IMPLEMENTED)
-
-	player.frible = 1	;* fribble playing on its own
-	player.self   = 2	;* you playing against fribble, managed by fribble.
-	player.team   = 3	;* you are fribble are playing as a team against another player.
-
 *	g.bonus,array(15,15) gives the bonus values for the squares on the board:
+
 *		1	for the value of the letter itself,
 *		2	for double letter,
 *		3	for triple letter, 
@@ -159,7 +156,7 @@ init
 
 *	Open log file for append.
 
-	output(.logfile,2,'fribble.log[-a]')		:s(init.clean)
+	output(.logfile,2,'f.log[-a]')			:s(init.clean)
 	out('unable to open log file')
 
 init.clean
@@ -702,7 +699,6 @@ find.fail
 	
 	output = ident(find) 'find FAILED, no move found.'
 
-	find = ident(find) order(swap(player,3))
 							:(freturn)
 find.end
 
@@ -1661,7 +1657,6 @@ spaces.end
 
 *START*
 start
-	out('enter start')
 	player = g.players[pid]
 	tiles = rack(player)
 	n = 0;* number of tiles to play
@@ -1744,8 +1739,10 @@ subarray.end
 
 *SWAP*
 swap	
+	out('datatype pid ' datatype(pid))
+	out('swap pid=' pid)
 	player = g.players[pid]
-	tiles = rack(p)
+	tiles = rack(player)
 	n = gt(n,size(tiles)) size(tiles)
 	n = gt(n,size(g.tiles)) size(g.tiles)
 	eq(n)						:s(freturn)
