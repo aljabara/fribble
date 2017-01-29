@@ -83,7 +83,7 @@ op.init.end
 	g.two = player(2,'Nobody')
 	g.players[1] = g.one
 	g.players[2] = g.two
-	total(g.one) = g.turn = g.lastmove = g.turnlimit = 0
+	total(g.one) = g.turn = g.lastmove = 0
 	total(g.two) = 0
 
 	shell.setup()

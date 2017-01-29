@@ -18,6 +18,7 @@
 *	4.	If not managing the tiles by hand, use fribble to update the rack.
 
 turn
+	g.turn = g.turn + 1
 	player = g.players[pid]
 	ne(f.trace) out('enter turn pid=' pid ' ' show.player(pid))
 
@@ -38,18 +39,17 @@ turn.move
 *	2.	Find or enter the move to be played.
 
 *	Here to pick the next move.
+*	You need to enter the foe's move when playing as a team,
+*	and your own move when playing a solo game.
 
 
-	eq(kind(player),player.kind.auto)			:s(turn.auto)
-	eq(kind(player),player.kind.team)			:s(turn.auto)
+	eq(kind(player),player.kind.foe)			:s(turn.manual)
+	eq(kind(player),player.kind.solo)			:s(turn.manual)
 	
-*	out('mode=' mode)
-	eq(mode,3)						:s(turn.fribble)
-	ne(kind(player),player.kind.auto)			:s(turn.move.manual)
-
 turn.auto
 
-*	Here to have fribble determine the move
+*	Here to have fribble find the best move.
+
 	ne(f.trace) out('fribble making move.')
 
 	ne(kind(player),player.kind.auto) out('computing move ...')
@@ -143,14 +143,6 @@ game.turn
 	pid = (eq(pid,1) 2, 1)
 	player = g.players[pid]
 
-	g.turn = g.turn + 1
-
-	out(ne(g.turnlimit) gt(g.turn,g.turnlimit) 
-.			'Game over -- too many turns (' g.turnlimit ').') :s(game.over)
-	out(gt(g.turn,g.lastmove + 5) 
-.			'Game over - too many turns with no move.') :s(game.over)
-	out(ne(g.maxmoves) gt(g.turn,g.maxmoves) 
-.			'Game over -  too many turns.')  :s(game.over)
 
 	eq(g.trace,g.turn) traceon()
 
@@ -161,8 +153,16 @@ game.turn
 	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
 
 
-	turn(pid,mode)					:s(game.turn)
+	turn(pid,mode)					:f(game.turn.fail)
 
+	out(gt(g.turn,g.lastmove + 5) 
+.		'Game over - too many turns with no move.') 	:s(game.over)
+
+	out(ne(g.maxmoves) gt(g.turn,g.maxmoves) 
+.		'Game over -- too many turns (' g.maxmoves ').') :s(game.over)
+
+							:(game.turn)
+game.turn.fail
 *	Here if turn failed because no move could be found. Try to swap three tiles
 
 	out('no move, swapping tiles.')
@@ -238,10 +238,11 @@ setup.auto
 
 *	Fribble makes the moves for both players, each with kind player.kind.auto. 
 
-*	Fribble manages the tiles for both players.
-
 	g.one = player(1,'Fribble I',	player.kind.auto)
 	g.two = player(2,'Fribble II',	player.kind.auto)
+
+*	Fribble manages the tiles for both players.
+
 	g.tilemanager = 1
 							:(setup.done)
 
@@ -254,10 +255,11 @@ setup.solo
 *	You are player one, of kind player.kind.solo. You make your own moves.
 *	Fribble is player two, of kind player.kind.auto.
 
-*	Fribble manages the tiles for both players.
-
 	g.one = player(1,'You',		player.kind.solo)
 	g.two = player(2,'Fribble',	player.kind.auto)
+
+*	Fribble manages the tiles for both players.
+
 	g.tilemanager = 1
 							:(setup.done)
 setup.team
@@ -279,27 +281,27 @@ setup.team
 							:(setup.done)
 setup.done
 
-	out('g.tilemanager=' g.tilemanager)
-	out('f.mode=' f.mode)
-
 	g.players[1] = g.one; g.players[2] = g.two
 
 *	out('g.one ' show.player(1))
 *	out('g.two ' show.player(2))
 
-	differ(g.tilemanager) shuffle()
-
-*	Program manages the racks.
-
-	ne(g.tilemanager) rack(g.one) = take(7)
-	ne(g.tilemanager) rack(g.two) = take(7)
-
 	g.turn = g.lastmove = total(g.one) = total(g.two) = 0
-	g.turnlimit = 
 	
 *	Set f.trace to trace fribble.
 
 	f.trace = 1
 
-	game(f.mode)							:(end)
+	out('g.tilemanager=' g.tilemanager)
+	ident(g.tilemanager)				:s(setup.game)
+
+*	Program manages the tiles, so deal initial tiles.
+	
+	rack(g.one) = take(7)
+	rack(g.two) = take(7)
+
+setup.game
+
+	game(f.mode)
+
 end
