@@ -18,35 +18,46 @@
 *	4.	If not managing the tiles by hand, use fribble to update the rack.
 
 turn
-	ne(f.trace) out('enter turn pid=' pid)
 	player = g.players[pid]
+	ne(f.trace) out('enter turn pid=' pid ' ' show.player(pid))
 
-*	Replenish tiles before making the move. This is needed if 
-*	managing the player's tiles manually.
+*	Replenish tiles before making the move. 
 
-	fribble(player)							:s(turn.move)
+*	This is needed when playing in team mode. 
+*	need to enter your tiles from the wwf board.
+*
+
+	ne(kind(player),player.kind.team)			:s(turn.move)
 
 	rack(player) = replenish(pid)
 	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
-	
 
 turn.move
-	out('turn.move')
 
 *	2.	Find or enter the move to be played.
 
 *	Here to pick the next move.
 
-	out('mode=' mode)
-	eq(mode,3)						:s(turn.fribble)
-	ident(fribble(player))					:s(turn.move.manual)
 
-turn.fribble
+	eq(kind(player),player.kind.auto)			:s(turn.auto)
+	eq(kind(player),player.kind.team)			:s(turn.auto)
+	
+*	out('mode=' mode)
+	eq(mode,3)						:s(turn.fribble)
+	ne(kind(player),player.kind.auto)			:s(turn.move.manual)
+
+turn.auto
 
 *	Here to have fribble determine the move
 	ne(f.trace) out('fribble making move.')
 
-	g.move = find(pid,g.turn)				:s(turn.make)f(turn.fail)
+	ne(kind(player),player.kind.auto) out('computing move ...')
+	g.move = find(pid,g.turn)				:s(turn.auto.found)f(turn.auto.fail)
+turn.auto.found
+	ne(kind(player),player.kind.auto) out('... computed')
+								:(turn.make)
+turn.auto.fail
+	out('...computed')					:(turn.fail)
 
 turn.move.manual
 
@@ -96,9 +107,9 @@ turn.replenish
 *	Replenish tiles if necessary. If doing this manually, don't do it here,
 *	but at start of next turn.
 
+	eq(g.tilemanager)					:s(turn.done)
 *	out('replenishing pid= ' pid ' ' show.player(player))
 	ne(f.trace) out('replenishing pid= ' pid )
-	ident(fribble(player))					:s(turn.done)
 
 
 *	Here to update rack when fribble is managing the tiles.
@@ -129,7 +140,6 @@ game
 game.turn
 	pid = (eq(pid,1) 2, 1)
 	player = g.players[pid]
-	out('g.tilemanager=' g.tilemanager)
 
 	g.turn = g.turn + 1
 
@@ -191,60 +201,91 @@ game.end
 *	f.mode = 2 for self mode, where fribble moves for both players.
 *	f.mode = 3 for match mode, where you use fribble to play another player.
 	
-	f.mode = 1
-	f.mode = 2
-	f.mode = 3
+	f.mode.foe  = 0
+	f.mode.solo = 1
+	f.mode.auto = 2
+	f.mode.team = 3
 
 
 	options = host(0) ' '
-*	output = 'host <' options '>'
+	options '-u' =
+	output = 'host <' options '>'
 
 options.loop
 	options break(' ') . opt ' ' =			:f(options.loop.done)
 	output = 'option ' opt
-	f.mode = ident(opt,'self') 2			:s(options.loop)
-	f.mode = ident(opt,'solo') 1			:s(options.loop)
-	f.mode = ident(opt,'foe')  3
+	f.mode = ident(opt,'auto') f.mode.auto			:s(options.loop)
+	f.mode = ident(opt,'solo') f.mode.solo			:s(options.loop)
+	f.mode = ident(opt,'team') f.mode.team			:s(options.loop)
 	output = 'unknown option ' opt
 							:(options.loop)
 options.loop.done
 
 
-	out('fribble mode=' f.mode)
 
-	eq(f.mode,1)					:s(setup.1)
-	eq(f.mode,2)					:s(setup.2)
-	eq(f.mode,3)					:s(setup.3)
+	eq(f.mode,f.mode.solo)					:s(setup.solo)
+	eq(f.mode,f.mode.auto)					:s(setup.auto)
+	eq(f.mode,f.mode.team)					:s(setup.team)
 
-setup.1
+								:(setup.auto);* default
+setup.auto
 
-*	Setup for mode 1
+*	Setup for mode 'auto'.
 
-	g.one = player(1,'You')
-	g.two = player(2,'Fribble',1)
+*	In auto mode, fribble plays against itself.
+
+*	Fribble makes the moves for both players, each with kind player.kind.auto. 
+
+*	Fribble manages the tiles for both players.
+
+	g.one = player(1,'Fribble I',	player.kind.auto)
+	g.two = player(2,'Fribble II',	player.kind.auto)
 	g.tilemanager = 1
 							:(setup.done)
-setup.2
 
-*	Setup for mode 2
-	g.one = player(1,'Fribble I',1)
-	g.two = player(2,'Fribble II',1)
+setup.solo
+
+*	Setup for mode 'solo'. 
+
+*	In solo mode, you play against fribble. 
+
+*	You are player one, of kind player.kind.solo. You make your own moves.
+*	Fribble is player two, of kind player.kind.auto.
+
+*	Fribble manages the tiles for both players.
+
+	g.one = player(1,'You',		player.kind.solo)
+	g.two = player(2,'Fribble',	player.kind.auto)
 	g.tilemanager = 1
 							:(setup.done)
+setup.team
 
-setup.3
+*	Setup for mode 'team'
 
-*	Setup for mode 3
+*	In team mode, you work with fribble to play a foe, reporting the foe's moves
+*	to fribble and playing the move fribble then suggests against the foe.
 
-	g.one = player(1,'You')
-	g.two = player(2,'Foe')
-	g.tilemanager 
+*	You are player one, of kind player.kind.team.
+*	The foe is player two, of kind player.kind.foe.
+
+*	You manage the tiles, entering your tiles as dealt by wwf before each move.
+*	(The foe's tiles are unknown, as all that matters is the move they make.)
+
+	g.one = player(1,'You',		player.kind.team)
+	g.two = player(2,'Foe',		player.kind.foe)
+	g.tilemanager =
 							:(setup.done)
 setup.done
 
-	differ(g.tilemanager) shuffle()
+	out('g.tilemanager=' g.tilemanager)
+	out('f.mode=' f.mode)
 
 	g.players[1] = g.one; g.players[2] = g.two
+
+*	out('g.one ' show.player(1))
+*	out('g.two ' show.player(2))
+
+	differ(g.tilemanager) shuffle()
 
 *	Program manages the racks.
 

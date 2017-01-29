@@ -48,16 +48,27 @@
 
 *	A player is represented by
 
-	data('player(pid,name,fribble,rack,total,thirty,highest)')
+	data('player(pid,name,kind,rack,total,thirty,highest)')
 
 *	where
 *		*pid*		is an integer identifier, either 1 or 2;
 *		*name* 		is the player's name;
-*		*fribble* 	if not null, requests that fribble make the moves;
+*		*kind*	 	is the player's kind:
+	
+			player.kind.oops = 0	;*	require that kind be set, get this if not
+			player.kind.solo = 1	;*	player is playing on their own;
+			player.kind.auto = 2	;*	player's moves are found and made by fribble;
+			player.kind.team = 3	;*	player and fribble work as a team
+			player.kind.foe  = 4	;*     opponent, used only when other player has kind player.kind.team;
+
 *		*rack* 		is the player's rack;
 *		*total*		is the player's current score;
 *		*thirty* 	is number of moves with scores of 30 or more points; and
 *		*highest* 	is the player's highest move score.
+
+	g.kind.solo = 1
+	g.kind.self = 2
+	g.kind.team = 3
 
 *	g.one and g.two are the players. 
 
@@ -1581,12 +1592,18 @@ show.play.end
 
 *SHOW.PLAYER*
 show.player
-	output = 'show.player pid=' pid
 	player = g.players[pid]
-	out(	 'pid='  pid(player)	' "' name(player) '"' 
+	show.player = 
+.		 'player pid='  pid(player)	' "' name(player) '" ' 
 .		(differ(rack(player))	' rack |'	rack(player) '|','')
 .		(gt(total(player))	' total '	total(player)   ,'')
-.		(gt(highest(player))	' highest '	highest(player) ,''))
+.		(gt(highest(player))	' highest '	highest(player) ,'') 
+.		' kind='
+.		(	eq(kind(player),player.kind.oops)  'oops',
+.			eq(kind(player),player.kind.foe)  'foe',
+.			eq(kind(player),player.kind.solo) 'solo',
+.			eq(kind(player),player.kind.auto) 'auto',
+.			eq(kind(player),player.kind.team) 'team', '')
 							:(return)
 show.player.end
 
