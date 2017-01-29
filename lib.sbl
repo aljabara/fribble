@@ -1080,19 +1080,28 @@ random
 							:(return)
 random.end
 
-	define('replenish(pid)player,rack')			:(replenish.end)
+	define('replenish(pid)player,rack,s')			:(replenish.end)
 
 *	Replenish a player's rack. Do this from the tileset is g.tilemanager is
 *	set, or get the new tileset from the user otherwise.
 
 *REPLENISH*
 replenish
-	player = g.players[pid]
 	differ(g.tilemanager)				:s(replenish.auto)
 
+replenish.manual
 	out('enter rack for player: ' show.player(pid))
-	rack(player) = input				:f(replenish.eof)
-	out('rack is now ' rack(player))		:(return)
+	rack = lcase(input)				:f(replenish.eof)
+	gt(size(rack),7) out('too many letters |' rack '|, try again.') :s(replenish.manual)
+	s = rack
+	s span(&lcase) =
+	differ(s) out('non-alphabetic character - try again.')	:s(replenish.manual)
+	rack(g.players[pid]) = rack
+*	rack(player) = rack
+	out('replenish pid=' pid ' ' show.player(1))
+
+	out('replenish player ' show.player(pid))
+	out('rack is now ' rack(g.players[pid]))		:(return)
 replenish.eof
 	out('end of data on input - bye ')		:(end)
 
@@ -1684,6 +1693,7 @@ start
 start.n	gt(n = n + 1,6)					:s(start.done)
 *	play at most six tiles for now.
 	kind = size(tiles) '?' n
+	out('start.n kind=' kind)
 	perms = g.permutations[kind]			:f(start.n)
 	permi = 0
 start.word

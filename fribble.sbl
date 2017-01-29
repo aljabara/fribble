@@ -31,6 +31,7 @@ turn
 
 	rack(player) = replenish(pid)
 	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
+	ne(f.trace) out(show.player(pid))
 
 turn.move
 
@@ -108,6 +109,7 @@ turn.replenish
 *	but at start of next turn.
 
 	eq(g.tilemanager)					:s(turn.done)
+	out('DAVE')
 *	out('replenishing pid= ' pid ' ' show.player(player))
 	ne(f.trace) out('replenishing pid= ' pid )
 
@@ -289,15 +291,15 @@ setup.done
 
 *	Program manages the racks.
 
-	rack(g.one) = take(7)
-	rack(g.two) = take(7)
+	ne(g.tilemanager) rack(g.one) = take(7)
+	ne(g.tilemanager) rack(g.two) = take(7)
 
 	g.turn = g.lastmove = total(g.one) = total(g.two) = 0
 	g.turnlimit = 
 	
 *	Set f.trace to trace fribble.
 
-	f.trace =
+	f.trace = 1
 
 	game(f.mode)							:(end)
 end
