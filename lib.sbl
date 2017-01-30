@@ -20,7 +20,7 @@
 *	Global variables have names starting with 'g.' Their initial value is set in the
 *	procedure *init()* and its subfunctions.
 
-	g.version is the version of the program:
+*	g.version is the version of the program:
 
 	g.version = '17.1.1';* January 2017, 1st version. 
 

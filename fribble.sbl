@@ -108,8 +108,8 @@ setup.team
 *	You manage the tiles, entering your tiles as dealt by wwf before each move.
 *	(The foe's tiles are unknown, as all that matters is the move they make.)
 
-	g.one = player(1,'You',		player.kind.team)
-	g.two = player(2,'Phil Foe',	player.kind.foe);* Phil knows who he is.
+	g.one = player(1,'Phil Foe',	player.kind.foe);* Phil knows who he is.
+	g.two = player(2,'You',		player.kind.team)
 	g.tilemanager =
 							:(setup.done)
 setup.done
