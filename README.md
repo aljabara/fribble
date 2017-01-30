@@ -73,7 +73,7 @@ refining the brute force approach to make the WWF player faster.
 
 The Offical Rules for WWF can be found at:
 
-http://www.zygnawithfriends.com/wordswithfriends/support/WWF_Rulebook.html
+http://www.zyngawithfriends.com/wordswithfriends/support/WWF_Rulebook.html
 
 1. Overall Objective
 
@@ -130,9 +130,11 @@ Words With Friends has more than 173,000 acceptable words for use in the game. O
 
    Lexicon (ENABLE), a public domain list used by many word games.  
 
-The ENABLE word list for WWF can be found at:
+The ENABLE word list for WWF has been copied to file 
 
-http://code.google.com/archive/p/dotnetperls-controls/downloads/enable1.txt
+	enable1.txt
+
+in the fribble main directory.
 
 WWF also allows some additional words though this is no official list of them.  For example, consider QI 
 (force whose existence and properties are the basis of much Chinese philosophy and medicine).
