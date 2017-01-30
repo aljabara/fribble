@@ -1,9 +1,28 @@
 * Copyright (c) 2017 dave shields
 
+* This file is part of the fribble project: http://github.com/daveshields/fribble.
+*
+*	Fribble is free software: you can redistribute it and/or modify
+*	it under the terms of the gnu general public license as published by
+*	the free software foundation, either version 2 of the license, or
+*	(at your option) any later version.
+*
+*	Fribble is distributed in the hope that it will be useful,
+*	but without any warranty; without even the implied warranty of
+*	merchantability or fitness for a particular purpose.  See the
+*	gnu general public license for more details.
+*
+*	You should have received a copy of the gnu general public license
+*	along with fribble.  If not, see <http://www.gnu.org/licenses/>.
+
 *	Global Variables
 
 *	Global variables have names starting with 'g.' Their initial value is set in the
 *	procedure *init()* and its subfunctions.
+
+	g.version is the version of the program:
+
+	g.version = '17.1.1';* January 2017, 1st version.
 
 *	A play is a sequence of one or more cells, represented as an array.  The cells are ordered
 *	from left to right for a horizontal play, top to bottom for a vertical play.
@@ -779,6 +798,70 @@ find.fail
 
 							:(freturn)
 find.end
+
+	define('game(mode)players,player,opn,move,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
+
+*	Play a game of fribble. *max* is the maximum number of moves.
+*	Mode is one to let you play against fribble, two to let fribble play itself.
+
+*GAME*
+game
+
+	pid = 2;* set to two so will become one when loop first entered
+
+game.turn
+
+	g.turn = g.turn + 1
+
+*	ne(f.trace) out('g.turn=' g.turn ' g.maxmoves=' g.maxmoves)
+	gt(g.turn,g.lastmove + 5) 
+.		out('Game over - too many turns with no move.') :s(game.over)
+	gt(g.turn.g.maxmoves)				
+.		out('Game over -- too many turns (' g.maxmoves ').') :s(game.over)
+	pid = (eq(pid,1) 2, 1)
+
+	player = g.players[pid]
+
+	out('Move ' g.turn ' for player ' name(player) 
+.		 (differ(g.tilemanager) ', with tiles ' show.tiles(rack(player),'A'),'')	'.')
+	out(ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
+	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
+
+
+	turn(pid,mode)					:f(game.turn.fail)s(game.turn)
+
+game.turn.fail
+
+*	Here if turn failed because no move could be found. Try to swap three tiles
+
+	out('no move, swapping tiles.')
+	rack(player) = swap(pid,3)			:(game.turn)
+	
+game.fail
+
+*	Here if no move found.
+
+	out('No move found.')
+
+*	Here if no move found, in which case the return value is a set of swapped tiles. If *move* is null, then pass.
+
+	differ(move)					:s(game.swap)
+	passed = passed + 1
+	out(gt(passed,6) ' Too many passed moves.')	:s(game.over)
+	out('Player ' name(player) ' passes.')		:(game.turn)
+	
+game.swap
+
+	out('swapping tiles pid=' pid)
+	rack(player) = swap(pid,3)
+	out('Player ' name(player) ' swapped tiles.')
+	out('Player ' name(player) ' now has tiles ' show.tiles(rack(player))) :(game.turn)
+
+game.over						
+
+	endgame()					:(return)
+
+game.end
 
 	define('grid(lines,start)i,r,c,line')		:(grid.end)
 
@@ -2079,6 +2162,139 @@ traceon
 	g.scoring = g.tracing = 1
 							:(return)
 traceon.end
+
+	define('turn(pid,mode)')						:(turn.end)
+
+*	Play a turn in a game.
+
+*	Steps are
+
+*	1.	Replenish tiles before making the move if managing the tiles by hand.
+
+*	2.	Find or enter the move to be played.
+
+*	3.	Make the move by updating the data structures, scores, etc.
+
+*	4.	If not managing the tiles by hand, use fribble to update the rack.
+
+*TURN*
+turn
+	player = g.players[pid]
+
+	ne(f.trace) out('enter turn pid=' pid ' ' show.player(pid))
+
+	eq(g.trace,g.turn) traceon()
+
+*	Replenish tiles before making the move. 
+
+*	This is needed when playing in team mode. 
+*	need to enter your tiles from the wwf board.
+*
+
+	eq(f.mode,f.mode.auto)					:s(turn.auto)
+	ne(kind(player),player.kind.team)			:s(turn.move)
+
+	rack(player) = replenish(pid)
+	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
+	ne(f.trace) out(show.player(pid))
+
+turn.move
+
+*	2.	Find or enter the move to be played.
+
+*	Here to pick the next move.
+*	You need to enter the foe's move when playing as a team,
+*	and your own move when playing a solo game.
+
+	eq(f.mode,f.mode.auto)					:s(turn.auto)
+	eq(kind(player),player.kind.foe)			:s(turn.manual)
+	eq(kind(player),player.kind.solo)			:s(turn.manual)
+	
+turn.auto
+
+*	Here to have fribble find the best move.
+
+	ne(f.trace) out('fribble making move.')
+
+*	ne(kind(player),player.kind.auto) out('computing move ...')
+	g.move = find(pid,g.turn)				:f(turn.auto.fail)
+*	ne(f.trace) out('auto move ' show.move(g.move))
+
+*	ne(kind(player),player.kind.auto) out('... computed')
+								:(turn.make)
+turn.auto.fail
+	out('...computed')					:(turn.fail)
+
+turn.move.manual
+
+	ne(f.trace) out('getting move manually')
+*	Here to enter the move manually
+
+turn.manual
+
+turn.manual.in
+	out('enter move')
+	line = terminal						:f(end)
+	g.move = eval(line)					:f(turn.manual.error)
+	out('input: ' show.move(g.move) ' datatype ' datatype(g.move) )
+	ident(datatype(g.move),'move')				:s(turn.validate)
+	out('need to enter a move')				:(turn.manual)
+
+
+turn.validate
+
+	ne(f.trace) out('validating move ' show.move(g.move))
+*	See if move is valid, except no test needed for initial move.
+
+	eq(g.turn,1)						:s(turn.make)
+	out('validating gturn=' g.turn)
+	valid(g.move)						:s(turn.make)
+
+	out('invalid move - try again')				:(turn.manual.in)
+
+turn.manual.error
+	out('eval error ' &errtext)				:(turn.manual)
+
+turn.make
+
+*	3.	Make the move by updating the data structures, scores, etc.
+
+
+	points(g.move) = scoremove(g.move)
+*	ne(f.trace) out('making move ' show.move(g.move))
+	show.play(makemove(pid,g.move))
+
+turn.replenish
+
+*	4.	Replenish the tiles if managing the tiles automatically.
+
+
+*	Replenish tiles if necessary. If doing this manually, don't do it here,
+*	but at start of next turn.
+
+	eq(g.tilemanager)					:s(turn.done)
+*	out('DAVE')
+*	out('replenishing pid= ' pid ' ' show.player(player))
+	ne(f.trace) out('replenishing pid= ' pid )
+
+
+*	Here to update rack when fribble is managing the tiles.
+*	Remove tiles played on move and then replenish the rack.
+
+	ne(f.trace) out('updating rack pid=' pid)
+	rack(player) = less(rack(player), lcase(text(g.move)))
+	rack(player) = replenish(pid)			
+	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
+
+turn.done
+
+	ne(f.trace) out('turn done')
+								:(return)
+turn.fail
+
+	out('turn failed - unable to find move.')		:(freturn)
+
+turn.end 
 
 	define('ucase(s)')				:(ucase.end)
 
