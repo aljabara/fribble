@@ -1,72 +1,96 @@
-# FRIBBLE - Using SPITBOL to trifle with words and to play Words With Friends
+# FRIBBLE - Using SPITBOL to trifle with words and to play word games with your friends
 
-Fribble is a collection of SPITBOL programs related to word games such as Scrabble and Words With Friends (WWF).
+Fribble is a collection of SPITBOL programs created to have fun with -- and play --  word games such as Scrabble and Words With Friends (WWF).
 
-The goal is to construct a program that can play WWF.
-
-A copy of the offical rules for WWF can be found in Appendix A.
+The original goal was to construct a program that can play WWF.  A copy of the offical rules for WWF can be found in Appendix A.
 
 ##Strategy
 
-Our strategy is at its core "brute force" in that each
-new move will be determined by generating **all** possible moves and
-then picking one that has a score at least as high as any other.
+Fribble's strategy is at its core "brute force" in that each new move is determined by generating **all** possible moves and then picking the one that has a score at least as high as any other.
 
-The reasoning behind this approach is based on the observation
-that each new move will consists of at most about 10000, possible permutations of the tiles in the rack that can be placed
-starting at a given blank cell.
-If we consider all moves, then there are 7! (about 5,000) ways to play seven tiles, 6! to play six tiles, 
-and so forth. This gives about 7! + 6! ... +1! possibilities (about 6,000).
+The reasoning behind this approach is based on the observation that each new move will consists of at most about 10000 possible permutations of the tiles in the rack that can be placed starting at a given blank cell.  If we consider all moves, then there are 7! (about 5,000) ways to play seven tiles, 6! to play six tiles, and so forth. This gives about 7! + 6! ... +1! possibilities (about 6,000).
 
 As the game progresses there will be fewer and fewer blank cells to consider.
 
-While this at first sight a large space to search, the number of impossible moves is
-limited by the size of the dictionary (about 180,000 words) and 
-the structure of English. For example, consider the number of plural words in the dictionary, that is words such adding 's' at the end of
-the word results in a word that is also in the dictionary.
-There are just under 50,000 plurals in the ENABLE list, which is about 30% of the total.
+While this at first sight a large space to search, the number of  moves is limited by the size of the dictionary  -- about 180,000 words --  and the structure of English. 
 
-Almost all the possible moves will consist of nonsense strings that are  not in the dictionary. 
-Consider for example a  move that starts with 'zqiij.' We can find such nonsense strings
-by constructing a list of all the possibilites for the first four characters in a valid word, and so forth.
+For example, consider the number of plural words in the dictionary, that is words such adding 's' at the end of
+the word results in a word that is also in the dictionary.  There are just under 50,000 plurals in the ENABLE list, 
+which is about 30% of the total.
 
-SPITBOL is very fast. The game is now played in real time, but over the internet, so that it is 
-acceptable to take minutes, if not hours, to find the best move for a given position.
+Almost all the possible moves will consist of nonsense strings that are  not in the dictionary.   Consider for example a  move that starts with 'zqiij.' We can find such nonsense strings by constructing a list of all the possibilites for the first four characters in a valid word, and so forth.
 
+SPITBOL is very fast, or at least fast enough. The game is not played in real time, but over the internet, so that it is acceptable to take minutes, if not hours, to find the best move for a given position.
 
-## Data Structures, Utility Functions
+The first version of Fribble takes about 20 seconds to find a move, using a circa-2011 64-bit x86-64 processor.
 
 
+## Usage 
 
-The WWF board is a 15x15 grid, with rows 1..15 and columns 1..15. A cell in the board is represented using an integer id
-of the form *+/-rrcc* where "+" indicates a horizontal placement, "-" a vertical placement. The row and column
-can be found by
+Fribble can be used to play wwf in three ways:
 
-			row = id / 100   column = remdr(id,100)
+- **self**
+  In *self* mode, Fribble plays against itself. This is primarily used to test the program.
 
-The game is played with tiles, each representing a letter, and 'blank' tiles that can be used
-to represent any letter.  Each player has at most seven tiles at any turn. We refer to these tiles as the *rack*.
+- **solo**
+  In *solo* mode, you play against Fribble. This is similar to the *solo* game optin available in wwf.
 
-A move consists of placing one or more tiles in a single row or column, with no intervening spaces.
-At the end of a turn the board must contain only words that occur in the WWF dictionary. Words are read from left
-to right in rows, from top to bottom in columns.
+- **team**
+  In *team* mode, you and Fribble play as a team against a foe. You enter the foe's moves and your tiles, and
+Fribble finds the best move for you to play.
 
-A move consists of one or more placements. Each placement is represented by a string of tile characters followed
-by the id of the first cell.
+Fribble is shipped with two binary versions of the SPITBOL system:
 
-The board can be represented either as a two-dimensional array, *array('15,15')* or as an array of lines, *array(7)*.
-Note that giving the rows also defines the columns.
+- **sbl** SPITBOL for Unix/Linux.
+- **sbl_osx**  SPITBOL for OSX. If you are using OSX, copy *sbl_osx* to *sbl*.
 
-Though the game has blank tiles, which can be used to represent any character, these characters will not be fully
-supported in the initial release. Instead any blanks, as well as any letter that occurs more than once, will be
-'swapped' for another set of tiles.
+Here are some sample usages:
+
+```
+	sbl fribble.sbl -uself
+	sbl fribble.sbl -usolo
+	sbl fribble.sbl -uteam
+```
+
+When using *solo* or *team* modes you need to enter the tiles for your rack and moves. To enter a tileset, just type in up to
+seven characters indicating your current tileset.
+
+Moves can be entered in one of two ways:
+
+- Use *m(row/col,pos,'text')* for a move in which all the tiles are played next to each other.
+
+- Use *mf(row/col,free,'text')* for a move in which not all the tiles are played next to each other.
+
+The first argument to each is a row or column specification:
+
+- A row specification is one of: *r1*, *r2*,..., *r10*, ... , *r15* or *r01*, *r02*, ... *r10*, ..., *r15*.
+
+- A column specification is one of: *c1*, *c2*,..., *c10*, ... , *c15* or *c01*, *c02*, ... *c10*, ..., *c15*.
+
+- *pos* gives the starting position in the row or column.
+
+- *'text'* give the tiles (letters) to be played.
+
+- *free* is a list of the free (open) cells used in the move.
+
+Examples:
+
+```
+  m(r8,8,'fribble') plays the word *fribble* in row 8, starting at position 8.
+  m(c8,9,'riends') plays the string *riends* in column 8, starting at position 9, making the word 'friends' in column 8.
+  mf(c13,'7,9,10','pay') plays the string 'pay' in column 13, at positions 7, 9 and 10, making the word 'play' in column 13.
+```
 
 
-# Study
 
-The directory *study* contains various programs used to study the dictionary structure, to assist in
-refining the brute force approach to make the WWF player faster.
 
+
+
+
+# Wordplay
+
+The [Wordplay project](http://github.com/daveshields/wordplay/) contains various programs used to 
+study the dictionary structure, and to explore other issues of interest in the early days of writing Fribble.
 
 
 #Appendix A - Words with Friends Rules
