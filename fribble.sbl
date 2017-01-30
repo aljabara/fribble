@@ -30,7 +30,6 @@
 *	f.mode = 2 for self mode, where fribble moves for both players.
 *	f.mode = 3 for team mode, where you and fribble work as team to play another player.
 	
-	f.mode.foe  = 0
 	f.mode.solo = 1
 	f.mode.auto = 2
 	f.mode.team = 3
@@ -126,7 +125,6 @@ setup.done
 	f.trace = 1
 	f.trace = 0
 
-	out('g.tilemanager=' g.tilemanager)
 	ident(g.tilemanager)				:s(setup.game)
 
 *	Program manages the tiles, so deal initial tiles.
