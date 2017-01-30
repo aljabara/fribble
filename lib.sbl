@@ -29,8 +29,9 @@
 
 *	g.maxmoves, maximum number of moves. This is used to avoid runaway behavior.
 
+	g.maxmoves = 4
 	g.maxmoves = 60
-	
+
 *	g.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
 
 *	A move consists of a sequence of empty cells in a row or column such that at least one cell in the sequence 
@@ -201,7 +202,7 @@ init.main
 
 	init.tileset()
 
-	differ(g.tilemanager) shuffle();* shuffle the tileset
+	shuffle();* shuffle the tileset
 
 	init.value()
 
@@ -1143,20 +1144,24 @@ place.end
 playmove
 
 	id = id(move)
+*	out('enter playmove ' show.move(move))
+*	out('free ' prototype(free(move)))
 
 playmove.ch
 
 	p = free(move)[i = i + 1]			:f(playmove.done)
 	r = row(id,p)
 	c = column(id,p)
-	ch = substr(text(move),p,1)
-	g.board[r, c] = substr(text(move),i,1)
+	ch = substr(text(move),i,1)
+*	out('playmove p=' p ' i=' i ' r=' r ' c=' c ' ch=' ch)
+	g.board[r, c] = ch
+*	out('playmove r=' r ' c=' c ' char=' g.board[r,c])
 	g.used[r,c]   = 1
-	g.bonus[r, c] = ' ';* indicate bonus no longer available :(playmove.ch)
+	g.bonus[r, c] = ' ' :(playmove.ch) ;* indicate bonus no longer available 
 
 playmove.done
-
-*	out(ne(g.tracing) 'playmove returns')
+*	out('playmove.done i=' i)
+	out(ne(g.tracing) 'playmove returns')
 							:(return)
 playmove.end
 	
@@ -1927,7 +1932,7 @@ start.n	gt(n = n + 1,6)					:s(start.done)
 
 *	play at most six tiles for now.
 	kind = size(tiles) '?' n
-	out('start.n kind=' kind)
+*	out('start.n kind=' kind)
 	perms = g.permutations[kind]			:f(start.n)
 	permi = 0
 

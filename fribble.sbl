@@ -18,9 +18,11 @@
 *	4.	If not managing the tiles by hand, use fribble to update the rack.
 
 turn
-	g.turn = g.turn + 1
 	player = g.players[pid]
+
 	ne(f.trace) out('enter turn pid=' pid ' ' show.player(pid))
+
+	eq(g.trace,g.turn) traceon()
 
 *	Replenish tiles before making the move. 
 
@@ -28,6 +30,7 @@ turn
 *	need to enter your tiles from the wwf board.
 *
 
+	eq(f.mode,f.mode.auto)					:s(turn.auto)
 	ne(kind(player),player.kind.team)			:s(turn.move)
 
 	rack(player) = replenish(pid)
@@ -42,7 +45,7 @@ turn.move
 *	You need to enter the foe's move when playing as a team,
 *	and your own move when playing a solo game.
 
-
+	eq(f.mode,f.mode.auto)					:s(turn.auto)
 	eq(kind(player),player.kind.foe)			:s(turn.manual)
 	eq(kind(player),player.kind.solo)			:s(turn.manual)
 	
@@ -52,10 +55,11 @@ turn.auto
 
 	ne(f.trace) out('fribble making move.')
 
-	ne(kind(player),player.kind.auto) out('computing move ...')
-	g.move = find(pid,g.turn)				:s(turn.auto.found)f(turn.auto.fail)
-turn.auto.found
-	ne(kind(player),player.kind.auto) out('... computed')
+*	ne(kind(player),player.kind.auto) out('computing move ...')
+	g.move = find(pid,g.turn)				:f(turn.auto.fail)
+*	ne(f.trace) out('auto move ' show.move(g.move))
+
+*	ne(kind(player),player.kind.auto) out('... computed')
 								:(turn.make)
 turn.auto.fail
 	out('...computed')					:(turn.fail)
@@ -70,18 +74,17 @@ turn.manual
 turn.manual.in
 	out('enter move')
 	line = terminal						:f(end)
-	move = eval(line)					:f(turn.manual.error)
-	out('input: ' show.move(move) ' datatype ' datatype(move) )
-	ident(datatype(move),'move')				:s(turn.validate)
+	g.move = eval(line)					:f(turn.manual.error)
+	out('input: ' show.move(g.move) ' datatype ' datatype(g.move) )
+	ident(datatype(g.move),'move')				:s(turn.validate)
 	out('need to enter a move')				:(turn.manual)
 
 
 turn.validate
 
-	ne(f.trace) out('validating move ' show.move(move))
+	ne(f.trace) out('validating move ' show.move(g.move))
 *	See if move is valid, except no test needed for initial move.
 
-	g.move = move
 	eq(g.turn,1)						:s(turn.make)
 	out('validating gturn=' g.turn)
 	valid(g.move)						:s(turn.make)
@@ -97,7 +100,7 @@ turn.make
 
 
 	points(g.move) = scoremove(g.move)
-	ne(f.trace) out('making move ' show.move(g.move))
+*	ne(f.trace) out('making move ' show.move(g.move))
 	show.play(makemove(pid,g.move))
 
 turn.replenish
@@ -109,7 +112,7 @@ turn.replenish
 *	but at start of next turn.
 
 	eq(g.tilemanager)					:s(turn.done)
-	out('DAVE')
+*	out('DAVE')
 *	out('replenishing pid= ' pid ' ' show.player(player))
 	ne(f.trace) out('replenishing pid= ' pid )
 
@@ -140,12 +143,17 @@ game
 	pid = 2;* set to two so will become one when loop first entered
 
 game.turn
+
+	g.turn = g.turn + 1
+
+*	ne(f.trace) out('g.turn=' g.turn ' g.maxmoves=' g.maxmoves)
+	gt(g.turn,g.lastmove + 5) 
+.		out('Game over - too many turns with no move.') :s(game.over)
+	gt(g.turn.g.maxmoves)				
+.		out('Game over -- too many turns (' g.maxmoves ').') :s(game.over)
 	pid = (eq(pid,1) 2, 1)
+
 	player = g.players[pid]
-
-
-	eq(g.trace,g.turn) traceon()
-
 
 	out('Move ' g.turn ' for player ' name(player) 
 .		 (differ(g.tilemanager) ', with tiles ' show.tiles(rack(player),'A'),'')	'.')
@@ -153,15 +161,8 @@ game.turn
 	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
 
 
-	turn(pid,mode)					:f(game.turn.fail)
+	turn(pid,mode)					:f(game.turn.fail)s(game.turn)
 
-	out(gt(g.turn,g.lastmove + 5) 
-.		'Game over - too many turns with no move.') 	:s(game.over)
-
-	out(ne(g.maxmoves) gt(g.turn,g.maxmoves) 
-.		'Game over -- too many turns (' g.maxmoves ').') :s(game.over)
-
-							:(game.turn)
 game.turn.fail
 *	Here if turn failed because no move could be found. Try to swap three tiles
 
@@ -291,6 +292,7 @@ setup.done
 *	Set f.trace to trace fribble.
 
 	f.trace = 1
+	f.trace = 0
 
 	out('g.tilemanager=' g.tilemanager)
 	ident(g.tilemanager)				:s(setup.game)
