@@ -22,7 +22,7 @@
 
 	g.version is the version of the program:
 
-	g.version = '17.1.1';* January 2017, 1st version.
+	g.version = '17.1.1';* January 2017, 1st version. 
 
 *	A play is a sequence of one or more cells, represented as an array.  The cells are ordered
 *	from left to right for a horizontal play, top to bottom for a vertical play.
