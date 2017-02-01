@@ -40,6 +40,8 @@
 
 	init()
 
+	out('initial tiles ' g.tiles)
+
 	options = host(0) ' '
 	options '-u' =
 *	output = 'host <' options '>'
@@ -47,11 +49,16 @@
 options.loop
 
 	options break(' ') . opt ' ' =			:f(options.loop.done)
-	output = 'option ' opt
-	f.mode = ident(opt,'auto') f.mode.auto		:s(options.loop)
-	f.mode = ident(opt,'solo') f.mode.solo		:s(options.loop)
-	f.mode = ident(opt,'team') f.mode.team		:s(options.loop)
-	output = 'unknown option ' opt
+
+*	Only process -u options. 
+
+	opt '-u' =					:f(options.loop)
+	
+	out('option ' opt)
+
+	f.mode = ident(opt,'-auto') f.mode.auto		:s(options.loop)
+	f.mode = ident(opt,'-solo') f.mode.solo		:s(options.loop)
+	f.mode = ident(opt,'-team') f.mode.team		:s(options.loop)
 							:(options.loop)
 options.loop.done
 
@@ -70,8 +77,8 @@ setup.auto
 
 *	Fribble makes the moves for both players, each with kind player.kind.auto. 
 
-	g.one = player(1,'Fribble I',	player.kind.auto)
-	g.two = player(2,'Fribble II',	player.kind.auto)
+	g.one = player(1,'Fribble A',	player.kind.auto)
+	g.two = player(2,'Fribble B',	player.kind.auto)
 
 *	Fribble manages the tiles for both players.
 
@@ -107,7 +114,11 @@ setup.team
 *	You manage the tiles, entering your tiles as dealt by wwf before each move.
 *	(The foe's tiles are unknown, as all that matters is the move they make.)
 
-	g.one = player(1,'Phil Foe',	player.kind.foe);* Phil knows who he is.
+*	I wrote this program because a friend named Phil kept beating me -- badly --
+*	playing wwf.
+
+	g.one = player(1,'Phil DeFoe',	player.kind.foe);* Hi Phil!
+
 	g.two = player(2,'You',		player.kind.team)
 	g.tilemanager =
 							:(setup.done)

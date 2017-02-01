@@ -1,4 +1,4 @@
-* Copyright (c) 2017 dave shields
+
 
 * This file is part of the fribble project: http://github.com/daveshields/fribble.
 *
@@ -22,7 +22,7 @@
 
 *	g.version is the version of the program:
 
-	g.version = '17.1.1';* January 2017, 1st version. 
+	g.version = '17.1.30';* 30 January 2017, 1st version. 
 
 *	A play is a sequence of one or more cells, represented as an array.  The cells are ordered
 *	from left to right for a horizontal play, top to bottom for a vertical play.
@@ -43,20 +43,27 @@
 
 *	g.log is set to append a copy of standard output to
 *	log file 'fribble.log'.
-
+	
 	g.log = 1
+
+*	g.logfile is the output-associated variable for the log file
+*	g.logfile.channel is its channel
+
+	g.logfile =  
+	g.logfile.channel = 5
 
 *	g.maxmoves, maximum number of moves. This is used to avoid runaway behavior.
 
-	g.maxmoves = 4
 	g.maxmoves = 60
+	g.maxmoves = 3
 
 *	g.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
 
 *	A move consists of a sequence of empty cells in a row or column such that at least one cell in the sequence 
 *	is adjacent to an already occupied cell, with each cell occupied by one of the tiles in the player's rack.
 
-	data('move(id,count,free,text,points,perm,fid)')
+*	data('move(id,count,free,text,points,perm,fid)')
+	data('move(id,count,free,text,points,perm)')
 
 *		*id*	 gives the line number, in the range 1..30;
 *		*count*	 is the number of free cells covered by this move;
@@ -130,7 +137,6 @@
 *	g.permutations.count, a table giving the number of permutations of for a given *n* and *k*.
 
 *	g.random_var is used by random() to compute the next pseudo-random value.
-*	Gimpel uses integer here, but need to have real.
 
 	g.random_var = 1
 
@@ -143,7 +149,7 @@
 
 *	g.trace, if not null, begin tracing at the start of move g.trace.
 
-	g.trace =
+	g.trace = 
 
 *	g.tracing, set nonzero when tracing initiated by *g.trace* begins.
 
@@ -183,12 +189,10 @@ init
 
 	init.main(dictfile,skip)
 
+	randomseed();* seed the random number generator
 	ident(g.log)					:s(init.clean)
 
 *	Open log file for append.
-
-	output(.logfile,2,'f.log[-a]')			:s(init.clean)
-	out('unable to open log file')
 
 init.clean
 
@@ -220,6 +224,8 @@ init.main
 	init.perm('perm.txt')
 
 	init.tileset()
+
+	randomseed();* set random number generator seed
 
 	shuffle();* shuffle the tileset
 
@@ -591,14 +597,25 @@ counters
 	counter('potential moves found'		, thousands(count.moves	))
 	counter('lines checked'			, thousands(count.checkline))
 	counter('words checked'			, thousands(count.checkword))
-	counter('clines lines checked'		, thousands(count.cline))
-	counter('cross lines checked'		, thousands(count.cross	))
+	counter('cross lines checked'		, thousands(count.cline))
 	counter('valid moves found'		, thousands(count.valid))
 	counter('inserts'			, thousands(count.insert))
 	counter('contig inserts'		, thousands(count.insert.contig))
 	counter('split inserts'			, thousands(count.insert.split))
 							:(return)
 counters.end
+
+	define('datedash()s')				:(datedash.end)
+
+*	Convert date to form with no blanks, just dashes, and
+*	so suitable for use as part of a file name.
+
+datedash
+
+	datedash = replace(date(2),' :','--')		
+	datedash = substr(datedash,12,8) '-' substr(datedash,1,10)
+							:(return)
+datedash.end
 
 	define('empty(line)')				:(empty.end)
 
@@ -627,6 +644,7 @@ endgame
 	out(gt(thirty(g.one)) 'Player ' name(g.one) ' had ' thirty(g.one) ' moves of 30 or more points.')
 	out(gt(thirty(g.two)) 'Player ' name(g.two) ' had ' thirty(g.two) ' moves of 30 or more points.')
 	counters()
+	differ(logfile) endfile(g.logfile.channel)
 							:(return)
 endgame.end
 
@@ -753,7 +771,6 @@ find.perm
 find.cross
 
 *	out('find cross ')
-	count.cross = count.cross + 1
 	p = free(move)[i = i + 1]			:f(find.cross.done)
 	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1))
 
@@ -767,6 +784,7 @@ find.cross
 	g.clines[g.cln = g.cln + 1] = cline			:(find.cross)
 	
 find.cross.done
+
 
 *	out(ne(g.tracing) 'Find valid move ' show.move(move) ' in ' show.pair(pair(num,line)))
 
@@ -799,7 +817,7 @@ find.fail
 							:(freturn)
 find.end
 
-	define('game(mode)players,player,opn,move,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board') :(game.end)
+	define('game(mode)players,player,opn,move,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board,lfn') :(game.end)
 
 *	Play a game of fribble. *max* is the maximum number of moves.
 *	Mode is one to let you play against fribble, two to let fribble play itself.
@@ -813,10 +831,30 @@ game.turn
 
 	g.turn = g.turn + 1
 
+	ne(g.turn,1)						:s(game.nolog)
+	eq(g.log)						:s(game.nolog)
+	lfn = datedash() '.fri';* log file name
+	output(.g.logfile,g.logfile.channel,lfn)				:s(game.log)
+	out('unable to open log file ' lfn)			:(game.nolog)
+
+game.log
+
+*	Here for first turn. Initialize log file and write tileset description
+
+	log('file ' lfn)
+	log( 'mode ' 	mode)
+	log.player(1)
+	log.player(2)
+	log.tiles()
+
+
+
+game.nolog
+
 *	ne(f.trace) out('g.turn=' g.turn ' g.maxmoves=' g.maxmoves)
-	gt(g.turn,g.lastmove + 5) 
+	gt(g.turn,g.lastmove + 3) 
 .		out('Game over - too many turns with no move.') :s(game.over)
-	gt(g.turn.g.maxmoves)				
+	gt(g.turn,g.maxmoves)				
 .		out('Game over -- too many turns (' g.maxmoves ').') :s(game.over)
 	pid = (eq(pid,1) 2, 1)
 
@@ -862,6 +900,25 @@ game.over
 	endgame()					:(return)
 
 game.end
+
+	define('log.tiles()')					:(log.tiles.end)
+
+*	Write tiles set to log file
+
+log.tiles
+
+	log('tiles ' '"' g.tiles '"')				:(return)
+
+log.tiles.end
+
+	define('log.player(pid)')				:(log.player.end)
+
+*	Write player description to log file.
+
+log.player
+	log('player.' pid ' ' show.player(pid))			:(return)
+
+log.player.end
 
 	define('grid(lines,start)i,r,c,line')		:(grid.end)
 
@@ -1056,6 +1113,18 @@ lines.next
 
 lines.end
 
+	define('log(text)')					:(log.end)
+
+*	Write text to logfile if making a log.
+
+*LOG*
+log
+	eq(g.log)					:s(return)
+
+	g.logfile = text					:(return)
+
+log.end
+
 	define('makemove(pid,move)player,board,lines')		:(makemove.end)
 
 *	Make a move for player with id *pid*, and return its value.
@@ -1188,9 +1257,7 @@ order.end
 
 *OUT*
 out
-	output = line					
-	ident(g.log)					:s(return)
-	logfile = line					:(return)
+	output = line					:(return)
 
 out.end
 
@@ -1274,7 +1341,7 @@ prefix.end
 *	James F. Gimpel, John Wiley and Sons, 1976.
 
 *RANDOM*
-random	
+random
 
 	g.random_var = remdr(g.random_var * 4676, 414971)
 *	random  = g.random_var / convert(414971,'float')
@@ -1283,6 +1350,32 @@ random
 							:(return)
 random.end
 
+	define('randomseed()s,c')				:(randomseed.end)
+
+*	Compute seed for random number generator from date and time.
+
+*RANDOMSEED*
+randomseed
+	g.random_var = 
+	s = date(2)
+	s = replace(s,'/:-','   ')
+
+*	Get all the digits in s.
+
+randomseed.loop
+
+	s len(1) . c =					:f(randomseed.done)
+	ident(c,' ')					:s(randomseed.loop)
+	g.random_var = g.random_var c			:(randomseed.loop)
+
+randomseed.done
+
+*	Reverse the seed so digits depending on time come first.
+
+	g.random_var = +reverse(g.random_var	)	:(return)
+
+randomseed.end
+
 	define('replenish(pid)player,rack,s')			:(replenish.end)
 
 *	Replenish a player's rack. Do this from the tileset is g.tilemanager is
@@ -1290,7 +1383,7 @@ random.end
 
 *REPLENISH*
 replenish
-
+*	out('enter replenish ' pid)
 	player = g.players[pid]
 	differ(g.tilemanager)				:s(replenish.auto)
 
@@ -1303,7 +1396,7 @@ replenish.manual
 	s = replenish
 	s span(&lcase) =
 	differ(s) out('non-alphabetic character - try again.')	:s(replenish.manual)
-							:(return)
+							:(replenish.done)
 replenish.eof
 
 	out('end of data on input - bye ')		:(end)
@@ -1312,10 +1405,14 @@ replenish.auto
 
 	replenish = rack(player)
 
-	eq(size(replenish),7)				:s(return)
+	eq(size(replenish),7)				:s(replenish.done)
 
-	replenish = replenish take(7 - size(replenish)) :(return)
+	replenish = replenish take(7 - size(replenish)) :(replenish.done)
 
+replenish.done
+
+*	out('exit replenish ' replenish) 
+							:(return)
 replenish.end
 
 	define('row(num,pos)')				:(row.end)
@@ -1746,14 +1843,14 @@ show.lines.titled
 show.lines.end
 
 
-	define('show.move(move,title)f,i,ff') 			:(show.move.end)
+	define('show.move(move)f,i,ff') 		:(show.move.end)
 
 *	Show a move.
 
 *SHOW.MOVE*
 show.move
 
-	out(ident(move) title ' show.move null move ') :s(return)
+	out(ident(move) ' show.move null move ') 	:s(return)
 
 show.move.i
 
@@ -1765,11 +1862,14 @@ show.move.i
 show.move.f
 
 	f break(',') ',' ','				:s(show.funny)
-	show.move = lineid(id(move)) ':' count(move) ':' f ':'
-	show.move = differ(text(move)) show.move text(move) 
-	show.move = differ(perm(move)) show.move ':' perm(move)
-	show.move = differ(points(move)) show.move  '+' points(move)
-*	show.move = differ(fid(move)) show.move ':' fid(move)
+	show.move = 'm(' 
+.			lineid(id(move)) ',' 
+.			count(move) ","
+.			"'" f "',"
+.			  "'" text(move) "',"
+.			(differ(perm(move)) "'" perm(move) "'", '') ','
+.			(differ(points(move)) '+' points(move), '')  ')'
+*.			(differ(fid(move)) fid(move), '') ')'
 							:(return)
 show.funny
 
@@ -1948,7 +2048,7 @@ show.words
 
 show.words.end
 
-	define('shuffle()tiles,n,r1,r2,ch')		:(shuffle.end)
+	define('shuffle()tiles,n,passes,r1,r2,ch')	:(shuffle.end)
 
 *	Shuffle the remaining tiles by randomly swapping two tiles several times.
 
@@ -1956,12 +2056,12 @@ show.words.end
 shuffle	
 
 	tiles = unpack(g.tiles)
-	n = size(g.tiles)  * 2
-	lt(n,5)						:s(shuffle.done)
+	n = size(g.tiles)
+	passes = random(1000) + 500
 
 shuffle.next
 
-	le(n = n - 1)					:s(shuffle.done)
+	le(passes = passes - 1)					:s(shuffle.done)
 	r1 = random(n); r2 = random(n)
 	eq(r1,r2)					:s(shuffle.next)
 	ch = tiles[r1]
@@ -2177,8 +2277,12 @@ traceon.end
 
 *	4.	If not managing the tiles by hand, use fribble to update the rack.
 
+
 *TURN*
 turn
+
+
+
 	player = g.players[pid]
 
 	ne(f.trace) out('enter turn pid=' pid ' ' show.player(pid))
@@ -2199,6 +2303,8 @@ turn
 	ne(f.trace) out(show.player(pid))
 
 turn.move
+
+	log( 'tiles.' pid ' ' rack(player))
 
 *	2.	Find or enter the move to be played.
 
@@ -2223,7 +2329,7 @@ turn.auto
 *	ne(kind(player),player.kind.auto) out('... computed')
 								:(turn.make)
 turn.auto.fail
-	out('...computed')					:(turn.fail)
+								:(turn.fail)
 
 turn.move.manual
 
@@ -2235,11 +2341,15 @@ turn.manual
 turn.manual.in
 	out('enter move')
 	line = terminal						:f(end)
+
+	line 'pass'						:s(turn.pass)
+	line 'swap'						:s(turn.swap)
+	line 'resign'						:s(turn.resign)
+
 	g.move = eval(line)					:f(turn.manual.error)
 	out('input: ' show.move(g.move) ' datatype ' datatype(g.move) )
 	ident(datatype(g.move),'move')				:s(turn.validate)
 	out('need to enter a move')				:(turn.manual)
-
 
 turn.validate
 
@@ -2256,12 +2366,14 @@ turn.manual.error
 	out('eval error ' &errtext)				:(turn.manual)
 
 turn.make
-
 *	3.	Make the move by updating the data structures, scores, etc.
 
-
 	points(g.move) = scoremove(g.move)
+
+	log.move(pid,g.move)	
+
 *	ne(f.trace) out('making move ' show.move(g.move))
+
 	show.play(makemove(pid,g.move))
 
 turn.replenish
@@ -2284,7 +2396,26 @@ turn.replenish
 	ne(f.trace) out('updating rack pid=' pid)
 	rack(player) = less(rack(player), lcase(text(g.move)))
 	rack(player) = replenish(pid)			
-	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
+	ne(f.trace) out('rack pid=' pid '   now ' rack(player))	
+								:(turn.done)
+
+turn.pass
+
+	log( 'pass.' pid)
+								:(turn.done)
+turn.resign
+
+	out('player ' pid ' resigns.')
+	log('resign.' pid)					:(turn.done)
+
+turn.swap
+	
+*	Here in case foe swapped tiles. Report it as such and move on.
+
+
+	log('swap.' pid)
+
+	out('foe swapped tiles')				:(turn.done)
 
 turn.done
 
@@ -2296,14 +2427,25 @@ turn.fail
 
 turn.end 
 
-	define('ucase(s)')				:(ucase.end)
+	define('log.move(pid,move)')				:(log.move.end)
+
+*	Write move description to log file.
+
+log.move
+
+	log('move.' pid ' ' show.move(move))			:(return)
+
+log.move.end
+
+
+	define('ucase(s)')					:(ucase.end)
 
 *	Convert argument to upper case.
 
 *UCASE*
 ucase
 
-	ucase = replace(s,&lcase,&ucase)		:(return)
+	ucase = replace(s,&lcase,&ucase)			:(return)
 
 ucase.end
 	
@@ -2452,108 +2594,8 @@ mf.l
 
 mf.m
 
-	out(ne(fi, size(text)) 'mf size mismatch')	:s(end)
+	out(ne(fi, size(text)) 'mf size mismatch,try again')	:s(freturn)
 	mf = move(id,size(text),free,text)		:(return)
 
 mf.end
 
-	define('foe()')					:(foe.end)
-
-*	Enter foe's move.
-
-*FOE*
-foe
-
-	out("enter foe's move")
-	foe = eval(input)				:f(you.fail)
-	out(differ(datatype(foe),'move') " need to enter foe's move, try again.") :f(you)s(return)
-
-foe.end
-
-	define('you()')					:(you.end)
-
-*	Make your move
-
-*YOU*
-you
-
-	out('enter your move')
-	you = eval(input)				:f(you.fail)
-	out(differ(datatype(you),'move') " need to enter your move, try again.") :s(you)
-	makemove(you,move)				:s(return)f(freturn)
-
-you.end
-
-	define('r()')					:(r.end)
-
-*	Enter your rack
-
-*R*
-r
-
-	out('enter your rack')
-	r = input					:s(return)
-	out('no input, try again')			:(r)
-
-r.end
-
-
-	define('resign()')				:(resign.end)
-
-*	Resign
-
-resign
-	
-
-resign.end
-
-	define('put.move(move)f,i,ff') 			:(put.move.end)
-
-*	Write move in form acceptable for later reading.
-
-*PUT.MOVE*
-put.move
-
-*	Test if all cells in move are contiguous.
-
-	ne(count(move) - 1, free(move)[count(move)] - free(move)[1])	:s(put.move.i)
-
-
-	put.move = 'm( ' lineid(id(move)) ',' free(move)[1] ",'" text(move) "')"	:(return)
-
-put.move.i
-
-	gt(i = i + 1,count(move))			:s(put.move.f)
-
-	ff = free(move)[i]
-	f = append(f,ff,',')				:s(put.move.i)
-
-put.move.f
-
-	put.move = 'mf(' lineid(id(move)) ',' "'" f "','" text(move) "')" :(return) 
-							:(return)
-put.move.end
-
-	define('put.player(pid)player')				:(put.player.end)
-
-*	Create player description in form acceptable for later reading
-
-*	data('player(pid,name,fribble,rack,total,thirty,highest)')
-
-put.player
-
-	player = g.players[pid]
-	put.player = "player(" pid ",'" name(p) "'," fribble(p) ",'" rack(p)  ")"
-.							:(return)
-put.player.end
-
-	define('put.rack(pid,r)player')				:(put.rack.end)
-
-*	Create description of rack *r* of player with id *pid* in format that can be read back.
-
-put.rack
-
-	player = g.players[pid]
-	putrack = "rack(" pid(p) ",'" rack(p) "')"	:(return)
-
-put.rack.end
