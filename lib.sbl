@@ -54,8 +54,8 @@
 
 *	g.maxmoves, maximum number of moves. This is used to avoid runaway behavior.
 
-	g.maxmoves = 60
 	g.maxmoves = 3
+	g.maxmoves = 60
 
 *	g.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
 
@@ -224,7 +224,6 @@ init.main
 	init.perm('perm.txt')
 
 	init.tileset()
-
 	randomseed();* set random number generator seed
 
 	shuffle();* shuffle the tileset
@@ -602,6 +601,8 @@ counters
 	counter('inserts'			, thousands(count.insert))
 	counter('contig inserts'		, thousands(count.insert.contig))
 	counter('split inserts'			, thousands(count.insert.split))
+	counter('pack.chars'			, thousands(count.pack.chars))
+	counter('pack.lines'			, thousands(count.pack.lines))
 							:(return)
 counters.end
 
@@ -644,6 +645,7 @@ endgame
 	out(gt(thirty(g.one)) 'Player ' name(g.one) ' had ' thirty(g.one) ' moves of 30 or more points.')
 	out(gt(thirty(g.two)) 'Player ' name(g.two) ' had ' thirty(g.two) ' moves of 30 or more points.')
 	counters()
+
 	differ(logfile) endfile(g.logfile.channel)
 							:(return)
 endgame.end
@@ -1143,8 +1145,8 @@ makemove
 
 	out('Player ' pid ', ' name(player) ', played ' show.tiles(text(move)) ' starting at ' lineid(id(move)) ', position ' free(move)[1]
 .	', for ' points(move) ' points.')
-	out('Score is now ' name(g.one) ' ' total(g.one)
-.	 ', ' name(g.two) ' ' total(g.two) ', with '  size(g.tiles) ' letters left.')
+	out('Score is now "' name(g.one) '" ' total(g.one)
+.	 ',  "' name(g.two) '" ' total(g.two) ', with '  size(g.tiles) ' letters left.')
 
 	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
 
@@ -1261,16 +1263,25 @@ out
 
 out.end
 
-	define('pack(chars),i')				:(pack.end)
+*	pack.sizes = array(30)
+
+	define('pack(chars)n,i')				:(pack.end)
 
 *	Pack the array of characters *chars* into a line.
 
 *PACK*
 pack
+	n = +prototype(chars)
+	ne(n,15)						:s(pack.chars)
 
-pack.ch
+*	Almost all calls to pack are to pack a line from the grid, so do it directly.
 
-	pack = pack chars[i = i + 1]			:f(return)s(pack.ch)
+	pack =  chars[1]  chars[2]  chars[3]  chars[4]  chars[5]  chars[6]  chars[7]  chars[8] 
+.		chars[9]  chars[10] chars[11] chars[12] chars[13] chars[14] chars[15] 
+								:(return) 
+	
+pack.chars
+	pack = pack chars[i = i + 1]			:f(return)s(pack.chars)
 
 pack.end
 
@@ -1344,7 +1355,6 @@ prefix.end
 random
 
 	g.random_var = remdr(g.random_var * 4676, 414971)
-*	random  = g.random_var / convert(414971,'float')
 	random  = g.random_var / 414971.0
 	random = ne(n) convert(random * n,'integer') + 1
 							:(return)
@@ -1376,27 +1386,27 @@ randomseed.done
 
 randomseed.end
 
-	define('replenish(pid)player,rack,s')			:(replenish.end)
+	define('replenish(pid)player,rack,s')		:(replenish.end)
 
 *	Replenish a player's rack. Do this from the tileset is g.tilemanager is
 *	set, or get the new tileset from the user otherwise.
 
 *REPLENISH*
 replenish
-*	out('enter replenish ' pid)
+
 	player = g.players[pid]
 	differ(g.tilemanager)				:s(replenish.auto)
 
 replenish.manual
 
 	out('enter rack for player: ' show.player(pid))
-	replenish = lcase(input)				:f(replenish.eof)
+	replenish = lcase(input)			:f(replenish.eof)
 	ident(replenish) out('no input - try again.')	:s(replenish.manual)
 	gt(size(replenish),7) out('too many letters |' replenish '|, try again.') :s(replenish.manual)
 	s = replenish
 	s span(&lcase) =
 	differ(s) out('non-alphabetic character - try again.')	:s(replenish.manual)
-							:(replenish.done)
+							:(return)
 replenish.eof
 
 	out('end of data on input - bye ')		:(end)
@@ -1407,12 +1417,8 @@ replenish.auto
 
 	eq(size(replenish),7)				:s(replenish.done)
 
-	replenish = replenish take(7 - size(replenish)) :(replenish.done)
+	replenish = replenish take(7 - size(replenish)) :(return)
 
-replenish.done
-
-*	out('exit replenish ' replenish) 
-							:(return)
 replenish.end
 
 	define('row(num,pos)')				:(row.end)
@@ -2220,8 +2226,8 @@ take
 	n = gt(n,size(g.tiles)) size(g.tiles)
 	eq(n,0)						:s(return)
 	take = order(substr(g.tiles,1,n))
-	g.tiles = substr(g.tiles, n + 1)
-							:(return)
+	g.tiles = substr(g.tiles, n + 1)		:(return)
+
 take.end
 
 	define('thousands(s)n')				:(thousands.end)
