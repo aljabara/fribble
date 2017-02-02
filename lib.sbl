@@ -601,8 +601,6 @@ counters
 	counter('inserts'			, thousands(count.insert))
 	counter('contig inserts'		, thousands(count.insert.contig))
 	counter('split inserts'			, thousands(count.insert.split))
-	counter('pack.chars'			, thousands(count.pack.chars))
-	counter('pack.lines'			, thousands(count.pack.lines))
 							:(return)
 counters.end
 
@@ -834,22 +832,6 @@ game.turn
 	g.turn = g.turn + 1
 
 	ne(g.turn,1)						:s(game.nolog)
-	eq(g.log)						:s(game.nolog)
-	lfn = datedash() '.fri';* log file name
-	output(.g.logfile,g.logfile.channel,lfn)				:s(game.log)
-	out('unable to open log file ' lfn)			:(game.nolog)
-
-game.log
-
-*	Here for first turn. Initialize log file and write tileset description
-
-	log('file ' lfn)
-	log( 'mode ' 	mode)
-	log.player(1)
-	log.player(2)
-	log.tiles()
-
-
 
 game.nolog
 
@@ -909,7 +891,7 @@ game.end
 
 log.tiles
 
-	log('tiles ' '"' g.tiles '"')				:(return)
+	log('tiles  g.tiles = "' g.tiles '"')			:(return)
 
 log.tiles.end
 
@@ -918,7 +900,8 @@ log.tiles.end
 *	Write player description to log file.
 
 log.player
-	log('player.' pid ' ' show.player(pid))			:(return)
+	log('player.' pid ' ' show.player(pid))			
+								:(return)
 
 log.player.end
 
@@ -2016,18 +1999,20 @@ show.play.end
 *SHOW.PLAYER*
 show.player
 
+*	data('player(pid,name,kind,rack,total,thirty,highest)')
+
 	player = g.players[pid]
 	show.player = 
-.		 'player pid='  pid(player)	' "' name(player) '" ' 
-.		(differ(rack(player))	' rack |'	rack(player) '|','')
-.		(gt(total(player))	' total '	total(player)   ,'')
-.		(gt(highest(player))	' highest '	highest(player) ,'') 
-.		' kind='
-.		(	eq(kind(player),player.kind.oops)  'oops',
+.		'player('  pid(player)	',"' name(player) '"'  	  	',' 
+.		'player.kind.'	( 	
+.			eq(kind(player),player.kind.auto) 'auto',
 .			eq(kind(player),player.kind.foe)  'foe',
 .			eq(kind(player),player.kind.solo) 'solo',
-.			eq(kind(player),player.kind.auto) 'auto',
-.			eq(kind(player),player.kind.team) 'team', '')
+.			eq(kind(player),player.kind.team) 'team', ''
+.			        )	','
+.		'"' rack(player) '",' total(player) ','
+.		(gt(highest(player)) highest(player) ,'')			
+.		')'
 							:(return)
 show.player.end
 
@@ -2117,7 +2102,7 @@ start
 	tiles break('s')				:f(start.n)
 	tiles = less(tiles,'s')
 
-start.n	gt(n = n + 1,6)					:s(start.done)
+start.n	gt(n = n + 1,7)					:s(start.done)
 
 *	play at most six tiles for now.
 	kind = size(tiles) '?' n
@@ -2138,6 +2123,8 @@ start.word
 *	case the double word bonus at index twelve can be achieved.
 
 	score = (lt(size(word),5) cost(word), 2 * cost(word))
+	
+	score = eq(size(word),7) score + 35;* bonus for playing all the tiles.
 
 *	Add the first word found to set *highest* and *lowest*
 
@@ -2310,7 +2297,7 @@ turn
 
 turn.move
 
-	log( 'tiles.' pid ' ' rack(player))
+	log( 'rack.' pid ' rack(g.players[' pid ']) =  "' rack(player) '"')
 
 *	2.	Find or enter the move to be played.
 

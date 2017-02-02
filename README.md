@@ -4,6 +4,15 @@ Fribble is a collection of SPITBOL programs created to have fun with -- and play
 
 The original goal was to construct a program that can play WWF.  A copy of the offical rules for WWF can be found in Appendix A.
 
+FRIBBLE is licensed under the GNU GENERAL PUBLIC LICENSE V2 (or later).
+
+This means you can use the code under any of the following license terms:
+
+  GPL v2
+  GPL v2 (or later)
+  GPL v3
+  GPL v3 (or later)
+
 ##Strategy
 
 Fribble's strategy is at its core "brute force" in that each new move is determined by generating **all** possible moves and then picking the one that has a score at least as high as any other.
