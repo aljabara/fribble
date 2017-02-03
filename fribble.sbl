@@ -124,23 +124,6 @@ setup.team
 							:(setup.done)
 setup.done
 
-*	Initialize log file and write tileset description
-
-	eq(g.log)					:s(setup.nolog)
-	lfn = datedash() '.fri';* log file name
-	output(.g.logfile,g.logfile.channel,lfn)	:s(setup.log)
-	out('unable to open log file ' lfn)		:(game.nolog)
-
-setup.log
-
-
-	log('file ' lfn)
-	log( 'mode ' 	mode)
-	log.tiles()
-	log.player(1)
-	log.player(2)
-
-
 	g.players[1] = g.one; g.players[2] = g.two
 
 *	out('g.one ' show.player(1))

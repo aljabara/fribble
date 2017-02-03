@@ -24,22 +24,19 @@
 
 	g.version = '17.1.30';* 30 January 2017, 1st version. 
 
-*	A play is a sequence of one or more cells, represented as an array.  The cells are ordered
-*	from left to right for a horizontal play, top to bottom for a vertical play.
-
 *	g.board, array('15,15'), the playing board. Each entry is blank (' ') for unplayed cell, or is the letter played.
 
 *	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
 
-*	g.tilemanager determines how tiles are dealt out. 
-*	If not null, the program manages the tiles and updates the player racks after each turn.
-*	If null, then you manually update the racks.
+	g.clines = array(8);* for line with move and its crossing lines.
+	g.cln = 0;* number of entries in clines.
 
-	g.tilemanager =
+*	g.date, date and time at start of run. Used to name log file and seed random generator.
 
 *	g.dict, array(15), is an array of hashtables  that are non-null for words in the dictionary.
 
-*	g.found counts number of valid moves that were found.
+	g.highest = 0;* highest score
+	g.lowest = 0;* lowest cost
 
 *	g.log is set to append a copy of standard output to
 *	log file 'fribble.log'.
@@ -61,6 +58,8 @@
 
 *	A move consists of a sequence of empty cells in a row or column such that at least one cell in the sequence 
 *	is adjacent to an already occupied cell, with each cell occupied by one of the tiles in the player's rack.
+*	The cells are ordered from left to right for a horizontal play, top to bottom for a vertical play.
+
 
 	data('move(id,free,text,points,perm)')
 
@@ -118,12 +117,6 @@
 
 		data('pair(num, line)')
 
-*	g.turn, the number of the current turn
-
-*	g.lastmove, the turn when the last move was made.
-
-	g.turn = g.lastmove = 0
-
 *	g.permutations, a table of the permutations of n=1..7 things taken 1..k at a time.
 *	For example, g.perms['7?3'] is permutations of 1..7 taken 3 at a time. Each entry
 *	in the table is an array giving the desired set of permutations.
@@ -141,11 +134,22 @@
 
 *	g.tiles, a string containing all the characters in the initial bag of characters.
 
+*	g.tilemanager determines how tiles are dealt out. 
+*	If not null, the program manages the tiles and updates the player racks after each turn.
+*	If null, then you manually update the racks.
+
+	g.tilemanager =
+
 *	g.trace, if not null, begin tracing at the start of move g.trace.
 
 	g.trace = 
 
 *	g.tracing, set nonzero when tracing initiated by *g.trace* begins.
+
+*	g.turn, the number of the current turn
+*	g.lastmove, the turn when the last move was made.
+
+	g.turn = g.lastmove = 0
 
 *	g.used, array('15,15') tracks the cells in the board that have been used in a move
 *	A move made after the first move must have at least tile played in a square adjacent to
@@ -154,12 +158,6 @@
 *	g.used.lines, array(30), is the array of lines defined by the rows and columns of the used grid.
 
 *	g.value, a map from characters to the tile value of that character.
-
-	g.clines = array(8);* for line with move and its crossing lines.
-	g.cln = 0;* number of entries in clines.
-
-	g.highest = 0;* highest score
-	g.lowest = 0;* lowest cost
 
 *	The variables for row and column numbers are used
 *	for the input of moves. They map name to line number.
@@ -181,12 +179,22 @@
 *INIT*
 init
 
+	g.date = date(2)
+
 	init.main(dictfile,skip)
 
 	randomseed();* seed the random number generator
-	ident(g.log)					:s(init.clean)
 
-*	Open log file for append.
+	eq(g.log)					:s(init.nolog)
+
+*	Open log file.
+
+	lfn = datedash() '.fri';* log file name
+	output(.g.logfile,g.logfile.channel,lfn)	:s(init.log)
+	out('unable to open log file ' lfn)		:(game.nolog)
+
+init.log
+
 
 init.clean
 
@@ -636,7 +644,7 @@ counters.end
 
 datedash
 
-	datedash = replace(date(2),' :','--')		
+	datedash = replace(g.date,' :','--')		
 	datedash = substr(datedash,12,8) '-' substr(datedash,1,10)
 							:(return)
 datedash.end
@@ -668,6 +676,12 @@ endgame
 	out(gt(thirty(g.one)) 'Player ' name(g.one) ' had ' thirty(g.one) ' moves of 30 or more points.')
 	out(gt(thirty(g.two)) 'Player ' name(g.two) ' had ' thirty(g.two) ' moves of 30 or more points.')
 	counters()
+
+	log('total.1 ' total(g.one))
+	log('total.2 ' total(g.two))
+	log('date.finis ' date(2))
+	log('time.finis ' time())
+	log('endgame')
 
 	differ(logfile) endfile(g.logfile.channel)
 							:(return)
@@ -825,7 +839,6 @@ find.cross.done
 *	ne(g.tracing) show.play(move)
 *	out(ne(g.tracing) 'Find calling scoremove')
 	points(move) = +scoremove(move)	
-	g.found = g.found + 1
 	g.cln = 0;* reset for next permutation
 	find = isbest(move) copy(move)			:(find.perm)
 
@@ -850,11 +863,21 @@ find.end
 *GAME*
 game
 
+	log('game ' mode)
+	log('version ' g.version)
+	log('time.start ' time())
+	log('date.start ' g.date)
+	log.tiles()
+	log.player(1)
+	log.player(2)
+
+
 	pid = 2;* set to two so will become one when loop first entered
 
 game.turn
 
 	g.turn = g.turn + 1
+	log('turn ' g.turn)
 
 	ne(g.turn,1)					:s(game.nolog)
 
@@ -873,7 +896,6 @@ game.nolog
 .		 (differ(g.tilemanager) ', with tiles ' show.tiles(rack(player),'A'),'')	'.')
 	out(ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
 	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
-
 
 	turn(pid,mode)					:f(game.turn.fail)s(game.turn)
 
@@ -916,7 +938,7 @@ game.end
 
 log.tiles
 
-	log('tiles  g.tiles = "' g.tiles '"')		:(return)
+	log('tiles  "' g.tiles '"')		:(return)
 
 log.tiles.end
 
@@ -1135,6 +1157,53 @@ log
 
 log.end
 
+	define('m(id,pos,free,text)free,fi')		:(m.end)
+
+*	Create move in line with given id and text.
+*	Either *pos* or *free* must be given, but not both:
+*	*pos*, gives the starting position;
+*	*free* is a string listing the open cells, separated with a space.
+*	For example, the following each specify the word 'fribble' starting at position 6 in row 8.
+
+*		m(r8,6,,'fribble')
+*		m(r8,,'6 7 8 9 10 11 12','fribble')
+
+*M*
+m
+	diff(pos) diff(open)				:s(m.error)
+	ident(pos)					:s(m.cells)
+
+*	Build free cell list.
+
+	free = array(size(text))
+
+m.pos
+
+	free[fi = fi + 1] = pos + (fi - 1)		:s(m.pos)f(m.done)
+
+							:(return)
+m.open
+	ident(open)					:s(m.error)
+
+	open = open ',';* to assist loop
+	free = array(size(text))
+
+m.list
+
+	open break(',') . pos ','  =			:f(m.done)
+	free[fi = fi + 1] = pos				:(m.list)
+
+m.error
+
+	out('m(id,pos,open,text) error - must specify pos OR open, at least one, not both.') :(freturn)
+m.done
+
+*	out('m id ' id '  size ' size(text) ' f[1]' f[1] ' f[count]=' f[size(text)] ' text='  text)
+	out(ne(fi, size(text)) 'm size mismatch,try again')	:s(freturn)
+	m = move(id,free,text)				:(return)
+
+m.end
+
 	define('makemove(pid,move)player,board,lines')	:(makemove.end)
 
 *	Make a move for player with id *pid*, and return its value.
@@ -1344,7 +1413,7 @@ random.end
 *RANDOMSEED*
 randomseed
 	g.random_var = 
-	s = date(2)
+	s = g.date
 	s = replace(s,'/:-','   ')
 
 *	Get all the digits in s.
@@ -1840,7 +1909,7 @@ show.move.i
 	gt(i = i + 1,size(text(move)))			:s(show.move.f)
 	ff = free(move)[i]
 	ident(datatype(ff,'string'))			:s(show.fail)
-	f = append(f,ff,',')				:s(show.move.i)
+	f = append(f,ff)				:s(show.move.i)
 
 show.move.f
 
@@ -2292,7 +2361,7 @@ turn
 
 turn.move
 
-	log( 'rack.' pid ' rack(g.players[' pid ']) =  "' rack(player) '"')
+	log( 'rack.' pid ' "' rack(player) '"')
 
 *	2.	Find or enter the move to be played.
 
@@ -2542,52 +2611,4 @@ words.done
 	words = convert(words,'array')			:(return)
 
 words.end
-
-	define('m(id,pos,open,text)free,fi')		:(m.end)
-
-*	Create move in line with given id and text.
-*	Either *pos* or *cells* must be given, but not both:
-*	*pos*, gives the starting position.move begins at that position.
-*	*list* is a string listing the open cells, separated with a comma.
-*	For example, the following each specify the word 'fribble' starting at position 6 in row 8.
-
-*		m(r8,6,,'fribble')
-*		m(r8,,'6,7,8,9,10,11,12','fribble')
-
-
-*M*
-m
-	diff(pos) diff(open)				:s(m.error)
-	ident(pos)					:s(m.cells)
-
-*	Build free cell list.
-
-	free = array(size(text))
-
-m.pos
-
-	free[fi = fi + 1] = pos + (fi - 1)		:s(m.pos)f(m.done)
-
-							:(return)
-m.open
-	ident(open)					:s(m.error)
-
-	open = open ',';* to assist loop
-	free = array(size(text))
-
-m.list
-
-	open break(',') . pos ','  =			:f(m.done)
-	free[fi = fi + 1] = pos				:(m.list)
-
-m.error
-
-	out('m(id,pos,open,text) error - must specify pos OR open, at least one, not both.') :(freturn)
-m.done
-
-*	out('m id ' id '  size ' size(text) ' f[1]' f[1] ' f[count]=' f[size(text)] ' text='  text)
-	out(ne(fi, size(text)) 'm size mismatch,try again')	:s(freturn)
-	m = move(id,free,text)				:(return)
-
-m.end
 
