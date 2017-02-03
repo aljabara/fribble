@@ -26,16 +26,17 @@
 
 *	The program can now run in several modes:
 
-*	f.mode = 1 for solo mode, where you play against fribble.
-*	f.mode = 2 for self mode, where fribble moves for both players.
+*	f.mode = 1 for auto mode, where fribble moves for both players.
+*	f.mode = 2 for solo mode, where you play against fribble.
 *	f.mode = 3 for team mode, where you and fribble work as team to play another player.
 	
-	f.mode.solo = 1
-	f.mode.auto = 2
+	f.mode.auto = 1
+	f.mode.solo = 2
 	f.mode.team = 3
 
 
 	&stlimit = -1
+
 	&anchor = &trim = 1
 
 	init()
@@ -43,8 +44,7 @@
 	out('initial tiles ' g.tiles)
 
 	options = host(0) ' '
-	options '-u' =
-*	output = 'host <' options '>'
+	output = 'host <' options '>'
 
 options.loop
 
@@ -54,14 +54,15 @@ options.loop
 
 	opt '-u' =					:f(options.loop)
 	
-	out('option ' opt)
+	out('option:' opt ':')
 
-	f.mode = ident(opt,'-auto') f.mode.auto		:s(options.loop)
-	f.mode = ident(opt,'-solo') f.mode.solo		:s(options.loop)
-	f.mode = ident(opt,'-team') f.mode.team		:s(options.loop)
+	f.mode = ident(opt,'auto') f.mode.auto		:s(options.loop)
+	f.mode = ident(opt,'solo') f.mode.solo		:s(options.loop)
+	f.mode = ident(opt,'team') f.mode.team		:s(options.loop)
 							:(options.loop)
 options.loop.done
 
+	out('f.mode=' f.mode)
 
 
 	eq(f.mode,f.mode.solo)				:s(setup.solo)

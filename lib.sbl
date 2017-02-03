@@ -51,8 +51,8 @@
 
 *	g.maxmoves, maximum number of moves. This is used to avoid runaway behavior.
 
-	g.maxmoves = 3
 	g.maxmoves = 60
+	g.maxmoves = 3
 
 *	g.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
 
@@ -1157,23 +1157,27 @@ log
 
 log.end
 
-	define('m(id,pos,free,text)free,fi')		:(m.end)
+	define('m(id,str,text)pos,dt,free,fi')		:(m.end)
 
 *	Create move in line with given id and text.
-*	Either *pos* or *free* must be given, but not both:
-*	*pos*, gives the starting position;
-*	*free* is a string listing the open cells, separated with a space.
+*	*str* is one of the following:
+*		integer	gives starting position, in range 1..15
+*		string that can be converted to integer, treat as in integer case
+*		string giving list of empty (open) cells used, with entries
+*			separated by spaces.
 *	For example, the following each specify the word 'fribble' starting at position 6 in row 8.
 
-*		m(r8,6,,'fribble')
-*		m(r8,,'6 7 8 9 10 11 12','fribble')
+*		m(r8,6,'fribble')
+*		m(r8,'6 7 8 9 10 11 12','fribble')
 
 *M*
 m
-	diff(pos) diff(open)				:s(m.error)
-	ident(pos)					:s(m.cells)
+	dt = datatype(str)
+	pos = eq(dt,'integer') str 			:s(m.integer)
+	pos = convert(str,'integer') 			:s(m.integer)
 
-*	Build free cell list.
+	str = str ' '
+	str break(' ') . pos ' ' =
 
 	free = array(size(text))
 
@@ -2397,7 +2401,7 @@ turn.manual
 
 turn.manual.in
 	out('enter move')
-	line = terminal					:f(end)
+	line = input.user()				:f(end)
 
 	line 'pass'					:s(turn.pass)
 	line 'swap'					:s(turn.swap)
@@ -2612,3 +2616,13 @@ words.done
 
 words.end
 
+	define('input.user()')				:(input.user.end)
+
+*	Get a line from the user, usually from the terminal, or from
+*	a user input file.
+
+input.user
+
+	input.user = terminal				:f(freturn)s(return)
+
+input.user.end

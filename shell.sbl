@@ -280,7 +280,7 @@ shell.scoremove
 	out('move is worth ' points(s.move) ' points.')
 							:(shell.loop)
 	out('do you want to make this move (y or just ENTER for yes, no otherwise)?')
-	ans = input					:f(shell.eod)
+	ans = terminal					:f(shell.eod)
 	ident(ans)					:s(shell.moveon)
 	ident(ans,'y')					:s(shell.moveon)
 							:(shell.you.move)
