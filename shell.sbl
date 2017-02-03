@@ -111,15 +111,15 @@ op.init.end
 shell
 
 shell.loop
-	ident(s.replay)						:s(shell.term)
-	linein = termfile					:s(shell.line)
-	linein 'q'						:s(shell.loop)
+	ident(s.replay)					:s(shell.term)
+	linein = termfile				:s(shell.line)
+	linein 'q'					:s(shell.loop)
 	s.replay =
 	endfile(3)
 	output(.termfile,3,'term[-a]')
 shell.term
 	out('op?')
-	linein = terminal ' '					:f(shell.end)
+	linein = terminal ' '				:f(shell.end)
 shell.line
 	termfile = differ(termfile) linein;* save line
 *	out('linein =' linein '.')
@@ -213,7 +213,7 @@ shell.next
 	
 *	See if player has 'fribble' attribute.
 	
-	ident(fribble(g.players[g.pid]))			:s(shell.loop)
+	ident(fribble(g.players[g.pid]))		:s(shell.loop)
 	
 	s.move = (eq(g.turn,1) start(g.pid), find(g.pid))
 	ident(s.move) out('no move found, so no move made')	:(shell.loop)

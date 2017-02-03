@@ -62,11 +62,10 @@
 *	A move consists of a sequence of empty cells in a row or column such that at least one cell in the sequence 
 *	is adjacent to an already occupied cell, with each cell occupied by one of the tiles in the player's rack.
 
-*	data('move(id,count,free,text,points,perm,fid)')
-	data('move(id,count,free,text,points,perm)')
+*	data('move(id,free,text,points,perm,fid)')
+	data('move(id,free,text,points,perm)')
 
 *		*id*	 gives the line number, in the range 1..30;
-*		*count*	 is the number of free cells covered by this move;
 *		*free*	 is an array of dimension *count* giving the positions of the empty cells;
 *		*text*	 is the string of tiles of the move; and
 *		*points* is the number of points won by playing this move.
@@ -180,7 +179,7 @@
 	
 *	Utility functions
 
-	define('init(dictfile,skip,external)c,i,j,s,t')		:(init.end)
+	define('init(dictfile,skip,external)c,i,j,s,t')	:(init.end)
 
 *	Initialize global variables.
 
@@ -262,11 +261,11 @@ init.bonus.1
 
 init.bonus.next
 
-	g.bonus.lines = lines(g.bonus)				:(return)
+	g.bonus.lines = lines(g.bonus)			:(return)
 
 init.bonus.end
 
-	define('init.dict(filename,skip)file,i,n,w,s')		:(init.dict.end)
+	define('init.dict(filename,skip)file,i,n,w,s')	:(init.dict.end)
 
 *	Initialize the global dictionary g.dict.
 
@@ -418,10 +417,10 @@ init.value.end
 *ADJACENT*
 adjacent
 
-	gt(r,1) differ(g.used[r - 1,c],' ')			:s(return) ;* cell to the north
-	lt(c,15) differ(g.used[r,c + 1],' ')			:s(return) ;* cell to the east
-	gt(c,1) differ(g.used[r,c - 1],' ')			:s(return) ;* cell to the west
-	lt(r,15) differ(g.used[r + 1,c],' ')			:s(return) ;* cell to the south
+	gt(r,1) differ(g.used[r - 1,c],' ')		:s(return) ;* cell to the north
+	lt(c,15) differ(g.used[r,c + 1],' ')		:s(return) ;* cell to the east
+	gt(c,1) differ(g.used[r,c - 1],' ')		:s(return) ;* cell to the west
+	lt(r,15) differ(g.used[r + 1,c],' ')		:s(return) ;* cell to the south
 							:(freturn)
 adjacent.end
 
@@ -543,7 +542,7 @@ clines.i
 	ch = substr(text(move),i,1)
 	line = (gt(p,1) substr(line,1,p - 1),'')  (differ(upper) ucase(ch), ch) (lt(p,15) substr(line,p + 1),'')
 	g.clines[g.cln = g.cln + 1] = pair(c, (ident(upper) lcase(line), line))
-	le(i = i + 1, count(move))			:s(clines.i)f(return)
+	le(i = i + 1, size(text(move)))			:s(clines.i)f(return)
 
 clines.end
 
@@ -676,7 +675,7 @@ find
 
 *	See if first move, in which case call start()
 
-	find = eq(turn,1) start(pid)				:s(return)
+	find = eq(turn,1) start(pid)			:s(return)
 
 	player = g.players[pid]
 	rack = rack(player)
@@ -781,7 +780,7 @@ find.cross
 	text(move) = place(text(move),ucase(rack))
 *	out(ne(g.tracing) 'Find text ' text(move))
 
-	g.clines[g.cln = g.cln + 1] = cline			:(find.cross)
+	g.clines[g.cln = g.cln + 1] = cline		:(find.cross)
 	
 find.cross.done
 
@@ -790,8 +789,8 @@ find.cross.done
 
 *	Score the line by summing the scores of the lines saved in clines.
 	
-*	out(ne(g.tracing) 'valid move :' line '  move '  id(move) ' ' count(move) '  '
-*.		free(move)[1] '...' free(move)[count(move)] ' ' text(move))
+*	out(ne(g.tracing) 'valid move :' line '  move '  id(move) ' ' size((text(move)) '  '
+*.		free(move)[1] '...' free(move)[size(text(move))] ' ' text(move))
  
 	count.valid = count.valid + 1
 	move = copy(move)
@@ -831,7 +830,7 @@ game.turn
 
 	g.turn = g.turn + 1
 
-	ne(g.turn,1)						:s(game.nolog)
+	ne(g.turn,1)					:s(game.nolog)
 
 game.nolog
 
@@ -885,23 +884,23 @@ game.over
 
 game.end
 
-	define('log.tiles()')					:(log.tiles.end)
+	define('log.tiles()')				:(log.tiles.end)
 
 *	Write tiles set to log file
 
 log.tiles
 
-	log('tiles  g.tiles = "' g.tiles '"')			:(return)
+	log('tiles  g.tiles = "' g.tiles '"')		:(return)
 
 log.tiles.end
 
-	define('log.player(pid)')				:(log.player.end)
+	define('log.player(pid)')			:(log.player.end)
 
 *	Write player description to log file.
 
 log.player
 	log('player.' pid ' ' show.player(pid))			
-								:(return)
+							:(return)
 
 log.player.end
 
@@ -965,7 +964,7 @@ hline
 hline.end
 
 
-	define('insert(line,move,upper)c,f,i,text')		:(insert.end)
+	define('insert(line,move,upper)c,f,i,text')	:(insert.end)
 
 *	Insert the text of a move into its free list of empty cells in the line of the move.
 *	Express the text in uppre case if *upper* is not null.
@@ -975,7 +974,7 @@ insert
 	count.insert = count.insert + 1
 	text = (differ(upper) ucase(text(move)), text(move))
 	f = free(move)
-	c = count(move)
+	c = size(text(move))
 	ne(f[c] - f[1], c - 1)			:s(insert.chars)
 
 *	Here if cells are contiguous. Insert text after part before it, and before part after it.
@@ -995,7 +994,7 @@ insert.chars
 
 insert.ch
 
-	gt(i = i + 1,count(move))			:s(insert.done)
+	gt(i = i + 1,size(text(move)))			:s(insert.done)
 	insert[free(move)[i]] = substr(text,i,1)	:(insert.ch)
 
 insert.done
@@ -1098,7 +1097,7 @@ lines.next
 
 lines.end
 
-	define('log(text)')					:(log.end)
+	define('log(text)')				:(log.end)
 
 *	Write text to logfile if making a log.
 
@@ -1106,11 +1105,11 @@ lines.end
 log
 	eq(g.log)					:s(return)
 
-	g.logfile = text					:(return)
+	g.logfile = text				:(return)
 
 log.end
 
-	define('makemove(pid,move)player,board,lines')		:(makemove.end)
+	define('makemove(pid,move)player,board,lines')	:(makemove.end)
 
 *	Make a move for player with id *pid*, and return its value.
 
@@ -1248,20 +1247,20 @@ out.end
 
 *	pack.sizes = array(30)
 
-	define('pack(chars)n,i')				:(pack.end)
+	define('pack(chars)n,i')			:(pack.end)
 
 *	Pack the array of characters *chars* into a line.
 
 *PACK*
 pack
 	n = +prototype(chars)
-	ne(n,15)						:s(pack.chars)
+	ne(n,15)					:s(pack.chars)
 
 *	Almost all calls to pack are to pack a line from the grid, so do it directly.
 
 	pack =  chars[1]  chars[2]  chars[3]  chars[4]  chars[5]  chars[6]  chars[7]  chars[8] 
 .		chars[9]  chars[10] chars[11] chars[12] chars[13] chars[14] chars[15] 
-								:(return) 
+							:(return) 
 	
 pack.chars
 	pack = pack chars[i = i + 1]			:f(return)s(pack.chars)
@@ -1343,7 +1342,7 @@ random
 							:(return)
 random.end
 
-	define('randomseed()s,c')				:(randomseed.end)
+	define('randomseed()s,c')			:(randomseed.end)
 
 *	Compute seed for random number generator from date and time.
 
@@ -1477,7 +1476,7 @@ scan.text
 *	Here if adjacent cell found. Set text of move to the permutation specification.
 
 	sub = subarray(open,pi,len)			:f(scan.len)
-	move = move(num,len,sub,size(rack) '?' len)	:f(scan.len)
+	move = move(num,sub,size(rack) '?' len)		:f(scan.len)
 *	out(ne(g.tracing) 'Scan move ' show.move(move))
 	scan = ident(scan) table()
 	count.scanned = count.scanned + 1
@@ -1592,7 +1591,7 @@ scoremove.done
 
 *	There is a bonus of 35 points for playing seven tiles in one move.
 
-	scoremove  = eq(count(move),7) scoremove + 35;
+	scoremove  = eq(size(size(text(move))),7) scoremove + 35;
 
 	ne(g.tracing) out('scoremove returns ' scoremove)
 							:(return)
@@ -1664,7 +1663,7 @@ show.board.finish
 
 show.board.end
 
-	define('show.bonus()b,r,c,l,line')			:(show.bonus.end)
+	define('show.bonus()b,r,c,l,line')		:(show.bonus.end)
 
 *	Show the board.
 
@@ -1708,7 +1707,7 @@ show.bonus.finish
 
 show.bonus.end
 
-	define('show.clines(move,title)i,p,line,num')		:(show.clines.end)
+	define('show.clines(move,title)i,p,line,num')	:(show.clines.end)
 
 *	Show the clines array of lines
 
@@ -1803,7 +1802,7 @@ show.hline.end
 *SHOW.LINE*
 show.line
 
-	show.line = replace(line,' ','.')			:(return)
+	show.line = replace(line,' ','.')		:(return)
 
 show.line.end
 
@@ -1843,7 +1842,7 @@ show.move
 
 show.move.i
 
-	gt(i = i + 1,count(move))			:s(show.move.f)
+	gt(i = i + 1,size(text(move)))			:s(show.move.f)
 	ff = free(move)[i]
 	ident(datatype(ff,'string'))			:s(show.fail)
 	f = append(f,ff,',')				:s(show.move.i)
@@ -1853,7 +1852,6 @@ show.move.f
 	f break(',') ',' ','				:s(show.funny)
 	show.move = 'm(' 
 .			lineid(id(move)) ',' 
-.			count(move) ","
 .			"'" f "',"
 .			  "'" text(move) "',"
 .			(differ(perm(move)) "'" perm(move) "'", '') ','
@@ -2052,7 +2050,7 @@ shuffle
 
 shuffle.next
 
-	le(passes = passes - 1)					:s(shuffle.done)
+	le(passes = passes - 1)				:s(shuffle.done)
 	r1 = random(n); r2 = random(n)
 	eq(r1,r2)					:s(shuffle.next)
 	ch = tiles[r1]
@@ -2159,7 +2157,7 @@ start.free
 
 	free[i = i + 1] = 7 + i  + offset		:s(start.free)
 
-	start = move(8 + offset,size(best),free,best,highest) :(return)
+	start = move(8 + offset,free,best,highest) :(return)
 
 start.end
 
@@ -2256,7 +2254,7 @@ traceon
 							:(return)
 traceon.end
 
-	define('turn(pid,mode)')						:(turn.end)
+	define('turn(pid,mode)')			:(turn.end)
 
 *	Play a turn in a game.
 
@@ -2288,8 +2286,8 @@ turn
 *	need to enter your tiles from the wwf board.
 *
 
-	eq(f.mode,f.mode.auto)					:s(turn.auto)
-	ne(kind(player),player.kind.team)			:s(turn.move)
+	eq(f.mode,f.mode.auto)				:s(turn.auto)
+	ne(kind(player),player.kind.team)		:s(turn.move)
 
 	rack(player) = replenish(pid)
 	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
@@ -2305,9 +2303,9 @@ turn.move
 *	You need to enter the foe's move when playing as a team,
 *	and your own move when playing a solo game.
 
-	eq(f.mode,f.mode.auto)					:s(turn.auto)
-	eq(kind(player),player.kind.foe)			:s(turn.manual)
-	eq(kind(player),player.kind.solo)			:s(turn.manual)
+	eq(f.mode,f.mode.auto)				:s(turn.auto)
+	eq(kind(player),player.kind.foe)		:s(turn.manual)
+	eq(kind(player),player.kind.solo)		:s(turn.manual)
 	
 turn.auto
 
@@ -2316,13 +2314,13 @@ turn.auto
 	ne(f.trace) out('fribble making move.')
 
 *	ne(kind(player),player.kind.auto) out('computing move ...')
-	g.move = find(pid,g.turn)				:f(turn.auto.fail)
+	g.move = find(pid,g.turn)			:f(turn.auto.fail)
 *	ne(f.trace) out('auto move ' show.move(g.move))
 
 *	ne(kind(player),player.kind.auto) out('... computed')
-								:(turn.make)
+							:(turn.make)
 turn.auto.fail
-								:(turn.fail)
+							:(turn.fail)
 
 turn.move.manual
 
@@ -2333,30 +2331,30 @@ turn.manual
 
 turn.manual.in
 	out('enter move')
-	line = terminal						:f(end)
+	line = terminal					:f(end)
 
-	line 'pass'						:s(turn.pass)
-	line 'swap'						:s(turn.swap)
-	line 'resign'						:s(turn.resign)
+	line 'pass'					:s(turn.pass)
+	line 'swap'					:s(turn.swap)
+	line 'resign'					:s(turn.resign)
 
-	g.move = eval(line)					:f(turn.manual.error)
+	g.move = eval(line)				:f(turn.manual.error)
 	out('input: ' show.move(g.move) ' datatype ' datatype(g.move) )
-	ident(datatype(g.move),'move')				:s(turn.validate)
-	out('need to enter a move')				:(turn.manual)
+	ident(datatype(g.move),'move')			:s(turn.validate)
+	out('need to enter a move')			:(turn.manual)
 
 turn.validate
 
 	ne(f.trace) out('validating move ' show.move(g.move))
 *	See if move is valid, except no test needed for initial move.
 
-	eq(g.turn,1)						:s(turn.make)
+	eq(g.turn,1)					:s(turn.make)
 	out('validating gturn=' g.turn)
-	valid(g.move)						:s(turn.make)
+	valid(g.move)					:s(turn.make)
 
-	out('invalid move - try again')				:(turn.manual.in)
+	out('invalid move - try again')			:(turn.manual.in)
 
 turn.manual.error
-	out('eval error ' &errtext)				:(turn.manual)
+	out('eval error ' &errtext)			:(turn.manual)
 
 turn.make
 *	3.	Make the move by updating the data structures, scores, etc.
@@ -2377,7 +2375,7 @@ turn.replenish
 *	Replenish tiles if necessary. If doing this manually, don't do it here,
 *	but at start of next turn.
 
-	eq(g.tilemanager)					:s(turn.done)
+	eq(g.tilemanager)				:s(turn.done)
 *	out('DAVE')
 *	out('replenishing pid= ' pid ' ' show.player(player))
 	ne(f.trace) out('replenishing pid= ' pid )
@@ -2390,16 +2388,16 @@ turn.replenish
 	rack(player) = less(rack(player), lcase(text(g.move)))
 	rack(player) = replenish(pid)			
 	ne(f.trace) out('rack pid=' pid '   now ' rack(player))	
-								:(turn.done)
+							:(turn.done)
 
 turn.pass
 
 	log( 'pass.' pid)
-								:(turn.done)
+							:(turn.done)
 turn.resign
 
 	out('player ' pid ' resigns.')
-	log('resign.' pid)					:(turn.done)
+	log('resign.' pid)				:(turn.done)
 
 turn.swap
 	
@@ -2408,37 +2406,37 @@ turn.swap
 
 	log('swap.' pid)
 
-	out('foe swapped tiles')				:(turn.done)
+	out('foe swapped tiles')			:(turn.done)
 
 turn.done
 
 	ne(f.trace) out('turn done')
-								:(return)
+							:(return)
 turn.fail
 
-	out('turn failed - unable to find move.')		:(freturn)
+	out('turn failed - unable to find move.')	:(freturn)
 
 turn.end 
 
-	define('log.move(pid,move)')				:(log.move.end)
+	define('log.move(pid,move)')			:(log.move.end)
 
 *	Write move description to log file.
 
 log.move
 
-	log('move.' pid ' ' show.move(move))			:(return)
+	log('move.' pid ' ' show.move(move))		:(return)
 
 log.move.end
 
 
-	define('ucase(s)')					:(ucase.end)
+	define('ucase(s)')				:(ucase.end)
 
 *	Convert argument to upper case.
 
 *UCASE*
 ucase
 
-	ucase = replace(s,&lcase,&ucase)			:(return)
+	ucase = replace(s,&lcase,&ucase)		:(return)
 
 ucase.end
 	
@@ -2458,7 +2456,7 @@ unpack.ch
 
 unpack.end
 
-	define('valid(move)num,i,pos')		:(valid.end)
+	define('valid(move)num,i,pos')			:(valid.end)
 
 *	Test if move is valid.
 
@@ -2472,7 +2470,7 @@ valid
 
 valid.u
 
-	gt(i = i + 1,count(move))			:s(freturn)
+	gt(i = i + 1,size(text(move)))			:s(freturn)
 	pos = free(move)[i]
 	adjacent(row(num,pos),column(num,pos)) 		:f(valid.u)s(valid.used)
 
@@ -2548,47 +2546,51 @@ words.done
 
 words.end
 
-	define('m(id,pos,text)f,fi')			:(m.end)
+	define('m(id,pos,open,text)free,fi')		:(m.end)
 
-*	Create move with given id, starting position and text.
-*	The move occupies consecutive cells.
+*	Create move in line with given id and text.
+*	Either *pos* or *cells* must be given, but not both:
+*	*pos*, gives the starting position.move begins at that position.
+*	*list* is a string listing the open cells, separated with a comma.
+*	For example, the following each specify the word 'fribble' starting at position 6 in row 8.
+
+*		m(r8,6,,'fribble')
+*		m(r8,,'6,7,8,9,10,11,12','fribble')
+
 
 *M*
 m
+	diff(pos) diff(open)				:s(m.error)
+	ident(pos)					:s(m.cells)
 
 *	Build free cell list.
 
-	f = array(size(text))
-
-m.f
-
-	f[fi = fi + 1] = pos + (fi - 1)			:s(m.f)
-
-	m = move(id,size(text),f,text)			
-	out('m id ' id '  size ' size(text) ' f[1]' f[1] ' f[count]=' f[size(text)] ' text='  text)
-							:(return)
-m.end
-
-	define('mf(id,list,text)free,fi,pos,free')	:(mf.end)
-
-*	Define move from id, list of free cells, and text.
-*	*f* is a comma-separated list of positions
-
-*MF*
-mf
-
-	list = list ',';* to assist loop
 	free = array(size(text))
 
-mf.l
+m.pos
 
-	list break(',') . pos ','  =			:f(mf.m)
-	free[fi = fi + 1] = pos				:(mf.l)
+	free[fi = fi + 1] = pos + (fi - 1)		:s(m.pos)f(m.done)
 
-mf.m
+							:(return)
+m.open
+	ident(open)					:s(m.error)
 
-	out(ne(fi, size(text)) 'mf size mismatch,try again')	:s(freturn)
-	mf = move(id,size(text),free,text)		:(return)
+	open = open ',';* to assist loop
+	free = array(size(text))
 
-mf.end
+m.list
+
+	open break(',') . pos ','  =			:f(m.done)
+	free[fi = fi + 1] = pos				:(m.list)
+
+m.error
+
+	out('m(id,pos,open,text) error - must specify pos OR open, at least one, not both.') :(freturn)
+m.done
+
+*	out('m id ' id '  size ' size(text) ' f[1]' f[1] ' f[count]=' f[size(text)] ' text='  text)
+	out(ne(fi, size(text)) 'm size mismatch,try again')	:s(freturn)
+	m = move(id,free,text)				:(return)
+
+m.end
 

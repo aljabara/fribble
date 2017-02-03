@@ -126,10 +126,10 @@ setup.done
 
 *	Initialize log file and write tileset description
 
-	eq(g.log)						:s(setup.nolog)
+	eq(g.log)					:s(setup.nolog)
 	lfn = datedash() '.fri';* log file name
-	output(.g.logfile,g.logfile.channel,lfn)				:s(setup.log)
-	out('unable to open log file ' lfn)			:(game.nolog)
+	output(.g.logfile,g.logfile.channel,lfn)	:s(setup.log)
+	out('unable to open log file ' lfn)		:(game.nolog)
 
 setup.log
 
