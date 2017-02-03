@@ -62,11 +62,10 @@
 *	A move consists of a sequence of empty cells in a row or column such that at least one cell in the sequence 
 *	is adjacent to an already occupied cell, with each cell occupied by one of the tiles in the player's rack.
 
-*	data('move(id,free,text,points,perm,fid)')
 	data('move(id,free,text,points,perm)')
 
 *		*id*	 gives the line number, in the range 1..30;
-*		*free*	 is an array of dimension *count* giving the positions of the empty cells;
+*		*free*	 is an array giving the free (empty) cells used in this move;
 *		*text*	 is the string of tiles of the move; and
 *		*points* is the number of points won by playing this move.
 
@@ -91,10 +90,6 @@
 *		*total*		is the player's current score;
 *		*thirty* 	is number of moves with scores of 30 or more points; and
 *		*highest* 	is the player's highest move score.
-
-	g.kind.solo = 1
-	g.kind.self = 2
-	g.kind.team = 3
 
 *	g.one and g.two are the players. 
 
@@ -434,6 +429,37 @@ append
 	append = (ident(str) w, str (ident(ch) ' ' , ch) w)	:(return)
 
 append.end
+
+
+	define('avail(pair)line,spaces,c,i,oi')	:(avail.end)
+
+*	Return array containing the indexes of the avail (blank) cells in line. Fails if no avail cells.
+
+*AVAIL*
+avail
+	line = line(pair)
+	spaces = spaces(line)
+	eq(spaces,0)					:s(freturn)
+	avail = array(spaces)
+	i = ai = 0
+
+avail.c
+
+	c = substr(line, i = i + 1, 1)			:f(avail.done)
+	differ(c,' ')					:s(avail.c)
+	avail[oi = oi + 1] = +i				:(avail.c)
+
+avail.done
+
+	eq(g.tracing)					:s(return)
+	i = 0; c = 
+
+avail.done.ch
+
+	c = c lpad(avail[i = i + 1],3)		:s(avail.done.ch)
+*	out(ne(g.tracing) 'Open: ' lpad(lineid(num(pair)),3) ' '  show.hex(line) '|  |' show.line(line) '| is ' c)
+							:(return)
+avail.end
 
 	define('bonus.lines()i')			:(bonus.lines.end)
 
@@ -1166,37 +1192,6 @@ makemove.fold
 	g.board = grid(g.lines)				
 							:(return)
 makemove.end
-
-	define('open(pair)line,spaces,c,i,oi')	:(open.end)
-
-*	Return array containing the indexes of the open (blank) cells in line. Fails if no open cells.
-
-*OPEN*
-open
-	line = line(pair)
-	spaces = spaces(line)
-	eq(spaces,0)					:s(freturn)
-	open = array(spaces)
-	i = ai = 0
-
-open.c
-
-	c = substr(line, i = i + 1, 1)			:f(open.done)
-	differ(c,' ')					:s(open.c)
-	open[oi = oi + 1] = +i				:(open.c)
-
-open.done
-
-	eq(g.tracing)					:s(return)
-	i = 0; c = 
-
-open.done.ch
-
-	c = c lpad(open[i = i + 1],3)		:s(open.done.ch)
-*	out(ne(g.tracing) 'Open: ' lpad(lineid(num(pair)),3) ' '  show.hex(line) '|  |' show.line(line) '| is ' c)
-							:(return)
-open.end
-
 	define('order(tiles)chars,ch,c1,c2,swaps,i,v1,v2')	:(order.end)
 
 *	Sort the tiles in *tiles* according to their value, with least valuable first.
@@ -1428,7 +1423,7 @@ scan
 
 *	Allocate and fill in *open*, an array giving the positions of the open cells.
 
-	open = open(pair)				:f(scan.done);* fail if no empty cells
+	open = avail(pair)				:f(scan.done);* fail if no empty cells
 	nopen = +prototype(open);* number of open cells in the line
 	
 	pi = 0
@@ -1856,7 +1851,7 @@ show.move.f
 .			  "'" text(move) "',"
 .			(differ(perm(move)) "'" perm(move) "'", '') ','
 .			(differ(points(move)) '+' points(move), '')  ')'
-*.			(differ(fid(move)) fid(move), '') ')'
+.	             ')'
 							:(return)
 show.funny
 
@@ -1885,17 +1880,17 @@ show.moves.loop
 
 show.moves.end
 	
-	define('show.open(open,title)i')			:(show.open.end)
+	define('show.free(free,title)i')			:(show.free.end)
 
-*	Show open array.
+*	Show free array.
 
-*SHOW.OPEN*
-show.open
+*SHOW.FREE*
+show.free
 
-	show.open = show.open append(lpad(open[i = i + 1]),3)	:s(show.open)
-	show.open = 'Open: ' title ' ' show.open
+	show.free = show.free append(lpad(free[i = i + 1]),3)	:s(show.free)
+	show.free = 'Open: ' title ' ' show.free
 							:(return)
-show.open.end
+show.free.end
 
 	define('show.pair(pair)')			:(show.pair.end)
 
@@ -2075,7 +2070,7 @@ spaces
 
 spaces.end
 
-	define('start(pid)player,tiles,perm,perms,permi,free,offset,i,highest,lower,best,n,word,start,score,move')	:(start.end)
+	define('start(pid)player,tiles,perm,perms,permi,free,offset,i,highest,lower,best,n,word,start,score,move,max')	:(start.end)
 
 *	Determine best starting.turn. At least one letter in this move must be in the center square (8,8).
 *	The only bonus available is double word, for any word of more than four characters.
@@ -2090,19 +2085,21 @@ spaces.end
 *START*
 start
 
+	max = 7;* maximum number of tiles to play
 	player = g.players[pid]
 	tiles = rack(player)
 	n = 0;* number of tiles to play
 	highest = lowest = 0;* best score, lowest cost
 	start = 8;* assume word will start in column 8
 
-	
+*	Don't use 's' on starting move. Save it for later	
+
 	tiles break('s')				:f(start.n)
 	tiles = less(tiles,'s')
+	max = max - 1
 
-start.n	gt(n = n + 1,7)					:s(start.done)
+start.n	gt(n = n + 1,max)					:s(start.done)
 
-*	play at most six tiles for now.
 	kind = size(tiles) '?' n
 *	out('start.n kind=' kind)
 	perms = g.permutations[kind]			:f(start.n)

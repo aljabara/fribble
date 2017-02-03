@@ -77,8 +77,8 @@ setup.auto
 
 *	Fribble makes the moves for both players, each with kind player.kind.auto. 
 
-	g.one = player(1,'Fribble A',	player.kind.auto)
-	g.two = player(2,'Fribble B',	player.kind.auto)
+	g.one = player(1,'John Doe',	player.kind.auto)
+	g.two = player(2,'Jane Doe',	player.kind.auto)
 
 *	Fribble manages the tiles for both players.
 
