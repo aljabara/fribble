@@ -44,15 +44,15 @@
 	g.log = 1
 
 *	g.logfile is the output-associated variable for the log file
-*	g.logfile.channel is its channel
+*	g.logfile.channel is its channel; g.logfile.name is its name
 
-	g.logfile =  
+	g.logfile = g.logfile.name = 
 	g.logfile.channel = 5
 
 *	g.maxmoves, maximum number of moves. This is used to avoid runaway behavior.
 
-	g.maxmoves = 60
 	g.maxmoves = 3
+	g.maxmoves = 60
 
 *	g.lines, array(30), is the array of the lines defined by the rows and columns in the board. 
 
@@ -132,6 +132,11 @@
 	g.scoring = 1
 	g.scoring = 
 
+*	g.channel.temp is channel number used for temporary files, that is, files that are opened
+*	read and then immediately closed.
+
+	g.channel.temp = 3
+
 *	g.tiles, a string containing all the characters in the initial bag of characters.
 
 *	g.tilemanager determines how tiles are dealt out. 
@@ -184,17 +189,6 @@ init
 	init.main(dictfile,skip)
 
 	randomseed();* seed the random number generator
-
-	eq(g.log)					:s(init.nolog)
-
-*	Open log file.
-
-	lfn = datedash() '.fri';* log file name
-	output(.g.logfile,g.logfile.channel,lfn)	:s(init.log)
-	out('unable to open log file ' lfn)		:(game.nolog)
-
-init.log
-
 
 init.clean
 
@@ -297,7 +291,7 @@ init.dict.tbl.1
 	filename = ident(filename) 'dict.txt'
 	skip = (ident(skip) +1, +skip)
 
-	input(.file,3,filename)				:s(init.dict.in)
+	input(.file,g.channel.temp,filename)		:s(init.dict.in)
 	out('unable to open input file ' filename)	:(freturn)
 	n = 0
 
@@ -327,7 +321,7 @@ init.dict.skip
 
 init.dict.done
 
-	endfile(3)					:(return)
+	endfile(g.channel.temp)					:(return)
 
 init.dict.end
 
@@ -340,7 +334,7 @@ init.perm
 
 	g.permutations = table(7)
 	g.permutations.count = table(100)
-	input(.ifile,4, filename)			:s(init.perm.next)
+	input(.ifile,g.channel.temp, filename)			:s(init.perm.next)
 	out('unable to open permutation file ' filename) 	:(freturn)
 
 init.perm.next
@@ -358,7 +352,7 @@ init.perm.array
 
 init.perm.done
 
-	endfile(4)					:(return)
+	endfile(g.channel.temp)				:(return)
 
 init.perm.err
 
@@ -637,14 +631,14 @@ counters
 							:(return)
 counters.end
 
-	define('datedash()s')				:(datedash.end)
+	define('datedash(date)s')				:(datedash.end)
 
 *	Convert date to form with no blanks, just dashes, and
 *	so suitable for use as part of a file name.
 
 datedash
 
-	datedash = replace(g.date,' :','--')		
+	datedash = replace(date,' :','--')		
 	datedash = substr(datedash,12,8) '-' substr(datedash,1,10)
 							:(return)
 datedash.end
@@ -676,14 +670,6 @@ endgame
 	out(gt(thirty(g.one)) 'Player ' name(g.one) ' had ' thirty(g.one) ' moves of 30 or more points.')
 	out(gt(thirty(g.two)) 'Player ' name(g.two) ' had ' thirty(g.two) ' moves of 30 or more points.')
 	counters()
-
-	log('total.1 ' total(g.one))
-	log('total.2 ' total(g.two))
-	log('date.finis ' date(2))
-	log('time.finis ' time())
-	log('endgame')
-
-	differ(logfile) endfile(g.logfile.channel)
 							:(return)
 endgame.end
 
@@ -863,6 +849,20 @@ find.end
 *GAME*
 game
 
+*	Test to see if log file needed. Even if not, we always call log() function.
+*	It will do nothing if no log file. This avoids need to test for presence of
+*	log file before each call to log().
+
+	eq(g.log)					:s(game.setup)
+
+*	Open log file.
+
+	g.logfile.name = datedash(g.date) '.fri'
+	output(.g.logfile,g.logfile.channel,g.logfile.name)	:s(game.log)
+	out('unable to open log file ' g.logfile.name)		:(game.setup)
+
+game.log
+
 	log('game ' mode)
 	log('version ' g.version)
 	log('time.start ' time())
@@ -871,6 +871,7 @@ game
 	log.player(1)
 	log.player(2)
 
+game.setup
 
 	pid = 2;* set to two so will become one when loop first entered
 
@@ -878,10 +879,6 @@ game.turn
 
 	g.turn = g.turn + 1
 	log('turn ' g.turn)
-
-	ne(g.turn,1)					:s(game.nolog)
-
-game.nolog
 
 *	ne(f.trace) out('g.turn=' g.turn ' g.maxmoves=' g.maxmoves)
 	gt(g.turn,g.lastmove + 3) 
@@ -928,7 +925,18 @@ game.swap
 
 game.over						
 
-	endgame()					:(return)
+	endgame()					
+
+*	Complete log file.
+
+	log('total.1 ' total(g.one))
+	log('total.2 ' total(g.two))
+	log('date.finis ' date(2))
+	log('time.finis ' time())
+	log('endgame')
+
+	differ(logfile) endfile(g.logfile.channel)
+							:(return)
 
 game.end
 
@@ -1156,8 +1164,7 @@ log
 	g.logfile = text				:(return)
 
 log.end
-
-	define('m(id,str,text)pos,dt,free,fi')		:(m.end)
+	define('m(id,str,text)pos,free,fi')		:(m.end)
 
 *	Create move in line with given id and text.
 *	*str* is one of the following:
@@ -1172,38 +1179,36 @@ log.end
 
 *M*
 m
-	dt = datatype(str)
-	pos = eq(dt,'integer') str 			:s(m.integer)
-	pos = convert(str,'integer') 			:s(m.integer)
-
-	str = str ' '
-	str break(' ') . pos ' ' =
-
 	free = array(size(text))
+
+	out('m str' str)
+	str break(' ')					:s(m.list)
+	pos = +str					:f(m.error)
 
 m.pos
 
+	out('pos fi ' fi ' ' pos + (fi - 1 ))
 	free[fi = fi + 1] = pos + (fi - 1)		:s(m.pos)f(m.done)
-
-							:(return)
-m.open
-	ident(open)					:s(m.error)
-
-	open = open ',';* to assist loop
-	free = array(size(text))
 
 m.list
 
-	open break(',') . pos ','  =			:f(m.done)
-	free[fi = fi + 1] = pos				:(m.list)
+*	Prepare for m.next loop.
+
+	str = str ' '
+
+m.next
+
+	str break(' ') . pos span(' ')  =		:f(m.done)
+	out('m.next ' pos ' fi ' fi)
+	free[fi = fi + 1] = pos				:(m.next)
 
 m.error
 
-	out('m(id,pos,open,text) error - must specify pos OR open, at least one, not both.') :(freturn)
+	out('m(id,str,text) error - .') :(freturn)
 m.done
 
 *	out('m id ' id '  size ' size(text) ' f[1]' f[1] ' f[count]=' f[size(text)] ' text='  text)
-	out(ne(fi, size(text)) 'm size mismatch,try again')	:s(freturn)
+*	ne(fi, size(text)) 'm size mismatch,try again')	:s(freturn)
 	m = move(id,free,text)				:(return)
 
 m.end
@@ -1435,6 +1440,33 @@ randomseed.done
 	g.random_var = +reverse(g.random_var	)	:(return)
 
 randomseed.end
+
+	define('reader(filename)n,map')			:(reader.end)
+
+*	Return file as array of lines
+
+*READER*
+reader
+	open(.file,g.channel.temp,filename)				:s(reader.opened)
+	
+	out('unable to open reader file ' filename '.') :(freturn)
+
+reader.opened
+
+	n = 0
+	map = table(100)
+
+reader.next
+
+	map[n = n + 1] = file				:s(reader.next)
+
+*	Here at end of file, convert map to array of lines.
+
+	reader = convert(map,'array')			
+	endfile(g.channel.temp)
+							:(return)
+
+reader.end
 
 	define('replenish(pid)player,rack,s')		:(replenish.end)
 
@@ -2256,8 +2288,6 @@ subarray.end
 *SWAP*
 swap	
 
-	out('datatype pid ' datatype(pid))
-	out('swap pid=' pid)
 	player = g.players[pid]
 	tiles = rack(player)
 	n = gt(n,size(tiles)) size(tiles)
@@ -2407,6 +2437,7 @@ turn.manual.in
 	line 'swap'					:s(turn.swap)
 	line 'resign'					:s(turn.resign)
 
+	out = 'input line:' line ':'
 	g.move = eval(line)				:f(turn.manual.error)
 	out('input: ' show.move(g.move) ' datatype ' datatype(g.move) )
 	ident(datatype(g.move),'move')			:s(turn.validate)
