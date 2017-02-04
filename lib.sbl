@@ -1468,6 +1468,69 @@ reader.next
 
 reader.end
 
+	define('replay(lines)op,line,i')		:(replay.end)
+
+*	Replay commands from previous game.
+
+*REPLAY*
+replay
+
+replay.next
+	line = lines[i = i + 1]				:f(replay.done)
+	line span(&lcase) . op =			:s(replay.op)
+
+replay.op
+
+	ident(op,'date')				:s(replay.date)
+	ident(op,'endgame')				:s(replay.endgame)
+	ident(op,'game')				:s(replay.game)
+	ident(op,'move')				:s(replay.move)
+	ident(op,'player')				:s(replay.player)
+	ident(op,'rack')				:s(replay.rack)
+	ident(op,'tiles')				:s(replay.tiles)
+	ident(op,'total')				:s(replay.total)
+	ident(op,'turn')				:s(replay.turn)
+	ident(op,'version')				:s(replay.version)
+
+replay.game
+							:(replay.next)
+replay.date
+							:(replay.next)
+replay.endgame
+							:(replay.done)
+replay.player.1
+	line '.' len(1) . pid span(' ') = 
+	g.players[pid] = eval(line)
+							:(replay.next)
+replay.move
+	line span('  ') =
+	move = eval(line)
+	makemove(move)
+	playmove(move)
+							:(replay.next)
+replay.rack
+	line '.' len(1) . pid =
+	line = ' rack(g.players[ ' pid '] = ' line
+	out('replay.rack ' line)
+	eval(line)
+							:(replay.next)
+replay.tiles
+	line = ' g.tiles = ' line
+	out('replay.tiles ' line)
+	eval(line)
+							:(replay.next)
+replay.total
+							:(replay.next)
+replay.time
+							:(replay.next)
+replay.turn
+							:(replay.next)
+replay.version
+							:(replay.next)
+replay.done
+							:(return)
+replay.end
+
 	define('replenish(pid)player,rack,s')		:(replenish.end)
 
 *	Replenish a player's rack. Do this from the tileset is g.tilemanager is

@@ -1,22 +1,4 @@
-* Copyright (c) 2017 dave shields
-
-* This file is part of the fribble project: http://github.com/daveshields/fribble.
-*
-*	Fribble is free software: you can redistribute it and/or modify
-*	it under the terms of the gnu general public license as published by
-*	the free software foundation, either version 2 of the license, or
-*	(at your option) any later version.
-*
-*	Fribble is distributed in the hope that it will be useful,
-*	but without any warranty; without even the implied warranty of
-*	merchantability or fitness for a particular purpose.  See the
-*	gnu general public license for more details.
-*
-*	You should have received a copy of the gnu general public license
-*	along with fribble.  If not, see <http://www.gnu.org/licenses/>.
-*
-
--include "lib.sbl"
+	define('shell.setup()')				:(shell.setup.end)
 
 *	s.ok is set to one if last 'eval' command succeeded, zero if it failed.
 
@@ -32,7 +14,7 @@
 . 	'board clear eval find help init letters next move pass play quit '
 .	'remove replay score search start tiles valid '
 
-*	s.opabbrev maps abbreviated input to corresponding op.
+*	s.opabbrev maps abbreviated input to corresponding shell.
 *	You need specify only first one or more characters
 *	in the operation name.
 
@@ -46,69 +28,48 @@
 
 *	s.v is set to value of last 'eval' operation.
 
-	define('shell.setup()')				:(shell.setup.end)
 
 shell.setup
 
 *	Initialize the shell.
 
-	op.init()
+	shell.init()
 							:(return)
 shell.setup.end
 
-	define('op.init()ops,key,op')			:(op.init.end)
+	define('shell.init()ops,key,op')		:(shell.init.end)
 
 *	Initialize s.optable to acceptable abbreviations for shell operations. 
 *	Acceptable abbreviations consist of the initial two or more characters
 *	of the operation, up to the full command name itself.
 
 
-op.init
+shell.init
 	ops = s.ops
-op.init.next
+shell.init.next
 	ops break(' ') . op ' ' =			:f(return)
 	key = op
 	s.opabbrev[substr(key,1,1)] = op
-op.init.op
+shell.init.op
 	s.opabbrev[key] = op
-	key = substr(key,1,size(key) - 1)	:f(op.init.next)
-	gt(size(key),1)			:s(op.init.op)f(op.init.next)
-op.init.end
+	key = substr(key,1,size(key) - 1)		:f(shell.init.next)
+	gt(size(key),1)					:s(shell.init.op)f(shell.init.next)
+shell.init.end
 
 
+	define('shell()')				:(shell.end)
 *	Simple 'shell' for fribble. 
 
 *	Read commands from terminal and execute them. 
 *	This is meant mainly for debugging, testing
 *	and as a way to learn how fribble operates.
 
-
-	&stlimit = -1
-	&anchor = &trim = 1
-
-	shell.setup()
-
-*	g.dict = g.permutations = 
-*	&dump = 3
-
-	init()
-
-
-	one = player(1,'You')
-	g.one = one
-	g.two = player(2,'Nobody')
-	g.players[1] = g.one
-	g.players[2] = g.two
-	total(g.one) = g.turn = g.lastmove = 0
-	total(g.two) = 0
+*SHELL*
+shell
 
 	shell.setup()
-
-*	Fribble shell.
-
 	tab = char(9)
 	out('starting shell')
-shell
 
 shell.loop
 	ident(s.replay)					:s(shell.term)
@@ -131,6 +92,7 @@ shell.loop.ok
 	op = s.opabbrev[opin]
 	out('op ' opin ' operand ' operand '.')
 *	out('op abbrev =' op)
+shell.end
 	differ(op)					:s(shell.op)
 	out('unknown op: ' op)				:(shell.loop)
 
