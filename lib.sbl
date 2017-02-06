@@ -79,7 +79,6 @@
 *		*name* 		is the player's name;
 *		*kind*	 	is the player's kind:
 	
-			player.kind.oops = 0	;*	require that kind be set, get this if not
 			player.kind.solo = 1	;*	player is playing on their own;
 			player.kind.auto = 2	;*	player's moves are found and made by fribble;
 			player.kind.team = 3	;*	player and fribble work as a team
@@ -100,7 +99,6 @@
 	g.players[2] = g.two
 
 *	g.pid is the player of the current player.
-*	g.pid is initially one, since that player goes first.
 
 	g.pid = 1
 
@@ -220,10 +218,6 @@ init.main
 	init.perm('perm.txt')
 
 	init.tileset()
-	randomseed();* set random number generator seed
-
-	shuffle();* shuffle the tileset
-
 	init.value()
 
 	init.dict(dictfile,skip)
@@ -284,7 +278,7 @@ init.dict.tbl.1
 	i = 0
 
 
-*	Read in a dictionary from a specified file, with one word per line. If 'skip'
+*	Read in a dictionary from a file, with one word per line. If 'skip'
 *	is non-zero then that number of lines are skipped before adding the next word.
 *	This assists the use of smaller dictionaries for testing.
 
@@ -363,7 +357,6 @@ init.perm.end
 	define('init.tileset()ch,n,s')			:(init.tileset.end)
 
 * 	Initialize set of tiles, ignoring the 'blank' tiles for now.
-*	Initialize value map from letters to value, ignoring ' ' for now
 
 *INIT.TILESET*
 init.tileset
@@ -373,8 +366,14 @@ init.tileset
 
 init.tileset.ch
 
-	s break(' ') . ch ' ' break(' ') . n ' ' =	:f(return)
+	s break(' ') . ch ' ' break(' ') . n ' ' =	:f(init.tileset.ch
 	g.tiles = g.tiles dupl(ch,n)			:(init.tileset.ch)
+
+init.tileset.ch
+	randomseed();* set random number generator seed
+
+	shuffle();* shuffle the tileset
+							:(return)
 
 init.tileset.end
 
@@ -693,7 +692,7 @@ endgame.end
 *	If two moves have the same score and cost, while one uses the letter 's' and the other doesn't, prefer
 *	the move that doesn't use the letter 's'.
 
-*	Find returns the best move as defined above, or null if no valid move is found.
+*	Find returns the best move as defined above, or null if unable to find a valid move.
 
 *FIND*
 find
@@ -763,8 +762,6 @@ find.perm
 	differ(tried[text])				:s(find.perm)
 	tried[text] = 1;* note that we have reviewed this text
 
-	count.perm = count.perm + 1
-	count.cells = count.cells + size(perm)
 
 	lines = copy(inlines);* restore lines to condition on entry
 
@@ -796,7 +793,7 @@ find.perm
 find.cross
 
 *	out('find cross ')
-	p = free(move)[i = i + 1]			:f(find.cross.done)
+	p = free(move)[i = i + 1]			:f(find.score)
 	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1))
 
 	checkline(line(cline))				:f(find.perm)
@@ -808,7 +805,7 @@ find.cross
 
 	g.clines[g.cln = g.cln + 1] = cline		:(find.cross)
 	
-find.cross.done
+find.score
 
 
 *	out(ne(g.tracing) 'Find valid move ' show.move(move) ' in ' show.pair(pair(num,line)))
@@ -844,7 +841,8 @@ find.end
 	define('game(mode)players,player,opn,move,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board,lfn') :(game.end)
 
 *	Play a game of fribble. *max* is the maximum number of moves.
-*	Mode is one to let you play against fribble, two to let fribble play itself.
+*	Mode is one to let you play against fribble, two to let fribble play itself,
+*	and three work with fribble to play with someone.
 
 *GAME*
 game
@@ -991,7 +989,8 @@ grid.col
 
 *	Here to build grid from the columns.
 
-	c = 14
+	c = 14;* set to c will index first column after entering loop below.
+
 grid.nextcol
 
 	gt(c = c + 1,30)				:s(grid.done)
@@ -1329,7 +1328,8 @@ pack
 	n = +prototype(chars)
 	ne(n,15)					:s(pack.chars)
 
-*	Almost all calls to pack are to pack a line from the grid, so do it directly.
+*	Almost all calls to pack are to pack a line from the grid, so do it directly,
+*	and so avoid quadratic behavior if concatenate characters in loop.
 
 	pack =  chars[1]  chars[2]  chars[3]  chars[4]  chars[5]  chars[6]  chars[7]  chars[8] 
 .		chars[9]  chars[10] chars[11] chars[12] chars[13] chars[14] chars[15] 
@@ -1747,13 +1747,15 @@ scoremove
 *	In order to determine which words on the board would be formed by making this move,
 *	rebuild *clines* but with the new tiles in uppercase. This way, a word is new if and only if
 *	it contains an upper case character. The score is then the sum over all the lines of the scores of
-*	the words containing an upper-case character. At most one word in each line of the new grid will
+*	the words containing an upper-case character. At most one word in each line of grid will
 *	contain an upper-case character.
 
 	clines(move,1);* generate move's line and its cross lines with move text in upper case.
+
 	ne(g.tracing) show.clines()
 	ne(g.tracing) out('scoremove move=' show.move(move))
 	ne(g.tracing) out('g.cln=' g.cln)
+
 	i = 0
 
 scoremove.line
@@ -1773,6 +1775,8 @@ scoremove.done
 							:(return)
 scoremove.end
 
+*	Show if probably never used. Delete code below when cnfirm this.
+
 	define('show(rack,player)')			:(show.end)
 
 *	Show state of board, used and value grids before start of move.
@@ -1790,7 +1794,7 @@ show.end
 
 	define('show.board(board,title)b,r,c,ch,line')	:(show.board.end)
 
-*	Show the board.
+*	Show the bonus grid.
 
 *SHOW.BOARD*
 show.board
@@ -2020,12 +2024,11 @@ show.move.i
 
 	gt(i = i + 1,size(text(move)))			:s(show.move.f)
 	ff = free(move)[i]
-	ident(datatype(ff,'string'))			:s(show.fail)
+	ident(datatype(ff,'string'))			:s(show.move.fail)
 	f = append(f,ff)				:s(show.move.i)
 
 show.move.f
 
-	f break(',') ',' ','				:s(show.funny)
 	show.move = 'm(' 
 .			lineid(id(move)) ',' 
 .			"'" f "',"
@@ -2034,33 +2037,12 @@ show.move.f
 .			(differ(points(move)) '+' points(move), '')  
 .	             ')'
 							:(return)
-show.funny
-
-	out('funny show.move ' f)			:(end)
-
-show.fail
+show.movefail
 
 	out('free ff failure ')			:(end)
 
 show.move.end
 
-	define('show.moves(moves,title)i,move,text')	:(show.moves.end)
-
-*	Show an array of moves. Assume each entry has 1) line num, 2) move
-
-*SHOW.MOVES*
-show.moves
-
-	ident(moves)					:s(return)
-	out('MOVES ' title)
-
-show.moves.loop
-
-	move = moves[i = i + 1,2]			:f(return)
-	out(char(9) lpad(i,2) ' ' show.move(move,'J')) :(show.moves.loop)
-
-show.moves.end
-	
 	define('show.free(free,title)i')			:(show.free.end)
 
 *	Show free array.
