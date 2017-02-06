@@ -34,6 +34,12 @@
 	f.mode.solo = 2
 	f.mode.team = 3
 
+*	Fribble can also be invoked to run as a shell:
+
+*		sbl fribble.sbl -ushell
+
+*	The shell() procedure is called. It can be used to replay prior games, study moves, make moves,
+*	test the system, and of course learn more about Fribble.
 
 	&stlimit = -1
 
@@ -59,18 +65,20 @@ options.loop
 	f.mode = ident(opt,'auto') f.mode.auto		:s(options.loop)
 	f.mode = ident(opt,'solo') f.mode.solo		:s(options.loop)
 	f.mode = ident(opt,'team') f.mode.team		:s(options.loop)
+	ident(opt,'shell')				:s(main.shell)
+	
 							:(options.loop)
 options.loop.done
 
 	out('f.mode=' f.mode)
 
 
-	eq(f.mode,f.mode.solo)				:s(setup.solo)
-	eq(f.mode,f.mode.auto)				:s(setup.auto)
-	eq(f.mode,f.mode.team)				:s(setup.team)
+	eq(f.mode,f.mode.solo)				:s(main.solo)
+	eq(f.mode,f.mode.auto)				:s(main.auto)
+	eq(f.mode,f.mode.team)				:s(main.team)
 
-							:(setup.auto);* default
-setup.auto
+							:(main.auto);* default
+main.auto
 
 *	Setup for mode 'auto'.
 
@@ -84,9 +92,9 @@ setup.auto
 *	Fribble manages the tiles for both players.
 
 	g.tilemanager = 1
-							:(setup.done)
+							:(main.done)
 
-setup.solo
+main.solo
 
 *	Setup for mode 'solo'. 
 
@@ -101,8 +109,8 @@ setup.solo
 *	Fribble manages the tiles for both players.
 
 	g.tilemanager = 1
-							:(setup.done)
-setup.team
+							:(main.done)
+main.team
 
 *	Setup for mode 'team'
 
@@ -115,15 +123,18 @@ setup.team
 *	You manage the tiles, entering your tiles as dealt by wwf before each move.
 *	(The foe's tiles are unknown, as all that matters is the move they make.)
 
-*	I wrote this program because a friend named Phil kept beating me -- badly --
-*	playing wwf.
+*	(I wrote this program because a friend named Phil kept beating me -- badly --
+*	playing wwf.)
 
 	g.one = player(1,'Phil DeFoe',	player.kind.foe);* Hi Phil!
 
 	g.two = player(2,'You',		player.kind.team)
 	g.tilemanager =
-							:(setup.done)
-setup.done
+							:(main.done)
+main.shell
+	shell()						:(end)
+
+main.done
 
 	g.players[1] = g.one; g.players[2] = g.two
 
@@ -137,14 +148,14 @@ setup.done
 	f.trace = 1
 	f.trace = 0
 
-	ident(g.tilemanager)				:s(setup.game)
+	ident(g.tilemanager)				:s(main.game)
 
 *	Program manages the tiles, so deal initial tiles.
 	
 	rack(g.one) = take(7)
 	rack(g.two) = take(7)
 
-setup.game
+main.game
 
 	game(f.mode)
 

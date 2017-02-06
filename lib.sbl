@@ -1441,13 +1441,13 @@ randomseed.done
 
 randomseed.end
 
-	define('reader(filename)n,map')			:(reader.end)
+	define('reader(filename)n,line,map')		:(reader.end)
 
 *	Return file as array of lines
 
 *READER*
 reader
-	open(.file,g.channel.temp,filename)				:s(reader.opened)
+	input(.file,g.channel.temp,filename)		:s(reader.opened)
 	
 	out('unable to open reader file ' filename '.') :(freturn)
 
@@ -1457,8 +1457,12 @@ reader.opened
 	map = table(100)
 
 reader.next
+	line = file				:f(reader.eof)
+	n = n + 1
+	out('reader.next n=' n ' ' line)
+	map[n] = line				:(reader.next)
 
-	map[n = n + 1] = file				:s(reader.next)
+reader.eof
 
 *	Here at end of file, convert map to array of lines.
 
@@ -1468,18 +1472,25 @@ reader.next
 
 reader.end
 
-	define('replay(lines)op,line,i')		:(replay.end)
+	define('replay(filename)lines,op,line,i')		:(replay.end)
 
 *	Replay commands from previous game.
 
 *REPLAY*
 replay
-
+	lines = reader(filename)			:s(replay.next)
+	out('reader returned ' prototype(lines) ' lines.')
+	out('error reading lines from ' filename)	:(freturn)
+	
 replay.next
-	line = lines[i = i + 1]				:f(replay.done)
+	i = i + 1
+	out('replaying line i=' i)
+	line = lines[i,2]				:f(replay.done)
+	out('replaying ' line)
 	line span(&lcase) . op =			:s(replay.op)
 
 replay.op
+	out('replaying |' line '|')
 
 	ident(op,'date')				:s(replay.date)
 	ident(op,'endgame')				:s(replay.endgame)
@@ -1498,15 +1509,17 @@ replay.date
 							:(replay.next)
 replay.endgame
 							:(replay.done)
-replay.player.1
+replay.player
 	line '.' len(1) . pid span(' ') = 
 	g.players[pid] = eval(line)
 							:(replay.next)
 replay.move
-	line span('  ') =
+	line '.' len(1) . pid =
+	line span(' ') =
+	out('ay.move evaluating |' line '|')
 	move = eval(line)
-	makemove(move)
-	playmove(move)
+	out('replaying move ' show.move(move))
+	show.play(makemove(pid,move))
 							:(replay.next)
 replay.rack
 	line '.' len(1) . pid =
@@ -2018,7 +2031,7 @@ show.move.f
 .			"'" f "',"
 .			  "'" text(move) "',"
 .			(differ(perm(move)) "'" perm(move) "'", '') ','
-.			(differ(points(move)) '+' points(move), '')  ')'
+.			(differ(points(move)) '+' points(move), '')  
 .	             ')'
 							:(return)
 show.funny
@@ -2731,7 +2744,7 @@ input.user.end
 
 *SHELL*
 shell
-
+	out('entered shell')
 *	s.ok is set to one if last 'eval' command succeeded, zero if it failed.
 
 	s.ok = 0
@@ -2768,7 +2781,7 @@ shell
 	ops = s.ops
 
 shell.setup.next
-	ops break(' ') . op ' ' =			:f(return)
+	ops break(' ') . op ' ' =			:f(shell.setup.end)
 	key = op
 	s.opabbrev[substr(key,1,1)] = op
 shell.setup.op
@@ -2782,7 +2795,9 @@ shell.setup.end
 *	Shell main command loop.
 
 shell.loop
-
+	out('starting replay')
+	replay('keyin') :(end)
+	out('enter shell loop') :(end)
 	ident(s.replay)					:s(shell.term)
 	linein = termfile				:s(shell.line)
 	linein 'q'					:s(shell.loop)
@@ -2843,6 +2858,9 @@ shell.find
 	show.move(s.move)				:(shell.loop)
 
 shell.game
+
+*	(I know you're wondering, but Fribble wasn't written just so I could I say
+*	I wrote a program where it made sense to use the identifier 'shell.game'.)
 
 *	Enter (or leave) game mode, if argument is 'on' ('off').
 
@@ -2936,6 +2954,7 @@ shell.replay.
 *	To main user confident in our programming skills,
 *	don't replay the 'quit' op.
 
+	replay('keyin')	
 	s.replay = 1
 	input(.termfile,3,'term')
 							:(shell.loop)
