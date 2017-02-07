@@ -366,10 +366,11 @@ init.tileset
 
 init.tileset.ch
 
-	s break(' ') . ch ' ' break(' ') . n ' ' =	:f(init.tileset.ch
+	s break(' ') . ch ' ' break(' ') . n ' ' =	:f(init.tileset.ch.done)
 	g.tiles = g.tiles dupl(ch,n)			:(init.tileset.ch)
 
-init.tileset.ch
+init.tileset.ch.done
+
 	randomseed();* set random number generator seed
 
 	shuffle();* shuffle the tileset
@@ -2321,6 +2322,38 @@ start.free
 
 start.end
 
+	define('state.restore(saved)')				:(state.restore.end)
+
+*	Restore the state of the game from a prior save.
+
+state.restore
+
+	g.grid = 	saved['grid']
+	g.bonus = 	saved['bonus']
+	g.tileset = 	saved['tiles']
+	g.players[1] = 	saved['player.1']
+	g.players[2] = 	saved['player.2']
+	g.one = 	g.players[1]
+	g.two = 	g.players[2]
+							:(return)
+state.restore.end
+
+	define('state.save()')				:(state.save.end)
+
+*	Save the state of the game.
+
+state.save
+
+	state.save = table(10)
+	state.save['grid'] = 	copy(g.grid)
+	state.save['bonus'] = 	copy(g.bonus)
+	state.save['tiles'] = 	copy(g.tileset)
+	state.save['player.1'] = copy(g.players[1])
+	state.save['player.2'] = copy(g.players[2])
+							:(return)
+state.save.end
+
+
 	define('subarray(ara,start,len)i')		:(subarray.end)
 
 *	Like substr, but returns the sub-array of *ara* starting at element *start* and
@@ -2480,26 +2513,18 @@ turn.auto
 turn.auto.fail
 							:(turn.fail)
 
-turn.move.manual
-
-	ne(f.trace) out('getting move manually')
-*	Here to enter the move manually
-
 turn.manual
 
-turn.manual.in
-	out('enter move')
-	line = input.user()				:f(end)
+*	Here to enter the move manually
 
-	line 'pass'					:s(turn.pass)
-	line 'swap'					:s(turn.swap)
-	line 'resign'					:s(turn.resign)
+	ne(f.trace) out('getting move manually')
 
-	out = 'input line:' line ':'
-	g.move = eval(line)				:f(turn.manual.error)
-	out('input: ' show.move(g.move) ' datatype ' datatype(g.move) )
-	ident(datatype(g.move),'move')			:s(turn.validate)
-	out('need to enter a move')			:(turn.manual)
+	move = manual()
+	move 'pass'					:s(turn.pass)
+	move 'swap'					:s(turn.swap)
+	move 'resign'					:s(turn.resign)
+	move 'error'					:s(turn.error)
+	g.move = move
 
 turn.validate
 
@@ -2513,6 +2538,7 @@ turn.validate
 	out('invalid move - try again')			:(turn.manual.in)
 
 turn.manual.error
+
 	out('eval error ' &errtext)			:(turn.manual)
 
 turn.make
@@ -2576,6 +2602,39 @@ turn.fail
 	out('turn failed - unable to find move.')	:(freturn)
 
 turn.end 
+
+	define('manual()line,out')			:(manual.end)
+
+*	Enter move manually (by hand).
+
+manual
+
+	ne(f.trace) out('getting move manually')
+*	Here to enter the move manually
+
+manual.in
+	out('enter move')
+	line = input.user()				:f(end)
+
+	line 'pass'					:s(manual.pass)
+	line 'swap'					:s(manual.swap)
+	line 'resign'					:s(manual.resign)
+	line 'error'					:s(manual.error)
+
+	out = 'input line:' line ':'
+	manual = eval(line)				:f(manual.error)
+	out('input: ' show.move(manual) ' datatype ' datatype(manual) )
+	ident(datatype(g.move),'move')			:s(return)
+	out('need to enter a move')			:(manual)
+manual.error
+	manual = 'error'				:(return)
+manual.pass
+	manual = 'pass'					:(return)
+manual.swap
+	manual = 'swap'					:(return)
+manual.resign
+	manual = 'resign'				:(return)
+manual.end
 
 	define('log.move(pid,move)')			:(log.move.end)
 
