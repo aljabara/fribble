@@ -1,23 +1,22 @@
 * Copyright (c) 2016 dave shields
 
 * This file is part of the fribble project: http://github.com/daveshields/fribble.
+
 *
 *	Fribble is free software: you can redistribute it and/or modify
 *	it under the terms of the gnu general public license as published by
 *	the free software foundation, either version 2 of the license, or
 *	(at your option) any later version.
 *
-*	Fribble is distributed in the hope that it will be useful,
+	Fribble is distributed in the hope that it will be useful,
 *	but without any warranty; without even the implied warranty of
 *	merchantability or fitness for a particular purpose.  See the
 *	gnu general public license for more details.
 *
 *	You should have received a copy of the gnu general public license
 *	along with fribble.  If not, see <http://www.gnu.org/licenses/>.
-*
 
 -include "lib.sbl"
-
 
 	define('permgen(s,k)c,n,i,dist,t')			:(permgen.end)
 
@@ -25,10 +24,12 @@
 *	with length k, as a list of words separated by spaces.
 
 permgen
+
 *	build perm as list of entries separated by space. Will
 *	eliminate extra space at the end before returning.
 
 permgen.dist.1
+
 	n = +size(s)
 	eq(k,0)							:s(return)
 	gt(k,1)							:s(permgen.n) 
@@ -38,6 +39,7 @@ permgen.dist.1
 *	Here also we avoid adding duplicate characters
 
 permgen.1	
+
 	c = substr(s,i = i + 1,1)				:f(return)
 *	output = permgen
 	permgen = append(permgen, c)				:(permgen.1)
@@ -50,6 +52,7 @@ permgen.n
 *	of k-1 items in the string with c removed.
 
 permgen.n.1
+
 	gt(i = i + 1,n)						:s(return)
 	c = substr(s,i,1)
 
@@ -82,7 +85,9 @@ main.1
 
 	gt(n = n + 1, 7)					:s(done)
 	k = 0
+
 main.2
+
 	gt(k = k + 1,n)						:s(main.1)
 	nperms = nperms + 1
 
@@ -93,17 +98,21 @@ main.2
 	headers = headers + count
 	ofile =  n '?' k ' ' count
 	nout = 0
+
 main.3
+
 	pip break(' ') . w ' ' =				:f(main.4)
 	ofile = w						
 	nout = nout + 1
 								:(main.3)
 main.4
+
 	eq(count,nout)						:s(main.2)
 	output = 'error counts wrong ' nout ' ' count
+
 done
 	output = lpad('permutations',20) ' '	nperms
 	output = lpad('headers',20)	 ' '	headers
 	output = lpad('total',20) ' ' nperms + headers
+
 end
-	

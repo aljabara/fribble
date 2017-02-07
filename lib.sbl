@@ -1,4 +1,4 @@
-
+*	Copyright 2017, David Shields
 
 * This file is part of the fribble project: http://github.com/daveshields/fribble.
 *
@@ -625,8 +625,8 @@ counters
 	counter('words checked'			, thousands(count.checkword))
 	counter('cross lines checked'		, thousands(count.cline))
 	counter('valid moves found'		, thousands(count.valid))
-	counter('inserts'			, thousands(count.insert))
-	counter('contig inserts'		, thousands(count.insert.contig))
+	counter('total inserts'			, thousands(count.insert))
+	counter('contiguous inserts'		, thousands(count.insert.contig))
 	counter('split inserts'			, thousands(count.insert.split))
 							:(return)
 counters.end
@@ -751,6 +751,9 @@ find.move
 *	time of the program by a factor of two when first introduced.
 	
 find.perm
+
+	count.perm = count.perm + 1
+	count.cells = count.cells + size(perm)
 
 	score = g.cln = 0
 	perm = perms[permi = permi + 1]			:f(find.move)

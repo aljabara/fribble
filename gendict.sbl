@@ -1,31 +1,34 @@
-* Copyright (c) 2016 dave shields
+* Copyright (c) 2017 David Shields
 
 * This file is part of the fribble project: http://github.com/daveshields/fribble.
-*
+
 *	Fribble is free software: you can redistribute it and/or modify
 *	it under the terms of the gnu general public license as published by
 *	the free software foundation, either version 2 of the license, or
 *	(at your option) any later version.
-*
+
 *	Fribble is distributed in the hope that it will be useful,
 *	but without any warranty; without even the implied warranty of
 *	merchantability or fitness for a particular purpose.  See the
 *	gnu general public license for more details.
-*
+
 *	You should have received a copy of the gnu general public license
 *	along with fribble.  If not, see <http://www.gnu.org/licenses/>.
-*
 
 	define('tileset()s,n')				:(tileset.end)
 
 * 	Initialize set of tiles, ignoring the 'blank' tiles for now.
 
 tileset
+
 	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
 	tileset =
+
 tileset.1
+
 	s break(' ') . c ' ' break(' ') . n ' ' =	:f(return)
 	tileset = tileset dupl(c,n)			:(tileset.1)
+
 tileset.end
 
 *	Main program.
@@ -45,9 +48,12 @@ tileset.end
 	count = array(15)
 	tiles = tileset()
 	have = table(26)
+
 init.1
+
 	tiles len(1) . c =				:f(init.2)
 	have[c] = have[c] + 1				:(init.1)
+
 init.2
 
 	words = table(10000)
@@ -57,9 +63,11 @@ init.2
 	wwf = 'qi brr zen zep marie texting da ' 
 
 wwf
+
 	wwf break(' ') . w ' ' =			:f(wwf.done)
 	output = 'wwf extension ' w
 	words[w] = 1					:(wwf)
+
 wwf.done
 
 *	Read in the enable list and add its words to the dictionary
@@ -71,6 +79,7 @@ read
 	n = size(word)
 	gt(n,15)					:s(read)
 	count[n] = count[n] + 1				:(read)
+
 read.done
 	wara = sort(words)
 
@@ -84,11 +93,14 @@ read.done
 	plurals = table(10000)
 
 word.next
+
 	word = wara[i = i + 1,1]				:f(word.done)
 	ndict = ndict + 1
 	this = table()
 	s = word
+
 word.char
+
 	s len(1) . c =					:f(word.out)
 	this[c] = this[c] + 1
 	le(this[c],have[c])				:s(word.char)
@@ -99,6 +111,7 @@ word.char
 	skipped = skipped + 1				:(word.next)
 
 word.out
+
 	n = size(word)
 	eq(n,1)						:s(word.next)
 
@@ -117,8 +130,11 @@ word.out
 	words[word] =
 	words[word 's'] = 
 	words[word 'S'] = 1				:(word.next);
+
 word.copy
+
 	words[word] = 1					:(word.next)
+
 word.done
 
 	wara = sort(words)
@@ -129,9 +145,12 @@ word.done
 	i = 1
 	len = 1
 len.next
+
 	gt(len = len + 1,15)				:s(len.done)
 	i = 0
+
 write.next
+
 	word = wara[i = i + 1,1]			:f(len.next)
 	ne(size(word),len)				:s(write.next)
 	ofile = word					
