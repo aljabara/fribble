@@ -1184,13 +1184,13 @@ log.end
 m
 	free = array(size(text))
 
-	out('m str' str)
+*	out('m str' str)
 	str break(' ')					:s(m.list)
 	pos = +str					:f(m.error)
 
 m.pos
 
-	out('pos fi ' fi ' ' pos + (fi - 1 ))
+*	out('pos fi ' fi ' ' pos + (fi - 1 ))
 	free[fi = fi + 1] = pos + (fi - 1)		:s(m.pos)f(m.done)
 
 m.list
@@ -1210,8 +1210,8 @@ m.error
 	out('m(id,str,text) error - .') :(freturn)
 m.done
 
-*	out('m id ' id '  size ' size(text) ' f[1]' f[1] ' f[count]=' f[size(text)] ' text='  text)
-*	ne(fi, size(text)) 'm size mismatch,try again')	:s(freturn)
+	out(' id ' id '  size ' size(text) ' f[1]' f[1] ' f[count]=' f[size(text)] ' text='  text)
+	ne(fi - 1, size(text)) out('m size mismatch,try again')	:s(freturn)
 	m = move(id,free,text)				:(return)
 
 m.end
@@ -2523,10 +2523,14 @@ turn.manual
 	ne(f.trace) out('getting move manually')
 
 	move = manual()
+	ident(datatype(move),'move')			:s(turn.manual.move)
 	move 'pass'					:s(turn.pass)
 	move 'swap'					:s(turn.swap)
 	move 'resign'					:s(turn.resign)
-	move 'error'					:s(turn.error)
+	move 'error'					:s(turn.manual.error)
+
+turn.manual.move
+
 	g.move = move
 
 turn.validate
@@ -2610,33 +2614,28 @@ turn.end
 
 *	Enter move manually (by hand).
 
+*MANUAL*	
 manual
-
 	ne(f.trace) out('getting move manually')
 *	Here to enter the move manually
 
 manual.in
 	out('enter move')
-	line = input.user()				:f(end)
+	manual = input.user()				:f(end)
 
-	line 'pass'					:s(manual.pass)
-	line 'swap'					:s(manual.swap)
-	line 'resign'					:s(manual.resign)
-	line 'error'					:s(manual.error)
+	manual ( 'pass' | 'swap' | 'resign' | 'quit') :s(return)
 
-	out = 'input line:' line ':'
-	manual = eval(line)				:f(manual.error)
+	out = 'input move:' line ':'
+	manual = eval(manual)				:f(manual.error)
 	out('input: ' show.move(manual) ' datatype ' datatype(manual) )
-	ident(datatype(g.move),'move')			:s(return)
-	out('need to enter a move')			:(manual)
+	ident(datatype(manual),'move')			:f(manual.error)
+	valid(manual)					:s(manual.done)
+	out('need to enter a valid move')		:(manual)
+
 manual.error
-	manual = 'error'				:(return)
-manual.pass
-	manual = 'pass'					:(return)
-manual.swap
-	manual = 'swap'					:(return)
-manual.resign
-	manual = 'resign'				:(return)
+
+	out('manual error evaluating ' line)		:(freturn)
+
 manual.end
 
 	define('log.move(pid,move)')			:(log.move.end)
