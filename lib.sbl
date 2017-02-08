@@ -865,10 +865,10 @@ game
 
 game.log
 
-	log('game ' mode)
-	log('version ' g.version)
-	log('time.start ' time())
-	log('date.start ' g.date)
+	log('* game ' mode)
+	log('* version ' g.version)
+	log('* time.start ' time())
+	log('* date.start ' g.date)
 	log.tiles()
 	log.player(1)
 	log.player(2)
@@ -931,10 +931,10 @@ game.over
 
 *	Complete log file.
 
-	log('total.1 ' total(g.one))
-	log('total.2 ' total(g.two))
-	log('date.finis ' date(2))
-	log('time.finis ' time())
+	log('* total.1 ' total(g.one))
+	log('* total.2 ' total(g.two))
+	log('* date.finis ' date(2))
+	log('* time.finis ' time())
 	log('endgame')
 
 	differ(logfile) endfile(g.logfile.channel)
@@ -957,7 +957,7 @@ log.tiles.end
 *	Write player description to log file.
 
 log.player
-	log('player.' pid ' ' show.player(pid))			
+	log('player ' pid ' ' show.player(pid))			
 							:(return)
 
 log.player.end
@@ -2489,7 +2489,7 @@ turn
 
 turn.move
 
-	log( 'rack.' pid ' "' rack(player) '"')
+	log( 'rack ' pid ' "' rack(player) '"')
 
 *	2.	Find or enter the move to be played.
 
@@ -2584,19 +2584,19 @@ turn.replenish
 
 turn.pass
 
-	log( 'pass.' pid)
+	log( 'pass ' pid)
 							:(turn.done)
 turn.resign
 
 	out('player ' pid ' resigns.')
-	log('resign.' pid)				:(turn.done)
+	log('resign ' pid)				:(turn.done)
 
 turn.swap
 	
 *	Here in case foe swapped tiles. Report it as such and move on.
 
 
-	log('swap.' pid)
+	log('swap ' pid)
 
 	out('foe swapped tiles')			:(turn.done)
 
@@ -2644,7 +2644,7 @@ manual.end
 
 log.move
 
-	log('move.' pid ' ' show.move(move))		:(return)
+	log('move ' pid ' ' show.move(move))		:(return)
 
 log.move.end
 
