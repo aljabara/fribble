@@ -806,7 +806,7 @@ find.perm
 
 *	See if we have already tested this text.
 
-	differ(tried[text])				:f(freturn)
+	differ(tried[text])				:s(freturn)
 	tried[text] = 1;* note that we have reviewed this text
 
 
