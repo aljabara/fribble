@@ -673,7 +673,7 @@ endgame
 							:(return)
 endgame.end
 
-	define('find(pid,turn)player,rack,num,lines,inlines,line,moves,mi,m,perms,perm,permi,fline,tline,iline,cline,highest,lowest,i,p,score,move,tried')	:(find.end)
+	define('find(pid,turn)rack,num,inlines,line,moves,mi,m,perms,perm,permi,fline,tline,cline,highest,lowest,i,p,score,move,tried')	:(find.end)
 
 *	Find all the valid moves and their scores given the current board and the indicated rack.
 *	For each line, find the set of all possible moves for that line. 
@@ -703,8 +703,7 @@ find
 
 	find = eq(turn,1) start(pid)			:s(return)
 
-	player = g.players[pid]
-	rack = rack(player)
+	rack = rack(g.players[pid])
 	lines = copy(g.lines)
 	inlines = copy(lines)
 	g.highest = 0;* highest score this turn
@@ -733,11 +732,59 @@ find.move
 	
 	tried = table(100)
 
-	perms = g.permutations[text(move)]		:s(find.perm)
+	perms = g.permutations[text(move)]		:s(find.perm.next)
 
 *	Something must be wrong with the requested permutation
 
 	out('fatal permutation request ' text(move)) :(end)
+
+find.perm.next
+
+	perm = perms[permi = permi + 1]			:f(find.move)
+	ident(perm)					:s(find.move)
+	score = 0
+
+* on success below, go to find.score
+
+	find.perm(rack,perm,num,move,inlines,tried)	:f(find.perm.next)
+
+find.score
+
+*	out(ne(g.tracing) 'Found valid move ' show.move(move) ' in ' show.pair(pair(num,line)))
+
+*	Score the line by summing the scores of the lines saved in clines.
+	
+*	out(ne(g.tracing) 'valid move :' line '  move '  id(move) ' ' size((text(move)) '  '
+*.		free(move)[1] '...' free(move)[size(text(move))] ' ' text(move))
+ 
+	count.valid = count.valid + 1
+	move = copy(move)
+*	out(ne(g.tracing) 'Find cross ' show.move(move) '  text=' text(move))
+*	ne(g.tracing) show.move(move)
+*	ne(g.tracing) show.play(move)
+*	out(ne(g.tracing) 'Find calling scoremove')
+	points(move) = +scoremove(move)	
+	g.cln = 0;* reset for next permutation
+	find = isbest(move) copy(move)			:(find.perm.next)
+
+find.done
+
+	ident(find)					:s(find.fail)
+							:(return)	
+find.fail
+
+*	out('find failed ')
+
+	output = ident(find) 'find FAILED, no move found.'
+
+							:(freturn)
+find.end
+
+	define('find.perm(rack,perm,num,move,inlines,tried)text,lines,iline,i,p,cline')	:(find.perm.end)
+
+*	Assess effect of permutation.
+
+find.perm
 
 *	NOTE: THE LOOP BELOW IS THE CRITICAL INNER LOOP OF THIS PROGRAM.
 *	ANY TIME SPENT SPEEDING THINGS UP ELSEWHERE WILL HAVE LITTLE EFFECT.
@@ -750,24 +797,20 @@ find.move
 *	the same letter, the table *tried* is used below. This cut the running
 *	time of the program by a factor of two when first introduced.
 	
-find.perm
-
 	count.perm = count.perm + 1
 	count.cells = count.cells + size(perm)
 
-	score = g.cln = 0
-	perm = perms[permi = permi + 1]			:f(find.move)
-	ident(perm)					:s(find.move)
+	g.cln = 0
 
 	text = place(perm,rack)
 
 *	See if we have already tested this text.
 
-	differ(tried[text])				:s(find.perm)
+	differ(tried[text])				:f(freturn)
 	tried[text] = 1;* note that we have reviewed this text
 
 
-	lines = copy(inlines);* restore lines to condition on entry
+	lines = copy(inlines);
 
 *	Insert the letters from the tileset corresponding to the permutation into the selected blank cells in the line. 
 *	The digit '1' selects the first tile, the digit '2' the second, and so on.
@@ -776,7 +819,7 @@ find.perm
 
 	text(move) = perm;* insert permutation digits into free cells
 	iline = insert(lines[num],move);* line with permutation digits entered
-	checkline(place(iline,rack))			:f(find.perm)
+	checkline(place(iline,rack))			:f(freturn)
 	perm(move) = perm
 
 *	Move is valid on this line, so check validity on crossing lines.
@@ -792,61 +835,30 @@ find.perm
 	g.clines[g.cln = g.cln + 1] =  pair( id(move), insert(lines[num],move))
 	i = 0
 
-*	Check the crossing lines, constructing them as needed,  to make sure they are valid.
+*	Check the crossing lines, constructing them as needed, to make sure they are valid.
 
-find.cross
+find.perm.cross
 
 *	out('find cross ')
-	p = free(move)[i = i + 1]			:f(find.score)
+	p = free(move)[i = i + 1]			:f(return)
 	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1))
 
-	checkline(line(cline))				:f(find.perm)
+	checkline(line(cline))				:f(freturn)
 
 *	out(ne(g.tracing) 'Find valid checkline ' line(cline))
 
 	text(move) = place(text(move),ucase(rack))
 *	out(ne(g.tracing) 'Find text ' text(move))
 
-	g.clines[g.cln = g.cln + 1] = cline		:(find.cross)
-	
-find.score
+	g.clines[g.cln = g.cln + 1] = cline		:(find.perm.cross)
 
-
-*	out(ne(g.tracing) 'Find valid move ' show.move(move) ' in ' show.pair(pair(num,line)))
-
-*	Score the line by summing the scores of the lines saved in clines.
-	
-*	out(ne(g.tracing) 'valid move :' line '  move '  id(move) ' ' size((text(move)) '  '
-*.		free(move)[1] '...' free(move)[size(text(move))] ' ' text(move))
- 
-	count.valid = count.valid + 1
-	move = copy(move)
-*	out(ne(g.tracing) 'Find cross ' show.move(move) '  text=' text(move))
-*	ne(g.tracing) show.move(move)
-*	ne(g.tracing) show.play(move)
-*	out(ne(g.tracing) 'Find calling scoremove')
-	points(move) = +scoremove(move)	
-	g.cln = 0;* reset for next permutation
-	find = isbest(move) copy(move)			:(find.perm)
-
-find.done
-
-	ident(find)					:s(find.fail)
-							:(return)	
-find.fail
-
-*	out('find failed ')
-
-	output = ident(find) 'find FAILED, no move found.'
-
-							:(freturn)
-find.end
+find.perm.end
 
 	define('game(mode)players,player,opn,move,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board,lfn') :(game.end)
 
 *	Play a game of fribble. *max* is the maximum number of moves.
-*	Mode is one to let you play against fribble, two to let fribble play itself,
-*	and three work with fribble to play with someone.
+*	Mode is one to let you play against fribble, two to have fribble play a game with itself,
+*	and three to work with fribble's assistance to play with someone.
 
 *GAME*
 game
