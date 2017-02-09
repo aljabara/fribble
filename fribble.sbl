@@ -101,11 +101,11 @@ main.solo
 
 *	In solo mode, you play against fribble. 
 
-*	You are player one, of kind player.kind.solo. You make your own moves.
-*	Fribble is player two, of kind player.kind.auto.
+*	Fribble is player one, of kind player.kind.auto.
+*	You are player two, of kind player.kind.solo. You make your own moves.
 
-	g.one = player(1,'You',		player.kind.solo)
-	g.two = player(2,'Fribble',	player.kind.auto)
+	g.one = player(1,'Fribble',	player.kind.auto)
+	g.two = player(2,'You',		player.kind.solo)
 
 *	Fribble manages the tiles for both players.
 

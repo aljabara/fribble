@@ -1595,7 +1595,7 @@ replenish.auto
 
 	replenish = rack(player)
 
-	eq(size(replenish),7)				:s(replenish.done)
+	eq(size(replenish),7)				:s(return)
 
 	replenish = replenish take(7 - size(replenish)) :(return)
 
@@ -2545,12 +2545,12 @@ turn.manual.nomove
 *	Here if manual didn't return a move, so branch to the corresponding handler.
 
 	manual 'error'					:s(turn.manual.error)
-							:$('turn.' move)
+							:($('turn.' move))
 turn.solo
+*HERE*
 
 *	Here to when playing solo. Get the player's move, then
 *	find what fribble would have played, and show the difference.
-
 
 turn.solo.in
 
@@ -2558,19 +2558,23 @@ turn.solo.in
 
 	manual = manual()
 	ident(datatype(manual),'move')			:f(turn.solo.nomove)
-	g.move = manual					:(turn.solo.fribble)
+	out('solo player move ' show.move(manual))
+	g.move = manual					:(turn.solo.fribble.havemove)
 
 turn.solo.nomove
 
 *	Here if manual didn't return a move, so branch to the corresponding handler.
 
 	manual 'error'					:s(turn.manual.error)
-							:$('turn.' move)
+	target = $('turn.' manual)
+	out('solo no move target datatype ' datatype(target) ' ' target)
+	out('turn.solo.nomove ' manual)
+							:($('turn.' manual))
 turn.solo.move
 
-
-	valid(manual)					:s(turn.solo.fribble.havemove)
-
+	eq(g.turn,1) valid.start(manual)		:s(turn.solo.fribble.havemove)
+	ne(g.turn,1) valid(manual)			:s(turn.solo.fribble.havemove)
+	
 	out('invalid move - try again')			:(turn.solo.in)
 
 turn.solo.fribble.havemove
@@ -2593,15 +2597,15 @@ turn.solo.fribble.move
 	points.fribble = scoremove(move)
 	points.player = scoremove(g.move)
 
-	out('You played the move ' show.move(g.move ' for ' points.player ' points.'))
+	out('You played the move ' show.move(g.move) ' for ' points.player ' points.')
 
-	out('Fribble would have played ' show.move(move) ' for ' points(move) ' points.'))
+	out('Fribble would have played ' show.move(move) ' for ' points(move) ' points.')
 
 	show.play(makemove(pid,move));* display fribble's move.
 
 	lt(points.player,points.fribble)	out('Fribble would have scored ' (points(move) - points.player) ' more points.')
-	eq(points.player,points.fribble))	out('Fribble and you would have scored the same - Congratulations!')
-	gt(points.player,points.fribble)	out('You score more (' (points.player - points(move) ' points than Fribble.')
+	eq(points.player,points.fribble)	out('Fribble and you would have scored the same - Congratulations!')
+	gt(points.player,points.fribble)	out('You score more (' (points.player - points.fribble) ') points than Fribble.')
 	gt(points.player,points.fribble)	out('You are a genius!')
 	
 *	Put things back where they were.
@@ -2611,14 +2615,13 @@ turn.solo.fribble.move
 turn.validate
 
 	ne(f.trace) out('validating move ' show.move(g.move))
-*	See if move is valid, except no test needed for initial move.
 
-	eq(g.turn,1)					:s(turn.make)
-	out('validating gturn=' g.turn)
-	valid(g.move)					:s(turn.make)
+*	See if move is valid.
 
+	eq(g.turn,1) valid.start(g.move)		:s(turn.make)
+	ne(g.turn,1) valid(g.move)			:s(turn.make)
 
-	out('invalid move - try again')			:(turn.manual.in)
+	out('invalid move - try again')			:(turn.manual)
 
 turn.manual.error
 
@@ -2701,11 +2704,18 @@ manual.in
 
 	manual ( 'pass' | 'swap' | 'resign' | 'quit') :s(return)
 
-	out = 'input move:' line ':'
 	manual = eval(manual)				:f(manual.error)
+
 	out('input: ' show.move(manual) ' datatype ' datatype(manual) )
+
 	ident(datatype(manual),'move')			:f(manual.error)
-	valid(manual)					:s(manual.done)
+
+	ne(g.turn,1)					:s(manual.check)
+
+manual.check
+
+	valid(manual)					:s(return)
+
 	out('need to enter a valid move')		:(manual)
 
 manual.error
@@ -2713,6 +2723,42 @@ manual.error
 	out('manual error evaluating ' line)		:(freturn)
 
 manual.end
+
+	define('valid.start(move)free,num,text')	:(valid.start.end)
+
+*	Test if a suggested starting move is valid.
+
+*VALID.START*
+valid.start
+
+*	If this is a starting move, check that it covers column 8 in row 8, 
+*	and is a word in the dictionary.
+
+	free = free(move) 
+	text = text(move)
+
+	num = convert(free,'integer')			:f(valid.start.free)
+
+	out('valid.start.start num=' num)
+
+	lt(num,9 - size(text))				:s(valid.start.error)
+	gt(num,7 + size(text))				:s(valid.start.error)
+
+valid.start.free
+
+*	Here if free is list of cells. Check that '8' is one of them.
+
+	out('valid.start.start.free ' show.move(valid.start))
+	out('valid.start.start.free ' free(valid.start))
+
+	free break('8')					:f(valid.start.error)
+	checkword(text(move))				:s(return)f(freturn)
+
+valid.start.start.error
+
+	out('starting move must use column 8.')		:(freturn)
+
+valid.start.end
 
 	define('log.move(pid,move)')			:(log.move.end)
 
@@ -2754,11 +2800,11 @@ unpack.end
 
 	define('valid(move)num,i,pos')			:(valid.end)
 
-*	Test if move is valid.
+*	Test if move is valid. 
 
 *VALID*
 valid
-*	show.grid(g.used)
+valid.move
 
 *	At least one cell to be occupied by this move must be adjacent to a used cell.
 	
