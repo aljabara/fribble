@@ -697,7 +697,6 @@ endgame.end
 
 *FIND*
 find
-*	
 
 *	See if first move, in which case call start()
 
@@ -730,7 +729,7 @@ find.move
 *	Use tried to track texts that have been tried, to avoid duplicate testing for validity of
 *	the same text.
 	
-	tried = table(100)
+	tried = table(500)
 
 	perms = g.permutations[text(move)]		:s(find.perm.next)
 
@@ -742,13 +741,11 @@ find.perm.next
 
 	perm = perms[permi = permi + 1]			:f(find.move)
 	ident(perm)					:s(find.move)
-	score = 0
-
-* on success below, go to find.score
-
 	find.perm(rack,perm,num,move,inlines,tried)	:f(find.perm.next)
 
 find.score
+
+	score = 0
 
 *	out(ne(g.tracing) 'Found valid move ' show.move(move) ' in ' show.pair(pair(num,line)))
 
@@ -782,7 +779,7 @@ find.end
 
 	define('find.perm(rack,perm,num,move,inlines,tried)text,lines,iline,i,p,cline')	:(find.perm.end)
 
-*	Assess effect of permutation.
+*	Assess effect of permutation, failing if it doesn't produce a valid movel
 
 find.perm
 
@@ -831,7 +828,9 @@ find.perm
 *	junk as soon as possible so we can move on without wasting needless effort.
 
 	text(move) = text
+
 *	out(ne(g.tracing) 'Find valid first ' show.move(move) ' ' show.line(line))
+
 	g.clines[g.cln = g.cln + 1] =  pair( id(move), insert(lines[num],move))
 	i = 0
 
@@ -840,14 +839,18 @@ find.perm
 find.perm.cross
 
 *	out('find cross ')
+
+*	If next assignment fails, we have finished checking the permutation without
+*	finding a valid move, and so return failure.
+
 	p = free(move)[i = i + 1]			:f(return)
 	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1))
-
 	checkline(line(cline))				:f(freturn)
 
 *	out(ne(g.tracing) 'Find valid checkline ' line(cline))
 
 	text(move) = place(text(move),ucase(rack))
+
 *	out(ne(g.tracing) 'Find text ' text(move))
 
 	g.clines[g.cln = g.cln + 1] = cline		:(find.perm.cross)
@@ -857,8 +860,11 @@ find.perm.end
 	define('game(mode)players,player,opn,move,i,li,offset,open.word,open.score,n,tiles,moves,li,passed,board,lfn') :(game.end)
 
 *	Play a game of fribble. *max* is the maximum number of moves.
-*	Mode is one to let you play against fribble, two to have fribble play a game with itself,
-*	and three to work with fribble's assistance to play with someone.
+*	Mode is 
+*		one to have fribble play a game with itself,
+*		two to let you play against fribble, and 
+*		three to work with fribble's assistance to play with another person,
+*		who may be using fribble themself, but good for them!
 
 *GAME*
 game
@@ -2460,7 +2466,7 @@ traceon
 							:(return)
 traceon.end
 
-	define('turn(pid,mode)')			:(turn.end)
+	define('turn(pid,mode)manual,state,points.player,points.fribble') 	:(turn.end)
 
 *	Play a turn in a game.
 
@@ -2474,11 +2480,8 @@ traceon.end
 
 *	4.	If not managing the tiles by hand, use fribble to update the rack.
 
-
 *TURN*
 turn
-
-
 
 	player = g.players[pid]
 
@@ -2490,7 +2493,6 @@ turn
 
 *	This is needed when playing in team mode. 
 *	need to enter your tiles from the wwf board.
-*
 
 	eq(f.mode,f.mode.auto)				:s(turn.auto)
 	ne(kind(player),player.kind.team)		:s(turn.move)
@@ -2511,7 +2513,7 @@ turn.move
 
 	eq(f.mode,f.mode.auto)				:s(turn.auto)
 	eq(kind(player),player.kind.foe)		:s(turn.manual)
-	eq(kind(player),player.kind.solo)		:s(turn.manual)
+	eq(kind(player),player.kind.solo)		:s(turn.solo)
 	
 turn.auto
 
@@ -2534,16 +2536,77 @@ turn.manual
 
 	ne(f.trace) out('getting move manually')
 
-	move = manual()
-	ident(datatype(move),'move')			:s(turn.manual.move)
-	move 'pass'					:s(turn.pass)
-	move 'swap'					:s(turn.swap)
-	move 'resign'					:s(turn.resign)
-	move 'error'					:s(turn.manual.error)
+	manual = manual()
+	ident(datatype(move),'move')			:f(turn.manual.nomove)
+	g.move = manual					:(turn.validate)
 
-turn.manual.move
+turn.manual.nomove
 
-	g.move = move
+*	Here if manual didn't return a move, so branch to the corresponding handler.
+
+	manual 'error'					:s(turn.manual.error)
+							:$('turn.' move)
+turn.solo
+
+*	Here to when playing solo. Get the player's move, then
+*	find what fribble would have played, and show the difference.
+
+
+turn.solo.in
+
+	ne(f.trace) out('getting move manually')
+
+	manual = manual()
+	ident(datatype(manual),'move')			:f(turn.solo.nomove)
+	g.move = manual					:(turn.solo.fribble)
+
+turn.solo.nomove
+
+*	Here if manual didn't return a move, so branch to the corresponding handler.
+
+	manual 'error'					:s(turn.manual.error)
+							:$('turn.' move)
+turn.solo.move
+
+
+	valid(manual)					:s(turn.solo.fribble.havemove)
+
+	out('invalid move - try again')			:(turn.solo.in)
+
+turn.solo.fribble.havemove
+
+	g.move = manual
+
+*	G.move is the player's valid move.
+*	Save the state, find the move fribble would have made, 
+*	and report the results to the player.
+
+	state = state.save()	
+	move = find(pid, rack)				:s(turn.solo.fribble.move)
+
+*	Here if fribble couldn't find a valid move.
+
+	out('Hmmm ... Fribble unable to find a valid move.')	:(turn.validate)
+
+turn.solo.fribble.move
+ 
+	points.fribble = scoremove(move)
+	points.player = scoremove(g.move)
+
+	out('You played the move ' show.move(g.move ' for ' points.player ' points.'))
+
+	out('Fribble would have played ' show.move(move) ' for ' points(move) ' points.'))
+
+	show.play(makemove(pid,move));* display fribble's move.
+
+	lt(points.player,points.fribble)	out('Fribble would have scored ' (points(move) - points.player) ' more points.')
+	eq(points.player,points.fribble))	out('Fribble and you would have scored the same - Congratulations!')
+	gt(points.player,points.fribble)	out('You score more (' (points.player - points(move) ' points than Fribble.')
+	gt(points.player,points.fribble)	out('You are a genius!')
+	
+*	Put things back where they were.
+	
+	state.restore(state)
 
 turn.validate
 
@@ -2553,6 +2616,7 @@ turn.validate
 	eq(g.turn,1)					:s(turn.make)
 	out('validating gturn=' g.turn)
 	valid(g.move)					:s(turn.make)
+
 
 	out('invalid move - try again')			:(turn.manual.in)
 
