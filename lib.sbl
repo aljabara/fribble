@@ -2513,7 +2513,11 @@ turn.move
 
 	eq(f.mode,f.mode.auto)				:s(turn.auto)
 	eq(kind(player),player.kind.foe)		:s(turn.manual)
-	eq(kind(player),player.kind.solo)		:s(turn.solo)
+
+* Enable next line to get 'enhanced' mode where Fribble reports move it would have made
+*	eq(kind(player),player.kind.solo)		:s(turn.solo)
+
+	eq(kind(player),player.kind.solo)		:s(turn.manual)
 	
 turn.auto
 
@@ -2522,7 +2526,9 @@ turn.auto
 	ne(f.trace) out('fribble making move.')
 
 *	ne(kind(player),player.kind.auto) out('computing move ...')
+
 	g.move = find(pid,g.turn)			:f(turn.auto.fail)
+
 *	ne(f.trace) out('auto move ' show.move(g.move))
 
 *	ne(kind(player),player.kind.auto) out('... computed')
@@ -2537,7 +2543,7 @@ turn.manual
 	ne(f.trace) out('getting move manually')
 
 	manual = manual()
-	ident(datatype(move),'move')			:f(turn.manual.nomove)
+	ident(datatype(manual),'move')			:f(turn.manual.nomove)
 	g.move = manual					:(turn.validate)
 
 turn.manual.nomove
@@ -2706,9 +2712,7 @@ manual.in
 
 	manual = eval(manual)				:f(manual.error)
 
-	out('input: ' show.move(manual) ' datatype ' datatype(manual) )
-
-	ident(datatype(manual),'move')			:f(manual.error)
+*	ident(datatype(manual),'move') out(show.move(manual))	:f(manual.error)
 
 	ne(g.turn,1)					:s(manual.check)
 
@@ -2819,8 +2823,6 @@ valid.u
 *	Here if no adjacent cell found, fail.  *
 							:(freturn)
 valid.used
-
-	out('valid used ok')
 
 *	Test that line and all its crossing lines are valid.
 
