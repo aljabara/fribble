@@ -82,6 +82,12 @@
 
 *	g.move is the current/last move.
 
+*	g.moves is an array of the moves found by the most recent call to find(),
+*	sorted with highest score first.
+*	g.moves.max is the length of the largest such array found so far.
+
+	g.moves = g.moves.max =
+
 *	A player is represented by
 
 	data('player(pid,name,kind,rack,total,thirty,highest)')
@@ -629,17 +635,18 @@ counters
 
 	out()
 	out('Performance metrics:')
-	counter('placements found by scan'	, thousands(count.scanned))
-	counter('permutations examined'		, thousands(count.perm))
-	counter('cells examined'		, thousands(count.cells))
-	counter('potential moves found'		, thousands(count.moves	))
-	counter('lines checked'			, thousands(count.checkline))
-	counter('words checked'			, thousands(count.checkword))
-	counter('cross lines checked'		, thousands(count.cline))
-	counter('valid moves found'		, thousands(count.valid))
-	counter('total inserts'			, thousands(count.insert))
-	counter('contiguous inserts'		, thousands(count.insert.contig))
-	counter('split inserts'			, thousands(count.insert.split))
+	counter('placements found by scan'	   , thousands(count.scanned))
+	counter('permutations examined'		   , thousands(count.perm))
+	counter('cells examined'		   , thousands(count.cells))
+	counter('lines checked'			   , thousands(count.checkline))
+	counter('words checked'			   , thousands(count.checkword))
+	counter('cross lines checked'		   , thousands(count.cline))
+	counter('possible moves found'		   , thousands(count.moves	))
+	counter('valid moves found'		   , thousands(count.valid))
+	counter('most valid moves found in a turn' , thousands(g.moves.max))
+	counter('total inserts'			   , thousands(count.insert))
+	counter('contiguous inserts'		   , thousands(count.insert.contig))
+	counter('split inserts'			   , thousands(count.insert.split))
 							:(return)
 counters.end
 
@@ -689,7 +696,7 @@ endgame
 							:(return)
 endgame.end
 
-	define('find(pid,turn)rack,num,inlines,line,moves,mi,m,perms,perm,'
+	define('find(pid,turn)rack,num,inlines,line,moves,nmoves,mi,m,perms,perm,'
 .	 'permi,fline,tline,cline,highest,lowest,i,p,score,move,tried')	
 .							:(find.end)
 
@@ -727,6 +734,7 @@ find
 	inlines = copy(lines)
 	g.highest = 0;* highest score this turn
 	g.lowest = 0;* lowest cost this turn
+	g.moves = table()
 	num = 0
 
 find.line
@@ -786,11 +794,15 @@ find.score
 *	out(ne(g.tracing) 'Find calling scoremove')
 
 	points(move) = +scoremove(move)	
+	g.moves[nmoves = nmoves + 1] = move
 	g.cln = 0;* reset for next permutation
 	find = isbest(move) copy(move)			:(find.perm.next)
 
 find.done
 
+	g.moves = rsort(g.moves)
+	g.moves.max = gt(nmoves,g.moves.max) nmoves
+	show.moves(g.moves)
 	ident(find)					:s(find.fail)
 							:(return)	
 find.fail
@@ -2478,7 +2490,6 @@ show.lines.titled
 
 show.lines.end
 
-
 	define('show.move(move)f,i,ff') 		:(show.move.end)
 
 *	Show a move.
@@ -2509,6 +2520,18 @@ show.movefail
 	out('free ff failure ')				:(end)
 
 show.move.end
+
+	define('show.moves(moves)i,move') 		:(show.moves.end)
+
+*	Show an array of moves. First entry is index, second is move.
+
+*SHOW.MOVES*
+show.moves
+
+	move = moves[i = i + 1,2]			:f(return)
+	show.move(move)					:(show.moves)
+
+show.moves.end
 
 	define('show.free(free,title)i')		:(show.free.end)
 
