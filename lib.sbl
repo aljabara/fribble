@@ -854,7 +854,6 @@ find.perm
 *	the result gives a valid line. Move to the next permutation if not.  
 *	(This is a clever use of replace(), even if I do say so myself.)
 
-	text(move) = perm;* insert permutation digits into free cells
 	iline = insert(lines[num],move);* line with permutation digits entered
 	checkline(place(iline,rack))			:f(freturn)
 
@@ -1103,9 +1102,9 @@ hline.end
 
 	define('insert(line,move,upper)c,f,i,text')	:(insert.end)
 
-*	Insert the text of a move into its free list of empty
-*	cells in the line of the move.  Express the text in upper case 
-*	if *upper* is not null.
+*	Insert the text of a move *move* using the free list 
+*	of empty cells in the line of the move.  Express the 
+*	text in upper case if *upper* is not null.
 
 *INSERT*
 insert
@@ -1406,6 +1405,31 @@ manual.error
 	out('manual error evaluating ' line)		:(freturn)
 
 manual.end
+
+	number.table = table(100)
+	number.table[1] = 'one'
+
+	number.s = 	'1 one 2 two 3 three 4 four 5 five 6 six 7 seven 8 eight 9 nine 10 ten '
+.		'11 eleven 12 twelve 13 thirteen 14 fourteen 15 fifteen 16 sixteen ' 
+.		'17 seventeen 18 eighteen 19 nineteen 20 twenty '
+
+	define('number(n)')				:(number.end)
+
+*	Convert integer *n* to string where appropriate. A rough
+*	definition of appropriate is if *n* can be written in one or
+*	two words.
+
+*NUMBER*
+number
+
+	number = n					:(return)
+	n = +n						:f(number.error)
+	le(n,100)					:s(number.100)
+							:(return)
+number.100
+*	number = number.table[n]
+							:(return)
+number.end
 
 	define('order(tiles)chars,ch,c1,c2,swaps,i,v1,v2') :(order.end)
 
