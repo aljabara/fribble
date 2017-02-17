@@ -60,7 +60,7 @@
 *	g.maxmoves, maximum number of moves. This is used to avoid 
 *	runaway behavior.
 
-	g.maxmoves = 3
+	g.maxmoves = 8
 	g.maxmoves = 60
 
 *	g.lines, array(30), is the array of the lines defined by the 
@@ -82,6 +82,12 @@
 
 *	g.move is the current/last move.
 
+*	g.moves is an array of the moves found by the most recent call to find(),
+*	sorted with highest score first.
+*	g.moves.max is the length of the largest such array found so far.
+
+	g.moves = g.moves.max =
+
 *	A player is represented by
 
 	data('player(pid,name,kind,rack,total,thirty,highest)')
@@ -102,14 +108,11 @@
 *				or more points; 
 *		*highest* 	is the player's highest move score.
 
-*	g.one and g.two are the players. 
-
-	g.one = player(1)
-	g.two = player(2)
+*	g.players[1] and g.players[2] are the players. 
 
 	g.players = array(2)	
-	g.players[1] = g.one
-	g.players[2] = g.two
+	g.players[1] = player(1)
+	g.players[2] = player(2)
 
 *	g.pid is the player of the current player.
 
@@ -632,11 +635,12 @@ counters
 	counter('placements found by scan'	, thousands(count.scanned))
 	counter('permutations examined'		, thousands(count.perm))
 	counter('cells examined'		, thousands(count.cells))
-	counter('potential moves found'		, thousands(count.moves	))
 	counter('lines checked'			, thousands(count.checkline))
 	counter('words checked'			, thousands(count.checkword))
 	counter('cross lines checked'		, thousands(count.cline))
+	counter('possible moves found'		, thousands(count.moves	))
 	counter('valid moves found'		, thousands(count.valid))
+	counter('most valid moves in a turn' 	, thousands(g.moves.max))
 	counter('total inserts'			, thousands(count.insert))
 	counter('contiguous inserts'		, thousands(count.insert.contig))
 	counter('split inserts'			, thousands(count.insert.split))
@@ -677,19 +681,23 @@ empty.end
 *ENDGAME*
 endgame
 
-	out('Player ' name(g.one) ' scored ' total(g.one) ' points. '
-.		'Highest move scored ' highest(g.one) ' points.')
-	out('Player ' name(g.two) ' scored ' total(g.two) ' points. '
-.		' Highest move scored ' highest(g.two) ' points.')
-	out(gt(thirty(g.one)) 'Player ' name(g.one) ' had ' 
-.		thirty(g.one) ' moves of 30 or more points.')
-	out(gt(thirty(g.two)) 'Player ' name(g.two) ' had ' 
-.		thirty(g.two) ' moves of 30 or more points.')
+	out(	name(g.players[1])  ' scored ' total(g.players[1]) ' points, '
+.		'with a best move of ' highest(g.players[1]) ' points.')
+
+	out(	name(g.players[2])  ' scored ' total(g.players[2]) ' points; '
+.		'with a best move of ' highest(g.players[2]) ' points.')
+
+	out(gt(thirty(g.players[1])) name(g.players[1]) ' had ' 
+.		thirty(g.players[1]) ' moves of thirty or more points.')
+
+	out(gt(thirty(g.players[2])) name(g.players[2]) ' had ' 
+.		thirty(g.players[2]) ' moves of thirty or more points.')
+
 	counters()
 							:(return)
 endgame.end
 
-	define('find(pid,turn)rack,num,inlines,line,moves,mi,m,perms,perm,'
+	define('find(pid,turn)rack,num,inlines,line,moves,nmoves,mi,m,perms,perm,'
 .	 'permi,fline,tline,cline,highest,lowest,i,p,score,move,tried')	
 .							:(find.end)
 
@@ -727,7 +735,8 @@ find
 	inlines = copy(lines)
 	g.highest = 0;* highest score this turn
 	g.lowest = 0;* lowest cost this turn
-	num = 0
+	g.moves = table()
+	nmoves = num = 0
 
 find.line
 
@@ -786,11 +795,17 @@ find.score
 *	out(ne(g.tracing) 'Find calling scoremove')
 
 	points(move) = +scoremove(move)	
+
+	eq(size(text(move)),1)				:s(find.perm.next)
+
 	g.cln = 0;* reset for next permutation
 	find = isbest(move) copy(move)			:(find.perm.next)
 
 find.done
 
+	g.moves = rsort(g.moves,2)
+	g.moves.max = gt(nmoves,g.moves.max) nmoves
+	gt(nmoves) show.moves(g.moves)
 	ident(find)					:s(find.fail)
 							:(return)	
 find.fail
@@ -942,15 +957,9 @@ game.turn
 
 	player = g.players[pid]
 
-	out('Move ' g.turn ' for player ' name(player) 
-.		 (differ(g.tilemanager) ', with tiles ' 
-.		show.tiles(rack(player),'A'),'')	'.')
-
-	out(ne(g.showscore) 'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M '
-.		'4 N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
-
-	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 '
-.		'N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
+	out('Move ' g.turn ' for ' name(player) 
+.		 (differ(g.tilemanager) ', with tiles "' 
+.		show.tiles(rack(player),'A'),'')	'".')
 
 	turn(pid,mode)			:f(game.turn.fail)s(game.turn)
 
@@ -990,8 +999,8 @@ game.over
 
 *	Complete log file.
 
-	log('* total.1 ' total(g.one))
-	log('* total.2 ' total(g.two))
+	log('* total.1 ' total(g.players[1]))
+	log('* total.2 ' total(g.players[2]))
 	log('* date.finis ' date(2))
 	log('* time.finis ' time())
 	log('endgame')
@@ -1317,15 +1326,18 @@ makemove
 	highest(player) = gt(points(move),highest(player)) points(move)
 	playmove(move)
 
-	out('Player ' pid ', ' name(player) ', played ' show.tiles(text(move)) 
-.		' starting at ' lineid(id(move)) ', position ' free(move)[1]
-.	', for ' points(move) ' points.')
-	out('Score is now "' name(g.one) '" ' total(g.one)  ','
-.		 "' name(g.two) '" ' total(g.two) ', with ' '
-.		size(g.tiles) ' letters left.')
+	out(	name(player) ' played "' show.tiles(text(move)) '" for ' 
+.		points(move) ' points,'
+.		' starting at ' lineid(id(move)) 
+.		', position ' free(move)[1] '.')
+
+	out('Score now: '  
+.		name(g.players[1]) ', ' total(g.players[1])  '; '
+.		name(g.players[2]) ', ' total(g.players[2])  '. ')
 
 	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 '
 .	    'N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
+	out()
 
 *	Display move in grid with just this move in upper case by saving 
 *	the board, playing the move with the text in upper case, showing it,
@@ -2201,7 +2213,7 @@ shell.start
 
 *	Make starting move using current tiles, default to 'fribble'
 
-	rack(g.one) = ident(rack(g.one)) 'fribble'
+	rack(g.players[1]) = ident(rack(g.players[1])) 'fribble'
 	s.move = start(1,1)
 
 *	Merge to make the move.
@@ -2214,7 +2226,7 @@ shell.tiles
 	tiles = operand
 	gt(size(tiles,7)) out('truncating to seven tiles')
 	tiles = gt(size(tiles,7)) substr(tiles,1,7)
-	rack(g.one) = tiles
+	rack(g.players[1]) = tiles
 	out('rack now ' tiles)
 							:(shell.loop)
 
@@ -2398,7 +2410,8 @@ show.header
 
 	out(differ(label) label)
 	out('                     1 1 1 1 1 1')
-	out('   1 2 3 4 5 6 7 8 9 0 1 2 3 4 5')	:(return)
+	out('   1 2 3 4 5 6 7 8 9 0 1 2 3 4 5')	
+	out()						:(return)
 
 show.header.end
 
@@ -2478,7 +2491,6 @@ show.lines.titled
 
 show.lines.end
 
-
 	define('show.move(move)f,i,ff') 		:(show.move.end)
 
 *	Show a move.
@@ -2488,6 +2500,7 @@ show.move
 
 	out(ident(move) ' show.move argument is NULL ') :s(return)
 
+	out('show.move id =' id ' text="' text(move) '", points=' points(move))
 show.move.i
 
 	gt(i = i + 1,size(text(move)))			:s(show.move.f)
@@ -2509,6 +2522,27 @@ show.movefail
 	out('free ff failure ')				:(end)
 
 show.move.end
+
+	define('show.moves(moves,n)i,move') 		:(show.moves.end)
+
+*	Show an array of moves. First entry is index, second is move.
+*	*n* gives the most number to list. If null, then ten moves are listed.
+
+*SHOW.MOVES*
+show.moves
+
+	out('enter show.moves')
+	differ(datatype(g.moves),'array') out('datatype g.moves wrong ' datatype(g.moves)) :s(return)
+	n = eq(n) 10
+
+show.moves.next
+	out('show.move i=' i)
+	move = moves[i = i + 1,2]			:f(return)
+	gt(i,n)						:s(return)
+	out('show.moves id =' id ' text="' text(move) '", points=' points(move))
+	show.move(move)					:(show.moves.next)
+
+show.moves.end
 
 	define('show.free(free,title)i')		:(show.free.end)
 
@@ -2664,7 +2698,7 @@ show.words.end
 
 	define('shuffle()tiles,n,passes,r1,r2,ch')	:(shuffle.end)
 
-*	Shuffle the remaining tiles by randomly swapping two tiles several times.
+*	Shuffle the remaining tiles by randomly swapping.players[2] tiles several times.
 
 *SHUFFLE*
 shuffle	
@@ -2813,8 +2847,8 @@ state.restore
 	g.tileset = 	saved['tiles']
 	g.players[1] = 	saved['player.1']
 	g.players[2] = 	saved['player.2']
-	g.one = 	g.players[1]
-	g.two = 	g.players[2]
+	g.players[1] = 	g.players[1]
+	g.players[2] = 	g.players[2]
 							:(return)
 state.restore.end
 
@@ -2998,6 +3032,7 @@ turn.auto
 							:(turn.make)
 turn.auto.fail
 							:(turn.fail)
+
 turn.manual
 
 *	Here to enter the move manually
