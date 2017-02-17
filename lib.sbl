@@ -677,14 +677,18 @@ empty.end
 *ENDGAME*
 endgame
 
-	out('Player ' name(g.one) ' scored ' total(g.one) ' points. '
-.		'Highest move scored ' highest(g.one) ' points.')
-	out('Player ' name(g.two) ' scored ' total(g.two) ' points. '
-.		' Highest move scored ' highest(g.two) ' points.')
-	out(gt(thirty(g.one)) 'Player ' name(g.one) ' had ' 
-.		thirty(g.one) ' moves of 30 or more points.')
-	out(gt(thirty(g.two)) 'Player ' name(g.two) ' had ' 
-.		thirty(g.two) ' moves of 30 or more points.')
+	out(	name(g.players[1])  ' scored ' total(g.players[1]) ' points, '
+.		'with a best move of ' highest(g.players[1]) ' points.')
+
+	out(	name(g.players[2])  ' scored ' total(g.players[2]) ' points; '
+.		'with a best move of ' highest(g.players[2]) ' points.')
+
+	out(gt(thirty(g.players[1])) name(g.players[1]) ' had ' 
+.		thirty(g.players[1]) ' moves of thirty or more points.')
+
+	out(gt(thirty(g.players[2])) name(g.players[2]) ' had ' 
+.		thirty(g.players[2]) ' moves of thirty or more points.')
+
 	counters()
 							:(return)
 endgame.end
