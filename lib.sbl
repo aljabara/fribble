@@ -15,19 +15,30 @@
 *	You should have received a copy of the gnu general public license
 *	along with fribble.  If not, see <http://www.gnu.org/licenses/>.
 
-*	Global Variables
-
 *	Global variables have names starting with 'g.' Their initial value is set
-*	 in the procedure *init()* and its subfunctions.
+*	in the procedure *init()* and its subfunctions.
 
 *	g.version is the version of the program:
 
-	g.version = '17.1.30';* 30 January 2017, 1st version. 
+	g.version = '17.1.30'		;* 30 January 2017, 1st version. 
+	g.version = '17.2.alpha'	;* Under development.
 
 *	g.board, array('15,15'), the playing board. Each entry is blank (' ') for 
 *	an unplayed cell, or is the letter played.
 
 *	g.bonus.lines,array(30), is the array of lines corresponding to g.bonus
+
+*	g.bonus,array(15,15) gives the bonus values for the squares on the board:
+
+*		1	for the value of the letter itself,
+*		2	for double letter,
+*		3	for triple letter, 
+*		4	for double word, and
+*		5	for triple word.
+
+*	A paired line consists of a line number and an associated line.
+*	It is used when it is necessary to pass a line of text to a procedure 
+*	along with line number from where it was derived.
 
 *	g.channel.temp is channel number used for temporary files, that is, 
 *	files that are opened, read, and then immediately closed.
@@ -102,7 +113,14 @@
 *				or more points; 
 *		*highest* 	is the player's highest move score.
 
-	g.players is an array of the two players.
+*	g.moves is array of the valid moves found by most recent call to find(),
+*	sorted with highest scoring move first.
+*	g.moves.max is the maximum length of the arrays so produced
+
+	g.moves =
+	g.moves.max =
+
+*	g.players is an array of the two players.
 
 	g.players = array(2)	
 	g.players[1] = player(1)
@@ -111,18 +129,6 @@
 *	g.pid is the player of the current player.
 
 	g.pid = 1
-
-*	g.bonus,array(15,15) gives the bonus values for the squares on the board:
-
-*		1	for the value of the letter itself,
-*		2	for double letter,
-*		3	for triple letter, 
-*		4	for double word, and
-*		5	for triple word.
-
-*	A paired line consists of a line number and an associated line.
-*	It is used when it is necessary to pass a line of text to a procedure 
-*	along with line number from where it was derived.
 
 		data('pair(num, line)')
 
@@ -668,6 +674,7 @@ counters
 	counter('words checked'			, thousands(count.checkword))
 	counter('cross lines checked'		, thousands(count.cline))
 	counter('valid moves found'		, thousands(count.valid))
+	counter('most valid moves in a turn'	, thousands(g.moves.max))
 	counter('total inserts'			, thousands(count.insert))
 	counter('contiguous inserts'		, thousands(count.insert.contig))
 	counter('split inserts'			, thousands(count.insert.split))
@@ -724,7 +731,7 @@ endgame
 							:(return)
 endgame.end
 
-	define('find(pid,turn)rack,num,inlines,line,moves,mi,m,perms,perm,'
+	define('find(pid,turn)rack,num,inlines,line,moves,nmoves,mi,m,perms,perm,'
 .	 'permi,fline,tline,cline,highest,lowest,i,p,score,move,tried')	
 .							:(find.end)
 
@@ -763,6 +770,9 @@ find
 	g.highest = 0;* highest score this turn
 	g.lowest = 0;* lowest cost this turn
 	num = 0
+	g.moves = table(20)
+	
+	nmoves = 0
 
 find.line
 
@@ -821,13 +831,30 @@ find.score
 *	out(ne(g.tracing) 'Find calling scoremove')
 
 	points(move) = +scoremove(move)	
+	g.moves[nmoves = nmoves + 1] = move
 	g.cln = 0;* reset for next permutation
 	find = isbest(move) copy(move)			:(find.perm.next)
 
 find.done
 
 	ident(find)					:s(find.fail)
-							:(return)	
+
+ :(return);* bypass for now.
+
+	moves = rsort(g.moves,2)
+
+*	Convert two-dimensional array to one-dimensional array.
+
+	i = 0
+	g.moves = array(nmoves)
+
+find.done.moves
+
+ :(return)
+	g.moves[i = i + 1] = moves[i,2]		:f(return)
+
+
+						:(find.done.moves)
 find.fail
 
 *	out('find failed ')
