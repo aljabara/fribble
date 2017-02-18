@@ -791,8 +791,8 @@ find.move
 	permi = 0
 
 *	The rack will almost always have at least two, and sometimes three,
-*	identical letters.  Use *tried* to track texts that have been tried,
-*	 to avoid duplicate testing for validity of the same text.
+*	identical letters.  Use *tried* to track previous permutations,
+*	to avoid duplicate testing for validity of the same text.
 	
 	tried = table(500)
 
@@ -865,7 +865,7 @@ find.fail
 find.end
 
 	define('find.perm(rack,perm,num,move,inlines,tried)'
-.		'text,lines,iline,i,p,cline')	:(find.perm.end)
+.		'text,lines,iline,i,p,cline,signature')	:(find.perm.end)
 
 *	Assess effect of permutation, failing if it doesn't produce a valid movel
 
@@ -891,9 +891,10 @@ find.perm
 
 *	See if we have already tested this text.
 
-	differ(tried[text])				:s(freturn)
-	tried[text] = 1;* note that we have reviewed this text
-
+	
+	signature = signature(perm,text)
+	differ(tried[signature])			:s(freturn)
+	tried[signature] = 1;* note that we have reviewed this text
 
 	lines = copy(inlines);
 
@@ -2757,6 +2758,75 @@ shuffle.done
 	g.tiles = pack(tiles)
 							:(return)
 shuffle.end
+
+
+	define('signature(perm,tiles)p,c,n')			:(signature.end)
+
+*	Computer signature of permutation for a given tile set.
+
+*	If another instance of character found, replace the corresponding
+*	digit in the signature.
+
+*
+*	Racks will typically contain duplicate letters. We can make use of this
+*	to avoid useless duplication of effort.
+*
+*	For example, if first and third letters are the same then in any permutation
+*	we can interchange the positions of these letter with no effect. Simply put,
+* 	if there are two "E" tiles, it doesn't matter in what order we play them.
+*
+*	We compute the signature of a permutation and rack as follows.
+*
+*	Set the signature to '1234567'.
+*	Set *p* to zero.
+*
+* loop
+*
+*	Increment *p*. If greater than the size of the rack then we are
+*	done.
+*
+*	Set *c* to the character at position *p*.
+*
+*	Look at the remaining letters in the rack. If any are the same, then
+*	replace the index corresponding to their position with *p*.
+*
+*	For example, given the rack 'FRIBBLE', there are two B's, at positions five
+*	and six, so the signature for permutation '1234567'  is
+*
+*		1234557
+*
+*	If later see a trial permutation such as '1234567', we will find
+*	that it has the same signature and so there is no need to
+*	investigate -- we can move directly to the next permutation.
+*
+
+signature
+
+	signature = '1234567'
+	n = size(tiles)
+	signature = substr(signature,1,n)
+
+	pos = unique = 0
+
+signature.loop
+
+	gt(pos = pos + 1)				:s(return)
+
+	c = substr(tiles,pos,1)
+	
+	next = pos
+
+signature.next
+
+	gt(next = next + 1, n)				:s(signature.loop)
+	differ(c,substr(tiles,next,1))			:s(signature.next)
+
+	signature = 
+.		substr(signature,1,next - 1) 
+.		ch 
+.		(lt(next,n) substr(signature,next + 1), '')
+							:(signature.next)
+signature.end
 
 	define('spaces(line)n')				:(spaces.end)
 
