@@ -221,6 +221,8 @@ init.main
 
 	init.bonus()
 
+	init.number()
+
 *	Initialze permutation map.
 
 	init.perm('perm.txt')
@@ -314,6 +316,38 @@ init.dict.done
 	endfile(g.channel.temp)				:(return)
 
 init.dict.end
+
+	define('init.number()i1,i2,i3,s1,s2,w')		:(init.number.end)
+
+*	Initialize g.numbers.
+
+init.number
+
+	s1 =	'one two three four five six seven eight nine ten eleven twelve '
+.		'thirteen fourteen fifteen sixteen seventeen eighteen nineteen '
+	s2 =	'twenty thirty forty fifty sixty seventy eighty ninety '
+	i1 = 0; i2 = 10; i3 = 20
+
+	g.numbers = table(100)
+	g.numbers[100] = 'one hundred'
+
+init.number.digits
+
+	s1 break(' ') . w ' ' =				:f(init.number.tens)
+	g.numbers[i1 = i1 + 1] = w			:(init.number.digits)
+
+init.number.tens
+
+	s2 break(' ') . w ' ' =				:f(init.number.decades)
+	g.numbers[i2 = i2 + 10] = w			:(init.number.tens)
+
+init.number.decades
+	
+	le(i3 = i3 + 1,99)				:f(return)
+	eq(remdr(i3,10))				:s(init.number.decades)
+	g.numbers[i3] = g.numbers[(i3 / 10) * 10] ' ' g.numbers[remdr(i3,10)]
+.					:s(init.number.decades)f(return)
+init.number.end
 
 	define('init.perm(filename)line,ifile,n,k,lines,nread')	:(init.perm.end)
 
@@ -674,17 +708,17 @@ empty.end
 *ENDGAME*
 endgame
 
-	out(	name(g.players[1])  ' scored ' total(g.players[1]) ' points, '
-.		'with a best move of ' highest(g.players[1]) ' points.')
+	out(	name(g.players[1])  ' scored ' number(total(g.players[1])) ' points, '
+.		'with a best move of ' number(highest(g.players[1])) ' points.')
 
-	out(	name(g.players[2])  ' scored ' total(g.players[2]) ' points; '
-.		'with a best move of ' highest(g.players[2]) ' points.')
+	out(	name(g.players[2])  ' scored ' number(total(g.players[2])) ' points; '
+.		'with a best move of ' number(highest(g.players[2])) ' points.')
 
 	out(gt(thirty(g.players[1])) name(g.players[1]) ' had ' 
-.		thirty(g.players[1]) ' moves of thirty or more points.')
+.		number(thirty(g.players[1])) ' moves of thirty or more points.')
 
 	out(gt(thirty(g.players[2])) name(g.players[2]) ' had ' 
-.		thirty(g.players[2]) ' moves of thirty or more points.')
+.		number(thirty(g.players[2])) ' moves of thirty or more points.')
 
 	counters()
 							:(return)
@@ -944,11 +978,8 @@ game.turn
 	player = g.players[pid]
 
 	out('Move ' g.turn ' for player ' name(player) 
-.		 (differ(g.tilemanager) ', with tiles ' 
-.		show.tiles(rack(player),'A'),'')	'.')
-
-	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 '
-.		'N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
+.		 (differ(g.tilemanager) ', with tiles "'
+.		show.tiles(rack(player),'A'),'')	'".')
 
 	turn(pid,mode)			:f(game.turn.fail)s(game.turn)
 
@@ -1316,13 +1347,13 @@ makemove
 	playmove(move)
 
 	out(	name(player) ' played "' show.tiles(text(move)) '" for ' 
-.		points(move) ' points,'
+.		number(points(move)) ' points,'
 .		' starting at ' lineid(id(move)) 
-.		', position ' free(move)[1] '.')
+.		', position ' number(free(move)[1]) '.')
 
 	out('Score now: '  
-.		name(g.players[1]) ', ' total(g.players[1])  '; '
-.		name(g.players[2]) ', ' total(g.players[2])  '. ')
+.		name(g.players[1]) ', ' number(total(g.players[1]))  '; '
+.		name(g.players[2]) ', ' number(total(g.players[2]))  '. ')
 
 	out('B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 '
 .	    'N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
@@ -1397,6 +1428,17 @@ manual.error
 	out('manual error evaluating ' line)		:(freturn)
 
 manual.end
+
+	define('number(n)')				:(number.end)
+
+*	If *n* can be represented as a string of one or two words then
+*	return that string. Otherwise return *n*.
+
+number
+	number = g.numbers[n]
+	differ(number)					:s(return)
+	number = n					:(return)
+number.end
 
 	define('order(tiles)chars,ch,c1,c2,swaps,i,v1,v2') :(order.end)
 
@@ -2989,14 +3031,13 @@ turn.auto
 
 *	ne(kind(player),player.kind.auto) out('computing move ...')
 
-	g.move = find(pid,g.turn)			:f(turn.auto.fail)
+	g.move = find(pid,g.turn)			:f(turn.fail)
 
 *	ne(f.trace) out('auto move ' show.move(g.move))
 
 *	ne(kind(player),player.kind.auto) out('... computed')
 							:(turn.make)
-turn.auto.fail
-							:(turn.fail)
+
 turn.manual
 
 *	Here to enter the move manually
@@ -3067,10 +3108,10 @@ turn.solo.fribble.move
 	points.player = scoremove(g.move)
 
 	out('You played the move ' show.move(g.move) ' for ' 
-.		points.player ' points.')
+.		number(points.player) ' points.')
 
 	out('Fribble would have played ' show.move(move) ' for ' 
-.		points(move) ' points.')
+.		number(points(move)) ' points.')
 
 	show.play(makemove(pid,move));* display fribble's move.
 
