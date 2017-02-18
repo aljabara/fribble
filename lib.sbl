@@ -71,8 +71,8 @@
 *	g.maxmoves, maximum number of moves. This is used to avoid 
 *	runaway behavior.
 
-	g.maxmoves = 3
 	g.maxmoves = 60
+	g.maxmoves = 9
 
 *	g.lines, array(30), is the array of the lines defined by the 
 *	rows and columns in the board. 
@@ -668,6 +668,8 @@ counters
 	out('Performance metrics:')
 	counter('placements found by scan'	, thousands(count.scanned))
 	counter('permutations examined'		, thousands(count.perm))
+	counter('signatures computed'		, thousands(count.signature))
+	counter('signatures alrady seen'	, thousands(count.signature.same))
 	counter('cells examined'		, thousands(count.cells))
 	counter('potential moves found'		, thousands(count.moves	))
 	counter('lines checked'			, thousands(count.checkline))
@@ -839,8 +841,6 @@ find.done
 
 	ident(find)					:s(find.fail)
 
- :(return);* bypass for now.
-
 	moves = rsort(g.moves,2)
 
 *	Convert two-dimensional array to one-dimensional array.
@@ -850,9 +850,10 @@ find.done
 
 find.done.moves
 
- :(return)
-	g.moves[i = i + 1] = moves[i,2]		:f(return)
-
+	gt(i = i + 1,nmoves)			:s(return)
+	g.moves[i] = moves[i,2]			:f(return)
+	move = g.moves[i]
+	out('find.done.moves i=' i ' perm=' perm ' text="' text(move) '"')
 
 						:(find.done.moves)
 find.fail
@@ -887,15 +888,19 @@ find.perm
 
 	g.cln = 0
 
-	text = place(perm,rack)
-
-*	See if we have already tested this text.
-
+*	Compute signature and see if we have seen it before.
 	
-	signature = signature(perm,text)
-	differ(tried[signature])			:s(freturn)
-	tried[signature] = 1;* note that we have reviewed this text
+	signature = signature(perm,text(move))
+	count.signature = count.signature + 1
 
+*	Fail if have already seen this signature.
+
+	differ(tried[signature])			:s(freturn)
+
+	tried[signature] = 1
+	count.signature.same = count.signature.same + 1
+
+	text = place(perm,rack)
 	lines = copy(inlines);
 
 *	Insert the letters from the tileset corresponding to the permutation
@@ -2760,19 +2765,15 @@ shuffle.done
 shuffle.end
 
 
-	define('signature(perm,tiles)p,c,n')			:(signature.end)
+	define('signature(perm,tiles)p,c,cp,n')			:(signature.end)
 
-*	Computer signature of permutation for a given tile set.
+*	Compute the signature of a permutation for a list of tiles.
 
-*	If another instance of character found, replace the corresponding
-*	digit in the signature.
-
-*
 *	Racks will typically contain duplicate letters. We can make use of this
 *	to avoid useless duplication of effort.
 *
 *	For example, if first and third letters are the same then in any permutation
-*	we can interchange the positions of these letter with no effect. Simply put,
+*	we can interchange the positions of this letter with no effect. Simply put,
 * 	if there are two "E" tiles, it doesn't matter in what order we play them.
 *
 *	We compute the signature of a permutation and rack as follows.
@@ -2780,24 +2781,22 @@ shuffle.end
 *	Set the signature to '1234567'.
 *	Set *p* to zero.
 *
-* loop
-*
 *	Increment *p*. If greater than the size of the rack then we are
 *	done.
 *
 *	Set *c* to the character at position *p*.
 *
-*	Look at the remaining letters in the rack. If any are the same, then
-*	replace the index corresponding to their position with *p*.
+*	Look at the remaining letters in the rack. For each that is *c*,
+*	replace the index corresponding to its position with *p*.
 *
 *	For example, given the rack 'FRIBBLE', there are two B's, at positions five
 *	and six, so the signature for permutation '1234567'  is
 *
 *		1234557
 *
-*	If later see a trial permutation such as '1234567', we will find
-*	that it has the same signature and so there is no need to
-*	investigate -- we can move directly to the next permutation.
+*	If later see a permutation such as '1234567', it will have
+*	the same signature, and so there is no need to investigate 
+*	futher -- we can move directly to the next permutation.
 *
 
 signature
@@ -2806,15 +2805,13 @@ signature
 	n = size(tiles)
 	signature = substr(signature,1,n)
 
-	pos = unique = 0
-
 signature.loop
 
-	gt(pos = pos + 1)				:s(return)
+	gt(p = p + 1,n)					:s(return)
 
-	c = substr(tiles,pos,1)
-	
-	next = pos
+	c = substr(tiles,p,1)
+	cp = p
+	next = p
 
 signature.next
 
@@ -2823,7 +2820,7 @@ signature.next
 
 	signature = 
 .		substr(signature,1,next - 1) 
-.		ch 
+.		cp 
 .		(lt(next,n) substr(signature,next + 1), '')
 							:(signature.next)
 signature.end
