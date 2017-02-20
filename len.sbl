@@ -1,0 +1,13 @@
+	&anchor = &trim = 1
+	output = dupl('         1',9)
+	output = dupl('1234567890',9)
+	:(loop)
+copy
+	output = line
+loop	line = input				:f(end)
+	lines = lines + 1
+	len = size(line)
+	lt(len,83)				:s(loop)
+	output =
+	output = lpad(lines,4) ' ' line		:(loop)
+end

@@ -1,5 +1,7 @@
 *	Copyright 2017, David Shields
 
+ g.cmap = g.dmap = g.signature =
+
 * This file is part of the fribble project: http://github.com/daveshields/fribble.
 *
 *	Fribble is free software: you can redistribute it and/or modify
@@ -61,6 +63,7 @@
 *	log file 'fribble.log'.
 	
 	g.log = 1
+	g.log = 
 
 *	g.logfile is the output-associated variable for the log file
 *	g.logfile.channel is its channel; g.logfile.name is its name
@@ -668,12 +671,14 @@ counters
 
 	out()
 	out('Performance metrics:')
-	g.time = time() - g.time; 
-	counter('seconds per move'		, thousands(g.time / 1000))
+	counter('moves'				, thousands(g.turn))
+	g.time = (time() - g.time);* execution time in milliseconds 
+	g.time = g.time / ( 1000 * g.turn)	;* seconds per move
+	counter('seconds per move'		, thousands(g.time))
 	counter('placements found by scan'	, thousands(count.scanned))
 	counter('permutations examined'		, thousands(count.perm))
 	counter('signatures computed'		, thousands(count.signature))
-	counter('signatures already seen'	, thousands(count.signature.same))
+	counter('signatures already seen'	, thousands(count.signature.seen))
 	counter('cells examined'		, thousands(count.cells))
 	counter('potential moves found'		, thousands(count.moves	))
 	counter('lines checked'			, thousands(count.checkline))
@@ -812,7 +817,7 @@ find.next
 
 	perm = perms[permi = permi + 1]			:f(find.move)
 	ident(perm)					:s(find.move)
-	seen(perm,rack)					:s(find.next)
+	seen(perm,rack,1)					:s(find.next)
 	test.perm(rack,perm,num,move,inlines)		:f(find.next)
 
 find.score
@@ -872,27 +877,123 @@ find.fail
 							:(freturn)
 find.end
 
-	define('seen(perm,rack)signature')		:(seen.end)
+	define('seen(perm,rack,test)p,c,cp,cmap,next,signature,map,d,dp,dmap')	:(seen.end)
 
 *	Test if a permutation has already been processed in this turn.
 
-seen
-*	:(freturn)
+*	Racks will typically contain duplicate letters. We can make use of this
+*	to avoid useless duplication of effort.
+*
+*	For example, if first and third letters are the same then in any permutation
+*	we can interchange the positions of this letter with no effect. Simply put,
+* 	if there are two "E" tiles, it doesn't matter in what order we play them.
+*
+*	For example, given the rack 'FRIBBLE', there are two B's, at positions five
+*	and six, so the signature for permutation '1234567'  is
+*
+*		1234557
+*
+*	If later see a permutation such as '1234657', it will have
+*	the same signature, and so will not need to investigate 
+*	futher -- we can move directly to the next permutation.
 
-*	Compute signature to account for any duplicate tiles.
+*	Define a map *dmap* from digits to characters by
+*	iterating over the permutation. If *d* is the
+*	digit at position *p*, let *c* be the character
+*	at position *d* in the rack. This is the character
+*	corresponding to *d*. Set *dmap[d]* to *c*. 
+
+*	Define a map *cmap* from characters to digits by iterating
+*	over the rack. Let *c* be the character at position *p*.
+*	If *cmap[c]* is null, this is the first instance of *c*;
+*	set *cmap[c]* to *p*. This will be the value used to
+*	represent each instance of *c* in the new permutation.
+
+*	Iterate over the permutation to build an equivalent
+*	permutation. Let *d* be the digit at
+*	position *p*. Set *c* to the value of *dmap[d]*, then
+* `	set the next digit in the new permutation to the value of
+*	*cmap[c]*.
+
 	
-	signature = signature(perm,text(move))
+*	The result is the signature, or normal form, of the permutation.
+
+*	Look up the result in the table *seen*. It the value is not
+*	null then we have already seen an equivalent permutation,
+*	and so return success.  
+
+*	If the value is null, enter the new permutation as the representation 
+*	of the input permutation, and return failure.
+
+seen
+
+ :(freturn)
+	ident(perm)				:s(freturn)
+	ident(rack)				:s(freturn)
+
+	g.tried = table(100)
+	g.cmap = table(10)
+	g.dmap = table(10)
+	cp = dp = 0
+	
+seen.d
+	d = substr(perm,dp = dp + 1,1)		:f(seen.c)
+	c = substr(rack,d,1)
+	g.dmap[d] = c
+						:(seen.d)
+seen.c
+	c = substr(rack,cp = cp + 1,1)		:f(seen.mapped)
+	g.cmap[c] = ident(g.cmap[c]) convert(cp,'string')
+						:(seen.c)
+seen.mapped
+
+	dp = 0
+	signature = 
+
+seen.next
+
+	d = substr(perm,dp = dp + 1,1)		:f(seen.check)
+	c = g.dmap[d]
+	signature = signature g.cmap[c]		:(seen.next)
+
+seen.check
+
+ :(seen.outed)
+	seens = seens + 1
+	gt(seens,10000) :s(end)
+	
+	ne(remdr(seens,100)) :s(seen.outed)
+	out()
+	show.table(g.dmap)
+	out()
+	show.table(g.cmap)
+	out()
+
+	 out('seen.check rack=' rack ' ' perm ' -> ' signature)
+
+seen.outed
+	g.signature = signature
 	count.signature = count.signature + 1
 
-*	Fail if have already seen this signature.
+*	Succeed if have already seen this signature.
 
-	differ(g.tried[signature])			:s(freturn)
+*	out('seen same perm=' perm ' rack=' rack )
+
+	differ(g.tried[signature])			:s(return)
 
 *	Here if first encounter with this signature.
 
 	g.tried[signature] = 1
-	count.signature.same = count.signature.same + 1
-							:(return)
+	count.signature.seen = count.signature.seen + 1
+							:(freturn)
+*	out('seen new signature ' signature ' perm=' perm ' rack=' rack '.')
+*	See if we have seen an equivalent permutation before.
+
+*	Compute signature of permutation and rack to account for presence
+*	any duplicate tiles.
+
+
+*	:(freturn)
 seen.end
 
 	define('test.perm(rack,perm,num,move,inlines)'
@@ -1109,9 +1210,9 @@ game.turn
 
 	player = g.players[pid]
 
-	out('Move ' g.turn ', ' name(player) 
+	out('Move ' g.turn ': ' name(player) 
 .		 (differ(g.tilemanager) ', with tiles "'
-.		show.tiles(rack(player),'A'),'')	'".')
+.		show.tiles(rack(player),'A'),'')	'",')
 
 	turn(pid,mode)			:f(game.turn.fail)s(game.turn)
 
@@ -1478,7 +1579,7 @@ makemove
 	highest(player) = gt(points(move),highest(player)) points(move)
 	playmove(move)
 
-	out(	name(player) ' played "' show.tiles(text(move)) '" for ' 
+	out(	'played "' show.tiles(text(move)) '" for ' 
 .		number(points(move)) ' points,'
 .		' starting at ' lineid(id(move)) 
 .		', position ' number(free(move)[1]) '.')
@@ -2814,6 +2915,20 @@ show.player
 							:(return)
 show.player.end
 
+	define('show.table(tbl,col)i,key')		:(show.table.end)
+
+*	Show a table.
+
+show.table
+
+	tbl = (differ(col)  sort(tbl,col), sort(tbl,1))
+
+show.table.next
+	key = tbl[i = i + 1,1]				:f(return)
+	out(lpad(i,4) ' ' lpad(key,8) ' - > ' tbl[i,2])
+							:(show.table.next)
+show.table.end
+
 	define('show.tiles(tiles)i')			:(show.tiles.end)
 
 *	Show a list of tiles, separated by blanks.
@@ -2864,65 +2979,6 @@ shuffle.done
 shuffle.end
 
 
-	define('signature(perm,tiles)p,c,cp,n')			:(signature.end)
-
-*	Compute the signature of a permutation for a list of tiles.
-
-*	Racks will typically contain duplicate letters. We can make use of this
-*	to avoid useless duplication of effort.
-*
-*	For example, if first and third letters are the same then in any permutation
-*	we can interchange the positions of this letter with no effect. Simply put,
-* 	if there are two "E" tiles, it doesn't matter in what order we play them.
-*
-*	We compute the signature of a permutation and rack as follows.
-*
-*	Set the signature to '1234567'.
-*	Set *p* to zero.
-*
-*	Increment *p*. If greater than the size of the rack then we are
-*	done.
-*
-*	Set *c* to the character at position *p*.
-*
-*	Look at the remaining letters in the rack. For each that is *c*,
-*	replace the index corresponding to its position with *p*.
-*
-*	For example, given the rack 'FRIBBLE', there are two B's, at positions five
-*	and six, so the signature for permutation '1234567'  is
-*
-*		1234557
-*
-*	If later see a permutation such as '1234567', it will have
-*	the same signature, and so there is no need to investigate 
-*	futher -- we can move directly to the next permutation.
-*
-
-signature
-
-	signature = '1234567'
-	n = size(tiles)
-	signature = substr(signature,1,n)
-
-signature.loop
-
-	gt(p = p + 1,n)					:s(return)
-
-	c = substr(tiles,p,1)
-	cp = p
-	next = p
-
-signature.next
-
-	gt(next = next + 1, n)				:s(signature.loop)
-	differ(c,substr(tiles,next,1))			:s(signature.next)
-
-	signature = 
-.		substr(signature,1,next - 1) 
-.		cp 
-.		(lt(next,n) substr(signature,next + 1), '')
-							:(signature.next)
-signature.end
 
 	define('spaces(line)n')				:(spaces.end)
 
