@@ -71,8 +71,8 @@
 *	g.maxmoves, maximum number of moves. This is used to avoid 
 *	runaway behavior.
 
-	g.maxmoves = 60
 	g.maxmoves = 9
+	g.maxmoves = 60
 
 *	g.lines, array(30), is the array of the lines defined by the 
 *	rows and columns in the board. 
@@ -164,6 +164,8 @@
 
 	g.tilemanager =
 
+*	g.time is execution time in milliseconds
+
 *	g.trace, if not null, begin tracing at the start of move g.trace.
 
 	g.trace = 
@@ -171,9 +173,9 @@
 *	g.tracing, set nonzero when tracing initiated by *g.trace* begins.
 
 *	g.turn, the number of the current turn
-*	g.lastmove, the turn when the last move was made.
+*	g.turn.last, the turn when the last move was made.
 
-	g.turn = g.lastmove = 0
+	g.turn = g.turn.last = 0
 
 *	g.used, array('15,15') tracks the cells in the board that have been 
 *	used in a move.  A move made after the first move must have at least one
@@ -666,10 +668,12 @@ counters
 
 	out()
 	out('Performance metrics:')
+	g.time = time() - g.time; 
+	counter('seconds per move'		, thousands(g.time / 1000))
 	counter('placements found by scan'	, thousands(count.scanned))
 	counter('permutations examined'		, thousands(count.perm))
 	counter('signatures computed'		, thousands(count.signature))
-	counter('signatures alrady seen'	, thousands(count.signature.same))
+	counter('signatures already seen'	, thousands(count.signature.same))
 	counter('cells examined'		, thousands(count.cells))
 	counter('potential moves found'		, thousands(count.moves	))
 	counter('lines checked'			, thousands(count.checkline))
@@ -796,19 +800,20 @@ find.move
 *	identical letters.  Use *tried* to track previous permutations,
 *	to avoid duplicate testing for validity of the same text.
 	
-	tried = table(500)
+	g.tried = table(100)
 
-	perms = g.permutations[text(move)]		:s(find.perm.next)
+	perms = g.permutations[text(move)]		:s(find.next)
 
 *	Something must be wrong with the requested permutation
 
 	out('fatal permutation request ' text(move)) :(end)
 
-find.perm.next
+find.next
 
 	perm = perms[permi = permi + 1]			:f(find.move)
 	ident(perm)					:s(find.move)
-	find.perm(rack,perm,num,move,inlines,tried)	:f(find.perm.next)
+	seen(perm,rack)					:s(find.next)
+	test.perm(rack,perm,num,move,inlines)		:f(find.next)
 
 find.score
 
@@ -835,11 +840,13 @@ find.score
 	points(move) = +scoremove(move)	
 	g.moves[nmoves = nmoves + 1] = move
 	g.cln = 0;* reset for next permutation
-	find = isbest(move) copy(move)			:(find.perm.next)
+	find = isbest(move) copy(move)			:(find.next)
 
 find.done
 
 	ident(find)					:s(find.fail)
+*HERE* 
+	:(return)
 
 	moves = rsort(g.moves,2)
 
@@ -865,12 +872,115 @@ find.fail
 							:(freturn)
 find.end
 
-	define('find.perm(rack,perm,num,move,inlines,tried)'
-.		'text,lines,iline,i,p,cline,signature')	:(find.perm.end)
+	define('seen(perm,rack)signature')		:(seen.end)
+
+*	Test if a permutation has already been processed in this turn.
+
+seen
+*	:(freturn)
+
+*	Compute signature to account for any duplicate tiles.
+	
+	signature = signature(perm,text(move))
+	count.signature = count.signature + 1
+
+*	Fail if have already seen this signature.
+
+	differ(g.tried[signature])			:s(freturn)
+
+*	Here if first encounter with this signature.
+
+	g.tried[signature] = 1
+	count.signature.same = count.signature.same + 1
+							:(return)
+seen.end
+
+	define('test.perm(rack,perm,num,move,inlines)'
+.		'text,lines,iline,i,p,cline')	:(test.perm.end)
+
+*	Test if applying a permutation to a rack yields a valid move.
+
+test.perm
+
+*	NOTE: THE LOOP BELOW IS THE CRITICAL INNER LOOP OF THIS PROGRAM.
+*	ANY TIME SPENT SPEEDING THINGS UP ELSEWHERE WILL HAVE LITTLE EFFECT.
+*	
+*	For example, given a move of length 7 with a rack of 7 letters, we
+*	need to account for the slightly over 5000 permutations of the letters
+*	that can be used here. And note this is just for one possible move ...
+*
+*	Since most racks will contain duplicate, or even triplicate, instances of
+*	the same letter, the table *tried* is used below. This cut the running
+*	time of the program by a factor of two when first introduced.
+	
+	count.perm = count.perm + 1
+
+	seen(perm)				:s(freturn)
+	count.cells = count.cells + size(perm)
+
+	g.cln = 0
+
+	text = place(perm,rack)
+
+	lines = copy(inlines);
+
+*	Insert the letters from the tileset corresponding to the permutation
+*	into the selected blank cells in the line.  The digit '1' selects 
+*	the first tile, the digit '2' the second, and so on.  Then see if 
+*	the result gives a valid line. Move to the next permutation if not.  
+*	(This is a clever use of replace(), even if I do say so myself.)
+
+	text(move) = perm;* insert permutation digits into free cells
+	iline = insert(lines[num],move);* line with permutation digits entered
+	checkline(place(iline,rack))			:f(freturn)
+
+*	Move is valid on this line, so check validity on crossing lines.
+*	Save the valid lines in *clines* for scoring if move proves valid.
+
+*	We could use the clines() procedure for this, but in this loop every
+*	statement counts, so in effect we build clines on the fly.
+*	Since almost all permutations will result in junk, we want to 
+*	detect junk as soon as possible so we can move on without wasting 
+*	needless effort.
+
+	text(move) = text
+
+*	out(ne(g.tracing) 'Find valid first ' 
+*		show.move(move) ' ' show.line(line))
+
+	g.clines[g.cln = g.cln + 1] =  pair( id(move), insert(lines[num],move))
+	i = 0
+
+*	Check the crossing lines, constructing them as needed, to make sure the
+*	move is valid.
+
+test.perm.cross
+
+*	out('find cross ')
+
+*	If next assignment fails, we have finished checking the 
+*	permutation without finding a valid move, and so return failure.
+
+	p = free(move)[i = i + 1]			:f(return)
+	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1))
+	checkline(line(cline))				:f(freturn)
+
+*	out(ne(g.tracing) 'Find valid checkline ' line(cline))
+
+	text(move) = place(text(move),ucase(rack))
+
+*	out(ne(g.tracing) 'Find text ' text(move))
+
+	g.clines[g.cln = g.cln + 1] = cline		:(test.perm.cross)
+
+test.perm.end
+
+	define('gind.perm(rack,perm,num,move,inlines,tried)'
+.		'text,lines,iline,i,p,cline')	:(gind.perm.end)
 
 *	Assess effect of permutation, failing if it doesn't produce a valid movel
 
-find.perm
+gind.perm
 
 *	NOTE: THE LOOP BELOW IS THE CRITICAL INNER LOOP OF THIS PROGRAM.
 *	ANY TIME SPENT SPEEDING THINGS UP ELSEWHERE WILL HAVE LITTLE EFFECT.
@@ -887,18 +997,6 @@ find.perm
 	count.cells = count.cells + size(perm)
 
 	g.cln = 0
-
-*	Compute signature and see if we have seen it before.
-	
-	signature = signature(perm,text(move))
-	count.signature = count.signature + 1
-
-*	Fail if have already seen this signature.
-
-	differ(tried[signature])			:s(freturn)
-
-	tried[signature] = 1
-	count.signature.same = count.signature.same + 1
 
 	text = place(perm,rack)
 	lines = copy(inlines);
@@ -933,7 +1031,7 @@ find.perm
 *	Check the crossing lines, constructing them as needed, to make sure the
 *	move is valid.
 
-find.perm.cross
+gind.perm.cross
 
 *	out('find cross ')
 
@@ -950,9 +1048,9 @@ find.perm.cross
 
 *	out(ne(g.tracing) 'Find text ' text(move))
 
-	g.clines[g.cln = g.cln + 1] = cline		:(find.perm.cross)
+	g.clines[g.cln = g.cln + 1] = cline		:(gind.perm.cross)
 
-find.perm.end
+gind.perm.end
 
 	define('game(mode)players,player,opn,move,i,li,offset,open.word,'
 .		'open.score,n,tiles,moves,li,passed,board,lfn') :(game.end)
@@ -983,7 +1081,8 @@ game.log
 
 	log('* game ' mode)
 	log('* version ' g.version)
-	log('* time.start ' time())
+	g.time = time()
+	log('* time.start ' g.time)
 	log('* date.start ' g.date)
 	log.tiles()
 	log.player(1)
@@ -999,7 +1098,7 @@ game.turn
 	log('turn ' g.turn)
 
 *	ne(f.trace) out('g.turn=' g.turn ' g.maxmoves=' g.maxmoves)
-	gt(g.turn,g.lastmove + 3) 
+	gt(g.turn,g.turn.last + 3) 
 .		out('Game over - too many turns with no move.') :s(game.over)
 
 	gt(g.turn,g.maxmoves)				
@@ -1010,7 +1109,7 @@ game.turn
 
 	player = g.players[pid]
 
-	out('Move ' g.turn ' for player ' name(player) 
+	out('Move ' g.turn ', ' name(player) 
 .		 (differ(g.tilemanager) ', with tiles "'
 .		show.tiles(rack(player),'A'),'')	'".')
 
@@ -1373,7 +1472,7 @@ makemove
 	player = g.players[pid]
 	makemove = move
 	out(ne(g.tracing) 'Game move ' show.move(move))
-	g.lastmove = g.turn
+	g.turn.last = g.turn
 	total(player)	= total(player) + points(move)
 	thirty(player)	= ge(points(move),30) thirty(player) + 1
 	highest(player) = gt(points(move),highest(player)) points(move)
