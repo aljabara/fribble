@@ -23,7 +23,7 @@
 *	g.version is the version of the program:
 
 	g.version = '17.1.30'		;* 30 January 2017, 1st version. 
-	g.version = '17.2.alpha'	;* Under development.
+	g.version = '17.2.*'		;* Under development.
 
 *	g.board, array('15,15'), the playing board. Each entry is blank (' ') for 
 *	an unplayed cell, or is the letter played.
@@ -64,9 +64,10 @@
 
 *	g.log is set to append a copy of standard output to
 *	log file 'fribble.log'.
+*	g.log.version is version of format for log file.
 	
 	g.log = 1
-	g.log = 
+	g.log.version = 1
 
 *	g.logfile is the output-associated variable for the log file
 *	g.logfile.channel is its channel; g.logfile.name is its name
@@ -77,8 +78,8 @@
 *	g.maxmoves, maximum number of moves. This is used to avoid 
 *	runaway behavior.
 
-	g.maxmoves = 9
 	g.maxmoves = 60
+	g.maxmoves = 2
 
 *	The program can be run in several modes:
 
@@ -226,10 +227,11 @@ init
 	g.date = date(2)
 
 	init.options()
+	show.table(g.options)
 
 	init.main(dictfile,skip)
 
-	randomseed();* seed the random number generator
+	ne(g.random_var) randomseed();* seed the random number generator
 							:(return)
 init.end
 
@@ -247,6 +249,8 @@ init.main
 	g.used = array('15,15',' ')
 *	Initialize g.used to all ones for 'dumb' option.
 	g.used = ne(g.dumb) array('15,15','1')
+	show.grid(g.used)
+
 	g.used.lines = lines(g.used)
 
 	init.bonus()
@@ -379,7 +383,7 @@ init.number.decades
 .					:s(init.number.decades)f(return)
 init.number.end
 
-	define('init.options()s,t,options,opt,val')	:(init.options.end)
+	define('init.options()s,t,options,optname,opt,val,cname')	:(init.options.end)
 
 *	Initialize command line options.
 
@@ -388,8 +392,6 @@ init.options
 	g.options = table()
 	g.options.abbrev = table()
 
-	options = host(0) ' '
-
 *	Set up map from first two characters of option name to full name.
 
 	s = 'auto dumb moves random seen shell solo team trace '
@@ -397,34 +399,58 @@ init.options
 init.options.abbrev
 
 	s span(' ' ) =
-	ident(s)					:s(init.options.next)
-	s break(' ') . opt = 				:f(init.options.next)
-
+	ident(s)					:s(init.options.abbrev.done)
+	s break(' ') . opt = 				:f(init.options.abbrev.done)
+ &dump = 3
 	map(g.options.abbrev,substr(opt,1,2),opt)	:(init.options.abbrev)
+
+init.options.abbrev.done
+
+*	Enter default options, those with non-null initial value.
+*	These values may be changed if they also occurs in the
+*	actual option list.
+
+	options = '-uauto -umoves=' g.maxmoves ' '
+.		'-urandom=' g.random_var  ' '
+
+	options = options host(0) ' '
+
+	out('host options: ' options '.')
+	show.table(g.options)
+
 
 init.options.next
 	
-	val =
+	val = 1
 	options '-u' =					:f(return)
 	options break(' ') . opt span(' ') =	
 
 init.options.opt
 
-	lt(size(opt),3) out('no such option ' opt) 	:s(init.options.next)
+
+	lt(size(opt),3) out('no such option ' opt '  - ignoring.')
+.						:s(init.options.next)
 	optname = g.options.abbrev[substr(opt,1,2)]
-	ident(optname) out('no such option ' optname) 	:s(init.options.next)
+*	out('optname=' optname)
+	ident(optname) out('no such option ' opt ' - ignoring.')
+.						:s(init.options.next)
+*	out('dave')
 
-	opt 'no'					:f(init.options.no) 
-	opt break('=')					:s(init.options.val)
+	opt 'no'				:s(init.options.no)
+	opt break('=')				:s(init.options.val)
 
-	:($('init.options.opt.' optname))
+*	cname = $('init.options.opt.' optname)
+*	out('cname=' cname ' optname=' optname '.')
+*	:($('init.options.opt.' optname))
 
 init.options.no
 
 *	'no' before option name sets val to zero.
 	
 	opt 'no' =
-	val = 0						:(init.options.next)
+	val = 0						
+	out('option -no- opt=' opt '.')
+							:(init.options.opt)
 
 init.options.val
 
@@ -436,7 +462,7 @@ init.options.set
 
 *	Set value for command options.
 
-	map(g.options,name,val)				:(init.options.next)
+	map(g.options,optname,val)			:(init.options.next)
 
 init.options.opt.auto
 
@@ -452,9 +478,8 @@ init.options.opt.moves
 
 init.options.opt.random
 
-	g.random_var = (ne(val) val,2017)
-	out('option g.random_var=' g.random_var)
-							:(init.options.set)
+	g.random_var = (ne(val) val,2017)		:(init.options.set)
+
 init.options.opt.seen
 
 	g.seen = val					:(init.options.set)
@@ -897,10 +922,9 @@ find
 	inlines = copy(lines)
 	g.highest = 0;* highest score this turn
 	g.lowest = 0;* lowest cost this turn
-	num = 0
 	g.moves = table(20)
-	
-	nmoves = 0
+	g.tried = table(100)
+	nmoves = num = 0
 
 find.line
 
@@ -967,7 +991,6 @@ find.score
 find.done
 
 	ident(find)					:s(find.fail)
-*HERE* 
 	:(return)
 
 	moves = rsort(g.moves,2)
@@ -995,7 +1018,7 @@ find.fail
 find.end
 
 	define('game(mode)players,player,opn,move,i,li,offset,open.word,'
-.		'open.score,n,tiles,moves,li,passed,board,lfn') :(game.end)
+.		'open.score,n,tiles,moves,li,passed,board,lfn,tmp') :(game.end)
 
 *	Play a game of fribble. *max* is the maximum number of moves.
 *	Mode is 
@@ -1021,11 +1044,22 @@ game
 
 game.log
 
+	g.time = time()
 	log('* game ' mode)
 	log('* version ' g.version)
-	g.time = time()
 	log('* time.start ' g.time)
 	log('* date.start ' g.date)
+*	tmp = sort(g.options)
+*	out('datatype(tmp) ' datatype(tmp))
+
+game.log.1
+
+*	ident(tmp[i = i + 1,1],'#')			:s(game.log.1)
+*	log('* option ' tmp[i = i,1] ' ' tmp[i,2]) 
+							:(game.log.2)
+game.log.2
+	
+	i = 0
 	log.tiles()
 	log.player(1)
 	log.player(2)
@@ -1518,7 +1552,7 @@ manual.end
 
 *	Test for entry for *key* in table *tbl*, adding
 *	new one with value *val* if needed.
-*	Maintain a count of the number of entries using key '-1',
+*	Maintain a count of the number of entries using key '#',
 *	which is used solely for this purpose.
 
 map
@@ -1529,7 +1563,7 @@ map
 *	Here to create new entry.
 
 	tbl[key] = val
-	tbl[-1] = tbl[-1] + 1				
+	tbl['#'] = tbl['#'] + 1				
 	map = val					:(return)
 
 map.end
@@ -1694,13 +1728,14 @@ random
 							:(return)
 random.end
 
-	define('randomseed()s,c')			:(randomseed.end)
+	define('randomseed(n)s,c')			:(randomseed.end)
 
 *	Compute seed for random number generator from date and time.
+*	Do nothing if argument is zero.
 
 *RANDOMSEED*
 randomseed
-	g.random_var = 
+	eq(n)						:s(return)
 	s = g.date
 	s = replace(s,'/:-','   ')
 
@@ -2133,12 +2168,9 @@ scoremove.end
 
 *SEEN*
 seen
-
- :(freturn)
 	ident(perm)				:s(freturn)
 	ident(rack)				:s(freturn)
 
-	g.tried = table(100)
 	g.cmap = table(10)
 	g.dmap = table(10)
 	cp = dp = 0
@@ -2150,8 +2182,8 @@ seen.d
 						:(seen.d)
 seen.c
 	c = substr(rack,cp = cp + 1,1)		:f(seen.mapped)
-	map(g.cmap,c,ident(g.cmap[c]) convert(cp,'string'))
-						:(seen.c)
+	ident(g.cmap[c]) map(g.cmap,c,convert(cp,'string')) :(seen.c)
+
 seen.mapped
 
 	dp = 0
@@ -2919,7 +2951,17 @@ show.table
 	ara = sort(tbl,col)
 
 show.table.next
+
+*	loop:	Get the next table key.
+
 	key = ara[i = i + 1,1]				:f(return)
+
+*	Skip the special entry showing the table size.
+
+*	eq(key,-1)					:s(show.table.next)
+
+*	Show the entry and continue back to loop.
+ 
 	out(lpad(i,4) ' ' lpad(key,8) ' - > ' ara[i,2])
 							:(show.table.next)
 show.table.end
@@ -3138,9 +3180,9 @@ subarray.end
 
 	define('swap(pid,n)player,tiles')		:(swap.end)
 
-*	Swap *n* tiles from the first *n* characters in *tiles* 
-*	of player with id *pid*.  If fewer than *n* tiles remain,
-*	set *n* to the size of the tileset.
+*	Swap N tiles from the first N characters in the tiles 
+*	of player with id PID.  If fewer than N tiles remain,
+*	set N to the size of the tileset.
 
 *SWAP*
 swap	
@@ -3160,8 +3202,8 @@ swap.end
 
 	define('take(n)')				:(take.end)
 
-*	Take *n* tiles from the tileset, or taking all
-*	the remaining tiles if fewer than *n* remain.
+*	Take N*tiles from the tileset, or taking all
+*	the remaining tiles if fewer than N remain.
 
 *TAKE*
 take
@@ -3175,7 +3217,9 @@ take.end
 	define('test.perm(rack,perm,num,move,inlines)'
 .		'text,lines,iline,i,p,cline')	:(test.perm.end)
 
-*	Test if applying a permutation to a rack yields a valid move.
+*	Test if applying a permutation PERM to a rack RACK yields a valid move.
+*	NUM is the line containing the move, and INLINES is a list of
+*	the lines from the grid to be used.
 
 *TEST.PERM*
 test.perm
@@ -3255,7 +3299,7 @@ test.perm.end
 
 	define('thousands(s)n')				:(thousands.end)
 
-*	Format s with comma's every three digits from right.
+*	Format S with comma's every three digits from right.
 
 *THOUSANDS*
 thousands	
@@ -3295,7 +3339,7 @@ traceon.end
 	define('turn(pid,mode)manual,state,points.player,'
 .			'points.fribble') 	:(turn.end)
 
-*	Play a turn in a game.
+*	Play turn for player with id PID in a game with mode MODE.
 
 *	Steps are
 
@@ -3537,7 +3581,7 @@ turn.end
 
 	define('valid.start(move)free,num,text')	:(valid.start.end)
 
-*	Test if a suggested starting move is valid.
+*	Test if MOVE, a suggested starting move, is valid.
 
 *VALID.START*
 valid.start
@@ -3585,7 +3629,7 @@ ucase.end
 	
 	define('unpack(line),c,i')			:(unpack.end)
 
-*	Unpack the characters of line *line* to an array of characters.
+*	Unpack the characters of line LINE to an array of characters.
 
 *UNPACK*
 unpack
@@ -3601,7 +3645,7 @@ unpack.end
 
 	define('valid(move)num,i,pos')			:(valid.end)
 
-*	Test if move is valid. 
+*	Test if MOVE is a valid move. 
 
 *VALID*
 valid
@@ -3636,8 +3680,8 @@ valid.end
 
 	define('vline(g,c)')				:(vline.end)
 
-*	Return the vertical line of  grid *g* corresponding 
-*	to column *c* as a string.
+*	Return the vertical line of grid G corresponding 
+*	to column C as a string.
 
 *VLINE*
 vline
@@ -3651,7 +3695,7 @@ vline.end
 
 	define('words(s)n,w,pos,i,sp')			:(words.end)
 
-*	Return array of the words in s, fail if no words.
+*	Return array of the words in S, fail if no words.
 *	The first entry for an array element is the starting index;
 *	the second is the word itself.
 
