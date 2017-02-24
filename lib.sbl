@@ -79,7 +79,6 @@
 *	runaway behavior.
 
 	g.maxmoves = 60
-	g.maxmoves = 2
 
 *	The program can be run in several modes:
 
@@ -401,7 +400,6 @@ init.options.abbrev
 	s span(' ' ) =
 	ident(s)					:s(init.options.abbrev.done)
 	s break(' ') . opt = 				:f(init.options.abbrev.done)
- &dump = 3
 	map(g.options.abbrev,substr(opt,1,2),opt)	:(init.options.abbrev)
 
 init.options.abbrev.done
@@ -415,7 +413,7 @@ init.options.abbrev.done
 
 	options = options host(0) ' '
 
-	out('host options: ' options '.')
+	out('options: ' options '.')
 	show.table(g.options)
 
 
@@ -441,7 +439,7 @@ init.options.opt
 
 *	cname = $('init.options.opt.' optname)
 *	out('cname=' cname ' optname=' optname '.')
-*	:($('init.options.opt.' optname))
+	:($('init.options.opt.' optname))
 
 init.options.no
 
@@ -671,7 +669,7 @@ bonus.lines.end
 
 	define('checkline(line)word')			:(checkline.end)
 
-*	Test if all the words in a line are in the dictionary.
+*	Test if all the words in LINE are in the dictionary.
 
 *CHECKLINE*
 checkline
@@ -694,7 +692,7 @@ checkline.end
 
 	define('checkword(word)')			:(checkword.end)
 
-*	Test if a word is in the dictionary.
+*	Test if a word WORD is in the dictionary.
 
 *CHECKWORD*
 checkword
@@ -712,8 +710,9 @@ checkword.end
 
 	define('cline(lines,move,p,ch)c,line')		:(cline.end)
 
-*	Return crossing line of p-th cell in move *move*.
-*	*ch* gives tile to be played.
+*	Return crossing line of P-th cell in move MOVE.
+*	CH gives tile to be played. LINES is the
+*	set of lines
 
 *CLINE*
 cline
@@ -771,7 +770,7 @@ clines.end
 
 	define('column(num,pos)')			:(column.end)
 
-*	Returns column corresponding to position *pos* in line *num*.
+*	Returns column corresponding to position POS in line NUM.
 
 *COLUMN*
 column
@@ -782,8 +781,8 @@ column.end
 
 	define('cost(text)')				:(cost.end)
 
-*	Return the cost of *text*, defined as the sum of the 
-*	values of the tiles in *text*.
+*	Return the cost of TEXT, defined as the sum of the 
+*	values of the tiles in TEXT.
 
 *COST*
 cost
@@ -795,7 +794,7 @@ cost.end
 
 	define('counter(text,count)')			:(counter.end)
 
-*	Output the descriptive text *text* and value *n* of a counter.
+*	Output the descriptive text TEXT and integer N of a counter.
 
 *COUNTER*
 counter
@@ -836,8 +835,8 @@ counters.end
 
 	define('datename(date)s')				:(datename.end)
 
-*	Convert date to form with no blanks, just dashes, to be
-*	suitable for use as part of a file name.
+*	Convert DATE, the output of a call to DATE(), to form with no blanks, 
+*	just dashes, to be suitable for use as part of a file name.
 
 datename
 
@@ -848,7 +847,9 @@ datename.end
 
 	define('empty(line)')				:(empty.end)
 
-*	Test if line is empty (null or all blanks).
+*	Test if LINE is empty (null or all blanks).
+*	Note that, unlink most programs, the tab character
+*	is never found in the lines examined by this procedure.
 
 *EMPTY*
 empty
@@ -1020,8 +1021,8 @@ find.end
 	define('game(mode)players,player,opn,move,i,li,offset,open.word,'
 .		'open.score,n,tiles,moves,li,passed,board,lfn,tmp') :(game.end)
 
-*	Play a game of fribble. *max* is the maximum number of moves.
-*	Mode is 
+*	Play a game of fribble.
+*	MODE is 
 *		one to have fribble play a game with itself,
 *		two to let you play against fribble, and 
 *		three to work with fribble to play with another person,
@@ -1049,8 +1050,8 @@ game.log
 	log('* version ' g.version)
 	log('* time.start ' g.time)
 	log('* date.start ' g.date)
-*	tmp = sort(g.options)
-*	out('datatype(tmp) ' datatype(tmp))
+	tmp = sort(g.options)
+	out('datatype(tmp) ' datatype(tmp))
 
 game.log.1
 
@@ -1140,8 +1141,8 @@ game.end
 
 	define('grid(lines,start)i,r,c,line')		:(grid.end)
 
-*	Construct a grid from a sequence of lines beginning at index *start*,
-*	(1..15 for rows, 16..30 for columns.
+*	Construct a grid from a sequence of lines LINES beginning at 
+*	index START, (1..15 for rows, 16..30 for columns).
 
 *GRID*
 grid
@@ -1187,8 +1188,8 @@ grid.end
 
 	define('hline(g,r)')				:(hline.end)
 
-*	Return the horizontal line of grid *g* corresponding to 
-*	row *r* as a string.
+*	Return the horizontal line of grid G corresponding to 
+*	row R as a string.
 
 *HLINE*
 hline
