@@ -44,12 +44,13 @@
 
 	init()
 
-	ident(g.mode,'auto')				:s(main.auto)
-	ident(g.mode,'solo')				:s(main.auto)
-	ident(g.mode,'team')				:s(main.team)
+	ident(g.mode,g.mode.auto)		:s(main.auto)
+	ident(g.mode,g.mode.solo)		:s(main.solo)
+	ident(g.mode,g.mode.team)		:s(main.team)
 
 main.auto
 
+	out('fribble main.auto')
 *	Setup for mode 'auto'.
 
 *	In auto mode, fribble plays against itself.
@@ -66,8 +67,8 @@ main.auto
 
 main.solo
 
+	out('fribble main.solo')
 *	Setup for mode 'solo'. 
-
 *	In solo mode, you play against fribble. 
 
 *	Fribble is player one, of kind player.kind.auto.
@@ -82,13 +83,11 @@ main.solo
 							:(main.done)
 main.team
 
+	out('fribble main.team')
 *	Setup for mode 'team'
 
 *	In team mode, you work with fribble to play a foe, reporting the foe's moves
 *	to fribble and playing the move fribble then suggests against the foe.
-
-*	You are player one, of kind player.kind.team.
-*	The foe is player two, of kind player.kind.foe.
 
 *	You manage the tiles, entering your tiles as dealt by wwf before each move.
 *	(The foe's tiles are unknown, as all that matters is the move they make.)
@@ -96,9 +95,12 @@ main.team
 *	(I wrote this program because a friend named Phil kept beating me -- badly --
 *	playing wwf.)
 
-	g.one = player(1,'Phil DeFoe',	player.kind.foe);* Hi Phil!
+*	Fribble is player one, of kind player.kind.auto
+*	You and Fribble are player two, of kind player.kind.team
 
-	g.two = player(2,'You',		player.kind.team)
+	g.one = player(1,'Phil DeFoe',player.kind.foe);* Hi Phil!
+	g.two = player(2,'You+Fribble',	player.kind.team)
+
 	g.tilemanager =
 							:(main.done)
 main.shell
@@ -108,16 +110,11 @@ main.done
 
 	g.players[1] = g.one; g.players[2] = g.two
 
-*	out('g.one ' show.player(1))
-*	out('g.two ' show.player(2))
+	out('g.one ' show.player(1))
+	out('g.two ' show.player(2))
 
 	g.turn = g.lastmove = total(g.one) = total(g.two) = 0
 	
-*	Set f.trace to trace fribble.
-
-	f.trace = 1
-	f.trace = 0
-
 	ident(g.tilemanager)				:s(main.game)
 
 *	Program manages the tiles, so deal initial tiles.
@@ -127,6 +124,6 @@ main.done
 
 main.game
 
-	game(f.mode)
+	game()
 
 end

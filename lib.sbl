@@ -1,6 +1,7 @@
 *	Copyright 2017, David Shields
 
  g.cmap = g.dmap = g.signature =
+ t.trace = 1;* set to trace in turn()
 
 * This file is part of the fribble project: http://github.com/daveshields/fribble.
 *
@@ -23,7 +24,7 @@
 *	g.version is the version of the program:
 
 	g.version = '17.1.30'		;* 30 January 2017, 1st version. 
-	g.version = '17.2.*'		;* Under development.
+	g.version = '17.2.pre'		;* Under development.
 
 *	g.board, array('15,15'), the playing board. Each entry is blank (' ') for 
 *	an unplayed cell, or is the letter played.
@@ -67,7 +68,7 @@
 *	g.log.version is version of format for log file.
 	
 	g.log = 1
-	g.log.version = 1
+	g.log.version = 2
 
 *	g.logfile is the output-associated variable for the log file
 *	g.logfile.channel is its channel; g.logfile.name is its name
@@ -116,8 +117,8 @@
 *		*name* 		is the player's name;
 *		*kind*	 	is the player's kind:
 	
-			player.kind.solo = 1;* you are playing on your own;
-			player.kind.auto = 2;* fribble plays against itself;
+			player.kind.auto = 1;* fribble plays against itself;
+			player.kind.solo = 2;* you are playing on your own;
 			player.kind.team = 3;* you and fribble work as a team; and
 			player.kind.foe  = 4;* the other player when in team mode.
 
@@ -1018,7 +1019,7 @@ find.fail
 							:(freturn)
 find.end
 
-	define('game(mode)players,player,opn,move,i,li,offset,open.word,'
+	define('game()players,player,opn,move,i,li,offset,open.word,'
 .		'open.score,n,tiles,moves,li,passed,board,lfn,tmp') :(game.end)
 
 *	Play a game of fribble.
@@ -1031,6 +1032,7 @@ find.end
 *GAME*
 game
 
+	out('game mode ' g.mode)
 *	Test to see if log file needed. Even if not, we always call log() 
 *	function. It will do nothing if no log file. This avoids need 
 *	to test for presence of log file before each call to log().
@@ -1046,12 +1048,11 @@ game
 game.log
 
 	g.time = time()
-	log('* game ' mode)
+	log('* game ' g.mode)
 	log('* version ' g.version)
 	log('* time.start ' g.time)
 	log('* date.start ' g.date)
 	tmp = sort(g.options)
-	out('datatype(tmp) ' datatype(tmp))
 
 game.log.1
 
@@ -1074,7 +1075,7 @@ game.turn
 	g.turn = g.turn + 1
 	log('turn ' g.turn)
 
-*	ne(f.trace) out('g.turn=' g.turn ' g.maxmoves=' g.maxmoves)
+*	ne(t.trace) out('g.turn=' g.turn ' g.maxmoves=' g.maxmoves)
 	gt(g.turn,g.turn.last + 3) 
 .		out('Game over - too many turns with no move.') :s(game.over)
 
@@ -1086,11 +1087,11 @@ game.turn
 
 	player = g.players[pid]
 
-	out('Move ' g.turn ': ' name(player) 
+	out('Turn ' g.turn ': ' name(player) 
 .		 (differ(g.tilemanager) ', with tiles "'
 .		show.tiles(rack(player),'A'),'')	'",')
 
-	turn(pid,mode)			:f(game.turn.fail)s(game.turn)
+	turn(pid,g.mode)			:f(game.turn.fail)s(game.turn)
 
 game.turn.fail
 
@@ -1280,7 +1281,7 @@ insert.end
 
 *ISBERT*
 isbest
-	out(ne(f.showscore) 'Find points(move) ' points(move) 
+	out(ne(g.showscore) 'Find points(move) ' points(move) 
 .		'  highest=' g.highest ' lowest=' g.lowest)
 
 	lt(points(move),g.highest)			:s(freturn)
@@ -1522,7 +1523,7 @@ makemove.end
 
 *MANUAL*	
 manual
-	ne(f.trace) out('getting move manually')
+	ne(g.trace) out('getting move manually')
 *	Here to enter the move manually
 
 manual.in
@@ -2476,7 +2477,7 @@ shell.score
 	score = scoremove(s.move)
 	points(move) = score
 	g.showscore = 0
-	out('Move ' show.move(move) ' scores ' score ' points.') :(shell.loop)
+	out('Turn ' show.move(move) ' scores ' score ' points.') :(shell.loop)
 
 
 shell.scoremove
@@ -3357,7 +3358,8 @@ turn
 
 	player = g.players[pid]
 
-	ne(f.trace) out('enter turn pid=' pid ' ' show.player(pid))
+	ne(t.trace) out('enter turn pid=' pid ' ' show.player(pid))
+	ne(t.trace) out('player kind ' kind(player) ' ' show.player(pid))
 
 	eq(g.trace,g.turn) traceon()
 
@@ -3366,15 +3368,16 @@ turn
 *	This is needed when playing in team mode. 
 *	need to enter your tiles from the wwf board.
 
-	eq(f.mode,f.mode.auto)				:s(turn.auto)
+	eq(g.mode,g.mode.auto)				:s(turn.auto)
 	ne(kind(player),player.kind.team)		:s(turn.move)
 
 	rack(player) = replenish(pid)
-	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
-	ne(f.trace) out(show.player(pid))
+	ne(t.trace) out('rack pid=' pid ' is now ' rack(player))
+	ne(t.trace) out(show.player(pid))
 
 turn.move
 
+	out('turn.move')
 	log( 'rack ' pid ' "' rack(player) '"')
 
 *	2.	Find or enter the move to be played.
@@ -3383,27 +3386,28 @@ turn.move
 *	You need to enter the foe's move when playing as a team,
 *	and your own move when playing a solo game.
 
-	eq(f.mode,f.mode.auto)				:s(turn.auto)
+	out('branching on mode ' g.mode)
+	eq(g.mode,g.mode.auto)				:s(turn.auto)
+	eq(g.mode,g.mode.solo)				:s(turn.solo)
 	eq(kind(player),player.kind.foe)		:s(turn.manual)
 
 *	Enable next line to get 'enhanced' mode where Fribble reports 
 *	move it would have made
 
-*	eq(kind(player),player.kind.solo)		:s(turn.solo)
-
 	eq(kind(player),player.kind.solo)		:s(turn.manual)
+	out('turn fallig through')
 	
 turn.auto
 
 *	Here to have fribble find the best move.
 
-	ne(f.trace) out('fribble making move.')
+	ne(t.trace) out('fribble making move.')
 
 *	ne(kind(player),player.kind.auto) out('computing move ...')
 
 	g.move = find(pid,g.turn)			:f(turn.fail)
 
-*	ne(f.trace) out('auto move ' show.move(g.move))
+*	ne(t.trace) out('auto move ' show.move(g.move))
 
 *	ne(kind(player),player.kind.auto) out('... computed')
 							:(turn.make)
@@ -3412,7 +3416,7 @@ turn.manual
 
 *	Here to enter the move manually
 
-	ne(f.trace) out('getting move manually')
+	ne(t.trace) out('getting move manually')
 
 	manual = manual()
 	ident(datatype(manual),'move')			:f(turn.manual.nomove)
@@ -3426,14 +3430,15 @@ turn.manual.nomove
 	manual 'error'					:s(turn.manual.error)
 							:($('turn.' move))
 turn.solo
-*HERE*
+	out('turn.solo')
 
 *	Here to when playing solo. Get the player's move, then
 *	find what fribble would have played, and show the difference.
 
 turn.solo.in
 
-	ne(f.trace) out('getting move manually')
+	ne(t.trace) out('getting move manually')
+	out('getting move manually')
 
 	manual = manual()
 	ident(datatype(manual),'move')			:f(turn.solo.nomove)
@@ -3458,13 +3463,13 @@ turn.solo.move
 	out('invalid move - try again')			:(turn.solo.in)
 
 turn.solo.fribble.havemove
-
+*HERE*
 	g.move = manual
 
 *	G.move is the player's valid move.
 *	Save the state, find the move fribble would have made, 
 *	and report the results to the player.
-
+	out('finding move fribble would have played.')
 	state = state.save()	
 	move = find(pid, rack)			:s(turn.solo.fribble.move)
 
@@ -3505,7 +3510,7 @@ turn.solo.fribble.move
 
 turn.validate
 
-	ne(f.trace) out('validating move ' show.move(g.move))
+	ne(t.trace) out('validating move ' show.move(g.move))
 
 *	See if move is valid.
 
@@ -3525,7 +3530,7 @@ turn.make
 
 	log.move(pid,g.move)	
 
-*	ne(f.trace) out('making move ' show.move(g.move))
+*	ne(t.trace) out('making move ' show.move(g.move))
 
 	show.play(makemove(pid,g.move))
 
@@ -3540,16 +3545,16 @@ turn.replenish
 	eq(g.tilemanager)				:s(turn.done)
 *	out('DAVE')
 *	out('replenishing pid= ' pid ' ' show.player(player))
-	ne(f.trace) out('replenishing pid= ' pid )
+	ne(t.trace) out('replenishing pid= ' pid )
 
 
 *	Here to update rack when fribble is managing the tiles.
 *	Remove tiles played on move and then replenish the rack.
 
-	ne(f.trace) out('updating rack pid=' pid)
+	ne(t.trace) out('updating rack pid=' pid)
 	rack(player) = less(rack(player), lcase(text(g.move)))
 	rack(player) = replenish(pid)			
-	ne(f.trace) out('rack pid=' pid '   now ' rack(player))	
+	ne(t.trace) out('rack pid=' pid '   now ' rack(player))	
 							:(turn.done)
 
 turn.pass
@@ -3572,7 +3577,7 @@ turn.swap
 
 turn.done
 
-	ne(f.trace) out('turn done')
+	ne(t.trace) out('turn done')
 							:(return)
 turn.fail
 
