@@ -3470,6 +3470,8 @@ turn.solo.in
 	ne(t.trace) out('getting move manually')
 	out('getting move manually')
 
+*BYPASS*
+ :(turn.solo.fribble.havemove)
 	manual = manual()
 	ident(datatype(manual),'move')			:f(turn.solo.nomove)
 	out('solo player move ' show.move(manual))
@@ -3482,9 +3484,9 @@ turn.solo.nomove
 
 	manual 'error'				:s(turn.manual.error)
 	target = $('turn.' manual)
-	out('solo no move target datatype ' datatype(target) ' ' target)
-	out('turn.solo.nomove ' manual)
-						:($('turn.' manual))
+*	out('solo no move target datatype ' datatype(target) ' ' target)
+*	out('turn.solo.nomove ' manual)
+						:(turn.manual)
 turn.solo.move
 
 	eq(g.turn,1) valid.start(manual)	:s(turn.solo.fribble.havemove)
@@ -3493,9 +3495,13 @@ turn.solo.move
 	out('invalid move - try again')			:(turn.solo.in)
 
 turn.solo.fribble.havemove
-*HERE*
-	g.move = manual
+*THERE*
+	out('playing "rot" on behalf of player')
 
+	manual = m(c8,'9 10','ot')
+*	g.move = manual
+
+	
 *	G.move is the player's valid move.
 
 *	Save the state, find the move fribble would have made, 
@@ -3504,6 +3510,7 @@ turn.solo.fribble.havemove
 	out('finding move fribble would have played.')
 
 	state = state.save()	
+ out('calling find...')
 	move = find(pid, rack)			:s(turn.solo.fribble.move)
 
 *	Here if fribble couldn't find a valid move.
@@ -3511,7 +3518,7 @@ turn.solo.fribble.havemove
 	out('Hmmm ... Fribble unable to find a valid move.')	:(turn.validate)
 
 turn.solo.fribble.move
- 
+ out('@turn.solo.fribble.move') 
 	points.fribble = scoremove(move)
 	points.player = scoremove(g.move)
 
