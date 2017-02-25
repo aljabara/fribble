@@ -2,6 +2,7 @@
 
  g.cmap = g.dmap = g.signature =
  t.trace = 1;* set to trace in turn()
+ g.rotary = ;* set non-null to play 'rotary' as first move.
 
 * This file is part of the fribble project: http://github.com/daveshields/fribble.
 *
@@ -539,13 +540,22 @@ init.perm.end
 	define('init.tileset()ch,n,s')			:(init.tileset.end)
 
 * 	Initialize set of tiles, ignoring the 'blank' tiles for now.
+*	Set things up so will play 'rotary' as starting move if g.rotary is null.
 
 *INIT.TILESET*
 init.tileset
 
+	g.tiles =
+	eq(g.rotary)					:f(init.tileset.rotary)
+
 	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 '
 .           'n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
-	g.tiles =
+							:(init.tileset.ch)
+init.tileset.rotary
+
+	s = 'a 8 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 '
+.           'n 5 o 7 p 2 q 1 r 4 s 5 t 6 u 4 v 2 w 2 x 1 y 1 z 1 '
+
 
 init.tileset.ch
 
@@ -554,9 +564,11 @@ init.tileset.ch
 
 init.tileset.ch.done
 
-	randomseed();* set random number generator seed
+*init.tileset.random
 
+	randomseed();* set random number generator seed
 	shuffle();* shuffle the tileset
+	g.tiles = eq(g.rotary) 'rotary' g.tiles
 							:(return)
 
 init.tileset.end
@@ -917,7 +929,7 @@ find
 
 *	See if first move, in which case call start()
 
-	find = eq(turn,1) start(pid)			:s(return)
+*	find = eq(turn,1) start(pid)			:s(return)
 
 	rack = rack(g.players[pid])
 	lines = copy(g.lines)
@@ -1086,10 +1098,6 @@ game.turn
 	pid = (eq(pid,1) 2, 1)
 
 	player = g.players[pid]
-
-	out('Turn ' g.turn ': ' name(player) 
-.		 (differ(g.tilemanager) ', with tiles "'
-.		show.tiles(rack(player),'A'),'')	'",')
 
 	turn(pid,g.mode)			:f(game.turn.fail)s(game.turn)
 
@@ -2421,7 +2429,7 @@ shell.next
 	
 	ident(fribble(g.players[g.pid]))		:s(shell.loop)
 	
-	s.move = (eq(g.turn,1) start(g.pid), find(g.pid))
+	s.move = (eq(g.turn,1) start(g.pid), find(g.pid,g.turn))
 	ident(s.move) out('no move found, so no move made')	:(shell.loop)
 
 	points(s.move) = scoremove(s.move)
@@ -3050,6 +3058,15 @@ spaces.end
 *START*
 start
 
+	out('enter start')
+	ne(g.rotary)					:s(start.norotary)
+	out('rotary move')
+
+	best = 'rotary'
+	highest = 18					:(start.done)
+		
+start.norotary
+
 	max = 7;* maximum number of tiles to play
 	player = g.players[pid]
 	tiles = rack(player)
@@ -3358,6 +3375,18 @@ turn
 
 	player = g.players[pid]
 
+	out('Turn ' g.turn ': ' name(player) 
+.		 (differ(g.tilemanager) ', with tiles "'
+.		show.tiles(rack(player),'A'),'')	'",')
+
+	gt(g.turn,1)					:s(turn.next)
+
+*	Here to have start() find the first move.
+	
+	g.move = start(pid)				:(turn.make)
+
+turn.next
+
 	ne(t.trace) out('enter turn pid=' pid ' ' show.player(pid))
 	ne(t.trace) out('player kind ' kind(player) ' ' show.player(pid))
 
@@ -3399,6 +3428,7 @@ turn.move
 	
 turn.auto
 
+ out('auto to make move')
 *	Here to have fribble find the best move.
 
 	ne(t.trace) out('fribble making move.')
@@ -3467,9 +3497,12 @@ turn.solo.fribble.havemove
 	g.move = manual
 
 *	G.move is the player's valid move.
+
 *	Save the state, find the move fribble would have made, 
 *	and report the results to the player.
+
 	out('finding move fribble would have played.')
+
 	state = state.save()	
 	move = find(pid, rack)			:s(turn.solo.fribble.move)
 
@@ -3524,6 +3557,7 @@ turn.manual.error
 	out('eval error ' &errtext)			:(turn.manual)
 
 turn.make
+
 *	3.	Make the move by updating the data structures, scores, etc.
 
 	points(g.move) = scoremove(g.move)

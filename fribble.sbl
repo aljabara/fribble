@@ -119,7 +119,7 @@ main.done
 
 *	Program manages the tiles, so deal initial tiles.
 	
-	rack(g.one) = take(7)
+	rack(g.one) = (eq(g.rotary) take(6), take(7))
 	rack(g.two) = take(7)
 
 main.game
