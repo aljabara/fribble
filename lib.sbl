@@ -152,24 +152,25 @@
 
 *	g.permutations, a table of the permutations of n=1..7 things 
 *	taken 1..k at a time.
-*	For example, g.perms['7?3'] is permutations of 1..7 
-*	taken 3 at a time.
+*	For example, g.perms['7?3'] yields the permutations of 1..7 
+*	letters taken 3 at a time.
+*
 *	Each entry in the table is an array giving the desired 
 *	set of permutations.
 
 *	g.permutations.count, a table of the number of permutations 
-*	for a given *n* and *k*.
+*	for a given N and K.
 
 *	g.random_var is used by random() to compute the next pseudo-random value.
 
 	g.random_var = 1
 
-*	g.rotary, if non-null causes first four moves to be 'rotary','service',
-*	'above,' and 'self.'
+*	g.rotary, if non-null causes first four moves to be 
+*	'rotary','service', 'above', and 'self.'
 
-	g.rotary =
+	g.rotary = 1
 
-*	g.replay.lines holds the lines read in for subsequence replaying.
+*	g.replay.lines holds the lines read in for subsequent replaying.
 *	g.replay is the index of the last line read in from the replay file.
 *	g.replay.n is the number of lines in the replay file.
 
@@ -254,7 +255,6 @@ init.main
 	g.used = array('15,15',' ')
 *	Initialize g.used to all ones for 'dumb' option.
 	g.used = ne(g.dumb) array('15,15','1')
-	show.grid(g.used)
 
 	g.used.lines = lines(g.used)
 
@@ -412,6 +412,7 @@ init.options.abbrev.done
 
 *	Enter default options, those with non-null initial value.
 *	These values may be changed if they also occurs in the
+*	map(g.options,'rotary',1)			:(init.options.next)
 *	actual option list.
 
 	options = '-uauto -umoves=' g.maxmoves ' '
@@ -455,18 +456,17 @@ init.options.no
 	val = 0						
 	out('option -no- opt=' opt '.')
 							:(init.options.opt)
+init.options.set
+
+*	Set value for command options.
+
+	map(g.options,optname,val)			:(init.options.next)
 
 init.options.val
 
 *	'=' is followed by value
 
 	opt break('=') . opt '=' rem . val		:(init.options.opt)
-
-init.options.set
-
-*	Set value for command options.
-
-	map(g.options,optname,val)			:(init.options.next)
 
 init.options.opt.auto
 
@@ -486,9 +486,9 @@ init.options.opt.random
 
 init.options.opt.rotary
 
-	g.rotary = 1					
+	map(g.options,'rotary',1)
 	g.mode = g.mode.auto
-							:(init.options.set)
+							:(init.options.next)
 init.options.opt.seen
 
 	g.seen = val					:(init.options.set)
@@ -1913,8 +1913,6 @@ replenish.auto
 
 
 	eq(size(replenish),7)				:s(return)
-replenish.notrotary
-
 	replenish = replenish take(7 - size(replenish)) :(return)
 
 replenish.end
@@ -3071,7 +3069,14 @@ spaces.end
 *START*
 start
 
-	eq(g.rotary)					:s(start.done)
+	eq(g.rotary)					:s(start.normal)
+
+*	Here to play 'rotary' as first move.
+
+	best = 'rotary'					:(start.done)
+
+start.normal
+
 	max = 7;* maximum number of tiles to play
 	player = g.players[pid]
 	tiles = rack(player)
@@ -3150,7 +3155,9 @@ start.done
 start.free
 
 	free[i = i + 1] = 7 + i  + offset		:s(start.free)
-	start = move(8 + offset,free,best,highest)	:(return)
+	start = move(8 + offset,free,best,highest)	
+	points(start) = ne(g.rotary) 18
+							:(return)
 start.end
 
 	define('state.restore(saved)')		:(state.restore.end)
@@ -3229,19 +3236,6 @@ swap.end
 
 *TAKE*
 take
-	ne(g.rotary) gt(g.turn,1) le(g.turn,4)		:s(take.normal)
-
-*	Here if in 'rotary' mode to stack the deck.
-*	The tiles are arranged in the right order, so
-*	we just need to take the right number.
-
-	n = 
-.		(eq(g.turn,2) 6,
-.		 eq(g.turn,3) 4,
-.		 eq(g.turn,4) 3)
-							:(take.n)
-take.normal
-
 	n = gt(n,size(g.tiles)) size(g.tiles)
 	eq(n,0)						:s(return)
 
@@ -3250,7 +3244,9 @@ take.n
 *	Here when know how many tiles to take.
 
 	take = order(substr(g.tiles,1,n))
-	g.tiles = substr(g.tiles, n + 1)		:(return)
+	out('taking turn=' g.turn ' n=' n ' tiles ' take)
+	g.tiles = substr(g.tiles, n + 1)		
+							:(return)
 
 take.end
 
@@ -3394,6 +3390,8 @@ traceon.end
 *TURN*
 turn
 
+	out('turn ' g.turn '  rotary=' g.rotary)
+
 	player = g.players[pid]
 
 	out('Turn ' g.turn ': ' name(player) 
@@ -3407,22 +3405,42 @@ turn
 	g.move = start(pid)				:(turn.make)
 
 turn.next
-	ne(kind(player),g.kind.auto)			:s(turn.notauto)
 
 *	Test if in 'rotary' mode for auto play.
 
-	eq(g.rotary)					:s(turn.notauto)
-	gt(g.turn,4)					:s(turn.notauto)
+	ne(kind(player),g.kind.auto)			:s(turn.normal)
+	eq(g.rotary)					:s(turn.normal)
+	gt(g.turn,4)					:s(turn.normal)
 
-*	Here in 'rotary' mode to complete the motto in turns 2,3,4.
-*	Force 'wait' of 5 seconds to moves don't go by too quickly.
+*	Here in 'rotary' mode to complete the move in turns 2,3,4.
+	eq(g.turn,2)					:s(turn.rotary.2)
+	eq(g.turn,3)					:s(turn.rotary.3)
+	eq(g.turn,4)					:s(turn.rotary.4)
+	out('rotary has gone off the rails in turn()') :(end)
 
-	g.move = (eq(g.turn,2) m(r07,'6 7 9 10 11 12','sevice'),
-.		  eq(g.turn,3) m(r10,'9 10 11 12','bove'),
-.		  eq(g.turn,4) m(c12,'9 11 12','slf'),'')
-	points(g.move) = scoremove(g.move)
 							:s(turn.validate)
-turn.notauto
+turn.rotary.2
+
+	g.move =  m(r07,'6 7 9 10 11 12','sevice')	:(turn.rotary.done)
+
+turn.rotary.3
+
+	g.move =  m(r10,'9 10 11 12','bove')		:(turn.rotary.done)
+
+turn.rotary.4
+
+	g.move = m(c12,'9 11 12','slf')			:(turn.rotary.done)
+
+turn.rotary.done
+
+*	Here at end of rotary move. Score the move.
+
+	points(g.move) = scoremove(g.move)		:(turn.make)
+
+*	Force 'wait' of 5 seconds to moves don't go by too quickly.
+* :(turn.auto)
+
+turn.normal
 
 	ne(t.trace) out('enter turn pid=' pid ' ' show.player(pid))
 	ne(t.trace) out('player kind ' kind(player) ' ' show.player(pid))
@@ -3436,7 +3454,7 @@ turn.notauto
 
 	eq(g.mode,g.mode.auto)				:s(turn.auto)
 	ne(kind(player),player.kind.team)		:s(turn.move)
-
+	out('replenish turn.notauto')
 	rack(player) = replenish(pid)
 	ne(t.trace) out('rack pid=' pid ' is now ' rack(player))
 	ne(t.trace) out(show.player(pid))
@@ -3532,7 +3550,7 @@ turn.solo.move
 	out('invalid move - try again')			:(turn.solo.in)
 
 turn.solo.fribble.havemove
-*THERE*
+*WHERE*
 	out('playing "rot" on behalf of player')
 
 	manual = m(c8,'9 10','ot')
@@ -3632,6 +3650,7 @@ turn.replenish
 
 	ne(t.trace) out('updating rack pid=' pid)
 	rack(player) = less(rack(player), lcase(text(g.move)))
+	out('turn.replenish')
 	rack(player) = replenish(pid)			
 	ne(t.trace) out('rack pid=' pid '   now ' rack(player))	
 							:(turn.done)
