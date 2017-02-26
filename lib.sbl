@@ -1,8 +1,7 @@
 *	Copyright 2017, David Shields
 
  g.cmap = g.dmap = g.signature =
- t.trace = 1;* set to trace in turn()
- g.rotary = ;* set non-null to play 'rotary' as first move.
+* t.trace = 1;* set to trace in turn()
 
 * This file is part of the fribble project: http://github.com/daveshields/fribble.
 *
@@ -164,6 +163,11 @@
 *	g.random_var is used by random() to compute the next pseudo-random value.
 
 	g.random_var = 1
+
+*	g.rotary, if non-null causes first four moves to be 'rotary','service',
+*	'above,' and 'self.'
+
+	g.rotary =
 
 *	g.replay.lines holds the lines read in for subsequence replaying.
 *	g.replay is the index of the last line read in from the replay file.
@@ -395,7 +399,7 @@ init.options
 
 *	Set up map from first two characters of option name to full name.
 
-	s = 'auto dumb moves random seen shell solo team trace '
+	s = 'auto dumb moves random rotary seen shell solo team trace '
 
 init.options.abbrev
 
@@ -480,6 +484,11 @@ init.options.opt.random
 
 	g.random_var = (ne(val) val,2017)		:(init.options.set)
 
+init.options.opt.rotary
+
+	g.rotary = 1					
+	g.mode = g.mode.auto
+							:(init.options.set)
 init.options.opt.seen
 
 	g.seen = val					:(init.options.set)
@@ -546,15 +555,17 @@ init.perm.end
 init.tileset
 
 	g.tiles =
-	eq(g.rotary)					:f(init.tileset.rotary)
+	ne(g.rotary)					:f(init.tileset.rotary)
 
 	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 '
 .           'n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
 							:(init.tileset.ch)
 init.tileset.rotary
 
-	s = 'a 8 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 '
-.           'n 5 o 7 p 2 q 1 r 4 s 5 t 6 u 4 v 2 w 2 x 1 y 1 z 1 '
+*	Account for tiles needed for 'rotary service above self'
+
+	s = 'a 8 b 1 c 1 d 5 e 10 f 1 g 3 h 4 i 8 j 1 k 1 l 3 m 2 '
+.           'n 5 o 6 p 2 q 1 r 4 s 3 t 6 u 4 w 2 x 1 y 1 z 1 '
 
 
 init.tileset.ch
@@ -568,7 +579,7 @@ init.tileset.ch.done
 
 	randomseed();* set random number generator seed
 	shuffle();* shuffle the tileset
-	g.tiles = eq(g.rotary) 'rotary' g.tiles
+	g.tiles = ne(g.rotary) 'rotaryseviceboveslf' g.tiles
 							:(return)
 
 init.tileset.end
@@ -1900,7 +1911,9 @@ replenish.auto
 
 	replenish = rack(player)
 
+
 	eq(size(replenish),7)				:s(return)
+replenish.notrotary
 
 	replenish = replenish take(7 - size(replenish)) :(return)
 
@@ -3058,15 +3071,7 @@ spaces.end
 *START*
 start
 
-	out('enter start')
-	ne(g.rotary)					:s(start.norotary)
-	out('rotary move')
-
-	best = 'rotary'
-	highest = 18					:(start.done)
-		
-start.norotary
-
+	eq(g.rotary)					:s(start.done)
 	max = 7;* maximum number of tiles to play
 	player = g.players[pid]
 	tiles = rack(player)
@@ -3145,9 +3150,7 @@ start.done
 start.free
 
 	free[i = i + 1] = 7 + i  + offset		:s(start.free)
-
-	start = move(8 + offset,free,best,highest) :(return)
-
+	start = move(8 + offset,free,best,highest)	:(return)
 start.end
 
 	define('state.restore(saved)')		:(state.restore.end)
@@ -3221,13 +3224,31 @@ swap.end
 
 	define('take(n)')				:(take.end)
 
-*	Take N*tiles from the tileset, or taking all
+*	Take N tiles from the tileset, or take all
 *	the remaining tiles if fewer than N remain.
 
 *TAKE*
 take
+	ne(g.rotary) gt(g.turn,1) le(g.turn,4)		:s(take.normal)
+
+*	Here if in 'rotary' mode to stack the deck.
+*	The tiles are arranged in the right order, so
+*	we just need to take the right number.
+
+	n = 
+.		(eq(g.turn,2) 6,
+.		 eq(g.turn,3) 4,
+.		 eq(g.turn,4) 3)
+							:(take.n)
+take.normal
+
 	n = gt(n,size(g.tiles)) size(g.tiles)
 	eq(n,0)						:s(return)
+
+take.n
+
+*	Here when know how many tiles to take.
+
 	take = order(substr(g.tiles,1,n))
 	g.tiles = substr(g.tiles, n + 1)		:(return)
 
@@ -3386,6 +3407,22 @@ turn
 	g.move = start(pid)				:(turn.make)
 
 turn.next
+	ne(kind(player),g.kind.auto)			:s(turn.notauto)
+
+*	Test if in 'rotary' mode for auto play.
+
+	eq(g.rotary)					:s(turn.notauto)
+	gt(g.turn,4)					:s(turn.notauto)
+
+*	Here in 'rotary' mode to complete the motto in turns 2,3,4.
+*	Force 'wait' of 5 seconds to moves don't go by too quickly.
+
+	g.move = (eq(g.turn,2) m(r07,'6 7 9 10 11 12','sevice'),
+.		  eq(g.turn,3) m(r10,'9 10 11 12','bove'),
+.		  eq(g.turn,4) m(c12,'9 11 12','slf'),'')
+	points(g.move) = scoremove(g.move)
+							:s(turn.validate)
+turn.notauto
 
 	ne(t.trace) out('enter turn pid=' pid ' ' show.player(pid))
 	ne(t.trace) out('player kind ' kind(player) ' ' show.player(pid))
@@ -3569,7 +3606,8 @@ turn.make
 
 	points(g.move) = scoremove(g.move)
 
-	log.move(pid,g.move)	
+	eq(g.rotary) log.move(pid,g.move)	
+	ne(g.rotary) log('* rotary ')
 
 *	ne(t.trace) out('making move ' show.move(g.move))
 
@@ -3739,6 +3777,40 @@ vline
 .		g[11,c] g[12,c] g[13,c] g[14,c] g[15,c]
 							:(return)
 vline.end
+
+	define('wait(n)i,line,time.start,elapsed,waits')	:(wait.end)
+
+*	Cause program to 'wait' N seconds by doing needless work.
+
+*WAIT*
+wait
+	time.start = time()
+
+wait.next
+
+	i = 0
+
+wait.loop
+
+*	Use up a bunch of memory.
+
+	line = dupl(&lcase &ucase, 100)
+	le(i = i + 1, 10000)				:s(wait.loop)
+
+*	Force garbage collection.
+
+	collect()
+
+*	See if we have spent enough time.
+
+	waits = waits + 1
+	time.now = time()
+	elapsed = (time() - time.start) / 1000
+	out('wait elapsed ' elapsed)
+*	lt(elapsed,n)					:s(wait.next)
+	out('wait took ' waits 'loops.')
+							:(return)
+wait.end
 
 	define('words(s)n,w,pos,i,sp')			:(words.end)
 
