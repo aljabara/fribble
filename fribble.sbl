@@ -1,5 +1,5 @@
 *	Copyright 2017, David Shields
-	&dump = 3
+*	&dump = 3
 
 *	Copyright 2017, David Shields
 
@@ -19,6 +19,7 @@
 *
 
 -include "lib.sbl"
+	out('start fribble')
 
 *	Play a game of fribble.  Usage:  
 
@@ -42,7 +43,7 @@
 	&stlimit = -1
 
 	&anchor = &trim = 1
-
+	out('calling init')
 	init()
 
 	ident(g.mode,g.mode.auto)		:s(main.auto)
@@ -64,7 +65,7 @@ main.auto
 *	Fribble manages the tiles for both players.
 
 	g.tilemanager = 1
-							:(main.done)
+							:(main.setup)
 
 main.solo
 
@@ -81,7 +82,7 @@ main.solo
 *	Fribble manages the tiles for both players.
 
 	g.tilemanager = 1
-							:(main.done)
+							:(main.setup)
 main.team
 
 	out('fribble main.team')
@@ -103,11 +104,11 @@ main.team
 	g.two = player(2,'You+Fribble',	player.kind.team)
 
 	g.tilemanager =
-							:(main.done)
+							:(main.setup)
 main.shell
 	shell()						:(end)
 
-main.done
+main.setup
 
 	g.players[1] = g.one; g.players[2] = g.two
 
@@ -125,6 +126,6 @@ main.done
 
 main.game
 
+	out('start game')
 	game()
-
 end

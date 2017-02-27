@@ -170,7 +170,6 @@
 *	g.rotary, if non-null causes first four moves to be 
 *	'rotary','service', 'above', and 'self.'
 
-	g.rotary = 1
 	g.rotary = 
 
 *	g.replay.lines holds the lines read in for subsequent replaying.
@@ -244,6 +243,7 @@ qinit.end
 *INIT*
 init
 	
+	out('enter init')
 	g.date = date(2)
 
 	init.options()
@@ -259,7 +259,7 @@ init.end
 *	Initialize global variables.
 
 init.main
-
+	out('INIT.main')
 	g.dict = array(15)
 	g.board = array('15,15',' ')
 	g.lines = lines(g.board)
@@ -298,6 +298,7 @@ init.main.end
 *INIT.BONUS*
 init.bonus
 
+	out('INIT.bonus')
 	g.bonus = array('15,15','1')
 	s = 	'5 0104 3 0107 3 0109 5 0112 2 0203 4 0206 4 0210 2 0213 '
 .		'2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 5 0415 '
@@ -324,6 +325,7 @@ init.bonus.end
 
 *INIT.DICT*
 init.dict
+	out('INIT.dict')
 
 *	Set hash table sizes according to number of words of given length.
 
@@ -332,6 +334,7 @@ init.dict
 
 init.dict.tbl
 
+	out('INIT.tbl')
 	gt(i = i + 1,15)				:s(init.dict.tbl.1)
 	s break(' ') . n ' ' = 
 	g.dict[i] = qinit(+n)				:(init.dict.tbl)
@@ -356,9 +359,7 @@ init.dict.in
 
 	differ(substr(w,size(w),1),'S')			:s(init.dict.w)
 	w = substr(w,1,size(w) - 1)
-	g.dict[size(w)][w] = +1
-	g.dict[size(w) + 1][w 's'] = +1			:(init.dict.in)
-	map(g.dict[size(w) + 1],w 's',+1)		:(init.dict.in)
+	map(g.dict[size(w) + 1],w 's',+1)
 	map(g.dict[size(w) + 1],w, +1)			:(init.dict.in)
 
 init.dict.w
@@ -376,6 +377,7 @@ init.dict.end
 *	Initialize g.numbers.
 
 init.number
+	out('INIT.number')
 
 	s1 =	'one two three four five six seven eight nine ten eleven twelve '
 .		'thirteen fourteen fifteen sixteen seventeen eighteen nineteen '
@@ -409,6 +411,7 @@ init.number.end
 
 init.options
 
+	out('INIT.options')
 	g.options = qinit()
 	g.options.abbrev = qinit()
 
@@ -495,6 +498,7 @@ init.options.opt.random
 
 init.options.opt.rotary
 
+	g.rotary = 1
 	map(g.options,'rotary',1)
 	g.mode = g.mode.auto
 							:(init.options.next)
@@ -531,6 +535,7 @@ init.options.end
 
 *INIT.PERM*
 init.perm
+	out('INIT.perm')
 
 	g.permutations = qinit(7)
 	g.permutations.count = qinit(100)
@@ -567,6 +572,7 @@ init.perm.end
 
 *INIT.TILESET*
 init.tileset
+	out('INIT.tileset')
 
 	g.tiles =
 	ne(g.rotary)					:s(init.tileset.rotary)
@@ -606,6 +612,7 @@ init.tileset.end
 *INIT.VALUE*
 init.value
 
+	out('INIT.value')
 	g.value = qinit(52)
 	s = &lcase &ucase
 
@@ -2982,7 +2989,7 @@ show.player
 							:(return)
 show.player.end
 
-	define('show.qinit(tbl,col)ara,i,key')		:(show.table.end)
+	define('show.qinit(tbl,col)ara,i,key')		:(show.qinit.end)
 
 *	Show a table.
 
@@ -3009,7 +3016,7 @@ show.table.next
  
 	out(lpad(i,4) ' ' lpad(key,8) ' - > ' ara[i,2])
 							:(show.table.next)
-show.table.end
+show.qinit.end
 
 	define('show.tiles(tiles)i')			:(show.tiles.end)
 
@@ -3906,4 +3913,4 @@ words.done
 	words = convert(words,'array')			:(return)
 
 words.end
-
+	out('words.end')
