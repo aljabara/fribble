@@ -108,6 +108,8 @@
 
 *	g.options maps option names to their value
 
+	g.options = qinit()
+
 *	A player is represented by
 
 	data('player(pid,name,kind,rack,total,thirty,highest)')
@@ -169,6 +171,7 @@
 *	'rotary','service', 'above', and 'self.'
 
 	g.rotary = 1
+	g.rotary = 
 
 *	g.replay.lines holds the lines read in for subsequent replaying.
 *	g.replay is the index of the last line read in from the replay file.
@@ -223,6 +226,17 @@
 	
 *	Utility functions
 
+	define('qinit(n)')				:(qinit.end)
+
+*	Initialize map for expected N entries.
+
+qinit
+
+	qinit = table(n)
+	qinit[-1] = 0					:(return)
+
+qinit.end
+
 	define('init(dictfile,skip,external)c,i,j,s,t')	:(init.end)
 
 *	Initialize global variables.
@@ -233,7 +247,6 @@ init
 	g.date = date(2)
 
 	init.options()
-	show.table(g.options)
 
 	init.main(dictfile,skip)
 
@@ -321,7 +334,7 @@ init.dict.tbl
 
 	gt(i = i + 1,15)				:s(init.dict.tbl.1)
 	s break(' ') . n ' ' = 
-	g.dict[i] = table(+n)				:(init.dict.tbl)
+	g.dict[i] = qinit(+n)				:(init.dict.tbl)
 
 init.dict.tbl.1
 
@@ -345,6 +358,8 @@ init.dict.in
 	w = substr(w,1,size(w) - 1)
 	g.dict[size(w)][w] = +1
 	g.dict[size(w) + 1][w 's'] = +1			:(init.dict.in)
+	map(g.dict[size(w) + 1],w 's',+1)		:(init.dict.in)
+	map(g.dict[size(w) + 1],w, +1)			:(init.dict.in)
 
 init.dict.w
 
@@ -367,7 +382,7 @@ init.number
 	s2 =	'twenty thirty forty fifty sixty seventy eighty ninety '
 	i1 = 0; i2 = 10; i3 = 20
 
-	g.numbers = table(100)
+	g.numbers = qinit(100)
 	map(g.numbers,100,'one hundred')
 
 init.number.digits
@@ -394,8 +409,8 @@ init.number.end
 
 init.options
 
-	g.options = table()
-	g.options.abbrev = table()
+	g.options = qinit()
+	g.options.abbrev = qinit()
 
 *	Set up map from first two characters of option name to full name.
 
@@ -411,35 +426,29 @@ init.options.abbrev
 init.options.abbrev.done
 
 *	Enter default options, those with non-null initial value.
-*	These values may be changed if they also occurs in the
-*	map(g.options,'rotary',1)			:(init.options.next)
+*	These values may be changed if they also occur in the
 *	actual option list.
 
 	options = '-uauto -umoves=' g.maxmoves ' '
 .		'-urandom=' g.random_var  ' '
-
+	map(g.options,'auto',1)
+	map(g.options,'moves',g.maxmoves)
+	map(g.options,'random',g.random_var)
 	options = options host(0) ' '
-
-	out('options: ' options '.')
-	show.table(g.options)
-
 
 init.options.next
 	
 	val = 1
-	options '-u' =					:f(return)
+	options '-u' =					:f(init.options.done)
 	options break(' ') . opt span(' ') =	
 
 init.options.opt
 
-
 	lt(size(opt),3) out('no such option ' opt '  - ignoring.')
 .						:s(init.options.next)
 	optname = g.options.abbrev[substr(opt,1,2)]
-*	out('optname=' optname)
 	ident(optname) out('no such option ' opt ' - ignoring.')
 .						:s(init.options.next)
-*	out('dave')
 
 	opt 'no'				:s(init.options.no)
 	opt break('=')				:s(init.options.val)
@@ -509,6 +518,11 @@ init.options.opt.trace
 
 	g.trace = val					:(init.options.set)
 
+init.options.done
+
+	out('options: ' options '.')
+	show.qinit(g.options)				:(return)
+
 init.options.end
 
 	define('init.perm(filename)line,ifile,n,k,lines,nread')	:(init.perm.end)
@@ -518,8 +532,8 @@ init.options.end
 *INIT.PERM*
 init.perm
 
-	g.permutations = table(7)
-	g.permutations.count = table(100)
+	g.permutations = qinit(7)
+	g.permutations.count = qinit(100)
 	input(.ifile,g.channel.temp, filename)			:s(init.perm.next)
 	out('unable to open permutation file ' filename) 	:(freturn)
 
@@ -555,7 +569,7 @@ init.perm.end
 init.tileset
 
 	g.tiles =
-	ne(g.rotary)					:f(init.tileset.rotary)
+	ne(g.rotary)					:s(init.tileset.rotary)
 
 	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 '
 .           'n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
@@ -578,8 +592,12 @@ init.tileset.ch.done
 *init.tileset.random
 
 	randomseed();* set random number generator seed
+	out('init1 tileset size=' size(g.tiles))
+	out('init.tiles ' g.tiles)
 	shuffle();* shuffle the tileset
 	g.tiles = ne(g.rotary) 'rotaryseviceboveslf' g.tiles
+	out('init2 tileset size=' size(g.tiles))
+	out('init.tiles ' g.tiles)
 							:(return)
 
 init.tileset.end
@@ -588,7 +606,7 @@ init.tileset.end
 *INIT.VALUE*
 init.value
 
-	g.value = table(52)
+	g.value = qinit(52)
 	s = &lcase &ucase
 
 *	Assume value of a tile is one, and correct that below.
@@ -947,8 +965,8 @@ find
 	inlines = copy(lines)
 	g.highest = 0;* highest score this turn
 	g.lowest = 0;* lowest cost this turn
-	g.moves = table(20)
-	g.tried = table(100)
+	g.moves = qinit(20)
+	g.tried = qinit(100)
 	nmoves = num = 0
 
 find.line
@@ -971,7 +989,7 @@ find.move
 *	identical letters.  Use *tried* to track previous permutations,
 *	to avoid duplicate testing for validity of the same text.
 	
-	g.tried = table(100)
+	g.tried = qinit(100)
 
 	perms = g.permutations[text(move)]		:s(find.next)
 
@@ -1571,22 +1589,26 @@ manual.end
 
 	define('map(tbl,key,val)')			:(map.end)
 
-*	Test for entry for *key* in table *tbl*, adding
-*	new one with value *val* if needed.
-*	Maintain a count of the number of entries using key '#',
-*	which is used solely for this purpose.
+*	Test for entry for key KEY in table TBL, adding
+*	new one with value VAL if no such key yet used.
+*	Maintain a count of the number of entries using the
+*	key of -1, which is used solely for this purpose.
 
+*MAP*
 map
 
-	map = tbl[key]
-	differ(map)					:s(return)
+	out('qinit n=' n)
+*	Test if there is an entry for this key.
+
+	out('enter map size=' tbl[-1])
+	differ(tbl[key])				:s(return)
 
 *	Here to create new entry.
 
+	out('adding map key=' key ' val =' val)
 	tbl[key] = val
-	tbl['#'] = tbl['#'] + 1				
-	map = val					:(return)
-
+	tbl[-1] = tbl[-1] + 1				
+							:(freturn)
 map.end
 
 	define('number(n)')				:(number.end)
@@ -1790,7 +1812,7 @@ reader
 reader.opened
 
 	n = 0
-	reader = table(100)
+	reader = qinit(100)
 
 reader.next
 	reader[n = n + 1] = file		:s(reader.next)
@@ -1807,7 +1829,7 @@ reader.end
 *	One-time initialization for replay()
 
 	str = 'date endgame game move play rack tiles total turn version '
-	replay.ops = table(10)
+	replay.ops = qinit(10)
 
 replay.init	
 	str break(' ') . op ' ' =			:f(replay.init.done)
@@ -2006,7 +2028,7 @@ scan.text
 	sub = subarray(open,pi,len)			:f(scan.len)
 	move = move(num,sub,size(rack) '?' len)		:f(scan.len)
 *	out(ne(g.tracing) 'Scan move ' show.move(move))
-	scan = ident(scan) table()
+	scan = ident(scan) qinit()
 	count.scanned = count.scanned + 1
 	scan[count.scanned] = move			:(scan.len)
 
@@ -2192,8 +2214,8 @@ seen
 	ident(perm)				:s(freturn)
 	ident(rack)				:s(freturn)
 
-	g.cmap = table(10)
-	g.dmap = table(10)
+	g.cmap = qinit(10)
+	g.dmap = qinit(10)
 	cp = dp = 0
 	
 seen.d
@@ -2224,9 +2246,9 @@ seen.check
 	
 	ne(remdr(seens,100)) :s(seen.outed)
 	out()
-	show.table(g.dmap)
+	show.qinit(g.dmap)
 	out()
-	show.table(g.cmap)
+	show.qinit(g.cmap)
 	out()
 
 	 out('seen.check rack=' rack ' ' perm ' -> ' signature)
@@ -2285,7 +2307,7 @@ shell
 *	You need specify only first one or more characters
 *	in the operation name.
 
-	s.opabbrev = table(100)
+	s.opabbrev = qinit(100)
 
 	s.letters = &lcase &ucase
 
@@ -2960,16 +2982,18 @@ show.player
 							:(return)
 show.player.end
 
-	define('show.table(tbl,col)ara,i,key')		:(show.table.end)
+	define('show.qinit(tbl,col)ara,i,key')		:(show.table.end)
 
 *	Show a table.
 
 show.table
+	out('enter show.table')
 
 *	Do nothing if table is empty.
 
 	ident(tbl[-1])					:s(return)
 	ara = sort(tbl,col)
+	out('show.table size ' prototype('ara'))
 
 show.table.next
 
@@ -3069,6 +3093,7 @@ spaces.end
 *START*
 start
 
+	out('start g.rotary ' g.rotary)
 	eq(g.rotary)					:s(start.normal)
 
 *	Here to play 'rotary' as first move.
@@ -3096,7 +3121,7 @@ start.normal
 start.n	gt(n = n + 1,max)				:s(start.done)
 
 	kind = size(tiles) '?' n
-*	out('start.n kind=' kind)
+	out('start.n kind=' kind)
 	perms = g.permutations[kind]			:f(start.n)
 	permi = 0
 
@@ -3106,7 +3131,7 @@ start.word
 
 	perm = perms[permi = permi + 1]			:f(start.n)
 	word = replace(perm,substr('1234567',1,size(tiles)),tiles)
-
+	out('word ' word);* DS
 *	out('kind ' kind ' perm ' perm ' word ' word)
 	checkword(word)					:f(start.word)
 	checkwords = checkwords + 1
@@ -3180,7 +3205,7 @@ state.restore.end
 
 state.save
 
-	state.save = table(10)
+	state.save = qinit(10)
 	map(state.save,'grid',copy(g.grid))
 	map(state.save,'bonus',copy(g.bonus))
 	map(state.save,'tiles',copy(g.tileset))
@@ -3238,7 +3263,16 @@ swap.end
 take
 	n = gt(n,size(g.tiles)) size(g.tiles)
 	eq(n,0)						:s(return)
+	eq(g.rotary)					:s(take.n)
+	gt(g.turn,4)					:s(take.n)
 
+*	Here to get tiles for rotary moves.
+
+	n = 	(eq(g.turn,1) 6,
+.		 eq(g.turn,2) 6
+.		 eq(g.turn,3) 4
+.		 eq(g.turn,4) 3)
+	
 take.n
 
 *	Here when know how many tiles to take.
@@ -3421,7 +3455,7 @@ turn.next
 							:s(turn.validate)
 turn.rotary.2
 
-	g.move =  m(r07,'6 7 9 10 11 12','sevice')	:(turn.rotary.done)
+	g.move =  m(c07,'6 7 9 10 11 12','sevice')	:(turn.rotary.done)
 
 turn.rotary.3
 
@@ -3844,7 +3878,7 @@ words
 *	matches something, and also one at end to break to 
 *	in case last word extends to end of line.
 
-	words = table(n)
+	words = qinit(n)
 	s = ' ' s ' '
 	pos = 0	
 words.sp

@@ -1,4 +1,5 @@
 *	Copyright 2017, David Shields
+	&dump = 3
 
 *	Copyright 2017, David Shields
 
@@ -119,7 +120,7 @@ main.done
 
 *	Program manages the tiles, so deal initial tiles.
 	
-	rack(g.one) = (eq(g.rotary) take(6), take(7))
+	rack(g.one) = (ne(g.rotary) take(6), take(7))
 	rack(g.two) = take(7)
 
 main.game
