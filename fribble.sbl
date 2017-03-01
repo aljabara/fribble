@@ -1,5 +1,4 @@
 *	Copyright 2017, David Shields
-*	&dump = 3
 
 *	Copyright 2017, David Shields
 
@@ -19,7 +18,6 @@
 *
 
 -include "lib.sbl"
-	out('start fribble')
 
 *	Play a game of fribble.  Usage:  
 
@@ -43,7 +41,6 @@
 	&stlimit = -1
 
 	&anchor = &trim = 1
-	out('calling init')
 	init()
 
 	ident(g.mode,g.mode.auto)		:s(main.auto)
@@ -52,7 +49,6 @@
 
 main.auto
 
-	out('fribble main.auto')
 *	Setup for mode 'auto'.
 
 *	In auto mode, fribble plays against itself.
@@ -85,7 +81,6 @@ main.solo
 							:(main.setup)
 main.team
 
-	out('fribble main.team')
 *	Setup for mode 'team'
 
 *	In team mode, you work with fribble to play a foe, reporting the foe's moves
@@ -126,6 +121,5 @@ main.setup
 
 main.game
 
-	out('start game')
 	game()
 end
