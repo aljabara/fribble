@@ -1,5 +1,6 @@
 *	Copyright 2017, David Shields
 
+ &dump = 3
 	define('out(line)')				:(out.end)
 
 *	Output a line.
@@ -973,6 +974,8 @@ find
 	g.moves = map.init(20)
 	g.tried = map.init(100)
 	nmoves = num = 0
+	move = m(r1,'1 02 3 4','dave')
+	out('find init move ' show.move(move))
 
 find.line
 
@@ -986,6 +989,7 @@ find.move
 
 	count.moves = count.moves + 1
 	move = moves[mi = mi + 1,2]			:f(find.line)
+	out('find.move ' show.move(move))
 	out(ne(g.tracing) 'Find.move mi ' mi ' ' show.move(move,'find'))
 
 	points(move) = 
@@ -1014,6 +1018,7 @@ find.score
 
 	score = 0
 
+	out('find.move 1 ' show.move(move))
 *	out(ne(g.tracing) 'Found valid move ' show.move(move) ' in ' 
 *.		show.pair(pair(num,line)))
 
@@ -1027,6 +1032,7 @@ find.score
 	count.valid = count.valid + 1
 	move = copy(move)
 
+	out('find.move 2 ' show.move(move))
 *	out(ne(g.tracing) 'Find cross ' show.move(move) '  text=' text(move))
 *	ne(g.tracing) show.move(move)
 *	ne(g.tracing) show.play(move)
@@ -1054,6 +1060,9 @@ find.done.moves
 	gt(i = i + 1,nmoves)			:s(return)
 	g.moves[i] = moves[i,2]			:f(return)
 	move = g.moves[i]
+	out('find.move 3 ' show.move(move))
+	out('fine.done.moves ' show.move(move))
+	out('fine.done.moves ' show.move(move))
 	out('find.done.moves i=' i ' perm=' perm ' text="' text(move) '"')
 
 						:(find.done.moves)
@@ -1351,6 +1360,7 @@ isbest.new
 
 	g.highest = points(move)
 	g.lowest = cost(text(move))
+	out('find.move 4 ' show.move(move))
 	out(ne(g.tracing) 'find NEW BEST move ' show.move(move))
 							:(return)
 isbest.end
@@ -1463,6 +1473,7 @@ m
 
 m.pos
 
+	out('m pos ' len)
 	len = len + 1
 *	out('pos fi ' fi ' ' pos + (fi - 1 ))
 	free[fi = fi + 1] = pos + (fi - 1)		:s(m.pos)f(m.done)
@@ -1490,7 +1501,9 @@ m.done
 	out('m.done id=' id ' text=' text ', free[1]=' 
 .		free[1] ' free[n]=' free[size(text)])
 
-	m = move(id,free,text)				:(return)
+	m = move(id,free,text)				
+	out('m.done ' show.move(m))
+		:(return)
 
 m.end
 
@@ -1503,6 +1516,7 @@ makemove
 
 	player = g.players[pid]
 	makemove = move
+	out('find.move 5 ' show.move(move))
 	out(ne(g.tracing) 'Game move ' show.move(move))
 	g.turn.last = g.turn
 	total(player)	= total(player) + points(move)
@@ -1709,6 +1723,7 @@ place.end
 playmove
 
 	id = id(move)
+	out('find.move 6 ' show.move(move))
 *	out('enter playmove ' show.move(move))
 *	out('free ' prototype(free(move)))
 
@@ -2821,11 +2836,13 @@ show.lines.end
 
 *SHOW.MOVE*
 show.move
-
+	davey = ident(move) 1
+	out('show.move entry ' davey ' xx')
+	out('show.move enter ' datatype(move))
 	out(ident(move) ' show.move argument is NULL ') :s(return)
 
 show.move.i
-S
+	out('show.move datatype ' datatype(move))
 	gt(i = i + 1,size(text(move)))			:s(show.move.f)
 	ff = free(move)[i]
 	ident(datatype(ff,'string'))			:s(show.move.fail)
@@ -3422,7 +3439,9 @@ turn
 
 *	Here to have start() find the first move.
 	
-	g.move = start(pid)				:(turn.make)
+	g.move = start(pid)				
+	out('turn ' show.move(g.move))
+							:(turn.make)
 
 turn.next
 
@@ -3512,6 +3531,8 @@ turn.auto
 
 	g.move = find(pid,g.turn)			:f(turn.fail)
 
+	out('turn 1 ' show.move(g.move))
+	out('turn.auto move=' show.move(g.move))
 *	ne(t.trace) out('auto move ' show.move(g.move))
 
 *	ne(kind(player),player.kind.auto) out('... computed')
@@ -3625,6 +3646,7 @@ turn.solo.fribble.move
 
 turn.validate
 
+	out('turn 2 ' show.move(g.move))
 	ne(t.trace) out('validating move ' show.move(g.move))
 
 *	See if move is valid.
@@ -3647,6 +3669,7 @@ turn.make
 	eq(g.rotary) log.move(pid,g.move)	
 	ne(g.rotary) log('* rotary ')
 
+	out('turn 3 ' show.move(g.move))
 *	ne(t.trace) out('making move ' show.move(g.move))
 
 	show.play(makemove(pid,g.move))
