@@ -934,7 +934,7 @@ endgame
 							:(return)
 endgame.end
 
-	define('find(pid,turn)mov,rack,num,inlines,line,move,moves,nmoves,mi,m,perms,perm,'
+	define('find(pid,turn)mov,rack,num,inlines,line,mov,moves,nmoves,mi,m,perms,perm,'
 .	 'permi,fline,tline,cline,highest,lowest,i,p,score,move,tried')	
 .							:(find.end)
 
@@ -975,7 +975,7 @@ find
 	g.moves = map.init(20)
 	g.tried = map.init(100)
 	nmoves = num = 0
-	mov = m(r1,'1 02 3 4','dave')
+*	mov = m(r1,'1 02 3 4','dave')
 	out('find init move ' show.move(mov))
 
 find.line
@@ -989,9 +989,14 @@ find.line
 find.move
 
 	count.moves = count.moves + 1
+	out('FIND.MOVE mi ' mi)
 	mov = moves[mi = mi + 1,2]			:f(find.line)
+	out('FIND.MOVE datatype ' datatype(mov))
+	
+	differ(datatype(mov),'move') out('move wrong datatype ' &lastno) 
+	differ(datatype(mov),'move')			:s(error)
 	out('find.move ' show.move(mov))
-	out(ne(g.tracing) 'Find.move mi ' mi ' ' show.move(move,'find'))
+	out(ne(g.tracing) 'Find.move mi ' mi ' ' show.move(mov,'find'))
 
 	points(mov) = 
 	permi = 0
@@ -1009,7 +1014,8 @@ find.move
 	out('fatal permutation request ' text(mov)) :(end)
 
 find.next
-
+	ident(perms) out('FIND.NEXT NULL PERMS')	:s(error)
+	out('FIND.NEXT datatype ' datatype(perms))
 	perm = perms[permi = permi + 1]			:f(find.move)
 	ident(perm)					:s(find.move)
 	seen(perm,rack,1)					:s(find.next)
@@ -1060,7 +1066,7 @@ find.done.moves
 
 	gt(i = i + 1,nmoves)			:s(return)
 	g.moves[i] = moves[i,2]			:f(return)
-	move = g.moves[i]
+	mov = g.moves[i]
 	out('find.move 3 ' show.move(mov))
 	out('fine.done.moves ' show.move(mov))
 	out('find.done.moves i=' i ' perm=' perm ' text="' text(mov) '"')
@@ -1070,9 +1076,8 @@ find.fail
 
 *	out('find failed ')
 
-	output = ident(find) 'find FAILED, no move found.'
+	output = ident(find) 'find FAILED, no move found.' :(error)
 
-							:(freturn)
 find.end
 
 	define('game()players,player,opn,move,i,li,offset,open.word,'
@@ -1847,7 +1852,7 @@ replay.init
 
 replay.init.done
 
-	define('replay(option)line,command'):(replay.end)
+	define('replay(option)line,command,mov'):(replay.end)
 
 *	Replay commands from previous game.
 *	If *option* is an integer, replay that number of commands
@@ -1884,7 +1889,7 @@ replay.endgame
 replay.move
 	line span(' ') len(1) . pid span(' ') =
 	out('replay.move evaluating |' line '|')
-	move = eval(line)
+	mov = eval(line)
 	out('replaying move datatype=' datatype(move)  ','  show.move(move))
 	show.play(makemove(pid,move))
 							:(replay.next)
@@ -1960,7 +1965,7 @@ row
 row.end
 
 	define('scan(pair,rack)num,line,i,pi,open,oi,nopen,n,'
-.			'first,pos,move,sub,len')	:(scan.end)
+.			'first,pos,mov,sub,len')	:(scan.end)
 
 *	Scan the given line to find the places where a valid move can be made.
 *	At least one cell in a move must be adjacent to an occupied cell. 
@@ -2036,16 +2041,26 @@ scan.text
 *	the permutation specification.
 
 	sub = subarray(open,pi,len)			:f(scan.len)
-	move = move(num,sub,size(rack) '?' len)		:f(scan.len)
+	eq(len,1)					:s(scan.len)
+	out('SCAN.TEXT ' (size(rack) '?' len))
+	mov = move(num,sub,size(rack) '?' len)		:f(scan.len)
 *	out(ne(g.tracing) 'Scan move ' show.move(move))
+	out('SCAN.TEXT scan datatype ' datatype(scan))
 	scan = ident(scan) map.init()
 	count.scanned = count.scanned + 1
-	scan[count.scanned] = move			:(scan.len)
-
+	out('SCAN.TEXT count ' count.scanned)
+	out('SCAN.TEXT datatype ' datatype(mov))
+	differ(datatype(mov),'move')			:s(error)
+	map(scan,count.scanned,mov)
+*	scan[count.scanned] = mov			
+	out('SCAN.TEXT -1 ' scan[-1])
+	out('scan new move datatype ' datatype(mov))
+							:(scan.len)
 scan.done
 
 	ident(scan)					:s(freturn)
 	scan = convert(scan,'array')			
+	&dump = 3	:(end)
  							:(return)
 scan.end
 
@@ -2841,6 +2856,7 @@ show.move
 	davey = ident(mov) 1
 	out('show.move entry ' davey ' xx')
 	out('show.move enter ' datatype(mov))
+	ident(datatype(mov),'integer')			:s(error)
 	out(ident(mov) ' show.move argument is NULL ') :s(return)
 
 show.move.i
@@ -3411,7 +3427,7 @@ traceon
 							:(return)
 traceon.end
 
-	define('turn(pid,mode)manual,state,points.player,'
+	define('turn(pid,mode)manual,mov,state,points.player,'
 .			'points.fribble') 	:(turn.end)
 
 *	Play turn for player with id PID in a game with mode MODE.
@@ -3609,7 +3625,7 @@ turn.solo.fribble.havemove
 
 	state = state.save()	
  out('calling find...')
-	move = find(pid, rack)			:s(turn.solo.fribble.move)
+	mov = find(pid, rack)			:s(turn.solo.fribble.move)
 
 *	Here if fribble couldn't find a valid move.
 
@@ -3617,19 +3633,19 @@ turn.solo.fribble.havemove
 
 turn.solo.fribble.move
  out('@turn.solo.fribble.move') 
-	points.fribble = scoremove(move)
+	points.fribble = scoremove(mov)
 	points.player = scoremove(g.move)
 
 	out('You played the move ' show.move(g.move) ' for ' 
 .		number(points.player) ' points.')
 
-	out('Fribble would have played ' show.move(move) ' for ' 
-.		number(points(move)) ' points.')
+	out('Fribble would have played ' show.move(mov) ' for ' 
+.		number(points(mov)) ' points.')
 
-	show.play(makemove(pid,move));* display fribble's move.
+	show.play(makemove(pid,mov));* display fribble's move.
 
 	lt(points.player,points.fribble)
-.		out('Fribble would have scored ' (points(move) - points.player)
+.		out('Fribble would have scored ' (points(mov) - points.player)
 .		 ' more points.')
 
 	eq(points.player,points.fribble)
@@ -3916,5 +3932,11 @@ words.done
 	words = convert(words,'array')			:(return)
 
 words.end
-*DAVE*
+
+	:(error.end)
+error
+	output = 'error label reached, setting &dump '
+*	&dump = 3
+							:(end)
+error.end
 
