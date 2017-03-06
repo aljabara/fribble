@@ -1,6 +1,6 @@
 *	Copyright 2017, David Shields
 
- &dump = 3
+* &dump = 3
 	define('out(line)')				:(out.end)
 
 *	Output a line.
@@ -109,6 +109,7 @@ out.end
 
 
 	data('move(id,free,text,points)')
+	data('nove(id,free,text,points)')
 
 *		*id*	 gives the line number, in the range 1..30;
 *		*free*	 is an array of the free (empty) cells used in this move;
@@ -933,7 +934,7 @@ endgame
 							:(return)
 endgame.end
 
-	define('find(pid,turn)rack,num,inlines,line,moves,nmoves,mi,m,perms,perm,'
+	define('find(pid,turn)mov,rack,num,inlines,line,move,moves,nmoves,mi,m,perms,perm,'
 .	 'permi,fline,tline,cline,highest,lowest,i,p,score,move,tried')	
 .							:(find.end)
 
@@ -974,8 +975,8 @@ find
 	g.moves = map.init(20)
 	g.tried = map.init(100)
 	nmoves = num = 0
-	move = m(r1,'1 02 3 4','dave')
-	out('find init move ' show.move(move))
+	mov = m(r1,'1 02 3 4','dave')
+	out('find init move ' show.move(mov))
 
 find.line
 
@@ -988,11 +989,11 @@ find.line
 find.move
 
 	count.moves = count.moves + 1
-	move = moves[mi = mi + 1,2]			:f(find.line)
-	out('find.move ' show.move(move))
+	mov = moves[mi = mi + 1,2]			:f(find.line)
+	out('find.move ' show.move(mov))
 	out(ne(g.tracing) 'Find.move mi ' mi ' ' show.move(move,'find'))
 
-	points(move) = 
+	points(mov) = 
 	permi = 0
 
 *	The rack will almost always have at least two, and sometimes three,
@@ -1001,47 +1002,47 @@ find.move
 	
 	g.tried = map.init(100)
 
-	perms = g.permutations[text(move)]		:s(find.next)
+	perms = g.permutations[text(mov)]		:s(find.next)
 
 *	Something must be wrong with the requested permutation
 
-	out('fatal permutation request ' text(move)) :(end)
+	out('fatal permutation request ' text(mov)) :(end)
 
 find.next
 
 	perm = perms[permi = permi + 1]			:f(find.move)
 	ident(perm)					:s(find.move)
 	seen(perm,rack,1)					:s(find.next)
-	test.perm(rack,perm,num,move,inlines)		:f(find.next)
+	test.perm(rack,perm,num,mov,inlines)		:f(find.next)
 
 find.score
 
 	score = 0
 
-	out('find.move 1 ' show.move(move))
-*	out(ne(g.tracing) 'Found valid move ' show.move(move) ' in ' 
+	out('find.move 1 ' show.move(mov))
+*	out(ne(g.tracing) 'Found valid move ' show.move(mov) ' in ' 
 *.		show.pair(pair(num,line)))
 
 *	Score the line by summing the scores of the lines saved in clines.
 	
-*	out(ne(g.tracing) 'valid move :' line '  move '  id(move) ' ' 
-*.		size((text(move)) '  '
-*.		free(move)[1] '...' free(move)[size(text(move))] 
-*.		' ' text(move))
+*	out(ne(g.tracing) 'valid move :' line '  move '  id(mov) ' ' 
+*.		size((text(mov)) '  '
+*.		free(mov)[1] '...' free(mov)[size(text(mov))] 
+*.		' ' text(mov))
  
 	count.valid = count.valid + 1
-	move = copy(move)
+	mov = copy(mov)
 
-	out('find.move 2 ' show.move(move))
-*	out(ne(g.tracing) 'Find cross ' show.move(move) '  text=' text(move))
-*	ne(g.tracing) show.move(move)
-*	ne(g.tracing) show.play(move)
+	out('find.move 2 ' show.move(mov))
+*	out(ne(g.tracing) 'Find cross ' show.move(mov) '  text=' text(mov))
+*	ne(g.tracing) show.move(mov)
+*	ne(g.tracing) show.play(mov)
 *	out(ne(g.tracing) 'Find calling scoremove')
 
-	points(move) = +scoremove(move)	
-	g.moves[nmoves = nmoves + 1] = move
+	points(mov) = +scoremove(mov)	
+	g.moves[nmoves = nmoves + 1] = mov
 	g.cln = 0;* reset for next permutation
-	find = isbest(move) copy(move)			:(find.next)
+	find = isbest(mov) copy(mov)			:(find.next)
 
 find.done
 
@@ -1060,10 +1061,9 @@ find.done.moves
 	gt(i = i + 1,nmoves)			:s(return)
 	g.moves[i] = moves[i,2]			:f(return)
 	move = g.moves[i]
-	out('find.move 3 ' show.move(move))
-	out('fine.done.moves ' show.move(move))
-	out('fine.done.moves ' show.move(move))
-	out('find.done.moves i=' i ' perm=' perm ' text="' text(move) '"')
+	out('find.move 3 ' show.move(mov))
+	out('fine.done.moves ' show.move(mov))
+	out('find.done.moves i=' i ' perm=' perm ' text="' text(mov) '"')
 
 						:(find.done.moves)
 find.fail
@@ -1465,6 +1465,7 @@ log.move.end
 
 *M*
 m
+	m = 1.34
 	free = array(size(text))
 
 *	out('m str' str)
@@ -1501,7 +1502,8 @@ m.done
 	out('m.done id=' id ' text=' text ', free[1]=' 
 .		free[1] ' free[n]=' free[size(text)])
 
-	m = move(id,free,text)				
+	out('about to create move')
+	m = nove(id,free,text)				
 	out('m.done ' show.move(m))
 		:(return)
 
@@ -2830,31 +2832,31 @@ show.lines.titled
 show.lines.end
 
 
-	define('show.move(move)f,i,ff') 		:(show.move.end)
+	define('show.move(mov)f,i,ff') 		:(show.move.end)
 
 *	Show a move.
 
 *SHOW.MOVE*
 show.move
-	davey = ident(move) 1
+	davey = ident(mov) 1
 	out('show.move entry ' davey ' xx')
-	out('show.move enter ' datatype(move))
-	out(ident(move) ' show.move argument is NULL ') :s(return)
+	out('show.move enter ' datatype(mov))
+	out(ident(mov) ' show.move argument is NULL ') :s(return)
 
 show.move.i
-	out('show.move datatype ' datatype(move))
-	gt(i = i + 1,size(text(move)))			:s(show.move.f)
-	ff = free(move)[i]
+	out('show.move datatype ' datatype(mov))
+	gt(i = i + 1,size(text(mov)))			:s(show.move.f)
+	ff = free(mov)[i]
 	ident(datatype(ff,'string'))			:s(show.move.fail)
 	f = append(f,ff)				:s(show.move.i)
 
 show.move.f
 
 	show.move = 'm(' 
-.			lineid(id(move)) ',' 
+.			lineid(id(mov)) ',' 
 .			"'" f "',"
-.			  "'" text(move) "',"
-.			(differ(points(move)) '+' points(move), '')  
+.			  "'" text(mov) "',"
+.			(differ(points(mov)) '+' points(mov), '')  
 .	             ')'
 							:(return)
 show.movefail
