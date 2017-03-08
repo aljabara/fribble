@@ -1,0 +1,18 @@
+
+options		str	string
+dict		str	int
+numbers		int	str
+abrev		str	str
+permutations	str	array
+permutations.count str	int
+values		str	int
+moves		int	move
+tried		int	strtr
+lines		int	str
+replay		int	str
+scan		int	move
+cmap		str	str
+dmap		str	str
+state		str	any
+words		str	int
+types		str	str
