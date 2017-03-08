@@ -102,6 +102,18 @@ out.end
 
 	g.mode = g.mode.auto;* default
 
+*	A map represents a map from keys to values.
+
+	data('map(type,type.key,type.val,count)
+
+*		*type*			is a string used to describe kind of map;
+*		*type.key*		is the type of keys. Need not be specified if this
+*					can be deduced from *type*;
+*		*type.val*		is the type of values. Need not be specified if this
+*					can be deduced from *type*;
+*		*count*			is number of entries in table; and
+*		*tbl*			is the table used to contain the map's data.
+
 *	A move consists of a sequence of empty cells in a row or column such 
 *	that at least one cell in the sequence is adjacent to an already 
 *	occupied cell, with each cell occupied by one of the tiles in the 
@@ -121,7 +133,7 @@ out.end
 
 *	g.options maps option names to their value
 
-*	g.options = map.init()
+*	g.options = map.init('options')
 
 *	A player is represented by
 
@@ -238,14 +250,48 @@ out.end
 	
 *	Utility functions
 
-	define('map.init(n)')				:(map.init.end)
+	define('map.init(name,count)key.type,val.type)map')	:(map.init.end)
 
-*	Initialize map for expected N entries.
+*	Initialize map (table) with with keys of type *key.type*,
+*	entries of type val.type, and estimated size *count*.
+*	Keys that are negative integers are used only to descript
+*	table structure, and not be used otherwise.
+
 
 map.init
 
+	key.type = ident(name,'number')		'integer'
+	key.type = ident(key.type) 'string'
+
+
+
+
+	key.type = ident(name,'options')	'string'
+	key.type = ident(name,'moves')	 	'string'
+	key.type = ident(name,'words')		'string'
+	key.type = ident(name,'moves')		'move'
+	val.type = ident(name,'tried')		'move'
+
+	key.type = ident(name,'options') 'string')
+	val.type = ident(name,'move') 	'string')
+
+	key.type = ident(name,'options') 'string')
+	val.type = ident(name,'move') 	'string')
+
+
+	map.init = map(type,key.type,type.val,count,tbl)
+
+	tbl(map) = tbl
+	type(map) = type
+	type.key(map) = key.type
+	type.val(map) = val.type
+	
 	map.init = table(n)
-	map.init[-1] = 0					:(return)
+	map.init[-1] = 0
+	m
+	map.init[-2] = key.type
+	map.init[-3] = val.type
+								:(return)
 
 map.init.end
 
@@ -314,7 +360,7 @@ init.dict.tbl
 
 	gt(i = i + 1,15)				:s(init.dict.tbl.1)
 	s break(' ') . n ' ' = 
-	g.dict[i] = map.init(+n)				:(init.dict.tbl)
+	g.dict[i] = map.init('dict',+n)			:(init.dict.tbl)
 
 init.dict.tbl.1
 
@@ -360,7 +406,7 @@ init.number
 	s2 =	'twenty thirty forty fifty sixty seventy eighty ninety '
 	i1 = 0; i2 = 10; i3 = 20
 
-	g.numbers = map.init(100)
+	g.numbers = map.init('numbers',100)
 	map(g.numbers,100,'one hundred')
 
 init.number.digits
@@ -418,8 +464,8 @@ init.main.end
 
 init.options
 
-	g.options = map.init()
-	g.options.abbrev = map.init()
+	g.options = map.init('options')
+	g.options.abbrev = map.init('abbrev')
 
 *	Set up map from first two characters of option name to full name.
 
@@ -542,8 +588,8 @@ init.options.end
 *INIT.PERM*
 init.perm
 
-	g.permutations = map.init(7)
-	g.permutations.count = map.init(100)
+	g.permutations = map.init('permutations',7)
+	g.permutations.count = map.init('permutations.count',100)
 	input(.ifile,g.channel.temp, filename)			:s(init.perm.next)
 	out('unable to open permutation file ' filename) 	:(freturn)
 
@@ -616,7 +662,7 @@ init.tileset.end
 *INIT.VALUE*
 init.value
 
-	g.value = map.init(52)
+	g.value = map.init('values',52)
 	s = &lcase &ucase
 
 *	Assume value of a tile is one, and correct that below.
@@ -974,8 +1020,8 @@ find
 	inlines = copy(lines)
 	g.highest = 0;* highest score this turn
 	g.lowest = 0;* lowest cost this turn
-	g.moves = map.init(20)
-	g.tried = map.init(100)
+	g.moves = map.init('moves',20)
+	g.tried = map.init('tried',100)
 	nmoves = num = 0
 *	mov = m(r1,'1 02 3 4','dave')
 *	out('find init move ' show(mov))
@@ -1010,7 +1056,7 @@ find.move
 *	identical letters.  Use *tried* to track previous permutations,
 *	to avoid duplicate testing for validity of the same text.
 	
-	g.tried = map.init(100)
+	g.tried = map.init('tried',100)
 
 	perms = g.permutations[text(mov)]		:s(find.next)
 
@@ -1832,7 +1878,7 @@ reader
 reader.opened
 
 	n = 0
-	reader = map.init(100)
+	reader = map.init('lines',100)
 
 reader.next
 	reader[n = n + 1] = file		:s(reader.next)
@@ -1849,7 +1895,7 @@ reader.end
 *	One-time initialization for replay()
 
 	str = 'date endgame game move play rack tiles total turn version '
-	replay.ops = map.init(10)
+	replay.ops = map.init('replay',10)
 
 replay.init	
 	str break(' ') . op ' ' =			:f(replay.init.done)
@@ -2051,7 +2097,7 @@ scan.text
 	mov = move(num,sub,size(rack) '?' len)		:f(scan.len)
 *	out(ne(g.tracing) 'Scan move ' show(move))
 *	out('SCAN.TEXT scan datatype ' datatype(scan))
-	scan = ident(scan) map.init()
+	scan = ident(scan) map.init('scan')
 	count.scanned = count.scanned + 1
 *	out('SCAN.TEXT count ' count.scanned)
 *	out('SCAN.TEXT datatype ' datatype(mov))
@@ -2245,8 +2291,8 @@ seen
 	ident(perm)				:s(freturn)
 	ident(rack)				:s(freturn)
 
-	g.cmap = map.init(10)
-	g.dmap = map.init(10)
+	g.cmap = map.init('cmap',10)
+	g.dmap = map.init('dmap'10)
 	cp = dp = 0
 	
 seen.d
@@ -2338,7 +2384,7 @@ shell
 *	You need specify only first one or more characters
 *	in the operation name.
 
-	s.opabbrev = map.init(100)
+	s.opabbrev = map.init('abbrev',100)
 
 	s.letters = &lcase &ucase
 
@@ -3047,7 +3093,7 @@ show.map.next
 							:(show.map.next)
 show.map.end
 
-	define('show(v)type')				:(show.end)
+	define('show(v)i,ent,type')			:(show.end)
 
 *	Show the value of an expression.
 
@@ -3057,6 +3103,10 @@ show
 	type = datatype(v)
 *	out('show type ' type)
 							:($('show.type.' type))
+
+show.type.array
+
+	show = convert(v,'string')			:(show.done)
 
 show.type.integer
 
@@ -3272,7 +3322,7 @@ state.restore.end
 
 state.save
 
-	state.save = map.init(10)
+	state.save = map.init('state',10)
 	map(state.save,'grid',copy(g.grid))
 	map(state.save,'bonus',copy(g.bonus))
 	map(state.save,'tiles',copy(g.tileset))
@@ -3950,7 +4000,7 @@ words
 *	matches something, and also one at end to break to 
 *	in case last word extends to end of line.
 
-	words = map.init(n)
+	words = map.init('words',n)
 	s = ' ' s ' '
 	pos = 0	
 words.sp
