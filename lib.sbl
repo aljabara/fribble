@@ -78,8 +78,9 @@ out.end
 *	log file 'fribble.log'.
 *	g.log.version is version of format for log file.
 	
-	g.log = 1
 	g.log.version = 2
+	g.log = 1
+	g.log = 
 
 *	g.logfile is the output-associated variable for the log file
 *	g.logfile.channel is its channel; g.logfile.name is its name
@@ -530,7 +531,7 @@ init.options.opt.trace
 init.options.done
 
 	out('options: ' options '.')
-	show.map(g.options)				:(return)
+	show(g.options)				:(return)
 
 init.options.end
 
@@ -962,6 +963,7 @@ endgame.end
 
 *FIND*
 find
+	out('enter find')
 
 *	See if first move, in which case call start()
 
@@ -976,7 +978,7 @@ find
 	g.tried = map.init(100)
 	nmoves = num = 0
 *	mov = m(r1,'1 02 3 4','dave')
-	out('find init move ' show.move(mov))
+*	out('find init move ' show(mov))
 
 find.line
 
@@ -984,19 +986,22 @@ find.line
 	line = lines[num]
 *	out(ne(g.tracing) 'Find.line ' lpad(lineid(num),3) ' ' show.line(line))
 	moves = scan(pair(num,line),rack)		:f(find.line)
+	out('find.line prototype moves ' prototype(moves))
 	mi = 0
 
 find.move
 
 	count.moves = count.moves + 1
 	out('FIND.MOVE mi ' mi)
+	out('FIND.MOVE datatype moves ' datatype(moves))
+	out('FIND.MOVE prototype moves ' prototype(moves))
 	mov = moves[mi = mi + 1,2]			:f(find.line)
 	out('FIND.MOVE datatype ' datatype(mov))
 	
 	differ(datatype(mov),'move') out('move wrong datatype ' &lastno) 
 	differ(datatype(mov),'move')			:s(error)
-	out('find.move ' show.move(mov))
-	out(ne(g.tracing) 'Find.move mi ' mi ' ' show.move(mov,'find'))
+	out('find.move ' show(mov))
+	out(ne(g.tracing) 'Find.move mi ' mi ' ' show(mov,'find'))
 
 	points(mov) = 
 	permi = 0
@@ -1011,7 +1016,7 @@ find.move
 
 *	Something must be wrong with the requested permutation
 
-	out('fatal permutation request ' text(mov)) :(end)
+	out('fatal permutation request ' text(mov)) :(error)
 
 find.next
 	ident(perms) out('FIND.NEXT NULL PERMS')	:s(error)
@@ -1025,9 +1030,9 @@ find.score
 
 	score = 0
 
-	out('find.move 1 ' show.move(mov))
-*	out(ne(g.tracing) 'Found valid move ' show.move(mov) ' in ' 
-*.		show.pair(pair(num,line)))
+	out('find.move 1 ' show(mov))
+*	out(ne(g.tracing) 'Found valid move ' show(mov) ' in ' 
+*.		show(pair(num,line)))
 
 *	Score the line by summing the scores of the lines saved in clines.
 	
@@ -1039,9 +1044,9 @@ find.score
 	count.valid = count.valid + 1
 	mov = copy(mov)
 
-	out('find.move 2 ' show.move(mov))
-*	out(ne(g.tracing) 'Find cross ' show.move(mov) '  text=' text(mov))
-*	ne(g.tracing) show.move(mov)
+	out('find.move 2 ' show(mov))
+*	out(ne(g.tracing) 'Find cross ' show(mov) '  text=' text(mov))
+*	ne(g.tracing) show(mov)
 *	ne(g.tracing) show.play(mov)
 *	out(ne(g.tracing) 'Find calling scoremove')
 
@@ -1067,8 +1072,8 @@ find.done.moves
 	gt(i = i + 1,nmoves)			:s(return)
 	g.moves[i] = moves[i,2]			:f(return)
 	mov = g.moves[i]
-	out('find.move 3 ' show.move(mov))
-	out('fine.done.moves ' show.move(mov))
+	out('find.move 3 ' show(mov))
+	out('fine.done.moves ' show(mov))
 	out('find.done.moves i=' i ' perm=' perm ' text="' text(mov) '"')
 
 						:(find.done.moves)
@@ -1284,7 +1289,7 @@ log.tiles.end
 *	Write player description to log file.
 
 log.player
-	log('player ' pid ' ' show.player(pid))			
+	log('player ' pid ' ' show(pid))			
 							:(return)
 
 log.player.end
@@ -1310,7 +1315,7 @@ insert
 	count.insert.contig = count.insert.contig + 1
 
 	insert = substr(line, 1, f[1] - 1) text substr(line, f[c] + 1)
-	out(ne(size(line),15) 'insert failure ' line)		:s(end)
+	out(ne(size(line),15) 'insert failure ' line)		:s(error)
 							:(return)
 insert.chars
 
@@ -1365,8 +1370,8 @@ isbest.new
 
 	g.highest = points(move)
 	g.lowest = cost(text(move))
-	out('find.move 4 ' show.move(move))
-	out(ne(g.tracing) 'find NEW BEST move ' show.move(move))
+	out('find.move 4 ' show(move))
+	out(ne(g.tracing) 'find NEW BEST move ' show(move))
 							:(return)
 isbest.end
 
@@ -1449,7 +1454,7 @@ log.end
 
 log.move
 
-	log('move ' pid ' ' show.move(move))		:(return)
+	log('move ' pid ' ' show(move))		:(return)
 
 log.move.end
 
@@ -1509,7 +1514,7 @@ m.done
 
 	out('about to create move')
 	m = nove(id,free,text)				
-	out('m.done ' show.move(m))
+	out('m.done ' show(m))
 		:(return)
 
 m.end
@@ -1523,8 +1528,8 @@ makemove
 
 	player = g.players[pid]
 	makemove = move
-	out('find.move 5 ' show.move(move))
-	out(ne(g.tracing) 'Game move ' show.move(move))
+	out('find.move 5 ' show(move))
+	out(ne(g.tracing) 'Game move ' show(move))
 	g.turn.last = g.turn
 	total(player)	= total(player) + points(move)
 	thirty(player)	= ge(points(move),30) thirty(player) + 1
@@ -1592,13 +1597,13 @@ manual
 
 manual.in
 	out('enter move')
-	manual = input.user()				:f(end)
+	manual = input.user()				:f(error)
 
 	manual ( 'pass' | 'swap' | 'resign' | 'quit') :s(return)
 
 	manual = eval(manual)				:f(manual.error)
 
-*	ident(datatype(manual),'move') out(show.move(manual))	:f(manual.error)
+*	ident(datatype(manual),'move') out(show(manual))	:f(manual.error)
 
 	ne(g.turn,1)					:s(manual.check)
 
@@ -1730,8 +1735,8 @@ place.end
 playmove
 
 	id = id(move)
-	out('find.move 6 ' show.move(move))
-*	out('enter playmove ' show.move(move))
+	out('find.move 6 ' show(move))
+*	out('enter playmove ' show(move))
 *	out('free ' prototype(free(move)))
 
 playmove.ch
@@ -1890,7 +1895,7 @@ replay.move
 	line span(' ') len(1) . pid span(' ') =
 	out('replay.move evaluating |' line '|')
 	mov = eval(line)
-	out('replaying move datatype=' datatype(move)  ','  show.move(move))
+	out('replaying move datatype=' datatype(move)  ','  show(move))
 	show.play(makemove(pid,move))
 							:(replay.next)
 replay.player
@@ -1929,7 +1934,7 @@ replenish
 
 replenish.manual
 
-	out('enter rack for player: ' show.player(pid))
+	out('enter rack for player: ' show(pid))
 	replenish = lcase(input)			:f(replenish.eof)
 	ident(replenish) out('no input - try again.')	:s(replenish.manual)
 	gt(size(replenish),7) out('too many letters |' replenish 
@@ -1942,7 +1947,7 @@ replenish.manual
 							:(return)
 replenish.eof
 
-	out('end of data on input - bye ')		:(end)
+	out('end of data on input - bye ')		:(error)
 
 replenish.auto
 
@@ -1964,7 +1969,7 @@ row
 
 row.end
 
-	define('scan(pair,rack)num,line,i,pi,open,oi,nopen,n,'
+	define('scan(pair,rack)num,line,i,mov,pi,open,oi,nopen,n,'
 .			'first,pos,mov,sub,len')	:(scan.end)
 
 *	Scan the given line to find the places where a valid move can be made.
@@ -2042,25 +2047,26 @@ scan.text
 
 	sub = subarray(open,pi,len)			:f(scan.len)
 	eq(len,1)					:s(scan.len)
-	out('SCAN.TEXT ' (size(rack) '?' len))
+*	out('SCAN.TEXT ' (size(rack) '?' len))
 	mov = move(num,sub,size(rack) '?' len)		:f(scan.len)
-*	out(ne(g.tracing) 'Scan move ' show.move(move))
-	out('SCAN.TEXT scan datatype ' datatype(scan))
+*	out(ne(g.tracing) 'Scan move ' show(move))
+*	out('SCAN.TEXT scan datatype ' datatype(scan))
 	scan = ident(scan) map.init()
 	count.scanned = count.scanned + 1
-	out('SCAN.TEXT count ' count.scanned)
-	out('SCAN.TEXT datatype ' datatype(mov))
+*	out('SCAN.TEXT count ' count.scanned)
+*	out('SCAN.TEXT datatype ' datatype(mov))
 	differ(datatype(mov),'move')			:s(error)
 	map(scan,count.scanned,mov)
 *	scan[count.scanned] = mov			
-	out('SCAN.TEXT -1 ' scan[-1])
-	out('scan new move datatype ' datatype(mov))
+*	out('SCAN.TEXT -1 ' scan[-1])
+*	out('scan new move datatype ' datatype(mov))
 							:(scan.len)
 scan.done
 
 	ident(scan)					:s(freturn)
+*	out('showing scan map')
+	show(scan)
 	scan = convert(scan,'array')			
-	&dump = 3	:(end)
  							:(return)
 scan.end
 
@@ -2267,13 +2273,13 @@ seen.check
 
  :(seen.outed)
 	seens = seens + 1
-	gt(seens,10000) :s(end)
+*	gt(seens,10000) :s(end)
 	
 	ne(remdr(seens,100)) :s(seen.outed)
 	out()
-	show.map(g.dmap)
+	show(g.dmap)
 	out()
-	show.map(g.cmap)
+	show(g.cmap)
 	out()
 
 	 out('seen.check rack=' rack ' ' perm ' -> ' signature)
@@ -2367,8 +2373,8 @@ shell.setup.end
 
 shell.loop
 	out('starting replay')
-	replay('keyin') :(end)
-	out('enter shell loop') :(end)
+*	replay('keyin') :(end)
+*	out('enter shell loop') :(end)
 	ident(s.replay)					:s(shell.term)
 	linein = termfile				:s(shell.line)
 	linein 'q'					:s(shell.loop)
@@ -2605,12 +2611,12 @@ shell.def.end
 
 *	Show if probably never used. Delete code below when cnfirm this.
 
-	define('show(rack,player)')			:(show.end)
+	define('show.rack(rack,player)')		:(show.rack.end)
 
-*	Show state of board, used and value grids before start of move.
+*	Show a rack.
 
-*SHOW*
-show
+*SHOW.rack*
+show.rack
 	out('rack for player ' player ': ' rack)
 
 	show.grid(g.board)
@@ -2618,7 +2624,7 @@ show
 *	show.board(g.bonus,'bonus')
 	show.grid(g.used)
 							:(return)
-show.end
+show.rack.end
 
 	define('show.board(board,title)b,r,c,ch,line')	:(show.board.end)
 
@@ -2854,13 +2860,14 @@ show.lines.end
 *SHOW.MOVE*
 show.move
 	davey = ident(mov) 1
-	out('show.move entry ' davey ' xx')
-	out('show.move enter ' datatype(mov))
+*	out('show.move entry ' davey ' xx')
+*	out('show.move enter ' datatype(mov))
 	ident(datatype(mov),'integer')			:s(error)
-	out(ident(mov) ' show.move argument is NULL ') :s(return)
+*	out(ident(mov) ' show.move argument is NULL ') :s(return)
+	out(ident(mov) ' show.move argument is NULL ') :s(error)
 
 show.move.i
-	out('show.move datatype ' datatype(mov))
+*	out('show.move datatype ' datatype(mov))
 	gt(i = i + 1,size(text(mov)))			:s(show.move.f)
 	ff = free(mov)[i]
 	ident(datatype(ff,'string'))			:s(show.move.fail)
@@ -2871,8 +2878,8 @@ show.move.f
 	show.move = 'm(' 
 .			lineid(id(mov)) ',' 
 .			"'" f "',"
-.			  "'" text(mov) "',"
-.			(differ(points(mov)) '+' points(mov), '')  
+.			  "'" text(mov) "'"
+.			(differ(points(mov)) ',+' points(mov), '')  
 .	             ')'
 							:(return)
 show.movefail
@@ -3014,12 +3021,15 @@ show.player.end
 
 *	Show a map.
 
+*SHOW.MAP*
 show.map
 
 *	Do nothing if map is empty.
 
 	ident(tbl[-1])					:s(return)
+*	out('show.map datatype tbl ' datatype(tbl))
 	ara = sort(tbl,col)
+*	out('show.map datatype ara ' datatype(ara))
 
 show.map.next
 
@@ -3033,9 +3043,44 @@ show.map.next
 
 *	Show the entry and continue back to loop.
  
-	out(lpad(i,4) ' ' lpad(key,8) ' -> ' ara[i,2])
+	out(lpad(key,8) ' -> ' show(ara[i,2]))
 							:(show.map.next)
 show.map.end
+
+	define('show(v)type')				:(show.end)
+
+*	Show the value of an expression.
+
+*SHOW*
+show
+
+	type = datatype(v)
+*	out('show type ' type)
+							:($('show.type.' type))
+
+show.type.integer
+
+	show = convert(v,'string')			:(show.done)
+
+show.type.move
+
+	show = show.move(v)				:(show.done)
+
+show.type.pair
+
+	show = show.pair(v)				:(show.done)
+
+show.type.table
+
+	show = show.map(v)				:(show.done)
+
+show.type.string
+
+	show = convert(v,'string')			:(show.done)
+
+show.done
+							:(return)
+show.end
 
 	define('show.tiles(tiles)i')			:(show.tiles.end)
 
@@ -3421,7 +3466,7 @@ traceoff.end
 *TRACEON*
 traceon
 
-	out('start TRACING')
+*	out('start TRACING')
 *	&ftrace = &trace = 1500000
 	g.scoring = g.tracing = 1
 							:(return)
@@ -3499,8 +3544,8 @@ turn.rotary.done
 
 turn.normal
 
-	ne(t.trace) out('enter turn pid=' pid ' ' show.player(pid))
-	ne(t.trace) out('player kind ' kind(player) ' ' show.player(pid))
+	ne(t.trace) out('enter turn pid=' pid ' ' show(pid))
+	ne(t.trace) out('player kind ' kind(player) ' ' show(pid))
 
 	eq(g.trace,g.turn) traceon()
 
@@ -3514,7 +3559,7 @@ turn.normal
 	out('replenish turn.notauto')
 	rack(player) = replenish(pid)
 	ne(t.trace) out('rack pid=' pid ' is now ' rack(player))
-	ne(t.trace) out(show.player(pid))
+	ne(t.trace) out(show(pid))
 
 turn.move
 
@@ -3547,6 +3592,7 @@ turn.auto
 
 *	ne(kind(player),player.kind.auto) out('computing move ...')
 
+	out('turn.out calling find')
 	g.move = find(pid,g.turn)			:f(turn.fail)
 
 	out('turn 1 ' show.move(g.move))
@@ -3701,7 +3747,7 @@ turn.replenish
 *	but at start of next turn.
 
 	eq(g.tilemanager)				:s(turn.done)
-*	out('replenishing pid= ' pid ' ' show.player(player))
+*	out('replenishing pid= ' pid ' ' show(player))
 	ne(t.trace) out('replenishing pid= ' pid )
 
 

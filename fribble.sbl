@@ -120,8 +120,10 @@ main.setup
 	rack(g.two) = take(7)
 
 main.game
+
 	&trace = 10000
 	trace('move','access')
 	trace('mov','access')
+
 	game()
 end
