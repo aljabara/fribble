@@ -260,8 +260,25 @@ out.end
 
 map.init
 
-	key.type = ident(name,'number')		'integer'
-	key.type = ident(key.type) 'string'
+*	Assume map is from string to string and correct below.
+
+	key.type = val.type = 'string'
+	key.type = val.type = 'string'
+	key.type = ident(name,'numbers') 'integer'
+	key.type = ident(name,'moves') 'integer'
+	key.type = ident(name,'lines') 'integer'
+	key.type = ident(name,'replay') 'integer'
+	key.type = ident(name,'scan') 'integer'
+	key.type = ident(name,'words') 'integer'
+
+	val.type = ident(name,'dict') 'integer''
+	val.type = ident(name,'permutations')	'integer'
+	val.type = ident(name,'permutations.count')	'integer'
+	val.type = ident(name,'values')	'integer'
+	val.type = ident(name,'moves')	'moves'
+	val.type = ident(name,'scan')	'move'
+	val.type = ident(name,'state')	'any'
+	val.type = ident(name,'words')	'integer'
 
 
 
