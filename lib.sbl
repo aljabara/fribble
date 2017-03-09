@@ -1,18 +1,9 @@
 *	Copyright 2017, David Shields
 
 * &dump = 3
-	define('out(line)')				:(out.end)
 
-*	Output a line.
-
-*OUT*
-out
-	output = line					:(return)
-
-out.end
-
- g.cmap = g.dmap = g.signature =
-* t.trace = 1;* set to trace in turn()
+	g.cmap = g.dmap = g.signature =
+	t.trace = 1;* set to trace in turn()
 
 * This file is part of the fribble project: http://github.com/daveshields/fribble.
 *
@@ -104,15 +95,15 @@ out.end
 
 *	A map represents a map from keys to values.
 
-	data('map(type,type.key,type.val,count)
+	data('map(type,type.key,type.val,count,tbl)')
 
-*		*type*			is a string used to describe kind of map;
-*		*type.key*		is the type of keys. Need not be specified if this
+*		TYPE			is a string used to describe kind of map;
+*		TYPE.KEY		is the type of keys. Need not be specified if this
 *					can be deduced from *type*;
-*		*type.val*		is the type of values. Need not be specified if this
+*		TYPE.VAL		is the type of values. Need not be specified if this
 *					can be deduced from *type*;
-*		*count*			is number of entries in table; and
-*		*tbl*			is the table used to contain the map's data.
+*		COUNT			is number of entries in table; and
+*		TBL			is the table used to contain the map's data.
 
 *	A move consists of a sequence of empty cells in a row or column such 
 *	that at least one cell in the sequence is adjacent to an already 
@@ -124,16 +115,16 @@ out.end
 	data('move(id,free,text,points)')
 	data('nove(id,free,text,points)')
 
-*		*id*	 gives the line number, in the range 1..30;
-*		*free*	 is an array of the free (empty) cells used in this move;
-*		*text*	 is the string of tiles of the move; and
-*		*points* is the number of points won by playing this move.
+*		ID	 gives the line number, in the range 1..30;
+*		FREE	 is an array of the free (empty) cells used in this move;
+*		TEXT	 is the string of tiles of the move; and
+*		POINTS	 is the number of points won by playing this move.
 
 *	g.move is the current/last move.
 
 *	g.options maps option names to their value
 
-*	g.options = map.init('options')
+*	g.options = map.new('options')
 
 *	A player is represented by
 
@@ -148,12 +139,12 @@ out.end
 			player.kind.solo = 2;* you are playing on your own;
 			player.kind.team = 3;* you and fribble work as a team; and
 			player.kind.foe  = 4;* the other player when in team mode.
-
-*		*rack* 		is the player's rack;
-*		*total*		is the player's current score;
-*		*thirty* 	is number of moves with scores of 30 
+*		PID		is the player's id;
+*		NAME		is the player's name;
+*		RACK 		is the player's rack;
+*		THIRTY	 	is number of moves with scores of 30 
 *				or more points; 
-*		*highest* 	is the player's highest move score.
+*		HIGHEST 	is the player's highest move score.
 
 *	g.moves is array of the valid moves found by most recent call to find(),
 *	sorted with highest scoring move first.
@@ -219,9 +210,10 @@ out.end
 
 *	g.trace, if not null, begin tracing at the start of move g.trace.
 
-	g.trace = 2
+	g.trace = 1
 
 *	g.tracing, set nonzero when tracing initiated by *g.trace* begins.
+
 
 *	g.turn, the number of the current turn
 *	g.turn.last, the turn when the last move was made.
@@ -249,68 +241,6 @@ out.end
 *	c10 = 25; c11 = 26; c12 = 27; c13 = 28; c14 = 29; c15 = 30
 	
 *	Utility functions
-
-	define('map.init(name,count)key.type,val.type)map')	:(map.init.end)
-
-*	Initialize map (table) with with keys of type *key.type*,
-*	entries of type val.type, and estimated size *count*.
-*	Keys that are negative integers are used only to descript
-*	table structure, and not be used otherwise.
-
-
-map.init
-
-*	Assume map is from string to string and correct below.
-
-	key.type = val.type = 'string'
-	key.type = val.type = 'string'
-	key.type = ident(name,'numbers') 'integer'
-	key.type = ident(name,'moves') 'integer'
-	key.type = ident(name,'lines') 'integer'
-	key.type = ident(name,'replay') 'integer'
-	key.type = ident(name,'scan') 'integer'
-	key.type = ident(name,'words') 'integer'
-
-	val.type = ident(name,'dict') 'integer''
-	val.type = ident(name,'permutations')	'integer'
-	val.type = ident(name,'permutations.count')	'integer'
-	val.type = ident(name,'values')	'integer'
-	val.type = ident(name,'moves')	'moves'
-	val.type = ident(name,'scan')	'move'
-	val.type = ident(name,'state')	'any'
-	val.type = ident(name,'words')	'integer'
-
-
-
-
-	key.type = ident(name,'options')	'string'
-	key.type = ident(name,'moves')	 	'string'
-	key.type = ident(name,'words')		'string'
-	key.type = ident(name,'moves')		'move'
-	val.type = ident(name,'tried')		'move'
-
-	key.type = ident(name,'options') 'string')
-	val.type = ident(name,'move') 	'string')
-
-	key.type = ident(name,'options') 'string')
-	val.type = ident(name,'move') 	'string')
-
-
-	map.init = map(type,key.type,type.val,count,tbl)
-
-	tbl(map) = tbl
-	type(map) = type
-	type.key(map) = key.type
-	type.val(map) = val.type
-	
-	map.init = table(n)
-	map.init[-1] = 0
-	m
-	map.init[-2] = key.type
-	map.init[-3] = val.type
-								:(return)
-
-map.init.end
 
 	define('init(dictfile,skip,external)c,i,j,s,t')	:(init.end)
 
@@ -377,7 +307,7 @@ init.dict.tbl
 
 	gt(i = i + 1,15)				:s(init.dict.tbl.1)
 	s break(' ') . n ' ' = 
-	g.dict[i] = map.init('dict',+n)			:(init.dict.tbl)
+	g.dict[i] = map.new('dict',+n)			:(init.dict.tbl)
 
 init.dict.tbl.1
 
@@ -399,8 +329,10 @@ init.dict.in
 
 	differ(substr(w,size(w),1),'S')			:s(init.dict.w)
 	w = substr(w,1,size(w) - 1)
-	map(g.dict[size(w) + 1],w 's',+1)
-	map(g.dict[size(w) + 1],w, +1)			:(init.dict.in)
+	out('add init.dict.in')
+	out('init.dict.in')
+	add(g.dict[size(w) + 1],w 's',+1)
+	add(g.dict[size(w) + 1],w, +1)			:(init.dict.in)
 
 init.dict.w
 
@@ -423,24 +355,28 @@ init.number
 	s2 =	'twenty thirty forty fifty sixty seventy eighty ninety '
 	i1 = 0; i2 = 10; i3 = 20
 
-	g.numbers = map.init('numbers',100)
-	map(g.numbers,100,'one hundred')
+	g.numbers = map.new('numbers',100)
+	out('init.number')
+	add(g.numbers,100,'one hundred')
 
 init.number.digits
 
 	s1 break(' ') . w ' ' =				:f(init.number.tens)
-	map(g.numbers,i1 = i1 + 1,w)			:(init.number.digits)
+	out('g.numbers')
+	add(g.numbers,i1 = i1 + 1,w)			:(init.number.digits)
 
 init.number.tens
 
 	s2 break(' ') . w ' ' =				:f(init.number.decades)
-	map(g.numbers,i2 = i2 + 10,w)			:(init.number.tens)
+	out('.tens')
+	add(g.numbers,i2 = i2 + 10,w)			:(init.number.tens)
 
 init.number.decades
 	
 	le(i3 = i3 + 1,99)				:f(return)
 	eq(remdr(i3,10))				:s(init.number.decades)
-	map(g.numbers,i3,g.numbers[(i3 / 10) * 10] ' ' g.numbers[remdr(i3,10)])
+	out('ADD1')
+	add(g.numbers,i3,g.numbers[(i3 / 10) * 10] ' ' g.numbers[remdr(i3,10)])
 .					:s(init.number.decades)f(return)
 init.number.end
 
@@ -481,8 +417,8 @@ init.main.end
 
 init.options
 
-	g.options = map.init('options')
-	g.options.abbrev = map.init('abbrev')
+	g.options = map.new('options')
+	g.options.abbrev = map.new('abbrev')
 
 *	Set up map from first two characters of option name to full name.
 
@@ -493,7 +429,8 @@ init.options.abbrev
 	s span(' ' ) =
 	ident(s)					:s(init.options.abbrev.done)
 	s break(' ') . opt = 				:f(init.options.abbrev.done)
-	map(g.options.abbrev,substr(opt,1,2),opt)	:(init.options.abbrev)
+	out('ADD2')
+	add(g.options.abbrev,substr(opt,1,2),opt)	:(init.options.abbrev)
 
 init.options.abbrev.done
 
@@ -503,9 +440,10 @@ init.options.abbrev.done
 
 	options = '-uauto -umoves=' g.maxmoves ' '
 .		'-urandom=' g.random_var  ' '
-	map(g.options,'auto',1)
-	map(g.options,'moves',g.maxmoves)
-	map(g.options,'random',g.random_var)
+	out('ADD3')
+	add(g.options,'auto',1)
+	add(g.options,'moves',g.maxmoves)
+	add(g.options,'random',g.random_var)
 	options = options host(0) ' '
 
 init.options.next
@@ -541,7 +479,7 @@ init.options.set
 
 *	Set value for command options.
 
-	map(g.options,optname,val)			:(init.options.next)
+	add(g.options,optname,val)			:(init.options.next)
 
 init.options.val
 
@@ -568,7 +506,7 @@ init.options.opt.random
 init.options.opt.rotary
 
 	g.rotary = 1
-	map(g.options,'rotary',1)
+	add(g.options,'rotary',1)
 	g.mode = g.mode.auto
 							:(init.options.next)
 init.options.opt.seen
@@ -589,6 +527,7 @@ init.options.opt.team
 
 init.options.opt.trace
 
+	val = ident(val) 1
 	g.trace = val					:(init.options.set)
 
 init.options.done
@@ -605,8 +544,8 @@ init.options.end
 *INIT.PERM*
 init.perm
 
-	g.permutations = map.init('permutations',7)
-	g.permutations.count = map.init('permutations.count',100)
+	g.permutations = map.new('permutations',7)
+	g.permutations.count = map.new('permutations.count',100)
 	input(.ifile,g.channel.temp, filename)			:s(init.perm.next)
 	out('unable to open permutation file ' filename) 	:(freturn)
 
@@ -621,7 +560,8 @@ init.perm.next
 init.perm.array
 
 	ara[ai = ai + 1] = ifile			:s(init.perm.array)
-	map(g.permutations,n '?' k,ara)			:(init.perm.next)
+	out('init.perm.array')
+	add(g.permutations,n '?' k,ara)			:(init.perm.next)
 
 init.perm.done
 
@@ -679,7 +619,7 @@ init.tileset.end
 *INIT.VALUE*
 init.value
 
-	g.value = map.init('values',52)
+	g.value = map.new('values',52)
 	s = &lcase &ucase
 
 *	Assume value of a tile is one, and correct that below.
@@ -706,6 +646,122 @@ init.value.update
 	g.value[c] = +v					:(init.value.update)
 
 init.value.end
+
+	define('add(m,key,val)name,key.type,val.type,tbl')	:(add.end)
+
+*	Test for entry for key KEY in table TBL, adding
+*	new one with value VAL if no such key yet used.
+*	Maintain a count of the number of entries using the
+*	key of -1, which is used solely for this purpose.
+
+*ADD*
+add
+
+	ident(type(m)) out('ADD NULL TYPE')
+	out('add enter ' type(m))
+	
+	tbl = tbl(m)
+	out('add tbl dt ' datatype(tbl))
+
+	key.type = type.key(m)
+	val.type = type.val(m)
+
+
+	out('add datatype ' datatype(m))
+	out('key ' key.type)
+	out('val ' val.type)
+	out('count ' count)
+
+*	Check types of key and value to make sure they are ok.
+
+	out('add type going to add.' type(m))
+
+	:($('add.' type(m)))
+
+add.abbrev
+add.cmap
+add.dmap
+add.options
+add.types
+	:(add.str.str)
+
+add.dict
+add.permutations.count
+add.replay
+add.values
+add.words
+	:(add.str.int)
+
+add.lines
+add.numbers
+add.tried
+	:(add.int.str)
+
+add.permutations
+	:(add.str.array)
+
+add.moves
+add.scan
+	:(add.int.move)
+
+add.state
+	:(add.str.any)
+
+add.int.move
+
+	ident(key.type,'integer')			:f(add.error.key)
+	ident(val.type,'move')				:f(add.error.val)
+
+add.int.str
+
+	ident(key.type,'integer')			:f(add.error.key)
+	ident(val.type,'string')			:f(add.error.val)
+
+add.str.any
+
+	ident(key.type,'string')			:f(add.error.key)
+							:(add.test)
+add.str.array
+
+	ident(key.type,'integer')			:f(add.error.key)
+	ident(val.type,'array')				:f(add.error.val)
+							:(add.test)
+add.str.int
+
+	ident(key.type,'string')			:f(add.error.key)
+	ident(val.type,'integer')			:f(add.error.val)
+							:(add.test)
+add.str.str
+
+	ident(key.type,'string')			:f(add.error.key)
+	ident(val.type,'string')			:f(add.error.val)
+							:(add.test)
+
+add.test
+
+*	Test if there is an entry for this key.
+
+	ident(tbl[key])					:f(add.exists)
+
+*	Here when creating new entry. Update count
+	out('add.test ' show(tbl))
+	count(tbl) = count(tbl) + 1
+
+add.exists
+
+*	Here to create or update entry for *key*.
+
+	tbl[key] = val					:(return)
+
+add.error.key
+
+	out('add.error: key type of ' key.type ' is wrong.')	:(error)
+
+add.error.val
+
+	out('add.error: val type of ' val.type ' is wrong.')	:(error)
+
+add.end
 
 	define('adjacent(r,c)')				:(adjacent.end)
 
@@ -1037,8 +1093,8 @@ find
 	inlines = copy(lines)
 	g.highest = 0;* highest score this turn
 	g.lowest = 0;* lowest cost this turn
-	g.moves = map.init('moves',20)
-	g.tried = map.init('tried',100)
+	g.moves = map.new('moves',20)
+	g.tried = map.new('tried',100)
 	nmoves = num = 0
 *	mov = m(r1,'1 02 3 4','dave')
 *	out('find init move ' show(mov))
@@ -1073,7 +1129,7 @@ find.move
 *	identical letters.  Use *tried* to track previous permutations,
 *	to avoid duplicate testing for validity of the same text.
 	
-	g.tried = map.init('tried',100)
+	g.tried = map.new('tried',100)
 
 	perms = g.permutations[text(mov)]		:s(find.next)
 
@@ -1682,26 +1738,44 @@ manual.error
 
 manual.end
 
-	define('map(tbl,key,val)')			:(map.end)
+	define('map.new(type,count)type.key,type.val,map')	:(map.new.end)
 
-*	Test for entry for key KEY in table TBL, adding
-*	new one with value VAL if no such key yet used.
-*	Maintain a count of the number of entries using the
-*	key of -1, which is used solely for this purpose.
+*	Initialize map (table) with keys of type *type.key*,
+*	entries of type *type.val*, and estimated size *count*.
 
-*MAP*
-map
+map.new
 
-*	Test if there is an entry for this key.
+*	Assume map is from string to string and correct below.
 
-	differ(tbl[key])				:s(return)
+	type.key = type.val = 'string'
+	type.key = type.val = 'string'
+	type.key = ident(name,'numbers') 'integer'
+	type.key = ident(name,'moves') 'integer'
+	type.key = ident(name,'lines') 'integer'
+	type.key = ident(name,'scan') 'integer'
+	type.key = ident(name,'words') 'integer'
 
-*	Here to create new entry.
+	type.val = ident(name,'dict') 'integer'
+	type.val = ident(name,'permutations')	'integer'
+	type.val = ident(name,'permutations.count')	'integer'
+	type.val = ident(name,'values')	'integer'
+	type.val = ident(name,'moves')	'moves'
+	type.val = ident(name,'replay')	'integer'
+	type.val = ident(name,'scan')	'move'
+	type.val = ident(name,'state')	'any'
+	type.val = ident(name,'words')	'integer'
 
-	tbl[key] = val
-	tbl[-1] = tbl[-1] + 1				
-							:(freturn)
-map.end
+	map = map(type,type.key,type.val,count,table(count))
+
+*	Going forward will use *count* to count number of entries.
+
+	count(map) = 0
+	type.key(map) = type.key
+	type.val(map) = type.val
+	out('map.new result type ' datatype(map))
+	map.new = map					:(return)
+
+map.new.end
 
 	define('number(n)')				:(number.end)
 
@@ -1752,6 +1826,16 @@ order.done
 	order = pack(chars)				:(return)
 
 order.end
+
+	define('out(line)')				:(out.end)
+
+*	Output a line.
+
+*OUT*
+out
+	output = line					:(return)
+
+out.end
 
 *	pack.sizes = array(30)
 
@@ -1895,7 +1979,7 @@ reader
 reader.opened
 
 	n = 0
-	reader = map.init('lines',100)
+	reader = map.new('lines',100)
 
 reader.next
 	reader[n = n + 1] = file		:s(reader.next)
@@ -1909,14 +1993,18 @@ reader.next
 
 reader.end
 
+	define('replay.init()op,str')			:(replay.init.done)
+
 *	One-time initialization for replay()
 
 	str = 'date endgame game move play rack tiles total turn version '
-	replay.ops = map.init('replay',10)
+	replay.ops = map.new('replay')
 
 replay.init	
 	str break(' ') . op ' ' =			:f(replay.init.done)
-	replay.ops[op] = 1				:(replay.init)
+	out('AT REPLAY.INIT')
+	out('ADD4')
+	add(replay.ops,op,1)				:(replay.init)
 
 replay.init.done
 
@@ -2114,12 +2202,13 @@ scan.text
 	mov = move(num,sub,size(rack) '?' len)		:f(scan.len)
 *	out(ne(g.tracing) 'Scan move ' show(move))
 *	out('SCAN.TEXT scan datatype ' datatype(scan))
-	scan = ident(scan) map.init('scan')
+	scan = ident(scan) map.new('scan')
 	count.scanned = count.scanned + 1
 *	out('SCAN.TEXT count ' count.scanned)
 *	out('SCAN.TEXT datatype ' datatype(mov))
 	differ(datatype(mov),'move')			:s(error)
-	map(scan,count.scanned,mov)
+	out('scan')
+	add(scan,count.scanned,mov)
 *	scan[count.scanned] = mov			
 *	out('SCAN.TEXT -1 ' scan[-1])
 *	out('scan new move datatype ' datatype(mov))
@@ -2308,18 +2397,19 @@ seen
 	ident(perm)				:s(freturn)
 	ident(rack)				:s(freturn)
 
-	g.cmap = map.init('cmap',10)
-	g.dmap = map.init('dmap'10)
+	g.cmap = map.new('cmap')
+	g.dmap = map.new('dmap')
 	cp = dp = 0
 	
 seen.d
 	d = substr(perm,dp = dp + 1,1)		:f(seen.c)
 	c = substr(rack,d,1)
-	map(g.dmap,d,c)
+	out('g.map')
+	add(g.dmap,d,c)
 						:(seen.d)
 seen.c
 	c = substr(rack,cp = cp + 1,1)		:f(seen.mapped)
-	ident(g.cmap[c]) map(g.cmap,c,convert(cp,'string')) :(seen.c)
+	ident(g.cmap[c]) add(g.cmap,c,convert(cp,'string')) :(seen.c)
 
 seen.mapped
 
@@ -2359,8 +2449,7 @@ seen.outed
 
 *	Here if first encounter with this signature.
 
-	g.tried[signature] = 1
-	count.signature.seen = count.signature.seen + 1
+	add(g.tried,signature,1)
 							:(freturn)
 *	out('seen new signature ' signature ' perm=' perm ' rack=' rack '.')
 *	See if we have seen an equivalent permutation before.
@@ -2401,7 +2490,7 @@ shell
 *	You need specify only first one or more characters
 *	in the operation name.
 
-	s.opabbrev = map.init('abbrev',100)
+	s.opabbrev = map.new('abbrev',100)
 
 	s.letters = &lcase &ucase
 
@@ -2672,22 +2761,69 @@ shell.eof
 
 shell.def.end
 
-*	Show if probably never used. Delete code below when cnfirm this.
+	define('show(v)i,ent,type')			:(show.end)
 
-	define('show.rack(rack,player)')		:(show.rack.end)
+*	Show the value of an expression.
 
-*	Show a rack.
+*SHOW*
+show
 
-*SHOW.rack*
-show.rack
-	out('rack for player ' player ': ' rack)
+	type = datatype(v)
+	out('show type ' type)
+							:($('show.type.' type))
 
-	show.grid(g.board)
-	show.lines(g.lines)
-*	show.board(g.bonus,'bonus')
-	show.grid(g.used)
+show.type.array
+
+	show = show.array(v)				:(show.done)
+
+show.type.integer
+
+	show = convert(v,'string')			:(show.done)
+
+show.type.map
+
+	show = show.map(v)				:(show.done)
+
+show.type.pair
+
+	show = show.pair(v)				:(show.done)
+
+show.type.table
+
+	show = show.map(v)				:(show.done)
+
+show.type.string
+
+	show = convert(v,'string')			:(show.done)
+
+show.done
 							:(return)
-show.rack.end
+show.end
+
+	define('show.ara(ara)i,first,proto,second')	:(show.ara.end)
+
+*	Show an array. Fribble uses only one and two dimensional arrays
+
+show.ara
+
+	proto = prototype(ara)
+	proto break(',')				:s(show.ara.2)
+
+*	Here for one dimensional array.
+
+show.ara.1
+	first = ara[i = i + 1]				:f(show.ara.done)
+	out(lpad(i,3) tab first)			:(show.ara.1)
+
+show.ara.2
+	first = ara[i = i + 1]				:f(show.ara.done)
+	out(lpad(i,3) tab show(first) tab show(ara[i,2]))	:(show.ara.2)
+
+show.ara.done
+
+	out()						:(return)
+
+show.ara.end
 
 	define('show.board(board,title)b,r,c,ch,line')	:(show.board.end)
 
@@ -3080,7 +3216,7 @@ show.player
 							:(return)
 show.player.end
 
-	define('show.map(tbl,col)ara,i,key')		:(show.map.end)
+	define('show.map(map,col)ara,i,key')		:(show.map.end)
 
 *	Show a map.
 
@@ -3089,10 +3225,14 @@ show.map
 
 *	Do nothing if map is empty.
 
-	ident(tbl[-1])					:s(return)
-*	out('show.map datatype tbl ' datatype(tbl))
-	ara = sort(tbl,col)
-*	out('show.map datatype ara ' datatype(ara))
+	out('show.map ' datatype(map))
+	out('show.map type=' type(map) '  key type ' type.key(map) 
+.		'  val type ' type.val(map) '  count=' count(map))
+	out('show.map ' show(map))
+	eq(count(map))					:s(return)
+*	out('show.map datatype map ' datatype(map))
+	ara = sort(tbl(map),col)
+		
 
 show.map.next
 
@@ -3109,45 +3249,6 @@ show.map.next
 	out(lpad(key,8) ' -> ' show(ara[i,2]))
 							:(show.map.next)
 show.map.end
-
-	define('show(v)i,ent,type')			:(show.end)
-
-*	Show the value of an expression.
-
-*SHOW*
-show
-
-	type = datatype(v)
-*	out('show type ' type)
-							:($('show.type.' type))
-
-show.type.array
-
-	show = convert(v,'string')			:(show.done)
-
-show.type.integer
-
-	show = convert(v,'string')			:(show.done)
-
-show.type.move
-
-	show = show.move(v)				:(show.done)
-
-show.type.pair
-
-	show = show.pair(v)				:(show.done)
-
-show.type.table
-
-	show = show.map(v)				:(show.done)
-
-show.type.string
-
-	show = convert(v,'string')			:(show.done)
-
-show.done
-							:(return)
-show.end
 
 	define('show.tiles(tiles)i')			:(show.tiles.end)
 
@@ -3339,12 +3440,13 @@ state.restore.end
 
 state.save
 
-	state.save = map.init('state',10)
-	map(state.save,'grid',copy(g.grid))
-	map(state.save,'bonus',copy(g.bonus))
-	map(state.save,'tiles',copy(g.tileset))
-	map(state.save,'player.1',copy(g.players[1]))
-	map(state.save,'player.2',copy(g.players[2]))
+	state.save = map.new('state')
+	out('state.save')
+	add(state.save,'grid',copy(g.grid))
+	add(state.save,'bonus',copy(g.bonus))
+	add(state.save,'tiles',copy(g.tileset))
+	add(state.save,'player.1',copy(g.players[1]))
+	add(state.save,'player.2',copy(g.players[2]))
 							:(return)
 state.save.end
 
@@ -4017,7 +4119,7 @@ words
 *	matches something, and also one at end to break to 
 *	in case last word extends to end of line.
 
-	words = map.init('words',n)
+	words = map.new('words',n)
 	s = ' ' s ' '
 	pos = 0	
 words.sp
