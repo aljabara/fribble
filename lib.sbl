@@ -1,9 +1,67 @@
 *	Copyright 2017, David Shields
 
-* &dump = 3
+	&dump = 3
 
-	g.cmap = g.dmap = g.signature =
+	define('out(line)')				:(out.end)
+
+*	Output a line.
+
+*OUT*
+out
+	output = line					:(return)
+
+out.end
+
+	define('mp.new(type,count)type.key,type.val,mp')	:(mp.new.end)
+
+*	Initialize mp (table) with keys of type *type.key*,
+*	entries of type *type.val*, and estimated size *count*.
+
+mp.new
+
+*	Assume mp is from string to string and correct below.
+
+	type.key = type.val = 'string'
+	type.key = type.val = 'string'
+	type.key = ident(name,'numbers') 'integer'
+	type.key = ident(name,'moves') 'integer'
+	type.key = ident(name,'lines') 'integer'
+	type.key = ident(name,'scan') 'integer'
+	type.key = ident(name,'words') 'integer'
+
+	type.val = ident(name,'dict') 'integer'
+	type.val = ident(name,'permutations')	'integer'
+	type.val = ident(name,'permutations.count')	'integer'
+	type.val = ident(name,'values')	'integer'
+	type.val = ident(name,'moves')	'moves'
+	type.val = ident(name,'replay')	'integer'
+	type.val = ident(name,'scan')	'move'
+	type.val = ident(name,'state')	'any'
+	type.val = ident(name,'words')	'integer'
+
+	mp.new = mp(type,type.key,type.val,count,table(count))
+	mp = mp(type,type.key,type.val,count,table(count))
+	out('show.datatype ' datatype(mp))
+	out('show.type ' type(mp))
+	
+
+*	Going forward will use *count* to count number of entries.
+
+	count(mp.new) = 0
+	type.key(mp.new) = type.key
+	type.val(mp.new) = type.val
+	out('mp.new result type ' datatype(mp.new))
+							:(return)
+
+mp.new.end
+	g.cmp = g.dmp = g.signature =
 	t.trace = 1;* set to trace in turn()
+	&trace = 20000
+	&ftrace = 20000
+	trace('move','access')
+	trace('mov','access')
+	trace(&lastno)
+
 
 * This file is part of the fribble project: http://github.com/daveshields/fribble.
 *
@@ -93,17 +151,17 @@
 
 	g.mode = g.mode.auto;* default
 
-*	A map represents a map from keys to values.
+*	A mp represents a mp from keys to values.
 
-	data('map(type,type.key,type.val,count,tbl)')
+	data('mp(type,type.key,type.val,count,tbl)')
 
-*		TYPE			is a string used to describe kind of map;
+*		TYPE			is a string used to describe kind of mp;
 *		TYPE.KEY		is the type of keys. Need not be specified if this
 *					can be deduced from *type*;
 *		TYPE.VAL		is the type of values. Need not be specified if this
 *					can be deduced from *type*;
 *		COUNT			is number of entries in table; and
-*		TBL			is the table used to contain the map's data.
+*		TBL			is the table used to contain the mp's data.
 
 *	A move consists of a sequence of empty cells in a row or column such 
 *	that at least one cell in the sequence is adjacent to an already 
@@ -111,7 +169,8 @@
 *	player's rack.  The cells are ordered from left to right for a 
 *	horizontal play, top to bottom for a vertical play.
 
-
+	mpmp = mp.new('testing')
+	out('datatype mpmp ' datatype(mpmp))
 	data('move(id,free,text,points)')
 	data('nove(id,free,text,points)')
 
@@ -122,9 +181,11 @@
 
 *	g.move is the current/last move.
 
-*	g.options maps option names to their value
+*	g.options mps option names to their value
 
-*	g.options = map.new('options')
+	g.options = mp.new('options')
+	g.options.abbrev = mp.new('abbrev')
+
 
 *	A player is represented by
 
@@ -153,7 +214,7 @@
 	g.moves =
 	g.moves.max =
 
-*	g.options.abbrev maps a shorted form of an option to its full
+*	g.options.abbrev mps a shorted form of an option to its full
 *	name; see init() for details.
 
 *	g.players is an array of the two players.
@@ -228,10 +289,10 @@
 *	g.used.lines, array(30), an array of lines defined by the rows and columns
 *	 of the used grid.
 
-*	g.value, a map from characters to the tile value of that character.
+*	g.value, a mp from characters to the tile value of that character.
 
 *	The variables for row and column numbers are used
-*	for the input of moves. They map name to line number.
+*	for the input of moves. They mp name to line number.
 
 	r1 = r01 = 1; r2 = r02 = 2; r3 = r03 = 3; r4 = r04 = 4; r5 = r05 = 5;
 	r6 = r06 = 6; r7 = r07 = 7; r8 = r08 = 8; r9 = r09 = 9; r10 = 10
@@ -307,7 +368,7 @@ init.dict.tbl
 
 	gt(i = i + 1,15)				:s(init.dict.tbl.1)
 	s break(' ') . n ' ' = 
-	g.dict[i] = map.new('dict',+n)			:(init.dict.tbl)
+	g.dict[i] = mp.new('dict',+n)			:(init.dict.tbl)
 
 init.dict.tbl.1
 
@@ -355,7 +416,7 @@ init.number
 	s2 =	'twenty thirty forty fifty sixty seventy eighty ninety '
 	i1 = 0; i2 = 10; i3 = 20
 
-	g.numbers = map.new('numbers',100)
+	g.numbers = mp.new('numbers',100)
 	out('init.number')
 	add(g.numbers,100,'one hundred')
 
@@ -400,7 +461,7 @@ init.main
 
 	init.number()
 
-*	Initialze permutation map.
+*	Initialze permutation mp.
 
 	init.perm('perm.txt')
 
@@ -417,10 +478,7 @@ init.main.end
 
 init.options
 
-	g.options = map.new('options')
-	g.options.abbrev = map.new('abbrev')
-
-*	Set up map from first two characters of option name to full name.
+*	Set up mp from first two characters of option name to full name.
 
 	s = 'auto dumb moves random rotary seen shell solo team trace '
 
@@ -429,7 +487,8 @@ init.options.abbrev
 	s span(' ' ) =
 	ident(s)					:s(init.options.abbrev.done)
 	s break(' ') . opt = 				:f(init.options.abbrev.done)
-	out('ADD2')
+	out('ADD2 datatype(g.opt..<' datatype(g.options.abbrev) '<')
+	out('ADD21')
 	add(g.options.abbrev,substr(opt,1,2),opt)	:(init.options.abbrev)
 
 init.options.abbrev.done
@@ -544,8 +603,8 @@ init.options.end
 *INIT.PERM*
 init.perm
 
-	g.permutations = map.new('permutations',7)
-	g.permutations.count = map.new('permutations.count',100)
+	g.permutations = mp.new('permutations',7)
+	g.permutations.count = mp.new('permutations.count',100)
 	input(.ifile,g.channel.temp, filename)			:s(init.perm.next)
 	out('unable to open permutation file ' filename) 	:(freturn)
 
@@ -619,7 +678,7 @@ init.tileset.end
 *INIT.VALUE*
 init.value
 
-	g.value = map.new('values',52)
+	g.value = mp.new('values',52)
 	s = &lcase &ucase
 
 *	Assume value of a tile is one, and correct that below.
@@ -656,11 +715,15 @@ init.value.end
 
 *ADD*
 add
-
+	 out('add lastno ' &lastno) 
 	ident(type(m)) out('ADD NULL TYPE')
+	out('add differ type(m) DS ' datatype(m))
+	out(' add lastno ' &lastno)
+	differ(datatype(m),'mp')			:s(error)
 	out('add enter ' type(m))
 	
 	tbl = tbl(m)
+	out('datatype tbl ' datatype(tbl))
 	out('add tbl dt ' datatype(tbl))
 
 	key.type = type.key(m)
@@ -670,17 +733,17 @@ add
 	out('add datatype ' datatype(m))
 	out('key ' key.type)
 	out('val ' val.type)
-	out('count ' count)
+	out('count ' count(m))
 
 *	Check types of key and value to make sure they are ok.
 
-	out('add type going to add.' type(m))
+	out('add type going to add. TYPE  DS ' type(m))
 
 	:($('add.' type(m)))
 
 add.abbrev
-add.cmap
-add.dmap
+add.cmp
+add.dmp
 add.options
 add.types
 	:(add.str.str)
@@ -744,6 +807,7 @@ add.test
 	ident(tbl[key])					:f(add.exists)
 
 *	Here when creating new entry. Update count
+	out('add.test datatype tbl ' datatype(tbl))
 	out('add.test ' show(tbl))
 	count(tbl) = count(tbl) + 1
 
@@ -1093,8 +1157,8 @@ find
 	inlines = copy(lines)
 	g.highest = 0;* highest score this turn
 	g.lowest = 0;* lowest cost this turn
-	g.moves = map.new('moves',20)
-	g.tried = map.new('tried',100)
+	g.moves = mp.new('moves',20)
+	g.tried = mp.new('tried',100)
 	nmoves = num = 0
 *	mov = m(r1,'1 02 3 4','dave')
 *	out('find init move ' show(mov))
@@ -1129,7 +1193,7 @@ find.move
 *	identical letters.  Use *tried* to track previous permutations,
 *	to avoid duplicate testing for validity of the same text.
 	
-	g.tried = map.new('tried',100)
+	g.tried = mp.new('tried',100)
 
 	perms = g.permutations[text(mov)]		:s(find.next)
 
@@ -1738,44 +1802,6 @@ manual.error
 
 manual.end
 
-	define('map.new(type,count)type.key,type.val,map')	:(map.new.end)
-
-*	Initialize map (table) with keys of type *type.key*,
-*	entries of type *type.val*, and estimated size *count*.
-
-map.new
-
-*	Assume map is from string to string and correct below.
-
-	type.key = type.val = 'string'
-	type.key = type.val = 'string'
-	type.key = ident(name,'numbers') 'integer'
-	type.key = ident(name,'moves') 'integer'
-	type.key = ident(name,'lines') 'integer'
-	type.key = ident(name,'scan') 'integer'
-	type.key = ident(name,'words') 'integer'
-
-	type.val = ident(name,'dict') 'integer'
-	type.val = ident(name,'permutations')	'integer'
-	type.val = ident(name,'permutations.count')	'integer'
-	type.val = ident(name,'values')	'integer'
-	type.val = ident(name,'moves')	'moves'
-	type.val = ident(name,'replay')	'integer'
-	type.val = ident(name,'scan')	'move'
-	type.val = ident(name,'state')	'any'
-	type.val = ident(name,'words')	'integer'
-
-	map = map(type,type.key,type.val,count,table(count))
-
-*	Going forward will use *count* to count number of entries.
-
-	count(map) = 0
-	type.key(map) = type.key
-	type.val(map) = type.val
-	out('map.new result type ' datatype(map))
-	map.new = map					:(return)
-
-map.new.end
 
 	define('number(n)')				:(number.end)
 
@@ -1826,16 +1852,6 @@ order.done
 	order = pack(chars)				:(return)
 
 order.end
-
-	define('out(line)')				:(out.end)
-
-*	Output a line.
-
-*OUT*
-out
-	output = line					:(return)
-
-out.end
 
 *	pack.sizes = array(30)
 
@@ -1979,12 +1995,12 @@ reader
 reader.opened
 
 	n = 0
-	reader = map.new('lines',100)
+	reader = mp.new('lines',100)
 
 reader.next
 	reader[n = n + 1] = file		:s(reader.next)
 
-*	Here at end of file, convert map to array of lines.
+*	Here at end of file, convert mp to array of lines.
 
 	reader[0] = n - 1;* line count
 
@@ -1998,7 +2014,7 @@ reader.end
 *	One-time initialization for replay()
 
 	str = 'date endgame game move play rack tiles total turn version '
-	replay.ops = map.new('replay')
+	replay.ops = mp.new('replay')
 
 replay.init	
 	str break(' ') . op ' ' =			:f(replay.init.done)
@@ -2202,7 +2218,7 @@ scan.text
 	mov = move(num,sub,size(rack) '?' len)		:f(scan.len)
 *	out(ne(g.tracing) 'Scan move ' show(move))
 *	out('SCAN.TEXT scan datatype ' datatype(scan))
-	scan = ident(scan) map.new('scan')
+	scan = ident(scan) mp.new('scan')
 	count.scanned = count.scanned + 1
 *	out('SCAN.TEXT count ' count.scanned)
 *	out('SCAN.TEXT datatype ' datatype(mov))
@@ -2216,7 +2232,7 @@ scan.text
 scan.done
 
 	ident(scan)					:s(freturn)
-*	out('showing scan map')
+*	out('showing scan mp')
 	show(scan)
 	scan = convert(scan,'array')			
  							:(return)
@@ -2344,7 +2360,7 @@ scoremove.done
 							:(return)
 scoremove.end
 
-	define('seen(perm,rack,test)p,c,cp,cmap,next,signature,map,d,dp,dmap')	:(seen.end)
+	define('seen(perm,rack,test)p,c,cp,cmp,next,signature,mp,d,dp,dmp')	:(seen.end)
 
 *	Test if a permutation has already been processed in this turn.
 
@@ -2364,23 +2380,23 @@ scoremove.end
 *	the same signature, and so will not need to investigate 
 *	futher -- we can move directly to the next permutation.
 
-*	Define a map *dmap* from digits to characters by
+*	Define a mp *dmp* from digits to characters by
 *	iterating over the permutation. If *d* is the
 *	digit at position *p*, let *c* be the character
 *	at position *d* in the rack. This is the character
-*	corresponding to *d*. Set *dmap[d]* to *c*. 
+*	corresponding to *d*. Set *dmp[d]* to *c*. 
 
-*	Define a map *cmap* from characters to digits by iterating
+*	Define a mp *cmp* from characters to digits by iterating
 *	over the rack. Let *c* be the character at position *p*.
-*	If *cmap[c]* is null, this is the first instance of *c*;
-*	set *cmap[c]* to *p*. This will be the value used to
+*	If *cmp[c]* is null, this is the first instance of *c*;
+*	set *cmp[c]* to *p*. This will be the value used to
 *	represent each instance of *c* in the new permutation.
 
 *	Iterate over the permutation to build an equivalent
 *	permutation. Let *d* be the digit at
-*	position *p*. Set *c* to the value of *dmap[d]*, then
+*	position *p*. Set *c* to the value of *dmp[d]*, then
 * `	set the next digit in the new permutation to the value of
-*	*cmap[c]*.
+*	*cmp[c]*.
 
 	
 *	The result is the signature, or normal form, of the permutation.
@@ -2397,21 +2413,21 @@ seen
 	ident(perm)				:s(freturn)
 	ident(rack)				:s(freturn)
 
-	g.cmap = map.new('cmap')
-	g.dmap = map.new('dmap')
+	g.cmp = mp.new('cmp')
+	g.dmp = mp.new('dmp')
 	cp = dp = 0
 	
 seen.d
 	d = substr(perm,dp = dp + 1,1)		:f(seen.c)
 	c = substr(rack,d,1)
-	out('g.map')
-	add(g.dmap,d,c)
+	out('g.mp')
+	add(g.dmp,d,c)
 						:(seen.d)
 seen.c
-	c = substr(rack,cp = cp + 1,1)		:f(seen.mapped)
-	ident(g.cmap[c]) add(g.cmap,c,convert(cp,'string')) :(seen.c)
+	c = substr(rack,cp = cp + 1,1)		:f(seen.mpped)
+	ident(g.cmp[c]) add(g.cmp,c,convert(cp,'string')) :(seen.c)
 
-seen.mapped
+seen.mpped
 
 	dp = 0
 	signature = 
@@ -2419,8 +2435,8 @@ seen.mapped
 seen.next
 
 	d = substr(perm,dp = dp + 1,1)		:f(seen.check)
-	c = g.dmap[d]
-	signature = signature g.cmap[c]		:(seen.next)
+	c = g.dmp[d]
+	signature = signature g.cmp[c]		:(seen.next)
 
 seen.check
 
@@ -2430,9 +2446,9 @@ seen.check
 	
 	ne(remdr(seens,100)) :s(seen.outed)
 	out()
-	show(g.dmap)
+	show(g.dmp)
 	out()
-	show(g.cmap)
+	show(g.cmp)
 	out()
 
 	 out('seen.check rack=' rack ' ' perm ' -> ' signature)
@@ -2486,11 +2502,11 @@ shell
 . 	'board clear eval find help init letters next move pass play quit '
 .	'remove replay score search start tiles valid '
 
-*	s.opabbrev maps abbreviated input to corresponding shell.
+*	s.opabbrev mps abbreviated input to corresponding shell.
 *	You need specify only first one or more characters
 *	in the operation name.
 
-	s.opabbrev = map.new('abbrev',100)
+	s.opabbrev = mp.new('abbrev',100)
 
 	s.letters = &lcase &ucase
 
@@ -2767,10 +2783,10 @@ shell.def.end
 
 *SHOW*
 show
-
-	type = datatype(v)
-	out('show type ' type)
-							:($('show.type.' type))
+	out('enter SHOW')
+	typ = datatype(v)
+	out('show type ' typ)
+							:($('show.type.' typ))
 
 show.type.array
 
@@ -2780,9 +2796,17 @@ show.type.integer
 
 	show = convert(v,'string')			:(show.done)
 
-show.type.map
-
-	show = show.map(v)				:(show.done)
+show.type.mp
+	mp = v
+	out('show.type v DS DS v ' datatype(v))
+	out('enter show.mp')
+	out('show.mp datatype<' datatype(mp) '>')
+	out('show.mp type=' type(mp))
+	out( '  key type ' type.key(mp) )
+	out('  val type ' type.val(mp))
+	out( '  count=' count(mp))
+	out('calling show.mp(v)<' datatype(v) '>')
+	show = show.mp(v)				:(show.done)
 
 show.type.pair
 
@@ -2790,7 +2814,7 @@ show.type.pair
 
 show.type.table
 
-	show = show.map(v)				:(show.done)
+	show = show.mp(v)				:(show.done)
 
 show.type.string
 
@@ -3216,39 +3240,44 @@ show.player
 							:(return)
 show.player.end
 
-	define('show.map(map,col)ara,i,key')		:(show.map.end)
+	define('show.mp(mp,col)ara,i,key')		:(show.mp.end)
 
-*	Show a map.
+*	Show a mp.
 
 *SHOW.MAP*
-show.map
+show.mp
 
-*	Do nothing if map is empty.
+*	Do nothing if mp is empty.
 
-	out('show.map ' datatype(map))
-	out('show.map type=' type(map) '  key type ' type.key(map) 
-.		'  val type ' type.val(map) '  count=' count(map))
-	out('show.map ' show(map))
-	eq(count(map))					:s(return)
-*	out('show.map datatype map ' datatype(map))
-	ara = sort(tbl(map),col)
+	out('enter show.mp')
+	out('show.mp ' datatype(mp))
+	out('show.mp type=' type(mp))
+	out( '  key type ' type.key(mp) )
+	out('  val type ' type.val(mp))
+	out( '  count=' count(mp))
+	out('show.mp type=' type(mp) '  key type ' type.key(mp) 
+.		'  val type ' type.val(mp) '  count=' count(mp))
+	out('show.mp ' show(mp))
+	eq(count(mp))					:s(return)
+*	out('show.mp datatype mp ' datatype(mp))
+	ara = sort(tbl(mp),col)
 		
 
-show.map.next
+show.mp.next
 
-*	loop:	Get the next map key.
+*	loop:	Get the next mp key.
 
 	key = ara[i = i + 1,1]				:f(return)
 
-*	Skip the special entry showing the map size.
+*	Skip the special entry showing the mp size.
 
-	convert(key,'integer') eq(key,-1)		:s(show.map.next)
+	convert(key,'integer') eq(key,-1)		:s(show.mp.next)
 
 *	Show the entry and continue back to loop.
  
 	out(lpad(key,8) ' -> ' show(ara[i,2]))
-							:(show.map.next)
-show.map.end
+							:(show.mp.next)
+show.mp.end
 
 	define('show.tiles(tiles)i')			:(show.tiles.end)
 
@@ -3440,7 +3469,7 @@ state.restore.end
 
 state.save
 
-	state.save = map.new('state')
+	state.save = mp.new('state')
 	out('state.save')
 	add(state.save,'grid',copy(g.grid))
 	add(state.save,'bonus',copy(g.bonus))
@@ -4119,7 +4148,7 @@ words
 *	matches something, and also one at end to break to 
 *	in case last word extends to end of line.
 
-	words = map.new('words',n)
+	words = mp.new('words',n)
 	s = ' ' s ' '
 	pos = 0	
 words.sp
@@ -4150,8 +4179,9 @@ words.end
 
 	:(error.end)
 error
+	out('error lastno ' &lastno)
 	output = 'error label reached, setting &dump '
-*	&dump = 3
+	&dump = 3
 							:(end)
 error.end
 
