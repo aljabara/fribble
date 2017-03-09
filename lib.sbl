@@ -424,7 +424,7 @@ init.number.digits
 
 	s1 break(' ') . w ' ' =				:f(init.number.tens)
 	out('g.numbers')
-	add(g.numbers,i1 = i1 + 1,w)			:(init.number.digits)
+	add(g.numbers,+(i1 = i1 + 1),+w)			:(init.number.digits)
 
 init.number.tens
 
@@ -515,7 +515,7 @@ init.options.opt
 
 	lt(size(opt),3) out('no such option ' opt '  - ignoring.')
 .						:s(init.options.next)
-	optname = g.options.abbrev[substr(opt,1,2)]
+	optname = get(g.options.abbrev,substr(opt,1,2))
 	ident(optname) out('no such option ' opt ' - ignoring.')
 .						:s(init.options.next)
 
@@ -706,6 +706,14 @@ init.value.update
 
 init.value.end
 
+	define('get(m,key)')				:(get.end)
+
+*	Get entry in map M for key KEY.
+
+get
+	get = tbl(m)[key]				:(return)
+
+get.end
 	define('add(m,key,val)name,key.type,val.type,tbl')	:(add.end)
 
 *	Test for entry for key KEY in table TBL, adding
@@ -777,6 +785,9 @@ add.int.move
 
 add.int.str
 
+	out('add.int.str ')
+	out('add.str key.type<' key.type '>')
+	out('add.str val.type<' val.type '>')
 	ident(key.type,'integer')			:f(add.error.key)
 	ident(val.type,'string')			:f(add.error.val)
 
@@ -796,6 +807,8 @@ add.str.int
 							:(add.test)
 add.str.str
 
+	out('add.str key.type<' key.type '>')
+	out('add.str val.type<' val.type '>')
 	ident(key.type,'string')			:f(add.error.key)
 	ident(val.type,'string')			:f(add.error.val)
 							:(add.test)
@@ -806,10 +819,11 @@ add.test
 
 	ident(tbl[key])					:f(add.exists)
 
+	out('add.test creating new entry')
 *	Here when creating new entry. Update count
 	out('add.test datatype tbl ' datatype(tbl))
-	out('add.test ' show(tbl))
-	count(tbl) = count(tbl) + 1
+*	out('add.test ' show(tbl))
+	count(m) = count(m) + 1
 
 add.exists
 
@@ -2797,6 +2811,8 @@ show.type.integer
 	show = convert(v,'string')			:(show.done)
 
 show.type.mp
+	out('bypass show.type.map')
+	:(return)
 	mp = v
 	out('show.type v DS DS v ' datatype(v))
 	out('enter show.mp')
@@ -2814,6 +2830,7 @@ show.type.pair
 
 show.type.table
 
+	out('DS show.type.table <' datatype(v) '>' )
 	show = show.mp(v)				:(show.done)
 
 show.type.string
@@ -3251,6 +3268,9 @@ show.mp
 
 	out('enter show.mp')
 	out('show.mp ' datatype(mp))
+	&dump =
+	out('quitting')
+	:(end)
 	out('show.mp type=' type(mp))
 	out( '  key type ' type.key(mp) )
 	out('  val type ' type.val(mp))
