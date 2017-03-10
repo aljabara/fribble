@@ -4180,3 +4180,15 @@ error
 							:(end)
 error.end
 
+typenames.init
+
+
+
+*	Variable with names of oft-used datatypes
+
+array Array  integer Integer  map Map  move Move  
+moves Moves  numbers Numbers  pair Pair player Player 
+string String   table Table  
+	
+typenames.init.end
+	
