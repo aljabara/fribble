@@ -38,9 +38,6 @@
 *	The shell() procedure is called. It can be used to replay prior games, study moves, make moves,
 *	test the system, and of course learn more about Fribble.
 
-	&stlimit = -1
-
-	&anchor = &trim = 1
 	init()
 
 	ident(g.mode,g.mode.auto)		:s(main.auto)
@@ -120,10 +117,6 @@ main.setup
 	rack(g.two) = take(7)
 
 main.game
-
-	&trace = 10000
-	trace('move','access')
-	trace('mov','access')
 
 	game()
 end

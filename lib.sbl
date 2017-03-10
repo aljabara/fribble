@@ -173,7 +173,8 @@ map.new.end
 
 	g.options = map.new('options')
 	g.options.abbrev = map.new('abbrev')
-	out('g.options.abbrev tbl dt ' datatype(tbl(g.options.abbrev)))
+	tbl9 = tbl(g.options.abbrev)
+	out('g.options.abbrev tbl dt ' datatype(tbl9))
 
 
 *	A player is represented by
