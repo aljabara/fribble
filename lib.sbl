@@ -41,15 +41,16 @@ init.typenames.next
 	
 init.typenames.end
 
-	define('type.name(type)')			:(type.name.end)
+	define('type.name(obj)')			:(type.name.end)
 
-*	Return type name of datatype.
+*	Return type name of datatype of OBJ.
 
 type.name
 
-	type.name = g.typenames[type.name]
+	type.name = dt(obj)
+	type.name = g.typenames[dt(obj)]
 	differ(type.name)				:s(return)
-	out('unsupported argument to type.name',type.name) :(error)
+	out('unsupported argument to type.name',dt(obj)) :(error)
 
 type.name.end
 	
@@ -779,12 +780,12 @@ init.value.end
 
 get
 	out('enter get key=',key)
-	out('get datatype m ',type.name(dt(m)))
-	out('get type m ',type.name(type(m)))
-	out('get datatype tbl',type.name(dt(tbl)))
+	out('get datatype m ',dt(m))
+	out('get type m ',dt(type(m)))
+	out('get datatype tbl',dt(tbl))
 	tbl = tbl(m)
 	get = tbl[key]					
-	out('get returning datatype:',type.name(dt(get)))
+	out('get returning datatype:',dt(get))
 	out('get returning ',show(get))
 							:(return)
 
@@ -799,18 +800,18 @@ get.end
 *PUT*
 put
 	ident(type(m)) out('ADD NULL TYPE')
-	differ(dt(m),Map)			:s(error)
+	type.eq(m,Map)			:f(error)
 	
 	tbl = tbl(m)
 
 	key.type = type.key(m)
 	val.type = type.val(m)
-	out('put key.type',type.name(key.type))
-	out('put val.type',type.name(val.type))
+	out('put key.type',dt(key.type))
+	out('put val.type',dt(val.type))
 
 *	Check types of key and value to make sure they are ok.
 
-	out('put type(m)',type.name(type(m)))
+	out('put type(m)',dt(type(m)))
 
 	:($('put.' type(m)))
 
@@ -909,11 +910,11 @@ put.exists
 
 put.error.key
 
-	out('put.error: wrong key type ',type.name(key.type))	:(error)
+	out('put.error: wrong key type ',dt(key.type))	:(error)
 
 put.error.val
 
-	out('put.error: wrong val type ' type.name(val.type))	:(error)
+	out('put.error: wrong val type ' dt(val.type))	:(error)
 
 put.end
 
@@ -1168,12 +1169,12 @@ datename
 							:(return)
 datename.end
 
-	define('dt(type)')				:(dt.end)
+	define('dt(obj)')				:(dt.end)
 
-*	Shorthand for dt(type)
+*	Shorthand for dt(obj)
 
 dt
-	dt = datatype(type)				:(return)
+	dt = datatype(obj)				:(return)
 dt.end
 
 	define('emapty(line)')				:(emapty.end)
@@ -2271,7 +2272,7 @@ scan.text
 	mov = move(num,sub,size(rack) '?' len)		:f(scan.len)
 	scan = ident(scan) map.new('scan')
 	count.scanned = count.scanned + 1
-	differ(dt(mov),Move)			:s(error)
+	type.eq(mov,Move)			:f(error)
 	put(scan,count.scanned,mov)
 							:(scan.len)
 scan.done
@@ -3114,19 +3115,19 @@ show.lines.titled
 show.lines.end
 
 
-	define('show.move(mov)f,i,ff') 		:(show.move.end)
+	define('show.move(mov)f,i,ff') 			:(show.move.end)
 
 *	Show a move.
 
 *SHOW.MOVE*
 show.move
-	davey = ident(mov) 1
-	ident(dt(mov),Integer)			:s(error)
+
+	type.eq(mov,Integer)				:s(error)
 
 show.move.i
 	gt(i = i + 1,size(text(mov)))			:s(show.move.f)
 	ff = free(mov)[i]
-	ident(dt(ff,String))			:s(show.move.fail)
+	type.eq(ff,String)				:s(show.move.fail)
 	f = append(f,ff)				:s(show.move.i)
 
 show.move.f
@@ -3572,6 +3573,17 @@ take.n
 
 take.end
 
+
+	define('test.eq(obj,name)')			:(test.eq.end)
+
+*	Tests if name of datatype of OBJ is NAME.
+
+test.eq
+
+	ident(dt(obj),name)		:s(return)f(freturn)
+
+test.eq.end
+
 	define('test.perm(rack,perm,num,move,inlines)'
 .		'text,lines,iline,i,p,cline')	:(test.perm.end)
 
@@ -3832,7 +3844,7 @@ turn.manual
 	ne(t.trace) out('getting move manually')
 
 	manual = manual()
-	ident(dt(manual),Move)			:f(turn.manual.nomove)
+	type.eq(manual,Move)				:f(turn.manual.nomove)
 	g.move = manual					:(turn.validate)
 
 turn.manual.nomove
@@ -3856,7 +3868,7 @@ turn.solo.in
 *BYPASS*
  :(turn.solo.fribble.havemove)
 	manual = manual()
-	ident(dt(manual),Move)			:f(turn.solo.nomove)
+	type.eq(manual,Move)			:f(turn.solo.nomove)
 	out('solo player move ' show.move(manual))
 	g.move = manual				:(turn.solo.fribble.havemove)
 
