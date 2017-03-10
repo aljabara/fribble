@@ -1,29 +1,5 @@
 *	Copyright 2017, David Shields
 
-	define('debug(which)')				:(debug.end)
-
-*	Enable debug trace if WHICH is non-null, disable tracing otherwise.
-
-debug
-	debug = (ident(which) '',1)
-	ident(debug)					:s(return)
-
-*	t.trace = 1;* set to trace in turn()
-	&trace = 20000
-	&ftrace = 20000
-	trace(Move,'access')
-	trace('mov','access')
-	trace(&lastno)
-							:(return)
-debug.end
-
-	g.on = 1
-	g.off =
-
-	debug(g.on)
-
-	g.cmap = g.dmap = g.signature =
-
 	define('init.typenames()s,str,name')	:(init.typenames.end)
 
 *	Initialize g.typenames as map from datatype strints to variable names.
@@ -33,13 +9,58 @@ init.typenames
 	s = 	'array Array  integer Integer  map Map  move Move '
 .		'moves Moves  numbers Numbers  pair Pair player Player '
 .		'string String   table Table ' 
+	output = 'init.typenames ' s
 	g.typnames = table(20)
 
 init.typenames.next
-	s break(' ') . str ' ' break(' ') . nam =	:f(return)
-	g.typenames[str] = nam				:(init.typenames.loop)
+	s break(' ') . str ' ' break(' ') . name =	:f(return)
+	out('init.typenames str<' str '>')
+	out('init.typenames nam<' name '>')
+	g.typenames[str] = name				:(init.typenames.next)
 	
 init.typenames.end
+
+	define('debug(onoff)')				:(debug.end)
+
+*	Enable debug trace if ONOFF is not null, disable tracing otherwise.
+
+debug
+	debug = (ident(onoff) '',1)
+	ident(debug)
+*	t.trace = 1;* set to trace in turn()
+*	&trace = 20000
+*	&ftrace = 20000
+*	trace(Move,'access')
+*	trace('mov','access')
+*	trace(&lastno)
+							:(return)
+debug.end
+
+	g.on = 1
+	g.off =
+
+*	Swap order of lines below to enable debug tracing.
+
+	debug(g.on)
+	debug(g.off)
+
+	g.cmap = g.dmap = g.signature =
+
+
+	define('type.eq(obj,type)')			:(type.eq.end)
+
+*	Test if type name of OBJ is TYPE.
+
+type.eq
+
+	output = 'type Integer ' Integer
+	dave1 = dt(obj)
+	dave2 = type
+	output = 'type.eq 1  ' dave1
+	output = ' 2 ' dave2
+	ident(dt(obj),type)				:s(return)f(freturn)
+
+type.eq.end
 
 	define('type.name(obj)')			:(type.name.end)
 
@@ -54,30 +75,37 @@ type.name
 
 type.name.end
 	
-	define('out(line,text1,text2)type1,type2')	:(out.end)
+	define('out(text1,text2,text3)type1,type2')	:(out.end)
 
-*	Output a line.
+*	Output a line conisting of TEXT1, TEXT2 enclosed
+*	 in brackets, followed by TEXT3.
 
 *OUT*
 out
 
-	type1 = dt(text1)
 	type2 = dt(text2)
-	ident(type1,Integer)			:s(out.1)
-	ident(type1,String)			:s(out.1)
-	output = 'out first argument wrong type' type1 :(error)
-out.1
-	ident(type2,Integer)			:s(out.2)
-	ident(type2,String)			:s(out.2)
+	type3 = dt(text3)
+	type.eq(text2,Integer)			:s(out.2)
+	type.eq(text2,String)			:s(out.2)
+	output = 'out second argument not integer or string,'
+.	' but of type ' type2 
+.						:(error)
 
 out.2
-	ident(type2,String)			:s(out.ok)
-	ident(type2,Integer)			:s(out.ok)
-	output = 'out second argument wrong type' type2  :s(error)
+
+	ident(type3,Integer)			:s(out.3)
+	ident(type3,String)			:s(out.3)
+
+out.3
+	type.ex(text3,String)			:s(out.ok)
+	type.ex(text3,Integer)			:s(out.ok)
+	output = 'out third argument not integer or string,' 
+.	' but of type ' type3
+.						 :(error)
 
 out.ok
 
-	output = line ' [' text1 ']' text2		:(return)
+	output = text1 ' [' text2 ']' text3		:(return)
 
 out.end
 
@@ -515,11 +543,13 @@ init.number.end
 *	Initialize global variables.
 
 init.main
+	out('enter init')
 	g.dict = array(15)
 	g.board = array('15,15',' ')
 	g.lines = lines(g.board)
 
 	g.typenames = init.typenames()
+	out('called init.typenames')
 
 *	Intialize g.used to blank board.
 	g.used = array('15,15',' ')
