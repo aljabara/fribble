@@ -1,25 +1,57 @@
 *	Copyright 2017, David Shields
 
-	define('typenames.init()s,str,name'	:(typenames.init.end)
+	define('debug(which)')				:(debug.end)
 
-typenames.init
+*	Enable debug trace if WHICH is non-null, disable tracing otherwise.
 
+debug
+	debug = (ident(which) '',1)
+	ident(debug)					:s(return)
 
+*	t.trace = 1;* set to trace in turn()
+	&trace = 20000
+	&ftrace = 20000
+	trace(Move,'access')
+	trace('mov','access')
+	trace(&lastno)
+							:(return)
+debug.end
 
-*	Variable with names of oft-used datatypes
+	g.on = 1
+	g.off =
 
-	Array	= 'array'
-	Integer = 'integer'
-	Map	= 'map'
-	Move	= 'move'
-	Moves	= 'moves'
-	Numbers	= 'numbers'
-	Pair	= 'pair'
-	Player	= 'player'
-	String 	= 'string' 
-	Table	= 'Table'
+	debug(g.on)
+
+	g.cmap = g.dmap = g.signature =
+
+	define('init.typenames()s,str,name')	:(init.typenames.end)
+
+*	Initialize g.typenames as map from datatype strints to variable names.
+
+init.typenames
+
+	s = 	'array Array  integer Integer  map Map  move Move '
+.		'moves Moves  numbers Numbers  pair Pair player Player '
+.		'string String   table Table ' 
+	g.typnames = table(20)
+
+init.typenames.next
+	s break(' ') . str ' ' break(' ') . nam =	:f(return)
+	g.typenames[str] = nam				:(init.typenames.loop)
 	
-typenames.init.end
+init.typenames.end
+
+	define('type.name(type)')			:(type.name.end)
+
+*	Return type name of datatype.
+
+type.name
+
+	type.name = g.typenames[type.name]
+	differ(type.name)				:s(return)
+	out('unsupported argument to type.name',type.name) :(error)
+
+type.name.end
 	
 	define('out(line,text1,text2)type1,type2')	:(out.end)
 
@@ -28,11 +60,11 @@ typenames.init.end
 *OUT*
 out
 
-	type1 = datatype(text1)
-	type2 = datatype(text2)
+	type1 = dt(text1)
+	type2 = dt(text2)
 	ident(type1,Integer)			:s(out.1)
 	ident(type1,String)			:s(out.1)
-	out('out first argument wrong type',type1) :s(error)
+	output = 'out first argument wrong type' type1 :(error)
 out.1
 	ident(type2,Integer)			:s(out.2)
 	ident(type2,String)			:s(out.2)
@@ -40,7 +72,7 @@ out.1
 out.2
 	ident(type2,String)			:s(out.ok)
 	ident(type2,Integer)			:s(out.ok)
-	out('out second argument wrong type',type2) :s(error)
+	output = 'out second argument wrong type' type2  :s(error)
 
 out.ok
 
@@ -100,15 +132,6 @@ map.new
 							:(return)
 
 map.new.end
-
-
-	g.cmap = g.dmap = g.signature =
-*	t.trace = 1;* set to trace in turn()
-*	&trace = 20000
-*	&ftrace = 20000
-*	trace(Move,'access')
-*	trace('mov','access')
-*	trace(&lastno)
 
 
 * This file is part of the fribble project: http://github.com/daveshields/fribble.
@@ -464,25 +487,25 @@ init.number
 	s2 =	'twenty thirty forty fifty sixty seventy eighty ninety '
 	i1 = 0; i2 = 10; i3 = 20
 
-	g.numbers = map.new(Numbers,100)
-	put(g.numbers,100,'one hundred')
+	g.numbers = table(100)
+	g.numbers[100] = 'one hundred'
 
 init.number.digits
 
 	s1 break(' ') . w ' ' =				:f(init.number.tens)
-	put(g.numbers,i1 = i1 + 1,w)				:(init.number.digits)
+	g.numbers[i1 = i1 + 1] = w			:(init.number.digits)
 
 init.number.tens
 
 	s2 break(' ') . w ' ' =				:f(init.number.decades)
-	put(g.numbers,i2 = i2 + 10,w)			:(init.number.tens)
+	g.numbers[i2 = i2 + 10] = w			:(init.number.tens)
 
 init.number.decades
 	
 	le(i3 = i3 + 1,99)				:f(return)
 	eq(remdr(i3,10))				:s(init.number.decades)
 
-	put(g.numbers,i3,get(g.numbers,(i3 / 10) * 10) ' ' get(g.numbers,remdr(i3,10)))
+	g.numbers[i3] = g.numbers[((i3 / 10) * 10) ' ' g.numbers[remdr(i3,10)]]
 .					:s(init.number.decades)f(return)
 init.number.end
 
@@ -756,12 +779,12 @@ init.value.end
 
 get
 	out('enter get key=',key)
-	out('get datatype m ',datatype(m))
-	out('get type m ',type(m))
-	out('get datatype tbl',datatype(tbl))
+	out('get datatype m ',type.name(dt(m)))
+	out('get type m ',type.name(type(m)))
+	out('get datatype tbl',type.name(dt(tbl)))
 	tbl = tbl(m)
 	get = tbl[key]					
-	out('get returning datatype:',datatype(get))
+	out('get returning datatype:',type.name(dt(get)))
 	out('get returning ',show(get))
 							:(return)
 
@@ -776,18 +799,18 @@ get.end
 *PUT*
 put
 	ident(type(m)) out('ADD NULL TYPE')
-	differ(datatype(m),Map)			:s(error)
+	differ(dt(m),Map)			:s(error)
 	
 	tbl = tbl(m)
 
 	key.type = type.key(m)
 	val.type = type.val(m)
-	out('put key.type',key.type)
-	out('put val.type',val.type)
+	out('put key.type',type.name(key.type))
+	out('put val.type',type.name(val.type))
 
 *	Check types of key and value to make sure they are ok.
 
-	out('put type(m)',type(m) )
+	out('put type(m)',type.name(type(m)))
 
 	:($('put.' type(m)))
 
@@ -886,11 +909,11 @@ put.exists
 
 put.error.key
 
-	out('put.error: wrong key type ',key.type)	:(error)
+	out('put.error: wrong key type ',type.name(key.type))	:(error)
 
 put.error.val
 
-	out('put.error: wrong val type ' val.type,)	:(error)
+	out('put.error: wrong val type ' type.name(val.type))	:(error)
 
 put.end
 
@@ -1145,6 +1168,14 @@ datename
 							:(return)
 datename.end
 
+	define('dt(type)')				:(dt.end)
+
+*	Shorthand for dt(type)
+
+dt
+	dt = datatype(type)				:(return)
+dt.end
+
 	define('emapty(line)')				:(emapty.end)
 
 *	Test if LINE is emapty (null or all blanks).
@@ -1243,8 +1274,8 @@ find.move
 	count.moves = count.moves + 1
 	mov = moves[mi = mi + 1,2]			:f(find.line)
 	
-	differ(datatype(mov),Move) out('move wrong datatype ' &lastno) 
-	differ(datatype(mov),Move)			:s(error)
+	differ(dt(mov),Move) out('move wrong datatype ' &lastno) 
+	differ(dt(mov),Move)			:s(error)
 	out(ne(g.tracing) 'Find.move mi ' mi ' ' show(mov,'find'))
 
 	points(mov) = 
@@ -1827,7 +1858,7 @@ manual.in
 
 	manual = eval(manual)				:f(manual.error)
 
-*	ident(datatype(manual),Move) out(show(manual))	:f(manual.error)
+*	ident(dt(manual),Move) out(show(manual))	:f(manual.error)
 
 	ne(g.turn,1)					:s(manual.check)
 
@@ -1850,7 +1881,7 @@ manual.end
 *	return that string. Otherwise return *n*.
 
 number
-	number = get(g.numbers,n)
+	number = g.numbers[n]
 	differ(number)					:s(return)
 	number = n					:(return)
 number.end
@@ -2240,7 +2271,7 @@ scan.text
 	mov = move(num,sub,size(rack) '?' len)		:f(scan.len)
 	scan = ident(scan) map.new('scan')
 	count.scanned = count.scanned + 1
-	differ(datatype(mov),Move)			:s(error)
+	differ(dt(mov),Move)			:s(error)
 	put(scan,count.scanned,mov)
 							:(scan.len)
 scan.done
@@ -2798,7 +2829,7 @@ shell.def.end
 
 *SHOW*
 show
-	typ = datatype(v)
+	typ = dt(v)
 							:($('show.type.' typ))
 
 show.type.array
@@ -3090,12 +3121,12 @@ show.lines.end
 *SHOW.MOVE*
 show.move
 	davey = ident(mov) 1
-	ident(datatype(mov),Integer)			:s(error)
+	ident(dt(mov),Integer)			:s(error)
 
 show.move.i
 	gt(i = i + 1,size(text(mov)))			:s(show.move.f)
 	ff = free(mov)[i]
-	ident(datatype(ff,String))			:s(show.move.fail)
+	ident(dt(ff,String))			:s(show.move.fail)
 	f = append(f,ff)				:s(show.move.i)
 
 show.move.f
@@ -3801,7 +3832,7 @@ turn.manual
 	ne(t.trace) out('getting move manually')
 
 	manual = manual()
-	ident(datatype(manual),Move)			:f(turn.manual.nomove)
+	ident(dt(manual),Move)			:f(turn.manual.nomove)
 	g.move = manual					:(turn.validate)
 
 turn.manual.nomove
@@ -3825,7 +3856,7 @@ turn.solo.in
 *BYPASS*
  :(turn.solo.fribble.havemove)
 	manual = manual()
-	ident(datatype(manual),Move)			:f(turn.solo.nomove)
+	ident(dt(manual),Move)			:f(turn.solo.nomove)
 	out('solo player move ' show.move(manual))
 	g.move = manual				:(turn.solo.fribble.havemove)
 
@@ -3836,7 +3867,7 @@ turn.solo.nomove
 
 	manual 'error'				:s(turn.manual.error)
 	target = $('turn.' manual)
-*	out('solo no move target datatype ' datatype(target) ' ' target)
+*	out('solo no move target datatype ' dt(target) ' ' target)
 *	out('turn.solo.nomove ',manual)
 						:(turn.manual)
 turn.solo.move
@@ -4173,22 +4204,11 @@ words.end
 
 	:(error.end)
 error
-	out('error lastno ',&lastno)
-	out('ERROR')
-	output = 'error label reached, setting &dump '
-	&dump = 3
+	output = 'error lastno ' &lastno
+	output = 'ERROR'
+	output = 'Fatal error: stopping the madness.'
+*	&dump = 3
 							:(end)
 error.end
 
-typenames.init
-
-
-
-*	Variable with names of oft-used datatypes
-
-array Array  integer Integer  map Map  move Move  
-moves Moves  numbers Numbers  pair Pair player Player 
-string String   table Table  
-	
-typenames.init.end
 	
