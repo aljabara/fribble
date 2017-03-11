@@ -19,6 +19,7 @@
 
 -include "lib.sbl"
 
+	&trace = &ftrace = 20000
 *	Play a game of fribble.  Usage:  
 
 *		sbl fribble.sbl -umode
@@ -37,8 +38,9 @@
 
 *	The shell() procedure is called. It can be used to replay prior games, study moves, make moves,
 *	test the system, and of course learn more about Fribble.
-
+	output = 'calling init from fribble main'
 	init()
+	output = 'called init from fribble main'
 
 	ident(g.mode,g.mode.auto)		:s(main.auto)
 	ident(g.mode,g.mode.solo)		:s(main.solo)

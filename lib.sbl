@@ -1,167 +1,6 @@
 *	Copyright 2017, David Shields
 
-	define('init.typenames()s,str,name')	:(init.typenames.end)
-
-*	Initialize g.typenames as map from datatype strints to variable names.
-
-init.typenames
-
-	s = 	'array Array  integer Integer  map Map  move Move '
-.		'moves Moves  numbers Numbers  pair Pair player Player '
-.		'string String   table Table ' 
-	output = 'init.typenames ' s
-	g.typnames = table(20)
-
-init.typenames.next
-	s break(' ') . str ' ' break(' ') . name =	:f(return)
-	out('init.typenames str<' str '>')
-	out('init.typenames nam<' name '>')
-	g.typenames[str] = name				:(init.typenames.next)
-	
-init.typenames.end
-
-	define('debug(onoff)')				:(debug.end)
-
-*	Enable debug trace if ONOFF is not null, disable tracing otherwise.
-
-debug
-	debug = (ident(onoff) '',1)
-	ident(debug)
-*	t.trace = 1;* set to trace in turn()
-*	&trace = 20000
-*	&ftrace = 20000
-*	trace(Move,'access')
-*	trace('mov','access')
-*	trace(&lastno)
-							:(return)
-debug.end
-
-	g.on = 1
-	g.off =
-
-*	Swap order of lines below to enable debug tracing.
-
-	debug(g.on)
-	debug(g.off)
-
-	g.cmap = g.dmap = g.signature =
-
-
-	define('type.eq(obj,type)')			:(type.eq.end)
-
-*	Test if type name of OBJ is TYPE.
-
-type.eq
-
-	output = 'type Integer ' Integer
-	dave1 = dt(obj)
-	dave2 = type
-	output = 'type.eq 1  ' dave1
-	output = ' 2 ' dave2
-	ident(dt(obj),type)				:s(return)f(freturn)
-
-type.eq.end
-
-	define('type.name(obj)')			:(type.name.end)
-
-*	Return type name of datatype of OBJ.
-
-type.name
-
-	type.name = dt(obj)
-	type.name = g.typenames[dt(obj)]
-	differ(type.name)				:s(return)
-	out('unsupported argument to type.name',dt(obj)) :(error)
-
-type.name.end
-	
-	define('out(text1,text2,text3)type1,type2')	:(out.end)
-
-*	Output a line conisting of TEXT1, TEXT2 enclosed
-*	 in brackets, followed by TEXT3.
-
-*OUT*
-out
-
-	type2 = dt(text2)
-	type3 = dt(text3)
-	type.eq(text2,Integer)			:s(out.2)
-	type.eq(text2,String)			:s(out.2)
-	output = 'out second argument not integer or string,'
-.	' but of type ' type2 
-.						:(error)
-
-out.2
-
-	ident(type3,Integer)			:s(out.3)
-	ident(type3,String)			:s(out.3)
-
-out.3
-	type.ex(text3,String)			:s(out.ok)
-	type.ex(text3,Integer)			:s(out.ok)
-	output = 'out third argument not integer or string,' 
-.	' but of type ' type3
-.						 :(error)
-
-out.ok
-
-	output = text1 ' [' text2 ']' text3		:(return)
-
-out.end
-
-	define('outb(line)text')			:(outb.end)
-
-*	enclose line with '[' before and ']' after text.
-
-*OUTB*
-outb
-	outb = '[' line ']'				:(return)
-
-outb.end
-
-*	&dmap = 3
-
-	define('map.new(type,count)type.key,type.val,map')	:(map.new.end)
-
-*	Initialize map (table) with keys of type *type.key*,
-*	entries of type *type.val*, and estimated size *count*.
-
-map.new
-
-*	Assume map is from string to string and correct below.
-
-	type.key = type.val = String
-	type.key = type.val = String
-	type.key = ident(name,Numbers)			Integer
-*	type.key = ident(name,'permutations.count')		String
-	type.key = ident(name,Moves)				Integer
-	type.key = ident(name,'lines')				Integer
-	type.key = ident(name,'scan') 				Integer
-	type.key = ident(name,'words')				Integer
-
-	type.val = ident(name,'dict')		 		Integer
-	type.val = ident(name,'permutations')			Integer
-*	type.val = ident(name,'permutations.count')		Integer
-	type.val = ident(name,'values')				Integer
-	type.val = ident(name,Moves)				Moves
-	type.val = ident(name,'replay')				Integer
-	type.val = ident(name,'scan')				Move
-	type.val = ident(name,'state')				'any'
-	type.val = ident(name,'words')				Integer
-
-	map.new = map(type,type.key,type.val,count,table(count))
-	map = map(type,type.key,type.val,count,table(count))
-	
-
-*	Going forward will use *count* to count number of entries.
-
-	count(map.new) = 0
-	type.key(map.new) = type.key
-	type.val(map.new) = type.val
-							:(return)
-
-map.new.end
-
+ output = 'start fribble.sbl'
 
 * This file is part of the fribble project: http://github.com/daveshields/fribble.
 *
@@ -203,10 +42,10 @@ map.new.end
 *	It is used when it is necessary to pass a line of text to a procedure 
 *	along with line number from where it was derived.
 
-*	g.channel.temap is channel number used for temaporary files, that is, 
+*	g.channel.temp is channel number used for temporary files, that is, 
 *	files that are opened, read, and then immediately closed.
 
-	g.channel.temap = 4
+	g.channel.temp = 4
 
 	g.clines = array(8);* for line with move and its crossing lines.
 	g.cln = 0;* number of entries in clines.
@@ -263,7 +102,7 @@ map.new.end
 *		COUNT			is number of entries in table; and
 *		TBL			is the table used to contain the map's data.
 
-*	A move consists of a sequence of emapty cells in a row or column such 
+*	A move consists of a sequence of empty cells in a row or column such 
 *	that at least one cell in the sequence is adjacent to an already 
 *	occupied cell, with each cell occupied by one of the tiles in the 
 *	player's rack.  The cells are ordered from left to right for a 
@@ -272,16 +111,13 @@ map.new.end
 	data('move(id,free,text,points)')
 
 *		ID	 gives the line number, in the range 1..30;
-*		FREE	 is an array of the free (emapty) cells used in this move;
+*		FREE	 is an array of the free (empty) cells used in this move;
 *		TEXT	 is the string of tiles of the move; and
 *		POINTS	 is the number of points won by playing this move.
 
 *	g.move is the current/last move.
 
 *	g.options maps option names to their value
-
-	g.options = map.new('options')
-	g.options.abbrev = map.new('abbrev')
 
 
 *	A player is represented by
@@ -405,549 +241,6 @@ map.new.end
 	
 *	Utility functions
 
-	define('init(dictfile,skip,external)c,i,j,s,t')	:(init.end)
-
-*	Initialize global variables.
-
-*INIT*
-init
-	
-	g.date = date(2)
-
-	init.options()
-
-	init.main(dictfile,skip)
-
-	ne(g.random_var) randomseed();* seed the random number generator
-							:(return)
-init.end
-
-	define('init.bonus()s,row,col,b,c')		:(init.bonus.end)
-
-*	Initialize the bonus squares for the 15x15 grid: 
-*		1 for the value of the letter,
-*		2 for double letter,
-*		3 for triple letter,
-*		4 for double word, and
-*		5 for triple word.
-
-*INIT.BONUS*
-init.bonus
-
-	g.bonus = array('15,15','1')
-	s = 	'5 0104 3 0107 3 0109 5 0112 2 0203 4 0206 4 0210 2 0213 '
-.		'2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 5 0415 '
-.		'2 0503 2 0507 2 0509 2 0513 4 0602 3 0606 3 0610 4 0614 '
-.		'3 0701 2 0705 2 0711 3 0715 4 0804 4 0812 3 0901 2 0905 2 0911 '
-.		'3 0915 4 1002 3 1006 3 1010 4 1014 2 1103 2 1107 2 1109 2 1113 '
-.		'5 1201 3 1204 4 1208 3 1212 5 1215 2 1302 2 1305 2 1311 2 1314 '
-.		'5 1403 4 1406 4 1410 2 1413 5 1504 3 1507 3 1509 5 1512 '
-
-init.bonus.1
-
-	s len(1) . b ' ' len(2) . row len(2) . col ' ' =  :f(init.bonus.next)
-	g.bonus[+row,+col] = +b				:(init.bonus.1)
-
-init.bonus.next
-
-	g.bonus.lines = lines(g.bonus)			:(return)
-
-init.bonus.end
-
-	define('init.dict(filename)file,i,n,w,s')	:(init.dict.end)
-
-*	Initialize the global dictionary g.dict.
-
-*INIT.DICT*
-init.dict
-
-*	Set hash table sizes according to number of words of given length.
-
-	s  =	'1 100 1000 4000 9000 15000 23000 28000 25000 20000 '
-.		'15000 11000 8000 5000 3000 '
-
-init.dict.tbl
-
-	gt(i = i + 1,15)				:s(init.dict.tbl.1)
-	s break(' ') . n ' ' = 
-	g.dict[i] = map.new('dict',+n)			:(init.dict.tbl)
-
-init.dict.tbl.1
-
-	i = 0
-
-*	Read in dictionary from a file, with one word per line.
-
-	filename = ident(filename) 'dict.txt'
-	input(.file,g.channel.temap,filename)		:s(init.dict.in)
-	out('unable to open input file',filename)	:(freturn)
-	n = 0
-
-init.dict.in
-
-	w = file					:f(init.dict.done)
-	gt(size(w),15)					:s(init.dict.in)
-
-*	Process plural words, indicated by 'S' at end.
-
-	differ(substr(w,size(w),1),'S')			:s(init.dict.w)
-	w = substr(w,1,size(w) - 1)
-	put(g.dict[size(w) + 1],w 's',+1)
-	put(g.dict[size(w) + 1],w, +1)			:(init.dict.in)
-
-init.dict.w
-
-	put(g.dict[size(w)],w,+1)				:(init.dict.in)
-
-init.dict.done
-
-	endfile(g.channel.temap)				:(return)
-
-init.dict.end
-
-	define('init.number()i1,i2,i3,s1,s2,w')		:(init.number.end)
-
-*	Initialize g.numbers.
-
-init.number
-
-	s1 =	'one two three four five six seven eight nine ten eleven twelve '
-.		'thirteen fourteen fifteen sixteen seventeen eighteen nineteen '
-	s2 =	'twenty thirty forty fifty sixty seventy eighty ninety '
-	i1 = 0; i2 = 10; i3 = 20
-
-	g.numbers = table(100)
-	g.numbers[100] = 'one hundred'
-
-init.number.digits
-
-	s1 break(' ') . w ' ' =				:f(init.number.tens)
-	g.numbers[i1 = i1 + 1] = w			:(init.number.digits)
-
-init.number.tens
-
-	s2 break(' ') . w ' ' =				:f(init.number.decades)
-	g.numbers[i2 = i2 + 10] = w			:(init.number.tens)
-
-init.number.decades
-	
-	le(i3 = i3 + 1,99)				:f(return)
-	eq(remdr(i3,10))				:s(init.number.decades)
-
-	g.numbers[i3] = g.numbers[((i3 / 10) * 10) ' ' g.numbers[remdr(i3,10)]]
-.					:s(init.number.decades)f(return)
-init.number.end
-
-	define('init.main(dictfile,skip)c,i,j,s,t')	:(init.main.end)
-
-*	Initialize global variables.
-
-init.main
-	out('enter init')
-	g.dict = array(15)
-	g.board = array('15,15',' ')
-	g.lines = lines(g.board)
-
-	g.typenames = init.typenames()
-	out('called init.typenames')
-
-*	Intialize g.used to blank board.
-	g.used = array('15,15',' ')
-*	Initialize g.used to all ones for 'dumb' option.
-	g.used = ne(g.dumb) array('15,15','1')
-
-	g.used.lines = lines(g.used)
-
-	init.bonus()
-
-	init.number()
-
-*	Initialze permutation map.
-
-	init.perm('perm.txt')
-
-	init.tileset()
-	init.value()
-
-	init.dict(dictfile,skip)
-							:(return)
-init.main.end
-
-	define('init.options()s,t,options,optname,opt,val,cname')	:(init.options.end)
-
-*	Initialize command line options.
-
-init.options
-
-*	Set up map from first two characters of option name to full name.
-
-	s = ' auto dumb moves random rotary seen shell solo team trace '
-
-init.options.abbrev
-
-	s span(' ') =
-	ident(s)					:s(init.options.abbrev.done)
-	out('init.options.init s',s)
-	s break(' ') . opt = 				:f(init.options.abbrev.done)
-	out('init.options.abbrev ',opt )
-	put(g.options.abbrev,substr(opt,1,2),opt)	:(init.options.abbrev)
-
-init.options.abbrev.done
-
-*	Enter default options, those with non-null initial value.
-*	These values may be changed if they also occur in the
-*	actual option list.
-
-	options = '-uauto -umoves=' g.maxmoves ' '
-.		'-urandom=' g.random_var  ' '
-	put(g.options,'auto',1)
-	put(g.options,Moves,g.maxmoves)
-	put(g.options,'random',g.random_var)
-	options = options host(0) ' '
-
-init.options.next
-	
-	val = 1
-	options '-u' =					:f(init.options.done)
-	options break(' ') . opt span(' ') =	
-
-init.options.opt
-
-	lt(size(opt),3) out('no such option ' opt '  - ignoring.')
-.						:s(init.options.next)
-	out('init.options.opt ',opt)
-	optname = get(g.options.abbrev,substr(opt,1,2))
-	ident(optname) out('no such option ' opt ' - ignoring.')
-.						:s(init.options.next)
-
-	opt 'no'				:s(init.options.no)
-	opt break('=')				:s(init.options.val)
-
-	cname = 'init.options.opt.' optname
-	out('cname=<',cname)
-	out(' optname=',optname )
-	:($('init.options.opt.' optname))
-
-init.options.no
-
-*	'no' before option name sets val to zero.
-	
-	opt 'no' =
-	val = 0						
-	out('option -no- opt=' opt '.')
-							:(init.options.opt)
-init.options.set
-
-*	Set value for command options.
-
-	out('g.options add optname',optname)
-	out('g.options add val,',val)
-	put(g.options,optname,val)			:(init.options.next)
-
-init.options.val
-
-*	'=' is followed by value
-
-	opt break('=') . opt '=' rem . val		:(init.options.opt)
-
-init.options.opt.auto
-
-	g.mode = g.mode.auto				:(init.options.next)
-
-init.options.opt.dumb
-
-	g.dumb = val					:(init.options.set)
-
-init.options.opt.moves
-
-	g.maxmoves = val				:(init.options.set)
-
-init.options.opt.random
-
-	g.random_var = (ne(val) val,2017)		:(init.options.set)
-
-init.options.opt.rotary
-
-	g.rotary = 1
-	put(g.options,'rotary',1)
-	g.mode = g.mode.auto
-							:(init.options.next)
-init.options.opt.seen
-
-	g.seen = val					:(init.options.set)
-
-init.options.opt.shell
-
-	g.shell = val					:(init.options.set)
-
-init.options.opt.solo
-
-	g.mode = g.mode.solo				:(init.options.next)
-
-init.options.opt.team
-
-	g.mode = g.mode.team				:(init.options.next)
-
-init.options.opt.trace
-
-	val = ident(val) 1
-	g.trace = val					:(init.options.set)
-
-init.options.done
-
-	show(g.options)				:(return)
-
-init.options.end
-
-	define('init.perm(filename)line,ifile,n,k,lines,nread')	:(init.perm.end)
-
-*	Initialize the list of possible permutations from a file.
-
-*INIT.PERM*
-init.perm
-
-	g.permutations = map.new('permutations',7)
-	g.permutations.count = map.new('permutations.count',100)
-	input(.ifile,g.channel.temap, filename)			:s(init.perm.next)
-	out('unable to open permutation file ' filename) 	:(freturn)
-
-init.perm.next
-
-	line = ifile					:f(init.perm.done)
-	line break('?') . n '?' break(' ') . k ' ' rem . count :f(init.perm.err)
-	put(g.permutations.count,n '?' k,count)
-	ara = array(count)
-	ai = 0
-
-init.perm.array
-
-	ara[ai = ai + 1] = ifile			:s(init.perm.array)
-	put(g.permutations,n '?' k,ara)			:(init.perm.next)
-
-init.perm.done
-
-	endfile(g.channel.temap)				:(return)
-
-init.perm.err
-
-	out('init.perm error, line ' lines '  '  line) :(freturn)
-
-init.perm.end
-
-	define('init.tileset()ch,n,s')			:(init.tileset.end)
-
-* 	Initialize set of tiles, ignoring the 'blank' tiles for now.
-*	Set things up so will play 'rotary' as starting move if g.rotary is null.
-
-*INIT.TILESET*
-init.tileset
-
-	g.tiles =
-	ne(g.rotary)					:s(init.tileset.rotary)
-
-	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 '
-.           'n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
-							:(init.tileset.ch)
-init.tileset.rotary
-
-*	Account for tiles needed for 'rotary service above self'
-
-	s = 'a 8 b 1 c 1 d 5 e 10 f 1 g 3 h 4 i 8 j 1 k 1 l 3 m 2 '
-.           'n 5 o 6 p 2 q 1 r 4 s 3 t 6 u 4 w 2 x 1 y 1 z 1 '
-
-
-init.tileset.ch
-
-	s break(' ') . ch ' ' break(' ') . n ' ' =	:f(init.tileset.ch.done)
-	g.tiles = g.tiles dupl(ch,n)			:(init.tileset.ch)
-
-init.tileset.ch.done
-
-*init.tileset.random
-
-	randomseed();* set random number generator seed
-	shuffle();* shuffle the tileset
-	g.tiles = ne(g.rotary) 'rotaryseviceboveslf' g.tiles
-							:(return)
-
-init.tileset.end
-
-	define('init.value()s,c')			:(init.value.end)
-*INIT.VALUE*
-init.value
-
-	g.value = map.new('values',52)
-	s = &lcase &ucase
-
-*	Assume value of a tile is one, and correct that below.
-
-init.value.next
-
-*	assume value is 1
-	s len(1) . c =					:f(init.value.letters)
-	put(g.value,c,+1)					:(init.value.next)
-
-init.value.letters
-
-*	Update assumaptions for letters with value greater than one.
-
-	s = 
-.	'b 4 c 4 d 2 f 4 g 3 h 3 j 10 k 5 l 2 m 4 '
-.	'n 2 p 4 q 10 u 2 v 5 w 4 x 8 y 3 z 10 '
-.	'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 '
-.	'N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
-
-init.value.update
-
-	s break(' ') . c ' ' break(' ') . v ' ' =	:f(return)
-	put(g.value,c,+v)				:(init.value.update)
-
-init.value.end
-
-	define('get(m,key)tbl')				:(get.end)
-
-*	Get entry in map M for key KEY.
-
-get
-	out('enter get key=',key)
-	out('get datatype m ',dt(m))
-	out('get type m ',dt(type(m)))
-	out('get datatype tbl',dt(tbl))
-	tbl = tbl(m)
-	get = tbl[key]					
-	out('get returning datatype:',dt(get))
-	out('get returning ',show(get))
-							:(return)
-
-get.end
-	define('put(m,key,val)name,key.type,val.type,tbl')	:(put.end)
-
-*	Test for entry for key KEY in table TBL, adding
-*	new one with value VAL if no such key yet used.
-*	Maintain a count of the number of entries using the
-*	key of -1, which is used solely for this purpose.
-
-*PUT*
-put
-	ident(type(m)) out('ADD NULL TYPE')
-	type.eq(m,Map)			:f(error)
-	
-	tbl = tbl(m)
-
-	key.type = type.key(m)
-	val.type = type.val(m)
-	out('put key.type',dt(key.type))
-	out('put val.type',dt(val.type))
-
-*	Check types of key and value to make sure they are ok.
-
-	out('put type(m)',dt(type(m)))
-
-	:($('put.' type(m)))
-
-put.abbrev
-put.cmap
-put.dmap
-put.options
-put.types
- :(put.bypass)
-	:(put.str.str)
-
-put.permutations.count
-	:(put.array.int)
-put.dict
-put.replay
-put.values
-put.words
- :(put.bypass)
-	:(put.str.int)
-
-put.lines
-put.numbers
-put.tried
- :(put.bypass)
-	:(put.int.str)
-
-put.permutations
- :(put.bypass)
-	:(put.str.array)
-
-put.moves
-put.scan
- :(put.bypass)
-	:(put.int.move)
-
-put.state
-	:(put.str.any)
-
-put.array.int
-
-	ident(key.type,Array)			:f(put.error.key)
-	ident(val.type,Integer)			:f(put.error.val)
-						:(put.test)
-
-put.int.move
-
-	ident(key.type,Integer)			:f(put.error.key)
-	ident(val.type,Move)			:f(put.error.val)
-						:(put.test)
-
-put.int.str
-
- :(put.bypass)
-	ident(key.type,Integer)			:f(put.error.key)
-	ident(val.type,String)			:f(put.error.val)
-						:(put.test)
-
-put.str.any
-
-	ident(key.type,String)			:f(put.error.key)
-put.str.array
-
- :(put.bypass)
-	ident(key.type,Integer)			:f(put.error.key)
-	ident(val.type,Array)			:f(put.error.val)
-						:(put.test)
-put.str.int
-
- :(put.bypass)
-	ident(key.type,String)			:f(put.error.key)
-	ident(val.type,Integer)			:f(put.error.val)
-						:(put.test)
-put.str.str
-
- :(put.bypass)
-	ident(key.type,String)			:f(put.error.key)
-	ident(val.type,String)			:f(put.error.val)
-						:(put.test)
-put.bypass
-put.test
-
-*	Test if there is an entry for this key.
-
-	ident(tbl[key])					:f(put.exists)
-
-*	Here when creating new entry. Update count
-	count(m) = count(m) + 1
-
-put.exists
-
-*	Here to create or update entry for *key*.
-
-	out('put key',key)
-	out('put val',val)
-	tbl[key] = val					:(return)
-
-put.error.key
-
-	out('put.error: wrong key type ',dt(key.type))	:(error)
-
-put.error.val
-
-	out('put.error: wrong val type ' dt(val.type))	:(error)
-
-put.end
-
 	define('adjacent(r,c)')				:(adjacent.end)
 
 *	Test if the cell in row *r* and column *c* is adjacent to one 
@@ -1032,7 +325,7 @@ checkline
 
 	count.checkline = count.checkline + 1
 	line span(' ') =
-	emapty(line)					:s(return)
+	empty(line)					:s(return)
 	line = line ' ';* to simaplify breaking out words.
 
 checkline.1
@@ -1199,6 +492,26 @@ datename
 							:(return)
 datename.end
 
+	
+	define('debug(onoff)')				:(debug.end)
+
+*	Enable debug trace if ONOFF is not null, disable tracing otherwise.
+
+debug
+	debug = (ident(onoff) '',1)
+	ident(debug)
+*	t.trace = 1;* set to trace in turn()
+	&trace = &ftrace = &trace = 0
+	&trace = ne(onoff)	20000
+	&ftrace = ne(onoff)	20000
+	ne(onoff)	trace(Move,'access')
+	ne(onoff)	trace('mov','access')
+	ne(onoff)	trace(&lastno)
+*	ne(onoff)	trace(Move,'access')
+*	ne(onoff)	trace('mov','access')
+*	ne(onoff)	trace(&lastno)
+							:(return)
+debug.end
 	define('dt(obj)')				:(dt.end)
 
 *	Shorthand for dt(obj)
@@ -1207,14 +520,14 @@ dt
 	dt = datatype(obj)				:(return)
 dt.end
 
-	define('emapty(line)')				:(emapty.end)
+	define('empty(line)')				:(empty.end)
 
-*	Test if LINE is emapty (null or all blanks).
+*	Test if LINE is empty (null or all blanks).
 *	Note that, unlink most programs, the tab character
 *	is never found in the lines examined by this procedure.
 
 *EMPTY*
-emapty
+empty
 
 *	In most cases, the first character in line is not null.
 
@@ -1222,7 +535,7 @@ emapty
 	line span(' ') =
 	ident(line)					:s(return)f(freturn)
 
-emapty.end
+empty.end
 	
 	define('endgame()')				:(endgame.end)
 	
@@ -1503,6 +816,22 @@ game.over
 
 game.end
 
+	define('get(m,key)tbl')				:(get.end)
+
+*	Get entry in map M for key KEY.
+
+get
+	out('enter get key=',key)
+	out('get datatype m ',dt(m))
+	out('get type m ',dt(type(m)))
+	out('get datatype tbl',dt(tbl))
+	tbl = tbl(m)
+	get = tbl[key]					
+	out('get returning datatype:',dt(get))
+	out('get returning ',show(get))
+							:(return)
+
+get.end
 	define('grid(lines,start)i,r,c,line')		:(grid.end)
 
 *	Construct a grid from a sequence of lines LINES beginning at 
@@ -1564,6 +893,424 @@ hline
 							:(return)
 hline.end
 
+	define('init(dictfile,skip,external)c,i,j,s,t')	:(init.end)
+
+*	Initialize global variables.
+
+*INIT*
+init
+	
+	out('enter init')
+	g.date = date(2)
+	ne(g.random_var) randomseed();* seed the random number generator
+
+
+	g.options = map.new('options')
+	g.options.abbrev = map.new('abbrev')
+
+	init.options()
+
+	g.dict = array(15)
+	g.board = array('15,15',' ')
+	g.lines = lines(g.board)
+
+	g.typenames = init.typenames()
+	out('called init.typenames')
+
+*	Intialize g.used to blank board.
+
+	g.used = array('15,15',' ')
+
+*	Initialize g.used to all ones for 'dumb' option.
+
+	g.used = ne(g.dumb) array('15,15','1')
+
+	g.used.lines = lines(g.used)
+
+	init.bonus()
+
+	init.number()
+
+*	Initialze permutation map.
+
+	init.perm('perm.txt')
+
+	init.tileset()
+	init.value()
+
+	init.dict(dictfile,skip)
+							:(return)
+init.end
+
+	define('init.bonus()s,row,col,b,c')		:(init.bonus.end)
+
+*	Initialize the bonus squares for the 15x15 grid: 
+*		1 for the value of the letter,
+*		2 for double letter,
+*		3 for triple letter,
+*		4 for double word, and
+*		5 for triple word.
+
+*INIT.BONUS*
+init.bonus
+
+	g.bonus = array('15,15','1')
+	s = 	'5 0104 3 0107 3 0109 5 0112 2 0203 4 0206 4 0210 2 0213 '
+.		'2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 5 0415 '
+.		'2 0503 2 0507 2 0509 2 0513 4 0602 3 0606 3 0610 4 0614 '
+.		'3 0701 2 0705 2 0711 3 0715 4 0804 4 0812 3 0901 2 0905 2 0911 '
+.		'3 0915 4 1002 3 1006 3 1010 4 1014 2 1103 2 1107 2 1109 2 1113 '
+.		'5 1201 3 1204 4 1208 3 1212 5 1215 2 1302 2 1305 2 1311 2 1314 '
+.		'5 1403 4 1406 4 1410 2 1413 5 1504 3 1507 3 1509 5 1512 '
+
+init.bonus.1
+
+	s len(1) . b ' ' len(2) . row len(2) . col ' ' =  :f(init.bonus.next)
+	g.bonus[+row,+col] = +b				:(init.bonus.1)
+
+init.bonus.next
+
+	g.bonus.lines = lines(g.bonus)			:(return)
+
+init.bonus.end
+
+	define('init.dict(filename)file,i,n,w,s')	:(init.dict.end)
+
+*	Initialize the global dictionary g.dict.
+
+*INIT.DICT*
+init.dict
+
+*	Set hash table sizes according to number of words of given length.
+
+	s  =	'1 100 1000 4000 9000 15000 23000 28000 25000 20000 '
+.		'15000 11000 8000 5000 3000 '
+
+init.dict.tbl
+
+	gt(i = i + 1,15)				:s(init.dict.tbl.1)
+	s break(' ') . n ' ' = 
+	g.dict[i] = map.new('dict',+n)			:(init.dict.tbl)
+
+init.dict.tbl.1
+
+	i = 0
+
+*	Read in dictionary from a file, with one word per line.
+
+	filename = ident(filename) 'dict.txt'
+	input(.file,g.channel.temp,filename)		:s(init.dict.in)
+	out('unable to open input file',filename)	:(freturn)
+	n = 0
+
+init.dict.in
+
+	w = file					:f(init.dict.done)
+	gt(size(w),15)					:s(init.dict.in)
+
+*	Process plural words, indicated by 'S' at end.
+
+	differ(substr(w,size(w),1),'S')			:s(init.dict.w)
+	w = substr(w,1,size(w) - 1)
+	put(g.dict[size(w) + 1],w 's',+1)
+	put(g.dict[size(w) + 1],w, +1)			:(init.dict.in)
+
+init.dict.w
+
+	put(g.dict[size(w)],w,+1)				:(init.dict.in)
+
+init.dict.done
+
+	endfile(g.channel.temp)				:(return)
+
+init.dict.end
+
+	define('init.number()i1,i2,i3,s1,s2,w')		:(init.number.end)
+
+*	Initialize g.numbers.
+
+init.number
+
+	s1 =	'one two three four five six seven eight nine ten eleven twelve '
+.		'thirteen fourteen fifteen sixteen seventeen eighteen nineteen '
+	s2 =	'twenty thirty forty fifty sixty seventy eighty ninety '
+	i1 = 0; i2 = 10; i3 = 20
+
+	g.numbers = table(100)
+	g.numbers[100] = 'one hundred'
+
+init.number.digits
+
+	s1 break(' ') . w ' ' =				:f(init.number.tens)
+	g.numbers[i1 = i1 + 1] = w			:(init.number.digits)
+
+init.number.tens
+
+	s2 break(' ') . w ' ' =				:f(init.number.decades)
+	g.numbers[i2 = i2 + 10] = w			:(init.number.tens)
+
+init.number.decades
+	
+	le(i3 = i3 + 1,99)				:f(return)
+	eq(remdr(i3,10))				:s(init.number.decades)
+
+	g.numbers[i3] = g.numbers[((i3 / 10) * 10) ' ' g.numbers[remdr(i3,10)]]
+.					:s(init.number.decades)f(return)
+init.number.end
+
+	define('init.options()s,t,options,optname,opt,val,cname')	:(init.options.end)
+
+*	Initialize command line options.
+
+init.options
+
+	out('enter init.options')
+*	Set up map from first two characters of option name to full name.
+
+	s = ' auto dumb moves random rotary seen shell solo team trace '
+
+init.options.abbrev
+
+	s span(' ') =
+	ident(s)					:s(init.options.abbrev.done)
+	out('init.options.init s',s)
+	s break(' ') . opt = 				:f(init.options.abbrev.done)
+	out('init.options.abbrev ',opt )
+	put(g.options.abbrev,substr(opt,1,2),opt)	:(init.options.abbrev)
+
+init.options.abbrev.done
+
+*	Enter default options, those with non-null initial value.
+*	These values may be changed if they also occur in the
+*	actual option list.
+
+	options = '-uauto -umoves=' g.maxmoves ' '
+.		'-urandom=' g.random_var  ' '
+	put(g.options,'auto',1)
+	put(g.options,Moves,g.maxmoves)
+	put(g.options,'random',g.random_var)
+	options = options host(0) ' '
+
+init.options.next
+	
+	val = 1
+	options '-u' =					:f(init.options.done)
+	options break(' ') . opt span(' ') =	
+
+init.options.opt
+
+	lt(size(opt),3) out('no such option ' opt '  - ignoring.')
+.						:s(init.options.next)
+	out('init.options.opt ',opt)
+	optname = get(g.options.abbrev,substr(opt,1,2))
+	ident(optname) out('no such option ' opt ' - ignoring.')
+.						:s(init.options.next)
+
+	opt 'no'				:s(init.options.no)
+	opt break('=')				:s(init.options.val)
+
+	cname = 'init.options.opt.' optname
+	out('cname=<',cname)
+	out(' optname=',optname )
+	:($('init.options.opt.' optname))
+
+init.options.no
+
+*	'no' before option name sets val to zero.
+	
+	opt 'no' =
+	val = 0						
+	out('option -no- opt=' opt '.')
+							:(init.options.opt)
+init.options.set
+
+*	Set value for command options.
+
+	out('g.options add optname',optname)
+	out('g.options add val,',val)
+	put(g.options,optname,val)			:(init.options.next)
+
+init.options.val
+
+*	'=' is followed by value
+
+	opt break('=') . opt '=' rem . val		:(init.options.opt)
+
+init.options.opt.auto
+
+	g.mode = g.mode.auto				:(init.options.next)
+
+init.options.opt.dumb
+
+	g.dumb = val					:(init.options.set)
+
+init.options.opt.moves
+
+	g.maxmoves = val				:(init.options.set)
+
+init.options.opt.random
+
+	g.random_var = (ne(val) val,2017)		:(init.options.set)
+
+init.options.opt.rotary
+
+	g.rotary = 1
+	put(g.options,'rotary',1)
+	g.mode = g.mode.auto
+							:(init.options.next)
+init.options.opt.seen
+
+	g.seen = val					:(init.options.set)
+
+init.options.opt.shell
+
+	g.shell = val					:(init.options.set)
+
+init.options.opt.solo
+
+	g.mode = g.mode.solo				:(init.options.next)
+
+init.options.opt.team
+
+	g.mode = g.mode.team				:(init.options.next)
+
+init.options.opt.trace
+
+	val = ident(val) 1
+	g.trace = val					:(init.options.set)
+
+init.options.done
+
+	show(g.options)				:(return)
+
+init.options.end
+
+	define('init.perm(filename)line,ifile,n,k,lines,nread')	:(init.perm.end)
+
+*	Initialize the list of possible permutations from a file.
+
+*INIT.PERM*
+init.perm
+
+	g.permutations = map.new('permutations',7)
+	g.permutations.count = map.new('permutations.count',100)
+	input(.ifile,g.channel.temp, filename)			:s(init.perm.next)
+	out('unable to open permutation file ' filename) 	:(freturn)
+
+init.perm.next
+
+	line = ifile					:f(init.perm.done)
+	line break('?') . n '?' break(' ') . k ' ' rem . count :f(init.perm.err)
+	put(g.permutations.count,n '?' k,count)
+	ara = array(count)
+	ai = 0
+
+init.perm.array
+
+	ara[ai = ai + 1] = ifile			:s(init.perm.array)
+	put(g.permutations,n '?' k,ara)			:(init.perm.next)
+
+init.perm.done
+
+	endfile(g.channel.temp)				:(return)
+
+init.perm.err
+
+	out('init.perm error, line ' lines '  '  line) :(freturn)
+
+init.perm.end
+
+	define('init.tileset()ch,n,s')			:(init.tileset.end)
+
+* 	Initialize set of tiles, ignoring the 'blank' tiles for now.
+*	Set things up so will play 'rotary' as starting move if g.rotary is null.
+
+*INIT.TILESET*
+init.tileset
+
+	g.tiles =
+	ne(g.rotary)					:s(init.tileset.rotary)
+
+	s = 'a 9 b 2 c 2 d 5 e 13 f 2 g 3 h 4 i 8 j 1 k 1 l 4 m 2 '
+.           'n 5 o 8 p 2 q 1 r 6 s 5 t 7 u 4 v 2 w 2 x 1 y 2 z 1 '
+							:(init.tileset.ch)
+init.tileset.rotary
+
+*	Account for tiles needed for 'rotary service above self'
+
+	s = 'a 8 b 1 c 1 d 5 e 10 f 1 g 3 h 4 i 8 j 1 k 1 l 3 m 2 '
+.           'n 5 o 6 p 2 q 1 r 4 s 3 t 6 u 4 w 2 x 1 y 1 z 1 '
+
+
+init.tileset.ch
+
+	s break(' ') . ch ' ' break(' ') . n ' ' =	:f(init.tileset.ch.done)
+	g.tiles = g.tiles dupl(ch,n)			:(init.tileset.ch)
+
+init.tileset.ch.done
+
+*init.tileset.random
+
+	randomseed();* set random number generator seed
+	shuffle();* shuffle the tileset
+	g.tiles = ne(g.rotary) 'rotaryseviceboveslf' g.tiles
+							:(return)
+
+init.tileset.end
+
+	define('init.typenames()s,str,name')	:(init.typenames.end)
+
+*	Initialize g.typenames as map from datatype strints to variable names.
+
+init.typenames
+
+	s = 	'array Array  integer Integer  map Map  move Move '
+.		'moves Moves  numbers Numbers  pair Pair player Player '
+.		'string String   table Table ' 
+	output = 'init.typenames ' s
+	g.typnames = table(20)
+
+init.typenames.next
+	s break(' ') . str ' ' break(' ') . name =	:f(return)
+	out('init.typenames str<' str '>')
+	out('init.typenames nam<' name '>')
+	g.typenames[str] = name				:(init.typenames.next)
+	
+init.typenames.end
+
+	define('init.value()s,c')			:(init.value.end)
+
+*INIT.VALUE*
+init.value
+
+	g.value = map.new('values',52)
+	s = &lcase &ucase
+
+*	Assume value of a tile is one, and correct that below.
+
+init.value.next
+
+*	assume value is 1
+	s len(1) . c =					:f(init.value.letters)
+	put(g.value,c,+1)					:(init.value.next)
+
+init.value.letters
+
+*	Update assumaptions for letters with value greater than one.
+
+	s = 
+.	'b 4 c 4 d 2 f 4 g 3 h 3 j 10 k 5 l 2 m 4 '
+.	'n 2 p 4 q 10 u 2 v 5 w 4 x 8 y 3 z 10 '
+.	'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 '
+.	'N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 '
+
+init.value.update
+
+	s break(' ') . c ' ' break(' ') . v ' ' =	:f(return)
+	put(g.value,c,+v)				:(init.value.update)
+
+init.value.end
+
 	define('input.user()')				:(input.user.end)
 
 *	Get a line from the user, usually from the terminal, or from
@@ -1598,7 +1345,7 @@ log.player.end
 
 	define('insert(line,move,upper)c,f,i,text')	:(insert.end)
 
-*	Insert the text of a move into its free list of emapty
+*	Insert the text of a move into its free list of empty
 *	cells in the line of the move.  Express the text in upper case 
 *	if *upper* is not null.
 
@@ -1764,7 +1511,7 @@ log.move.end
 *	*str* is one of the following:
 *	  integer	gives starting position, in range 1..15
 *	  string that can be converted to integer, treat as in integer case
-*	  string giving list of emapty (open) cells used, with entries
+*	  string giving list of empty (open) cells used, with entries
 *			separated by spaces.
 
 *	For examaple, the following each specify the word 'fribble' 
@@ -1905,6 +1652,47 @@ manual.error
 
 manual.end
 
+	define('map.new(type,count)type.key,type.val,map')	:(map.new.end)
+
+*	Initialize map (table) with keys of type *type.key*,
+*	entries of type *type.val*, and estimated size *count*.
+
+map.new
+
+*	Assume map is from string to string and correct below.
+
+	type.key = type.val = String
+	type.key = type.val = String
+	type.key = ident(name,Numbers)			Integer
+*	type.key = ident(name,'permutations.count')		String
+	type.key = ident(name,Moves)				Integer
+	type.key = ident(name,'lines')				Integer
+	type.key = ident(name,'scan') 				Integer
+	type.key = ident(name,'words')				Integer
+
+	type.val = ident(name,'dict')		 		Integer
+	type.val = ident(name,'permutations')			Integer
+*	type.val = ident(name,'permutations.count')		Integer
+	type.val = ident(name,'values')				Integer
+	type.val = ident(name,Moves)				Moves
+	type.val = ident(name,'replay')				Integer
+	type.val = ident(name,'scan')				Move
+	type.val = ident(name,'state')				'any'
+	type.val = ident(name,'words')				Integer
+
+	map.new = map(type,type.key,type.val,count,table(count))
+	map = map(type,type.key,type.val,count,table(count))
+	
+
+*	Going forward will use *count* to count number of entries.
+
+	count(map.new) = 0
+	type.key(map.new) = type.key
+	type.val(map.new) = type.val
+							:(return)
+
+map.new.end
+
 
 	define('number(n)')				:(number.end)
 
@@ -1955,6 +1743,50 @@ order.done
 	order = pack(chars)				:(return)
 
 order.end
+
+	define('out(text1,text2,text3)type1,type2')	:(out.end)
+
+*	Output a line conisting of TEXT1, TEXT2 enclosed
+*	 in brackets, followed by TEXT3.
+
+*OUT*
+out
+
+	type2 = dt(text2)
+	type3 = dt(text3)
+	type.eq(text2,Integer)			:s(out.2)
+	type.eq(text2,String)			:s(out.2)
+	output = 'out second argument not integer or string,'
+.	' but of type ' type2 
+.						:(error)
+
+out.2
+
+	ident(type3,Integer)			:s(out.3)
+	ident(type3,String)			:s(out.3)
+
+out.3
+	type.ex(text3,String)			:s(out.ok)
+	type.ex(text3,Integer)			:s(out.ok)
+	output = 'out third argument not integer or string,' 
+.	' but of type ' type3
+.						 :(error)
+
+out.ok
+
+	output = text1 ' [' text2 ']' text3		:(return)
+
+out.end
+
+	define('outb(line)text')			:(outb.end)
+
+*	enclose line with '[' before and ']' after text.
+
+*OUTB*
+outb
+	outb = '[' line ']'				:(return)
+
+outb.end
 
 *	pack.sizes = array(30)
 
@@ -2034,6 +1866,134 @@ prefix.1
 
 prefix.end
 
+	define('put(m,key,val)name,key.type,val.type,tbl')	:(put.end)
+
+*	Test for entry for key KEY in table TBL, adding
+*	new one with value VAL if no such key yet used.
+*	Maintain a count of the number of entries using the
+*	key of -1, which is used solely for this purpose.
+
+*PUT*
+put
+	ident(type(m)) out('ADD NULL TYPE')
+	type.eq(m,Map)			:f(error)
+	
+	tbl = tbl(m)
+
+	key.type = type.key(m)
+	val.type = type.val(m)
+	out('put key.type',dt(key.type))
+	out('put val.type',dt(val.type))
+
+*	Check types of key and value to make sure they are ok.
+
+	out('put type(m)',dt(type(m)))
+
+	:($('put.' type(m)))
+
+put.abbrev
+put.cmap
+put.dmap
+put.options
+put.types
+ :(put.bypass)
+	:(put.str.str)
+
+put.permutations.count
+	:(put.array.int)
+put.dict
+put.replay
+put.values
+put.words
+ :(put.bypass)
+	:(put.str.int)
+
+put.lines
+put.numbers
+put.tried
+ :(put.bypass)
+	:(put.int.str)
+
+put.permutations
+ :(put.bypass)
+	:(put.str.array)
+
+put.moves
+put.scan
+ :(put.bypass)
+	:(put.int.move)
+
+put.state
+	:(put.str.any)
+
+put.array.int
+
+	ident(key.type,Array)			:f(put.error.key)
+	ident(val.type,Integer)			:f(put.error.val)
+						:(put.test)
+
+put.int.move
+
+	ident(key.type,Integer)			:f(put.error.key)
+	ident(val.type,Move)			:f(put.error.val)
+						:(put.test)
+
+put.int.str
+
+ :(put.bypass)
+	ident(key.type,Integer)			:f(put.error.key)
+	ident(val.type,String)			:f(put.error.val)
+						:(put.test)
+
+put.str.any
+
+	ident(key.type,String)			:f(put.error.key)
+put.str.array
+
+ :(put.bypass)
+	ident(key.type,Integer)			:f(put.error.key)
+	ident(val.type,Array)			:f(put.error.val)
+						:(put.test)
+put.str.int
+
+ :(put.bypass)
+	ident(key.type,String)			:f(put.error.key)
+	ident(val.type,Integer)			:f(put.error.val)
+						:(put.test)
+put.str.str
+
+ :(put.bypass)
+	ident(key.type,String)			:f(put.error.key)
+	ident(val.type,String)			:f(put.error.val)
+						:(put.test)
+put.bypass
+put.test
+
+*	Test if there is an entry for this key.
+
+	ident(tbl[key])					:f(put.exists)
+
+*	Here when creating new entry. Update count
+	count(m) = count(m) + 1
+
+put.exists
+
+*	Here to create or update entry for *key*.
+
+	out('put key',key)
+	out('put val',val)
+	tbl[key] = val					:(return)
+
+put.error.key
+
+	out('put.error: wrong key type ',dt(key.type))	:(error)
+
+put.error.val
+
+	out('put.error: wrong val type ' dt(val.type))	:(error)
+
+put.end
+
 	define('random(n)')				:(random.end)
 
 *	Return integer uniformly distributed in 1,2,...,n. 
@@ -2084,7 +2044,7 @@ randomseed.end
 
 *READER*
 reader
-	input(.file,g.channel.temap,filename)		:s(reader.opened)
+	input(.file,g.channel.temp,filename)		:s(reader.opened)
 	
 	out('unable to open reader file ',filename '.') :(freturn)
 
@@ -2097,7 +2057,7 @@ reader.next
 	put(reader,n = n + 1,file)		:s(reader.next)
 
 *	Here at end of file, convert map to array of lines.
-	endfile(g.channel.temap)
+	endfile(g.channel.temp)
 							:(return)
 
 reader.end
@@ -2239,7 +2199,7 @@ scan
 *	Allocate and fill in *open*, an array giving the 
 *	positions of the open cells.
 
-*	Fail if no emapty cells.
+*	Fail if no empty cells.
 
 	open = avail(pair)				:f(scan.done)
 
@@ -2328,7 +2288,7 @@ scoreline
 
 	scoreline = 0
 	line = line(pair)
-	emapty(line)					:s(return)
+	empty(line)					:s(return)
 	bonusline = g.bonus.lines[num(pair)]
 	line break(&ucase)				:f(scoreline.error)
 	words = words(line)				:f(scoreline.done)
@@ -2940,11 +2900,11 @@ show.board.c
 	b = g.bonus[r,c]
 	differ(ch,' ')					:s(show.board.ch)
 
-*	Here if emapty cell, see if there is a bonus to be show.boarded.
+*	Here if empty cell, see if there is a bonus to be show.boarded.
 
 	ne(b,1)						:s(show.board.b)
 
-*	Here to show.board emapty cell.
+*	Here to show.board empty cell.
 
 	line = line ' -'				:(show.board.c)
 
@@ -3000,7 +2960,7 @@ show.bonus.c
 
 show.bonus.b
 
-*	Here to show.bonus emapty cell.
+*	Here to show.bonus empty cell.
 	line = line ' -'				:(show.bonus.c)
 
 show.bonus.l
@@ -3117,7 +3077,7 @@ show.line.end
 
 	define('show.lines(lines,title)i,line,titled')	:(show.lines.end)
 
-*	Show the lines that are not emapty in an array of lines
+*	Show the lines that are not empty in an array of lines
 
 *SHOW.LINES*
 show.lines
@@ -3128,10 +3088,10 @@ show.lines
 show.lines.n
 
 	line = lines[i = i + 1]				:f(return)
-	emapty(line)					:s(show.lines.n)
+	empty(line)					:s(show.lines.n)
 	differ(titled)					:s(show.lines.titled)
 
-*	Don not list header unless at least one non-emapty line
+*	Don not list header unless at least one non-empty line
 
 	out('    123456789012345')
 
@@ -3249,11 +3209,11 @@ show.play.c
 	b = g.bonus[r,c]
 	differ(ch,' ')					:s(show.play.ch)
 
-*	Here if emapty cell, see if there is a bonus to be show.played.
+*	Here if empty cell, see if there is a bonus to be show.played.
 
 	ne(b,1)						:s(show.play.b)
 
-*	Here to show.play emapty cell.
+*	Here to show.play empty cell.
 
 	line = line ' -'				:(show.play.c)
 
@@ -3311,7 +3271,7 @@ show.player.end
 *SHOW.MAP*
 show.map
 
-*	Do nothing if map is emapty.
+*	Do nothing if map is empty.
 
 	&dump =
 	eq(count(map))					:s(return)
@@ -4054,6 +4014,34 @@ turn.fail
 
 turn.end 
 
+	define('type.eq(obj,type)')			:(type.eq.end)
+
+*	Test if type name of OBJ is TYPE.
+
+type.eq
+
+	output = 'type Integer ' Integer
+	dave1 = dt(obj)
+	dave2 = type
+	output = 'type.eq 1  ' dave1
+	output = ' 2 ' dave2
+	ident(dt(obj),type)				:s(return)f(freturn)
+
+type.eq.end
+
+	define('type.name(obj)')			:(type.name.end)
+
+*	Return type name of datatype of OBJ.
+
+type.name
+
+	type.name = dt(obj)
+	type.name = g.typenames[dt(obj)]
+	differ(type.name)				:s(return)
+	out('unsupported argument to type.name',dt(obj)) :(error)
+
+type.name.end
+	
 	define('valid.start(move)free,num,text')	:(valid.start.end)
 
 *	Test if MOVE, a suggested starting move, is valid.
@@ -4253,4 +4241,17 @@ error
 							:(end)
 error.end
 
-	
+
+	g.off	= 0
+	g.on	= 1
+
+*	Swap order of lines below to enable debug tracing.
+
+	debug(g.on)
+*	debug(g.off)
+
+	g.cmap = g.dmap = g.signature =
+
+
+*	&dmap = 3
+
