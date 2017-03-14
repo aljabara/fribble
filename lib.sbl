@@ -82,6 +82,10 @@
 
 *	g.move is the current/last move.
 
+*	g.options maps option names to their value
+*	g.options.abbrev maps a shorted form of an option to its full
+*	name; see init() for details.
+
 *	A player is represented by
 
 	data('player(pid,name,kind,rack,total,thirty,highest)')
@@ -212,6 +216,8 @@ init.end
 
 init.main
 
+	init.options()
+
 	g.dict = array(15)
 	g.board = array('15,15',' ')
 	g.lines = lines(g.board)
@@ -292,7 +298,7 @@ init.dict.tbl.1
 
 	filename = ident(filename) 'dict.txt'
 	input(.file,g.channel.temp,filename)		:s(init.dict.in)
-	out('unable to open input file ' filename)	:(freturn)
+	out('unable to open input file ',filename)	:(freturn)
 	n = 0
 
 init.dict.in
@@ -349,6 +355,132 @@ init.number.decades
 .					:s(init.number.decades)f(return)
 init.number.end
 
+	define('init.options()s,t,options,optname,opt,val,cname')	:(init.options.end)
+
+*	Initialize command line options.
+
+init.options
+
+*	out('enter init.options')
+*	Set up map from first two characters of option name to full name.
+
+	s = ' auto dumb moves random seen shell solo team trace '
+
+	g.options = table()
+	g.options.abbrev = table()
+
+init.options.abbrev
+
+	s span(' ') =
+	ident(s)					:s(init.options.abbrev.done)
+*	out('init.options.init s',s)
+	s break(' ') . opt = 				:f(init.options.abbrev.done)
+*	out('init.options.abbrev ',opt )
+	
+	g.options.abbrev[substr(opt,1,2)] = opt	:(init.options.abbrev)
+
+init.options.abbrev.done
+
+*	Enter default options, those with non-null initial value.
+*	These values may be changed if they also occur in the
+*	actual option list.
+
+	options = '-uauto -umoves=' g.maxmoves ' '
+.		'-urandom=' g.random_var  ' '
+	g.options['auto'] = 1
+	g.options['moves'] = g.maxmoves
+	g.options['random'] = g.random_var
+	options = options host(0) ' '
+
+init.options.next
+	
+	val = 1
+	options '-u' =					:f(init.options.done)
+	options break(' ') . opt span(' ') =	
+
+init.options.opt
+
+	lt(size(opt),3) out('no such option ',opt,'  - ignoring.')
+.						:s(init.options.next)
+*	out('init.options.opt ',opt)
+	optname = g.options.abbrev[substr(opt,1,2)]
+	ident(optname) out('no such option,' opt ',- ignoring.')
+.						:s(init.options.next)
+
+	opt 'no'				:s(init.options.no)
+	opt break('=')				:s(init.options.val)
+
+	cname = 'init.options.opt.' optname
+*	out('cname=<',cname)
+*	out(' optname=',optname )
+**	out('init.options.opt switch ' ('init.options.opt.' optname))
+	:($('init.options.opt.' optname))
+
+init.options.no
+
+*	'no' before option name sets val to zero.
+	
+	opt 'no' =
+	val = 0						
+*	out('option -no- opt=',opt,'.')
+							:(init.options.opt)
+init.options.set
+
+*	Set value for command options.
+
+*	out('g.options add optname',optname)
+*	out('g.options add val,',val)
+	g.options[optname] = val			:(init.options.next)
+
+init.options.val
+
+*	'=' is followed by value
+
+	opt break('=') . opt '=' rem . val		:(init.options.opt)
+
+init.options.opt.auto
+
+	g.mode = g.mode.auto				:(init.options.next)
+
+init.options.opt.dumb
+
+	g.dumb = val					:(init.options.set)
+
+init.options.opt.moves
+
+	g.maxmoves = val				:(init.options.set)
+
+init.options.opt.random
+
+	g.random_var = (ne(val) val,2017)		:(init.options.set)
+
+init.options.opt.seen
+
+	g.seen = val					:(init.options.set)
+
+init.options.opt.shell
+
+	g.shell = val					:(init.options.set)
+
+init.options.opt.solo
+
+	g.mode = g.mode.solo				:(init.options.next)
+
+init.options.opt.team
+
+	g.mode = g.mode.team				:(init.options.next)
+
+init.options.opt.trace
+
+	val = ident(val) 1
+	g.trace = val					:(init.options.set)
+
+init.options.done
+
+	show(g.options)				:(return)
+
+init.options.end
+
 	define('init.perm(filename)line,ifile,n,k,lines,nread')	:(init.perm.end)
 
 *	Initialize the list of possible permutations from a file.
@@ -359,7 +491,7 @@ init.perm
 	g.permutations = table(7)
 	g.permutations.count = table(100)
 	input(.ifile,g.channel.temp, filename)			:s(init.perm.next)
-	out('unable to open permutation file ' filename) 	:(freturn)
+	out('unable to open permutation file ',filename) 	:(freturn)
 
 init.perm.next
 
@@ -800,7 +932,7 @@ find.move
 
 *	Something must be wrong with the requested permutation
 
-	out('fatal permutation request ' text(move)) :(end)
+	out('fatal permutation request ',text(move)) :(end)
 
 find.perm.next
 
@@ -954,7 +1086,7 @@ game
 
 	g.logfile.name = datename(g.date) '.fri'
 	output(.g.logfile,g.logfile.channel,g.logfile.name)	:s(game.log)
-	out('unable to open log file ' g.logfile.name)		:(game.setup)
+	out('unable to open log file ',g.logfile.name)		:(game.setup)
 
 game.log
 
@@ -1017,7 +1149,7 @@ game.fail
 	
 game.swap
 
-	out('swapping tiles pid=' pid)
+	out('swapping tiles pid=',pid)
 	rack(player) = swap(pid,3)
 	out('Player ' name(player) ' swapped tiles.')
 	out('Player ' name(player) ' now has tiles ' 
@@ -2021,6 +2153,125 @@ scoremove.done
 	ne(g.tracing) out('scoremove returns ' scoremove)
 							:(return)
 scoremove.end
+
+	define('seen(perm,rack,test)p,c,cp,cmap,next,signature,map,d,dp,dmap')	:(seen.end)
+
+*	Test if a permutation has already been processed in this turn.
+
+*	Racks will typically contain duplicate letters. We can make use of this
+*	to avoid useless duplication of effort.
+*
+*	For examaple, if first and third letters are the same then in any permutation
+*	we can interchange the positions of this letter with no effect. Simaply put,
+* 	if there are two "E" tiles, it doesn't matter in what order we play them.
+*
+*	For examaple, given the rack 'FRIBBLE', there are two B's, at positions five
+*	and six, so the signature for permutation '1234567'  is
+*
+*		1234557
+*
+*	If later see a permutation such as '1234657', it will have
+*	the same signature, and so will not need to investigate 
+*	futher -- we can move directly to the next permutation.
+
+*	Define a map *dmap* from digits to characters by
+*	iterating over the permutation. If *d* is the
+*	digit at position *p*, let *c* be the character
+*	at position *d* in the rack. This is the character
+*	corresponding to *d*. Set *dmap[d]* to *c*. 
+
+*	Define a map *cmap* from characters to digits by iterating
+*	over the rack. Let *c* be the character at position *p*.
+*	If *cmap[c]* is null, this is the first instance of *c*;
+*	set *cmap[c]* to *p*. This will be the value used to
+*	represent each instance of *c* in the new permutation.
+
+*	Iterate over the permutation to build an equivalent
+*	permutation. Let *d* be the digit at
+*	position *p*. Set *c* to the value of *dmap[d]*, then
+* `	set the next digit in the new permutation to the value of
+*	*cmap[c]*.
+
+	
+*	The result is the signature, or normal form, of the permutation.
+
+*	Look up the result in the table *seen*. It the value is not
+*	null then we have already seen an equivalent permutation,
+*	and so return success.  
+
+*	If the value is null, enter the new permutation as the representation 
+*	of the input permutation, and return failure.
+
+*SEEN*
+seen
+	ident(perm)				:s(freturn)
+	ident(rack)				:s(freturn)
+
+	g.cmap = table('cmap')
+	g.dmap = table('dmap')
+	cp = dp = 0
+	
+seen.d
+	d = substr(perm,dp = dp + 1,1)		:f(seen.c)
+	c = substr(rack,d,1)
+	out('g.map')
+	g.dmap[d] = c
+						:(seen.d)
+seen.c
+	c = substr(rack,cp = cp + 1,1)		:f(seen.mapped)
+	out('GET seen.c ')
+	ident(g.cmap[c]) g.cmap[c] = convert(cp,'string') :(seen.c)
+
+seen.mapped
+
+	dp = 0
+	signature = 
+
+seen.next
+
+	d = substr(perm,dp = dp + 1,1)		:f(seen.check)
+	c = g.dmap[d]
+	signature = signature g.cmap[c]		:(seen.next)
+
+seen.check
+
+ :(seen.outed)
+	seens = seens + 1
+*	gt(seens,10000) :s(end)
+	
+	ne(remdr(seens,100)) :s(seen.outed)
+	out()
+	show(g.dmap)
+	out()
+	show(g.cmap)
+	out()
+
+	 out('seen.check rack=' rack ' ' perm ' -> ' signature)
+
+seen.outed
+	g.signature = signature
+	count.signature = count.signature + 1
+
+*	Succeed if have already seen this signature.
+
+*	out('seen same perm=' perm ' rack=' rack )
+
+	out('GET seen.outed ')
+	differ(g.tried[signature])			:s(return)
+
+*	Here if first encounter with this signature.
+
+	g.tried[signature] = 1
+							:(freturn)
+*	out('seen new signature ' signature ' perm=' perm ' rack=' rack '.')
+*	See if we have seen an equivalent permutation before.
+
+*	Comapute signature of permutation and rack to account for presence
+*	any duplicate tiles.
+
+
+*	:(freturn)
+seen.end
 
 	define('shell()ops,key,op')			:(shell.def.end)
 
@@ -3041,6 +3292,89 @@ take
 	g.tiles = substr(g.tiles, n + 1)		:(return)
 
 take.end
+
+	define('test.perm(rack,perm,num,move,inlines)'
+.		'text,lines,iline,i,p,cline')	:(test.perm.end)
+
+*	Test if applying a permutation PERM to a rack RACK yields a valid move.
+*	NUM is the line containing the move, and INLINES is a list of
+*	the lines from the grid to be used.
+
+*TEST.PERM*
+test.perm
+
+*	NOTE: THE LOOP BELOW IS THE CRITICAL INNER LOOP OF THIS PROGRAM.
+*	ANY TIME SPENT SPEEDING THINGS UP ELSEWHERE WILL HAVE LITTLE EFFECT.
+*	
+*	For examaple, given a move of length 7 with a rack of 7 letters, we
+*	need to account for the slightly over 5000 permutations of the letters
+*	that can be used here. And note this is just for one possible move ...
+*
+*	Since most racks will contain duplicate, or even triplicate, instances of
+*	the same letter, the table *tried* is used below. This cut the running
+*	time of the program by a factor of two when first introduced.
+	
+	count.perm = count.perm + 1
+
+	seen(perm)				:s(freturn)
+	count.cells = count.cells + size(perm)
+
+	g.cln = 0
+
+	text = place(perm,rack)
+
+	lines = copy(inlines);
+
+*	Insert the letters from the tileset corresponding to the permutation
+*	into the selected blank cells in the line.  The digit '1' selects 
+*	the first tile, the digit '2' the second, and so on.  Then see if 
+*	the result gives a valid line. 'move' to the next permutation if not.  
+*	(This is a clever use of replace(), even if I do say so myself.)
+
+	text(move) = perm;* insert permutation digits into free cells
+	iline = insert(lines[num],move);* line with permutation digits entered
+	checkline(place(iline,rack))			:f(freturn)
+
+*	'move' is valid on this line, so check validity on crossing lines.
+*	Save the valid lines in *clines* for scoring if move proves valid.
+
+*	We could use the clines() procedure for this, but in this loop every
+*	statement counts, so in effect we build clines on the fly.
+*	Since almost all permutations will result in junk, we want to 
+*	detect junk as soon as possible so we can move on without wasting 
+*	needless effort.
+
+	text(move) = text
+
+*	out(ne(g.tracing) 'Find valid first ' 
+*		show.move(move) ' ' show.line(line))
+
+	g.clines[g.cln = g.cln + 1] =  pair( id(move), insert(lines[num],move))
+	i = 0
+
+*	Check the crossing lines, constructing them as needed, to make sure the
+*	move is valid.
+
+test.perm.cross
+
+*	out('find cross ')
+
+*	If next assignment fails, we have finished checking the 
+*	permutation without finding a valid move, and so return failure.
+
+	p = free(move)[i = i + 1]			:f(return)
+	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1))
+	checkline(line(cline))				:f(freturn)
+
+*	out(ne(g.tracing) 'Find valid checkline ' line(cline))
+
+	text(move) = place(text(move),ucase(rack))
+
+*	out(ne(g.tracing) 'Find text ' text(move))
+
+	g.clines[g.cln = g.cln + 1] = cline		:(test.perm.cross)
+
+test.perm.end
 
 	define('thousands(s)n')				:(thousands.end)
 
