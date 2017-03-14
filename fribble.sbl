@@ -29,7 +29,8 @@
 
 *	f.mode = 1 for auto mode, where fribble moves for both players.
 *	f.mode = 2 for solo mode, where you play against fribble.
-*	f.mode = 3 for team mode, where you and fribble work as team to play another player.
+*	f.mode = 3 for team mode, where you and fribble work 
+*		as team to play another player.
 	
 	f.mode.auto = 1
 	f.mode.solo = 2
@@ -39,8 +40,9 @@
 
 *		sbl fribble.sbl -ushell
 
-*	The shell() procedure is called. It can be used to replay prior games, study moves, make moves,
-*	test the system, and of course learn more about Fribble.
+*	The shell() procedure is called. It can be used to replay prior 
+*	games, study moves, make moves, test the system, and of course 
+*	learn more about Fribble.
 
 	&stlimit = -1
 
@@ -85,7 +87,8 @@ main.auto
 
 *	In auto mode, fribble plays against itself.
 
-*	Fribble makes the moves for both players, each with kind player.kind.auto. 
+*	Fribble makes the moves for both players, 
+*	each with kind player.kind.auto. 
 
 	g.one = player(1,'John Doe',	player.kind.auto)
 	g.two = player(2,'Jane Doe',	player.kind.auto)
@@ -102,7 +105,8 @@ main.solo
 *	In solo mode, you play against fribble. 
 
 *	Fribble is player one, of kind player.kind.auto.
-*	You are player two, of kind player.kind.solo. You make your own moves.
+*	You are player two, of kind player.kind.solo. 
+*	You make your own moves.
 
 	g.one = player(1,'Fribble',	player.kind.auto)
 	g.two = player(2,'You',		player.kind.solo)
@@ -115,17 +119,19 @@ main.team
 
 *	Setup for mode 'team'
 
-*	In team mode, you work with fribble to play a foe, reporting the foe's moves
-*	to fribble and playing the move fribble then suggests against the foe.
+*	In team mode, you work with fribble to play a foe,
+*	 reporting the foe's moves to fribble and playing the 
+*	move fribble then suggests against the foe.
 
 *	You are player one, of kind player.kind.team.
 *	The foe is player two, of kind player.kind.foe.
 
-*	You manage the tiles, entering your tiles as dealt by wwf before each move.
-*	(The foe's tiles are unknown, as all that matters is the move they make.)
+*	You manage the tiles, entering your tiles as dealt 
+*	by wwf before each move.  (The foe's tiles are unknown, 
+*	as all that matters is the move they make.)
 
-*	(I wrote this program because a friend named Phil kept beating me -- badly --
-*	playing wwf.)
+*	(I wrote this program because a friend named Phil kept beating 
+*	me -- badly -- playing wwf.)
 
 	g.one = player(1,'Phil DeFoe',	player.kind.foe);* Hi Phil!
 
