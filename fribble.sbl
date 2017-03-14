@@ -19,7 +19,6 @@
 
 -include "lib.sbl"
 
-	&trace = &ftrace = 20000
 *	Play a game of fribble.  Usage:  
 
 *		sbl fribble.sbl -umode
@@ -28,9 +27,13 @@
 
 *	The program can now run in several modes:
 
-*	auto:	fribble moves for both players (default)
-*	solo:	you play against fribble
-*	team:	you and fribble work as team to play another player
+*	f.mode = 1 for auto mode, where fribble moves for both players.
+*	f.mode = 2 for solo mode, where you play against fribble.
+*	f.mode = 3 for team mode, where you and fribble work as team to play another player.
+	
+	f.mode.auto = 1
+	f.mode.solo = 2
+	f.mode.team = 3
 
 *	Fribble can also be invoked to run as a shell:
 
@@ -38,14 +41,44 @@
 
 *	The shell() procedure is called. It can be used to replay prior games, study moves, make moves,
 *	test the system, and of course learn more about Fribble.
-	output = 'calling init from fribble main'
+
+	&stlimit = -1
+
+	&anchor = &trim = 1
+
 	init()
-	output = 'called init from fribble main'
 
-	ident(g.mode,g.mode.auto)		:s(main.auto)
-	ident(g.mode,g.mode.solo)		:s(main.solo)
-	ident(g.mode,g.mode.team)		:s(main.team)
+	out('initial tiles ' g.tiles)
 
+	options = host(0) ' '
+	output = 'host <' options '>'
+
+options.loop
+
+	options break(' ') . opt ' ' =			:f(options.loop.done)
+
+*	Only process -u options. 
+
+	opt '-u' =					:f(options.loop)
+	
+	out('option:' opt ':')
+
+	f.mode = ident(opt,'auto') f.mode.auto		:s(options.loop)
+	f.mode = ident(opt,'solo') f.mode.solo		:s(options.loop)
+	f.mode = ident(opt,'team') f.mode.team		:s(options.loop)
+	ident(opt,'shell')				:s(main.shell)
+	
+							:(options.loop)
+options.loop.done
+
+	out('f.mode=' f.mode)
+
+
+	eq(f.mode,f.mode.solo)				:s(main.solo)
+	eq(f.mode,f.mode.auto)				:s(main.auto)
+	eq(f.mode,f.mode.team)				:s(main.team)
+
+							:(main.auto);* default
 main.auto
 
 *	Setup for mode 'auto'.
@@ -60,12 +93,12 @@ main.auto
 *	Fribble manages the tiles for both players.
 
 	g.tilemanager = 1
-							:(main.setup)
+							:(main.done)
 
 main.solo
 
-	out('fribble main.solo')
 *	Setup for mode 'solo'. 
+
 *	In solo mode, you play against fribble. 
 
 *	Fribble is player one, of kind player.kind.auto.
@@ -77,7 +110,7 @@ main.solo
 *	Fribble manages the tiles for both players.
 
 	g.tilemanager = 1
-							:(main.setup)
+							:(main.done)
 main.team
 
 *	Setup for mode 'team'
@@ -85,40 +118,46 @@ main.team
 *	In team mode, you work with fribble to play a foe, reporting the foe's moves
 *	to fribble and playing the move fribble then suggests against the foe.
 
+*	You are player one, of kind player.kind.team.
+*	The foe is player two, of kind player.kind.foe.
+
 *	You manage the tiles, entering your tiles as dealt by wwf before each move.
 *	(The foe's tiles are unknown, as all that matters is the move they make.)
 
 *	(I wrote this program because a friend named Phil kept beating me -- badly --
 *	playing wwf.)
 
-*	Fribble is player one, of kind player.kind.auto
-*	You and Fribble are player two, of kind player.kind.team
+	g.one = player(1,'Phil DeFoe',	player.kind.foe);* Hi Phil!
 
-	g.one = player(1,'Phil DeFoe',player.kind.foe);* Hi Phil!
-	g.two = player(2,'You+Fribble',	player.kind.team)
-
+	g.two = player(2,'You',		player.kind.team)
 	g.tilemanager =
-							:(main.setup)
+							:(main.done)
 main.shell
 	shell()						:(end)
 
-main.setup
+main.done
 
 	g.players[1] = g.one; g.players[2] = g.two
 
-	out('g.one ' show.player(1))
-	out('g.two ' show.player(2))
+*	out('g.one ' show.player(1))
+*	out('g.two ' show.player(2))
 
 	g.turn = g.lastmove = total(g.one) = total(g.two) = 0
 	
+*	Set f.trace to trace fribble.
+
+	f.trace = 1
+	f.trace = 0
+
 	ident(g.tilemanager)				:s(main.game)
 
 *	Program manages the tiles, so deal initial tiles.
 	
-	rack(g.one) = (ne(g.rotary) take(6), take(7))
+	rack(g.one) = take(7)
 	rack(g.two) = take(7)
 
 main.game
 
-	game()
+	game(f.mode)
+
 end
