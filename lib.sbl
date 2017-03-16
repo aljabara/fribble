@@ -25,8 +25,7 @@
 
 *	g.version is the version of the program:
 
-	g.version = '17.1.30';* 30 January 2017, 1st version. 
-	g.version = '2.alpha'; In development
+	g.version = '1.0'; * March 2017
 
 *	g.board, array('15,15'), the playing board. Each entry is
 *	 blank (' ') for an unplayed cell, or is the letter played.
@@ -68,8 +67,8 @@
 *	g.maxmoves, maximum number of moves. This is used to avoid 
 *	runaway behavior.
 
-	g.maxmoves = 60
 	g.maxmoves = 3
+	g.maxmoves = 60
 
 *	g.lines, array(30), is the array of the lines defined by the 
 *	rows and columns in the board. 
@@ -337,7 +336,7 @@ init.dict.done
 
 init.dict.end
 
-	define('init.number()i1,i2,i3,s1,s2,w')		:(init.number.end)
+	define('init.number()i1,i2,i3,i4,s1,s2,w')		:(init.number.end)
 
 *	Initialize g.numbers.
 
@@ -346,7 +345,7 @@ init.number
 	s1 =	'one two three four five six seven eight nine ten eleven twelve '
 .		'thirteen fourteen fifteen sixteen seventeen eighteen nineteen '
 	s2 =	'twenty thirty forty fifty sixty seventy eighty ninety '
-	i1 = 0; i2 = 10; i3 = 20
+	i1 = 0; i2 = +10; i3 = +20; i4 = +10
 
 	g.numbers = table(100)
 	g.numbers[100] = 'one hundred'
@@ -357,16 +356,21 @@ init.number.digits
 	g.numbers[i1 = i1 + 1] = w			:(init.number.digits)
 
 init.number.tens
-
-	s2 break(' ') . w ' ' =				:f(init.number.decades)
-	g.numbers[i2 = i2 + 10] = w			:(init.number.tens)
+	
+	gt(i2 = i2 + 10,90)				:s(init.number.decades)
+	s2 break(' ') . w ' ' =
+	g.numbers[i2] = w				:(init.number.tens)
 
 init.number.decades
 	
-	le(i3 = i3 + 1,99)				:f(return)
+	gt(i4 = i4 + 10, 90)				:s(return)
+
+init.number.loop
+
+	gt(i3 = i3 + 1,99)				:s(return)
 	eq(remdr(i3,10))				:s(init.number.decades)
-	g.numbers[i3] = g.numbers[(i3 / 10) * 10] ' ' g.numbers[remdr(i3,10)]
-.					:s(init.number.decades)f(return)
+	g.numbers[i4 + remdr(i3,10)] = g.numbers[i4] ' ' g.numbers[remdr(i3,10)]
+.					:s(init.number.loop)f(return)
 init.number.end
 
 	define('init.options()s,t,options,optname,opt,val,cname')	:(init.options.end)
@@ -872,11 +876,11 @@ empty.end
 *ENDGAME*
 endgame
 
-	out(	name(g.players[1])  ' scored ' number(total(g.players[1])) ' points, '
-.		'with a best move of' cardinal(highest(g.players[1]),'point') ' .')
+	out(	name(g.players[1])  ' scored' number(total(g.players[1])) ' points, '
+.		'with a best move off' cardinal(highest(g.players[1]),'point') '.')
 
-	out(	name(g.players[2])  ' scored ' number(total(g.players[2])) ' points; '
-.		'with a best move of' cardinal(highest(g.players[2]),'point') ' .')
+	out(	name(g.players[2])  ' scored' number(total(g.players[2])) ' points, '
+.		'with a best move of' cardinal(highest(g.players[2]),'point') '.')
 
 	out(gt(thirty(g.players[1])) name(g.players[1]) ' had ' 
 .		cardinal(thirty(g.players[1]),'move') ' of thirty or more points.')
@@ -1148,7 +1152,7 @@ game.turn
 
 	player = g.players[pid]
 
-	out('Move ' g.turn ' for player ' name(player) 
+	out('Move ' number(g.turn) ' for player ' name(player) 
 .		 (differ(g.tilemanager) ', with tiles "'
 .		show.tiles(rack(player),'A'),'')	'".')
 
