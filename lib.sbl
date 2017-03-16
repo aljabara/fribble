@@ -25,7 +25,7 @@
 
 *	g.version is the version of the program:
 
-	g.version = '1.0'; * 16 March 2017
+	g.version = '1.0';* 16 March 2017
 
 *	g.board, array('15,15'), the playing board. Each entry is
 *	 blank (' ') for an unplayed cell, or is the letter played.
