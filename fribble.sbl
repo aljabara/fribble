@@ -53,25 +53,25 @@
 
 options.loop
 
-	options break(' ') . opt ' ' =			:f(options.loop.done)
+	options break(' ') . opt ' ' =		:f(options.loop.done)
 
 *	Only process -u options. 
 
-	opt '-u' =					:f(options.loop)
+	opt '-u' =				:f(options.loop)
 	
-	f.mode = ident(opt,'auto') f.mode.auto		:s(options.loop)
-	f.mode = ident(opt,'solo') f.mode.solo		:s(options.loop)
-	f.mode = ident(opt,'team') f.mode.team		:s(options.loop)
-	ident(opt,'shell')				:s(main.shell)
-	
-							:(options.loop)
+	f.mode = ident(opt,'auto') f.mode.auto	:s(options.loop)
+	f.mode = ident(opt,'solo') f.mode.solo	:s(options.loop)
+	f.mode = ident(opt,'team') f.mode.team	:s(options.loop)
+	ident(opt,'shell')			:s(main.shell)
+
+						:(options.loop)
 options.loop.done
 
-	eq(f.mode,f.mode.solo)				:s(main.solo)
-	eq(f.mode,f.mode.auto)				:s(main.auto)
-	eq(f.mode,f.mode.team)				:s(main.team)
+	eq(f.mode,f.mode.solo)			:s(main.solo)
+	eq(f.mode,f.mode.auto)			:s(main.auto)
+	eq(f.mode,f.mode.team)			:s(main.team)
 
-							:(main.auto);* default
+						:(main.auto);* default
 main.auto
 
 *	Setup for mode 'auto'.
@@ -87,7 +87,7 @@ main.auto
 *	Fribble manages the tiles for both players.
 
 	g.tilemanager = 1
-							:(main.done)
+						:(main.done)
 
 main.solo
 
@@ -105,7 +105,7 @@ main.solo
 *	Fribble manages the tiles for both players.
 
 	g.tilemanager = 1
-							:(main.done)
+						:(main.done)
 main.team
 
 *	Setup for mode 'team'
@@ -128,9 +128,9 @@ main.team
 
 	g.two = player(2,'You',		player.kind.team)
 	g.tilemanager =
-							:(main.done)
+						:(main.done)
 main.shell
-	shell()						:(end)
+	shell()					:(end)
 
 main.done
 
@@ -146,7 +146,7 @@ main.done
 	f.trace = 1
 	f.trace = 0
 
-	ident(g.tilemanager)				:s(main.game)
+	ident(g.tilemanager)			:s(main.game)
 
 *	Program manages the tiles, so deal initial tiles.
 	
