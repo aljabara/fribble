@@ -53,10 +53,11 @@
 	g.highest = 0;* highest score
 	g.lowest = 0;* lowest cost
 
-*	g.log is set to append a copy of standard output to
-*	log file 'fribble.log'.
+*	Set g.log non-null to append a copy of standard output to
+*	a log file. The name of the log file is derived from the
+*	date and time of program execution.
 	
-	g.log = 1
+	g.log = 
 
 *	g.logfile is the output-associated variable for the log file
 *	g.logfile.channel is its channel; g.logfile.name is its name
@@ -816,7 +817,7 @@ counters
 	out('Performance metrics:')
 *	out('Time ',(time() - g.time) / 1000)
 *	elapsed = (time() - g.time) / 1000
-*	counter('execution time (sec)'		, thousands(elapsed))
+	counter('execution time (msec)'		, thousands(time()))
 	counter('turns'				, thousands(g.turn))
 	counter('placements found by scan'	, thousands(count.scanned))
 	counter('permutations examined'		, thousands(count.perm))
@@ -876,11 +877,11 @@ empty.end
 *ENDGAME*
 endgame
 
-	out(	name(g.players[1])  ' scored' number(total(g.players[1])) ' points, '
-.		'with a best move off' cardinal(highest(g.players[1]),'point') '.')
+	out(	name(g.players[1])  ' scored ' number(total(g.players[1])) ' points, '
+.		'with a best move of ' cardinal(highest(g.players[1]),'point') '.')
 
-	out(	name(g.players[2])  ' scored' number(total(g.players[2])) ' points, '
-.		'with a best move of' cardinal(highest(g.players[2]),'point') '.')
+	out(	name(g.players[2])  ' scored ' number(total(g.players[2])) ' points, '
+.		'with a best move of ' cardinal(highest(g.players[2]),'point') '.')
 
 	out(gt(thirty(g.players[1])) name(g.players[1]) ' had ' 
 .		cardinal(thirty(g.players[1]),'move') ' of thirty or more points.')
