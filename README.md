@@ -87,12 +87,8 @@ Examples:
 ```
   m(r8,8,'fribble') plays the word *fribble* in row 8, starting at position 8.
   m(c8,9,'riends') plays the string *riends* in column 8, starting at position 9, making the word 'friends' in column 8.
-  mf(c13,'7,9,10','pay') plays the string 'pay' in column 13, at positions 7, 9 and 10, making the word 'play' in column 13.
+  mf(c13,'7 9 10','pay') plays the string 'pay' in column 13, at positions 7, 9 and 10, making the word 'play' in column 13.
 ```
-
-
-
-
 
 
 
