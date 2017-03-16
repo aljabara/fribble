@@ -49,11 +49,7 @@
 	&anchor = &trim = 1
 
 	init()
-
-	out('initial tiles ' g.tiles)
-
 	options = host(0) ' '
-	output = 'host <' options '>'
 
 options.loop
 
@@ -63,8 +59,6 @@ options.loop
 
 	opt '-u' =					:f(options.loop)
 	
-	out('option:' opt ':')
-
 	f.mode = ident(opt,'auto') f.mode.auto		:s(options.loop)
 	f.mode = ident(opt,'solo') f.mode.solo		:s(options.loop)
 	f.mode = ident(opt,'team') f.mode.team		:s(options.loop)
@@ -72,9 +66,6 @@ options.loop
 	
 							:(options.loop)
 options.loop.done
-
-	out('f.mode=' f.mode)
-
 
 	eq(f.mode,f.mode.solo)				:s(main.solo)
 	eq(f.mode,f.mode.auto)				:s(main.auto)
