@@ -212,47 +212,40 @@
 	
 *	Utility functions
 
-	define('init(dictfile,skip,external)c,i,j,s,t')	:(init.end)
+	define('init(type,dictfile,skip,external)c,i,j,s,t')	:(init.end)
 
 *	Initialize global variables.
 
 *INIT*
 init
-	init.main(dictfile,skip)
-
-	randomseed();* seed the random number generator
-							:(return)
-init.end
-
-	define('init.main(dictfile,skip)c,i,j,s,t')	:(init.main.end)
-
-*	Initialize global variables.
-
-init.main
 
 	init.options()
 
+*	Do not initialize dictionary and permutation map
+*	if TYPE is not null.
+
+	differ(type)					:s(init.rest)
+
 	g.dict = array(15)
-	g.board = array('15,15',' ')
-	g.lines = lines(g.board)
+	init.dict(dictfile,skip)
 
-	g.used = array('15,15',' ')
-	g.used.lines = lines(g.used)
-
-	init.bonus()
-
-	init.number()
-
-*	Initialze permutation map.
-
+	g.permutations = table(7)
+	g.permutations.count = table(100)
 	init.perm('perm.txt')
 
+init.rest
+
+	g.board = array('15,15',' ')
+	g.lines = lines(g.board)
+	g.used = array('15,15',' ')
+	g.used.lines = lines(g.used)
+	init.bonus()
+	init.number()
 	init.tiles()
 	init.value()
-
-	init.dict(dictfile,skip)
+	randomseed();* seed the random number generator
 							:(return)
-init.main.end
+init.end
 
 	define('init.bonus()s,row,col,b,c')		:(init.bonus.end)
 
@@ -501,8 +494,6 @@ init.options.end
 *INIT.PERM*
 init.perm
 
-	g.permutations = table(7)
-	g.permutations.count = table(100)
 	input(.ifile,g.channel.temp, filename)    	 :s(init.perm.next)
 	out('unable to open permutation file ',filename) :(freturn)
 
