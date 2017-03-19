@@ -17,7 +17,8 @@
 *	along with fribble.  If not, see <http://www.gnu.org/licenses/>.
 *
 
--include "lib.sbl"
+-include "globals.sbl"
+-include "util.sbl"
 
 *	Play a game of fribble.  Usage:  
 

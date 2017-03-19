@@ -1,0 +1,99 @@
+* Copyright 2017, David Shields
+
+-include "util.sbl"
+
+*	Build concordance of sbl program.
+
+	&anchor = &trim = 1
+	&dump = 3
+	tab = char(9)
+	init(1)
+
+	define('report(text,count)')		:(report.end)
+
+*	Report an assessment result.
+
+report
+
+	output = lpad(text,16) ' ' lpad(count,6) :(return)
+
+report.end
+
+*	lines is an array with the lines in the input file.
+*	dict.words is a table mapping each word in the input file
+*	to a table that lists all the lines containing the word.
+*	The key -1 is used to count the number of entries in a table.
+	lines = reader()
+	dict.words = table(20000)
+	dict.words[-1] = 0
+	dict.lines = table(20000)
+	dict.lines[-1] = 0
+
+next
+	line = lines[i = i + 1]			:f(done)
+	words = words(line)
+	wi = 0
+
+word.next
+
+*	For each word, see if this is the first instance
+*	of the word, in which case allocate a new table
+*	in dict.lines that will contain all the lines
+*	containing the word.
+
+	word = words[wi = wi + 1,2]		:f(next)
+
+*	Skip words with three of fewer characters.
+
+	le(size(word),3)			:s(next)
+	tbl = dict.words[word]
+	differ(tbl)				:s(word.seen)
+
+*	Here on first seeing a word
+
+	tbl = table()
+	tbl[-1] = 0
+	dict.lines[word] = tbl
+
+word.seen
+
+*	Here to add the line to the table of lines
+*	containing the word.
+	
+	tbl[-1] = tbl[-1] + 1
+	tbl[tbl[-1]] = lpad(i,6) tab line
+						:(next)
+done
+
+*	Here after scanning the file. Sort the word
+*	dictionary in alphabetical order.
+
+	dict.words = sort(dict.words,2)
+	wi = 0
+
+loop.w
+
+*	Here on seeing a new word. Retrieve the
+*	table mapping the lines containing the word.
+
+	word = dict.words[wi = wi +1]		:f(end)
+	output = word
+	tbl = dict.lines[word]
+	li = 0
+
+loop.l
+
+*	Here to list a line containing a reference
+*	to a word.
+
+	line = tbl[li = li + 1]			:f(loop.w)
+	output = tab line			:(loop.l)
+end 
+
+	tbl = dict.
+
+
+	dict.words[dict.words[-1] = dict.words[-1] + 1] = word
+	
+
+
