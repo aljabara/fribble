@@ -1,86 +1,141 @@
 * Copyright 2017, David Shields
 
--include "globals.sbl"
--include "util.sbl"
-
 *	Build concordance of sbl program.
 
 	&anchor = &trim = 1
 	&dump = 3
+	digits = span('0123456789')
+	identifier = breakx(
+	id.pat = breakx('&' &lcase &ucase '._0123456789')
+	label = span(&lcase &ucase '.')
+	letter = any(&lcase &ucase)
 	tab = char(9)
-*	init(1)
+	whitespace = span(' ' tab)
+	word.pat = span('&' &lcase &ucase '._0123456789')
 
-	define('report(text,count)')		:(report.end)
+*	Skip is list of words to be omitted.
 
-*	Report an assessment result.
+	skip = table()
+	s = 	' ident differ break span any notany rem '
+.		'lt le gt ge eq ne return end '
+.		'size char table array '
 
-report
+skip.next
+	
+	s break(' ') . word ' ' =			:f(skip.done)
+	skip[word] = 1					:(skip.next)
 
-	output = lpad(text,16) ' ' lpad(count,6) :(return)
+skip.done
 
-report.end
+*	WORDS is a table of words found.
+*	For each WORD in WORDS, LINES is a table mapping WORD 
+*	to a table of the lines containing an instance of WORD.
 
-*	lines is an array with the lines in the input file.
-*	dict.words is a table mapping each word in the input file
-*	to a table that lists all the lines containing the word.
-*	The key -1 is used to count the number of entries in a table.
-	dict.words = table(20000)
-	dict.words[-1] = 0
-	dict.lines = table(20000)
-	dict.lines[-1] = 0
+*	The key -1 is used to maintain a count of the number 
+*	of entries in a table.
+
+	words = table()
+	words[-1] = 0
 
 	lines = table()
 	lines[-1] = 0
 
-read
-	
-	line = input				:f(next1)
-	lines[-1] = lines[-1] + 1
-	lines[lines[-1]] = line			:(read)
-next1
-	out('dt lines',datatype(lines))
+	lines.n = 0
 
-next
-	line = lines[i = i + 1]			:f(done)
-	words = words(line)
-	wi = 0
+line
 
-word.next
+	line = input 					:f(done)
+	lines.n = lines.n + 1
+	line whitespace =
+	ident(line)					:s(line)
+	line label . word = 				:s(haslabel)
+	line '*' =					:s(line)
+	line '-' = 					:s(line)
+							:(define)
+haslabel
+
+*	Here if line starts with label. Add the label to the skip list
+
+*	output = 'label word[' word '] line [' line ']' 
+	skip[word] = 1					
+
+define
+
+	line 'define('					:f(word)
+
+*	Here if define, replace quotes by blanks and continue.
+*	This will expose the funcion name and arguments as words.
+
+	line = replace(line, '"' "'",'  ')
+
+*	Find terminating label and add it to skip list
+
+	s = reverse(line)
+	s ')' break('(') . s
+	skip[s] = differ(s) 1
+
+word
 
 *	For each word, see if this is the first instance
 *	of the word, in which case allocate a new table
-*	in dict.lines that will contain all the lines
+*	in LINES that will contain all the lines
 *	containing the word.
-	out('dt words',datatype(words))
-	out('proto words',prototype(words))
-	word = words[wi = wi + 1,2]		:f(next)
 
-*	Skip words with three of fewer characters.
+	output = 'word[' line ']'
+	ident(line)					:s(line)
+	line whitespace =
+*	line letter					:f(word)
+	line any('[(') =				:s(word)
+	line digits =					:s(word)
 
-	le(size(word),3)			:s(next)
-	tbl = dict.words[word]
-	differ(tbl)				:s(word.seen)
+*	Check for quoted string, in which case skip to the next word.
 
-*	Here on first seeing a word
+	line "'"					:s(noquote)
+	line "'" =
+	line break("'") =				:s(word)
 
+noquote
+	
+	line '"'					:s(noquotes)
+	line '"' =
+	line break('"') '"' =				:s(word)
+
+noquotes
+
+*	output = 'line before word.pat[' line ']'
+	line word.pat . word =				:f(line)
+*	output = 'line after word.pat word [' word '] ['  line ']'
+	differ(skip[word])				:s(word)
+
+*	Skip words with three or fewer characters.
+
+	le(size(word),3)				:s(word)
+	tbl = lines[word]
+	differ(tbl)					:s(word.seen)
+
+*	Here on first seeing a word.
+
+	words[-1] = words[-1] + 1
+	words[word] = 1
 	tbl = table()
 	tbl[-1] = 0
-	dict.lines[word] = tbl
+	lines[word] = tbl
+	output = 'new word ' word
 
 word.seen
 
-*	Here to add the line to the table of lines
+*	Here to add this line to the table of lines
 *	containing the word.
 	
 	tbl[-1] = tbl[-1] + 1
 	tbl[tbl[-1]] = lpad(i,6) tab line
-						:(next)
+						:(word)
 done
 
 *	Here after scanning the file. Sort the word
 *	dictionary in alphabetical order.
 
-	dict.words = sort(dict.words,2)
+	words = sort(words,2)
 	wi = 0
 
 loop.w
@@ -88,9 +143,11 @@ loop.w
 *	Here on seeing a new word. Retrieve the
 *	table mapping the lines containing the word.
 
-	word = dict.words[wi = wi +1]		:f(end)
+	word = words[wi = wi +1,2]		:f(end)
 	output = word
-	tbl = dict.lines[word]
+	tbl = lines[word]
+	ident(tbl)				:s(loop.w)
+*	output = 'datatype tbl ' datatype(tbl)
 	li = 0
 
 loop.l
@@ -98,14 +155,7 @@ loop.l
 *	Here to list a line containing a reference
 *	to a word.
 
+*	output = 'dt tbl ' datatype(tbl)
 	line = tbl[li = li + 1]			:f(loop.w)
 	output = tab line			:(loop.l)
 end 
-
-	tbl = dict.
-
-
-	dict.words[dict.words[-1] = dict.words[-1] + 1] = word
-	
-
-
