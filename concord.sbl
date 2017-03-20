@@ -1,5 +1,6 @@
 * Copyright 2017, David Shields
 
+-include "globals.sbl"
 -include "util.sbl"
 
 *	Build concordance of sbl program.
@@ -7,7 +8,7 @@
 	&anchor = &trim = 1
 	&dump = 3
 	tab = char(9)
-	init(1)
+*	init(1)
 
 	define('report(text,count)')		:(report.end)
 
@@ -23,11 +24,21 @@ report.end
 *	dict.words is a table mapping each word in the input file
 *	to a table that lists all the lines containing the word.
 *	The key -1 is used to count the number of entries in a table.
-	lines = reader()
 	dict.words = table(20000)
 	dict.words[-1] = 0
 	dict.lines = table(20000)
 	dict.lines[-1] = 0
+
+	lines = table()
+	lines[-1] = 0
+
+read
+	
+	line = input				:f(next1)
+	lines[-1] = lines[-1] + 1
+	lines[lines[-1]] = line			:(read)
+next1
+	out('dt lines',datatype(lines))
 
 next
 	line = lines[i = i + 1]			:f(done)
@@ -40,7 +51,8 @@ word.next
 *	of the word, in which case allocate a new table
 *	in dict.lines that will contain all the lines
 *	containing the word.
-
+	out('dt words',datatype(words))
+	out('proto words',prototype(words))
 	word = words[wi = wi + 1,2]		:f(next)
 
 *	Skip words with three of fewer characters.
