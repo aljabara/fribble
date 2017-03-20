@@ -1548,7 +1548,7 @@ scoreline.word
 
 	start = words[add1(.wi),1]			:f(scoreline.done)
 	word = words[wi,2]
-*	.add1(.count.scoreline)
+*	add1(.count.scoreline)
 	ne(g.tracing) out('scoreline wi=' wi ' start=' start ' word=' word
 .		 '.' ' count ' count.scoreline)
 	word break(&ucase)				:f(scoreline.word)
@@ -2150,7 +2150,7 @@ show.board.r
 
 show.board.c
 
-	gt(c = c + 1,15)				:s(show.board.margin)
+	gt(add1(.c),15)					:s(show.board.margin)
 	ch = ucase(board[r,c])
 	b = g.bonus[r,c]
 	differ(ch,' ')					:s(show.board.ch)
@@ -2201,7 +2201,7 @@ show.bonus.r
 
 show.bonus.c
 
-	gt(c = c + 1,15)				:s(show.bonus.l)
+	gt(add1(.c),15)					:s(show.bonus.l)
 	l = g.bonus[r,c]
 	line = differ(l,' ') line ' ' l 		:s(show.bonus.c)
 
@@ -2274,7 +2274,7 @@ show.grid
 
 show.grid.r
 
-	gt(r = r + 1,15) 				:s(show.grid.done)
+	gt(add1(.r),15) 				:s(show.grid.done)
 	out(show.hline(g,r))				:(show.grid.r)
 
 show.grid.done
@@ -2442,7 +2442,7 @@ show.play
 
 show.play.l
 
-	gt(r = r + 1,15) 				:s(show.play.ll)
+	gt(add1(.r),15) 				:s(show.play.ll)
 	plines[r] = show.hline(board,r)			:(show.play.l)
 
 show.play.ll
@@ -2455,13 +2455,13 @@ show.play.ll
 
 show.play.r
 
-	gt(r = r + 1,15) 				:s(show.play.finish)
+	gt(add1(.r),15) 				:s(show.play.finish)
 	line = lpad(r,2) '|'
 	c = 0
 
 show.play.c
 
-	gt(c = c + 1,15)				:s(show.play.margin)
+	gt(add1(.c),15)					:s(show.play.margin)
 	ch = ucase(board[r,c])
 	b = g.bonus[r,c]
 	differ(ch,' ')					:s(show.play.ch)
@@ -2643,7 +2643,7 @@ start
 	tiles = less(tiles,'s')
 	max = max - 1
 
-start.n	gt(n = n + 1,max)				:s(start.done)
+start.n	gt(add1(.n),max)				:s(start.done)
 
 	kind = size(tiles) '?' n
 *	out('start.n kind=' kind)
@@ -2654,12 +2654,12 @@ start.word
 
 *	Get next word, check that valid, then see if new high score
 
-	perm = perms[permi = permi + 1]			:f(start.n)
+	perm = perms[add1(.permi)]			:f(start.n)
 	word = replace(perm,substr('1234567',1,size(tiles)),tiles)
 
 *	out('kind ' kind ' perm ' perm ' word ' word)
 	checkword(word)					:f(start.word)
-	checkwords = checkwords + 1
+	add1(.checkwords)
 
 *	Score is the value of the tiles unless the word has five or
 *	more characters, in which case the double word bonus
@@ -2814,7 +2814,7 @@ test.perm
 **	the same letter, the table TRIED is used below. This cut the running
 *	time of the program by a factor of two when first introduced.
 
-	count.perm = count.perm + 1
+	add1(count.perm)
 
 	seen(perm)				:s(freturn)
 	count.cells = count.cells + size(perm)
@@ -2849,7 +2849,7 @@ test.perm
 *	out(ne(g.tracing) 'Find valid first '
 *		show.move(move) ' ' show.line(line))
 
-	g.clines[g.cln = g.cln + 1] =  pair( id(move), insert(lines[num],move))
+	g.clines[add1(.g.cln)] =  pair( id(move), insert(lines[num],move))
 	i = 0
 
 *	Check the crossing lines, constructing them as needed, to make sure the
@@ -2872,7 +2872,7 @@ test.perm.cross
 
 *	out(ne(g.tracing) 'Find text ' text(move))
 
-	g.clines[g.cln = g.cln + 1] = cline		:(test.perm.cross)
+	g.clines[add1(.g.cln)] = cline			:(test.perm.cross)
 
 test.perm.end
 
