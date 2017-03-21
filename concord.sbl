@@ -5,7 +5,6 @@
 	&anchor = &trim = 1
 	&dump = 3
 	digits = span('0123456789')
-	identifier = breakx(
 	id.pat = breakx('&' &lcase &ucase '._0123456789')
 	label = span(&lcase &ucase '.')
 	letter = any(&lcase &ucase)
