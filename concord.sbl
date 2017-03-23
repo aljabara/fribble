@@ -1,160 +1,248 @@
-* Copyright 2017, David Shields
+*	Copyright 2017, David Shields
 
-*	Build concordance of sbl program.
+	define('concord()')				:(concord.end)
+
+*	Build concordance for a sbl program, by reading the program
+*	source from standard input and, for each word in the program,
+*	writing out, in alpabetical order, lines consisting of the word
+*	followed by a list of the line numbers of the lines that
+*	reference the word.
+*	
+
+concord
+
+	output = 'enter concord'
 
 	&anchor = &trim = 1
-	&dump = 3
+*	&dump = 3
 	digits = span('0123456789')
 	id.pat = breakx('&' &lcase &ucase '._0123456789')
 	label = span(&lcase &ucase '.')
+	punctuation = '~!@#$%^&()-+=[]<>,?/'
 	letter = any(&lcase &ucase)
 	tab = char(9)
 	whitespace = span(' ' tab)
-	word.pat = span('&' &lcase &ucase '._0123456789')
+	word.pat = span('&' &lcase &ucase '.0123456789')
 
 *	Skip is list of words to be omitted.
+*	Do not skip 'define' and 'data' to include function
+*	and date definitions in output.
 
-	skip = table()
-	s = 	' ident differ break span any notany rem '
-.		'lt le gt ge eq ne return end '
-.		'size char table array '
+	g.skip = table()
+	s = 	' ident differ break breakx span any notany rem '
+.		'lt le gt ge eq ne return end input output '
+.		'size char table array string integer prototype '
+.		'lpad rpad anchor trim dump stlimit '
 
 skip.next
 	
 	s break(' ') . word ' ' =			:f(skip.done)
-	skip[word] = 1					:(skip.next)
+	g.skip[word] = 1				:(skip.next)
 
 skip.done
 
 *	WORDS is a table of words found.
-*	For each WORD in WORDS, LINES is a table mapping WORD 
+*	For each WORD in WORDS, REFLIST is a table mapping WORD 
 *	to a table of the lines containing an instance of WORD.
 
 *	The key -1 is used to maintain a count of the number 
 *	of entries in a table.
 
-	words = table()
-	words[-1] = 0
+	g.words = table()
+	g.words[-1] = 0
 
-	lines = table()
-	lines[-1] = 0
+*	LINES is a table mapping source line numbers to the line text.
 
-	lines.n = 0
+	g.lines = table()
+	g.lines[-1] = 0
+
+	g.g.linenum = 0
+
+*	REFS is a list, in increasing order, of the lines that reference a
+*	particular word. LIST is a string consisting of line numbers separated
+*	by a space. LAST is the most recent line containing a use of the word.
+*	This assists is detecting multiple uses of a word in a line. 
+*	Consider, for example, the statement 'i = i + 1'.
+*	REFLIST is a map from a word to the REFS for it.
+	
+	data('refs(list,last)')
+
+	g.reflist = table(1000)
 
 line
 
-	line = input 					:f(done)
-	lines.n = lines.n + 1
-	line whitespace =
-	ident(line)					:s(line)
-	line label . word = 				:s(haslabel)
-	line '*' =					:s(line)
-	line '-' = 					:s(line)
-							:(define)
-haslabel
+*	Read next line. Maintain a count of the number of lines in line.n.
 
-*	Here if line starts with label. Add the label to the skip list
+	line = input 					:f(return)
+	g.linenum = g.linenum + 1
 
+	g.lines[-1] = g.lines[-1] + 1
+	g.lines[g.lines[-1]] = lpad(g.linenum,6) tab line
+
+*	Skip empty lines.
+
+	s = line
+	s whitespace =
+	ident(s)					:s(line)
+
+*	Skip comments and directives.
+
+	line any('*-')					:s(line)
+
+*	Look for period at start of line, indicating a continuation.
+*	Remove the period.
+
+	line '.' = 	
+
+	:(nolabel)
+*	Look for label at start of line. If found, remove it and
+*	add the label to the skip table.
+
+	line letter 					:f(nolabel)
 *	output = 'label word[' word '] line [' line ']' 
-	skip[word] = 1					
+	g.skip[word] = 1					
 
-define
+nolabel
 
-	line 'define('					:f(word)
+*	Eliminate leading whitespace.
 
-*	Here if define, replace quotes by blanks and continue.
-*	This will expose the funcion name and arguments as words.
+	line whitespace rem . rest = rest
 
-	line = replace(line, '"' "'",'  ')
+*	See if define statement, on which case replace quotes
+*	with spaces to expose function name and arguments as words.
 
-*	Find terminating label and add it to skip list
+	line 'define('					:f(define.done)
 
-	s = reverse(line)
-	s ')' break('(') . s
-	skip[s] = differ(s) 1
+	line = replace(line, "'"," ")
+	line = replace(line, '"'," ")
+
+define.done
+
+	line whitespace =
+
+*	Remove quoted strings.
+
+single
+
+	line break("'") . first  "''" = first rem . rest = first rest	:s(single)
+	
+double
+
+	line break('"') . first  '"' = first rem . rest = first rest	:s(double)
+
+*	Remove success/failure labels at end of line.
+
+
+	line breakx(':') . first ':' any('sf(') rem . rest = first
+	line = trim(line)
+
+*	Replace punctuation and operators with spaces.
+
+	line = replace(line,punctuation,dupl(' ',size(punctuation)))
+
+*	Replace tabs with spaces, and then replace runs of spaces with a single space.
+
+	line = replace(line,tab,' ')
+
+compact line break(' ') . first '  ' rem . rest = first ' ' rest  :s(compact)
+
+*	Prepare for word loop.
+
+	line = trim(line) ' '
 
 word
 
-*	For each word, see if this is the first instance
-*	of the word, in which case allocate a new table
-*	in LINES that will contain all the lines
-*	containing the word.
-
-	output = 'word[' line ']'
-	ident(line)					:s(line)
 	line whitespace =
-*	line letter					:f(word)
-	line any('[(') =				:s(word)
+	ident(line)					:s(line)
+
+*	Skip integer constants.
+
 	line digits =					:s(word)
+	line '-' digits =				:s(word)
 
-*	Check for quoted string, in which case skip to the next word.
-
-	line "'"					:s(noquote)
-	line "'" =
-	line break("'") =				:s(word)
-
-noquote
-	
-	line '"'					:s(noquotes)
-	line '"' =
-	line break('"') '"' =				:s(word)
-
-noquotes
-
-*	output = 'line before word.pat[' line ']'
 	line word.pat . word =				:f(line)
-*	output = 'line after word.pat word [' word '] ['  line ']'
-	differ(skip[word])				:s(word)
+	word whitespace rem . rest = rest
+
+*	Skip words in the skip table.
+
+	differ(g.skip[word])				:s(word)
 
 *	Skip words with three or fewer characters.
 
 	le(size(word),3)				:s(word)
-	tbl = lines[word]
-	differ(tbl)					:s(word.seen)
 
 *	Here on first seeing a word.
 
-	words[-1] = words[-1] + 1
-	words[word] = 1
-	tbl = table()
-	tbl[-1] = 0
-	lines[word] = tbl
-	output = 'new word ' word
+	g.words[-1] = g.words[-1] + 1
+	g.words[word] = 1
+	g.reflist[word] = refs(,g.linenum)
 
 word.seen
 
-*	Here to add this line to the table of lines
-*	containing the word.
-	
-	tbl[-1] = tbl[-1] + 1
-	tbl[tbl[-1]] = lpad(i,6) tab line
-						:(word)
-done
+*	Add this line to the list of the lines containing the word.
 
+	newref(word)					:(word)
+	
+concord.end
+
+	define('listlines()i,n')			:(listlines.end)
+
+*	List the source lines of the program. First write the
+*	number of lines and then write the text of all the source lines.
+
+listlines
+
+	n = g.lines[-1]				
+	output = n
+
+listlines.next
+
+	le(i = i + 1, n)				:f(return)
+	output = g.lines[i]				:(listlines.next)
+
+listlines.end
+
+	define('newref(word)ref')			:(newref.end)
+
+*	Add this line to the list of references for WORD, avoiding
+*	adding a new entry in the same line as the most recent
+*	use of WORD.
+
+newref
+
+	ref = g.reflist[word]
+	eq(g.linenum,last(ref))	 			:s(return)
+	list(ref) = list(ref) ' ' last(ref)
+	last(ref) = g.linenum				
+	output = 'leave ref word [' word ']  list [' list(ref) '] last [' last(ref)
+							:(return)
+
+newref.end
+
+	define('listrefs()n,word,this,wi')			:(listrefs.end)
 *	Here after scanning the file. Sort the word
 *	dictionary in alphabetical order.
 
-	words = sort(words,2)
+listrefs
+	output = 'enter listrefs'
+
+	n = g.words[-1]
+	g.words[-1] =
+	g.words = sort(g.words,1)
 	wi = 0
 
-loop.w
+listrefs.word	
 
-*	Here on seeing a new word. Retrieve the
-*	table mapping the lines containing the word.
+	le(wi = wi + 1,n)					:f(return)
+	word = g.words[wi,1]
+	this = g.reflist[word]
+	output = word ' ' list(this) ' ' last(this)		:(listrefs.word)
 
-	word = words[wi = wi +1,2]		:f(end)
-	output = word
-	tbl = lines[word]
-	ident(tbl)				:s(loop.w)
-*	output = 'datatype tbl ' datatype(tbl)
-	li = 0
+listrefs.end
 
-loop.l
+*	Main program.
 
-*	Here to list a line containing a reference
-*	to a word.
-
-*	output = 'dt tbl ' datatype(tbl)
-	line = tbl[li = li + 1]			:f(loop.w)
-	output = tab line			:(loop.l)
+	concord()
+	listrefs()
+	listlines()
 end 
