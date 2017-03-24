@@ -18,7 +18,7 @@ gather
 
 	&anchor = &trim = 1
 *	&dump = 3
-	punctuation = "',;."
+	punctuation = ",;."
 	punctuation.spaces = dupl(' ',size(punctuation))
 	letter = any(&lcase)
 	whitespace = span(' ')
@@ -26,27 +26,31 @@ gather
 
 *	Skip is list of words to be omitted.
 
-	g.skip = table()
+	g.common = table()
 	str = 	'I thou art the in my thy thou whith where to '
 .		'which that then thou me shall his from but thy '
-.		'own and but where '
+.		'own and but where from '
+.		'with three when for '
+.		'were with what will '
+.		'thee doth mine than they hath '
+.		'thee doth your this have their mine they hath should '
 
 skip.next
 	
 	str break(' ') . word ' ' =			:f(skip.done)
-	g.skip[word] = 1				:(skip.next)
+	g.common[word] = 1				:(skip.next)
 
 skip.done
 
 *	For each table, the key -1 is used to maintain a 
 *	count of the number of entries in the table.
 
-*	FREQ is a table mapping a word to the number of times it occurs
-*	in the gather.
+*	G.FREQ is a table mapping a word to the number of times it occurs
+*	in the sonnets.
 
 	g.freq = table()
 
-*	WORDS is a table of words found.  For each WORD in WORDS,
+*	G.WORDS is a table of words found.  For each WORD in G.WORDS,
 *	REFLIST is a table mapping WORD to a table of the lines 
 *	containing an instance of WORD.
 *	g.count is the number of words in WORDS.
@@ -54,7 +58,7 @@ skip.done
 	g.words = table()
 	g.words[-1] = 0
 
-*	LINES is a table mapping source line numbers to the line text.
+*	GLINES is a table mapping source line numbers to the line text.
 
 	g.lines = table()
 	g.lines[-1] = 0
@@ -79,7 +83,6 @@ line
 *	Read next line. Maintain a count of the number of lines in line.n.
 
 	line = input 					:f(return)
-*	output = 'input ' line
 	line.read = line
 	ident(line)					:f(notblank)
 							:(line)
@@ -117,19 +120,19 @@ notitle
 	saveline(line)
 	line = replace(trim(line),&ucase,&lcase) ' '
 	line = replace(line,punctuation,punctuation.spaces)
-
 word
-
 	line word.pat . word =				:f(line)
-	word whitespace rem . rest = rest
-
-*	Skip words in the skip table.
-
-	ourput = 'skip check [' word ']  skip [' g.skip[word] ']'
-
-	differ(g.skip[word])				:s(word)
+*	word whitespace rem . rest = rest
+	word = trim(word)
 
 *	Skip words with three or fewer characters.
+
+	le(size(word),3)				:s(line)
+
+*	Skip words in the common words table.
+
+	g.common.n = differ(g.common[word]) g.common.n + 1
+	ident(g.common[word])				:f(word)
 
 	le(size(word),3)				:s(word)
 
@@ -138,7 +141,6 @@ word
 *	Here on first seeing a word.
 
 	g.count = g.count + 1
-	g.words[word] = g.words[word] + 1
 	g.reflist[word] = refs(,g.num)
 
 word.seen
@@ -146,7 +148,7 @@ word.seen
 *	Increment frequency count for word, and add this line 
 *	to the list of the lines containing the word.
 
-	g.words[word] = g.words[word] + 1
+	g.freq[word] = g.freq[word] + 1
 	newref(word,g.id '.' g.num)				:(word)
 	
 gather.end
@@ -157,8 +159,7 @@ gather.end
 
 listfreq
 
-	output = g.count
-	freq = rsort(g.words,2)
+	freq = rsort(g.freq,2)
 
 listfreq.next
 
@@ -194,6 +195,7 @@ listlines.end
 
 newref
 
+	output = 'enter new ref ' word 
 	ref = g.reflist[word]
 	eq(g.linenum,last(ref))	 			:s(return)
 	list(ref) = list(ref) ' ' last(ref)
@@ -210,16 +212,15 @@ newref.end
 listrefs
 
 	output = 'enter listrefs'
-	n = g.words[-1]
-	output = 'number g.words ' n
-	g.words[-1] =
-	g.words = sort(g.words,1)
+	n = g.reflist[-1]
+	g.reflist[-1] =
+	g.reflist = sort(g.reflist,1)
 	wi = 0
 
 listrefs.word	
 
 	le(wi = wi + 1,n)					:f(return)
-	word = g.words[wi,1]
+	word = g.reflist[wi,1]
 	output = 'wi ' wi ' ' word
 	this = g.reflist[word]
 	output = word ' ' list(this) ' ' last(this)		:(listrefs.word)
@@ -250,7 +251,9 @@ saveline.end
 	gather()
 	listfreq()
 	listrefs()
-	listlines()
+*	listlines()
+	output = '* The bard used ' g.count ' words.'
+	output = '* The bard used ' g.common.n ' common words.'
 end 
 Sonnet I by William Shakespeare
 From fairest creatures we desire increase,
