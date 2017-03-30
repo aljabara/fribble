@@ -1,9 +1,4 @@
 
-	define('sad(w)')				:(sad.end)
-sad
-	g.common[w] = 1					:(return)
-sad.end
-
 	define('gather()tag,s1,s2,s3,s4,str')		:(gather.end)
 
 *	Build a concordance for Shakespeare's sonnets, by reading
@@ -20,29 +15,122 @@ sad.end
 *		n lines containing the text of the sonnets.
 
 gather
+gather.line
+
+*	Read next line. Maintain a count of the number of lines in line.n.
+
+	line = input 					:f(return)
+	output = 'gather.line in [' line ']'
+	line 'STOP'					:s(return)
+	ident(line)					:f(gather.notblank)
+							:(gather.line)
+gather.notblank
+
+	g.linenum = g.linenum + 1
+
+*	Skip empty lines.
+
+	ident(line)					:s(gather.line)
+
+*	Skip comments.
+
+	line '*'					:f(gather.nocomment)
+	saveline(line)
+							:(gather.line)
+	
+
+gather.nocomment
+
+	
+	output = 'gather no comment ' lpad(g.linenum,5) g.tab line
+
+*	Look for line consisting of just digits giving the sonnet's
+*	number.
+
+	line g.digits					:f(gather.notitle)
+
+*	Here at start of sonnet.
+
+	output = 'gather new sonnet'
+	output = 'resetting g.id ' g.id
+	g.id = line
+	g.num = 1
+	line = 'Sonnet ' g.id ' by William Shakespeare'
+	g.num = g.num + 1
+	g.tag = g.id '.' g.num
+	saveline(line)
+							:(gather.line)
+
+gather.notitle
+
+*	Convert line to lower case, remove punctuation marks,
+*	and set up for loop to find words.
+
+	saveline(line)
+	line = replace(trim(line),&ucase,&lcase) 
+	line = replace(line,g.punctuation,g.punctuation.spaces) 
+
+gather.compact line '  ' = ' '					:s(gather.compact)
+
+	line = trim(line) ' '
+
+gather.word
+
+	output = 'gather.word line [' line ']'
+
+*	line break(' ') . word ' ' =			:f(gather.line)
+	line g.word.pat . word span(' ') =		:f(gather.line)
+
+*	output = 'word [' word ']'
+
+*	Skip words in the common words table.
+	output = 'checking for common'
+
+	ident(g.common[word])				:s(gather.notcommon)
+	g.common.n = g.common.n + 1			:(gather.word)
+
+gather.notcommon
+
+	differ(g.words[word])				:s(gather.word.seen)
+
+
+*	Here on first seeing a word.
+
+	g.words.n = g.words.n + 1
+	g.refs[word] = references(,tag)
+	g.refs[-1] = g.refs[-1] + 1
+
+gather.word.seen
+
+	output = 'gather.word.seen ' word
+	ident(word)					:s(gather.word)
+*	Increment frequency count for word, and add this line 
+*	to the list of the lines containing the word.
+
+	g.freq[word] = g.freq[word] + 1
+	newref(word)					:(gather.word)
+	
+gather.end
+
+	define('init()')				:(init.end)
+
+init
+
 
 	&anchor = &trim = 1
-	digits = span('0123456789')
-	punctuation = ",;:.?!"
-	punctuation.spaces = dupl(' ',size(punctuation))
-	letter = any(&lcase)
-	whitespace = span(' ')
+	g.digits = span('0123456789')
+	g.punctuation = ",;:.?!"
+	g.punctuation.spaces = dupl(' ',size(g.punctuation))
+*	g.letter = any(&lcase)
 
-*	Skip is list of words to be omitted.
+	g.tab = char(9)
 
-	g.common = table()
-	s1 = 'a an and art but doth for from hath have his in I thou me mine my own '
-	s2 = 'shall should than that the thee their then they this thou thy to we '
-	s3 = 'were what when where which will with your of i is not you be love or '
-	s4 = 'so all as by it do on are if no can nor her yet any now he how '
-	str = s1 s2 s3 s4i
+*	g.tag is the tag for the current line, consisting of g.id and
+*	g.num separated by a period. For example, '2.3' is the third line
+*	in sonnet 2.
 
-gather.common.next
-	
-	str break(' ') . word ' ' =			:f(gather.common.done)
-	g.common[word] = 1				:(gather.common.next)
-
-gather.common.done
+	g.whitespace = span(' ')
+	g.word.pat = span(&lcase "'")
 
 *	For each table, the key -1 is used to maintain a 
 *	count of the number of entries in the table.
@@ -51,7 +139,7 @@ gather.common.done
 *	in the sonnets.
 
 	g.freq = table()
-*	g.freq[-1] = 0
+	g.freq[-1] = 0
 
 *	G.WORDS is a table of words found.  For each WORD in G.WORDS,
 *	REFLIST is a table mapping WORD to a table of the lines 
@@ -77,98 +165,25 @@ gather.common.done
 	g.refs = table(1000)
 	g.refs[-1] = 0
 
-*	g.id is the roman numeral identifying a sonnet.
+*	g.id is the number identifying a sonnet.
 *	g.num is the line number within a sonnet.
 
-gather.line
+*	g.common is a table of common words to be omitted
+*	from the concordance.
 
-*	Read next line. Maintain a count of the number of lines in line.n.
+	g.common = table()
+	s1 = 'a an and art but doth for from hath have his in I thou me mine my own '
+	s2 = 'shall should than that the thee their then they this thou thy to we '
+	s3 = 'were what when where which will with your of i is not you be love or '
+	s4 = 'so all as by it do on are if no can nor her yet any now he how '
+	str = s1 s2 s3 s4i
 
-	line = input 					:f(return)
-	line.read = line
-	ident(line)					:f(gather.notblank)
-							:(gather.line)
-gather.notblank
-
-	g.linenum = g.linenum + 1
-
-*	Skip empty lines.
-
-	ident(line)					:s(gather.line)
-
-*	Skip comments.
-
-	line '*'					:f(gather.nocomment)
-	saveline(line)					:(gather.line)
+init.next
 	
+	str break(' ') . word ' ' =			:f(return)
+	g.common[word] = 1				:(init.next)
 
-gather.nocomment
-
-*	Look for line consisting of just digits giving the sonnet's
-*	number.
-
-	line digits					:f(gather.notitle)
-
-*	Here at start of sonnet.
-
-	g.id = line
-	line = 'Sonnet ' line ' by William Shakespeare'
-
-*	Reset line count.
-
-	g.num = 0					
-	saveline(line)					:(gather.line)
-
-gather.notitle
-
-*	Convert line to lower case, remove punctuation marks,
-*	and set up for loop to find words.
-
-	saveline(line)
-	line = replace(trim(line),&ucase,&lcase) 
-	line = replace(line,punctuation,punctuation.spaces) 
-
-gather.compact line '  ' = ' '					:s(gather.compact)
-
-	line = trim(line) ' '
-
-gather.word
-
-*	output = 'line [' line ']'
-
-	line break(' ') . word ' ' =			:f(gather.line)
-
-*	output = 'word [' word ']'
-
-*	Skip words in the common words table.
-
-	ident(g.common[word])				:s(gather.notcommon)
-	g.common.n = g.common.n + 1			:(gather.word)
-
-gather.notcommon
-
-	differ(g.words[word])				:s(gather.word.seen)
-
-
-*	Here on first seeing a word.
-
-*	g.freq[word] = 0
-	g.words.n = g.words.n + 1
-	g.refs[word] = references(,tag)
-	g.refs[-1] = g.refs[-1] + 1
-
-gather.word.seen
-
-	ident(word)					:s(gather.word)
-*	Increment frequency count for word, and add this line 
-*	to the list of the lines containing the word.
-
-*	g.freq[-1] = g.freq[-1] + 1
-	g.freq[word] = g.freq[word] + 1
-*	output = 'g.freq ' word ' ' g.freq[word]
-	newref(word)					:(gather.word)
-	
-gather.end
+init.end
 
 	define('listfreq()i,count,freq,f,w')		:(listfreq.end)
 
@@ -176,14 +191,16 @@ gather.end
 
 listfreq
 
-*	g.freq[-1] =
+	g.freq[-1] =
 	freq = rsort(g.freq,2)
-	output = '* The bard used these twenty words most frequently:'
+	output = 'dt g.freq ' datatype(g.freq) ' dt freq ' datatype(freq)
+
+	output = 'The bard used these twenty words most frequently:'
 
 listfreq.next
 
 	le(i = i + 1, 20)				:f(return)
-	w = freq[i,1]
+	w = freq[i,1]					:f(return)
 	f = freq[i,2]
 	output = rpad(w,12) ' ' lpad(f,6)		:(listfreq.next)
 
@@ -214,14 +231,13 @@ listlines.end
 
 newref
 		
-	tag = g.id '.' g.num
-*	output = 'enter new ref[' word  '] tag[' tag ']'
+	output = 'enter new ref[' word  '] tag[' g.tag ']'
 
 	ref = g.refs[word]
 	ident(tag,last(ref))	 			:s(return)
 	list(ref) = list(ref) ' ' last(ref)
 	last(ref) = g.tag
-*	output = 'leave ref word [' word ']  list [' list(ref) '] last [' last(ref)
+	output = 'leave ref word [' word ']  list [' list(ref) '] last [' last(ref)
 							:(return)
 
 newref.end
@@ -244,7 +260,7 @@ listrefs.word
 	word = refs[wi,1]
 *	output = 'wi ' wi ' ' word
 	this = refs[wi,2]
-	output =  word ':' tab list(this) ' ' last(this)		:(listrefs.word)
+	output =  word ':' tab list(this) ' ' last(this)	:(listrefs.word)
 
 listrefs.end
 
@@ -254,30 +270,26 @@ listrefs.end
 
 saveline
 
-	n = g.lines.n = g.lines.n + 1
-	line 'Sonnet'						:f(saveline.1)
-	g.num = 0
-	g.lines[n] = '* ' line		:(return)
-
-saveline.1
-
-	g.num = g.num + 1
-	g.tag = g.id '.' g.num
-	g.lines[n]  = g.tag ' ' line 			:(return)
+	output = 'saving line[' g.tag '] [' line ']'
+	g.lines[glines.n = g.lines.n + 1] = g.tag ' ' line 	:(return)
 
 saveline.end
 
 *	Main program.
 
+	init()
 	gather()
 	listfreq()
 	listrefs()
 *	listlines()
-	output = '* The bard used ' g.words.n ' words.'
-	output = '* The bard used ' g.common.n ' common words.'
+	output = '* The bard used ' g.words.n ' words in total, '
+.		g.common.n ' common words.'
 end 
 
 1
+dave shields
+dan millman dan dave
+STOP
 From fairest creatures we desire increase,
 That thereby beauty's rose might never die,
 But as the riper should by time decease,
@@ -309,6 +321,7 @@ Proving his beauty by succession thine!
   This were to be new made when thou art old,
   And see thy blood warm when thou feel'st it cold.
 
+STOP
 3
   But if thou live, remember'd not to be,
   Die single and thine image dies with thee.
