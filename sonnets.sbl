@@ -1,5 +1,7 @@
+	&dump = 3
+	
 
-	define('gather()tag,s1,s2,s3,s4,str')		:(gather.end)
+	define('gather()i,num,tag,s1,s2,s3,s4,str,text')	:(gather.end)
 
 *	Build a concordance for Shakespeare's sonnets, by reading
 *	the text of the sonnets from standard input and,
@@ -15,62 +17,26 @@
 *		n lines containing the text of the sonnets.
 
 gather
-gather.line
+	output = 'gather ' n
+	gt(n = n + 1, g.sonnets[-1])			:s(return)
 
-*	Read next line. Maintain a count of the number of lines in line.n.
+	sonnet = g.sonnets[n]
+	output = 'dt sonnet ' datatype(sonnet)
+	text = text(sonnet)
+	num = num(sonnet)
+	i = 0
 
-	line = input 					:f(return)
-	output = 'gather.line in [' line ']'
-	line 'STOP'					:s(return)
-	ident(line)					:f(gather.notblank)
-							:(gather.line)
-gather.notblank
-
-	g.linenum = g.linenum + 1
-
-*	Skip empty lines.
-
-	ident(line)					:s(gather.line)
-
-*	Skip comments.
-
-	line '*'					:f(gather.nocomment)
-	saveline(line)
-							:(gather.line)
+gather.sonnet
 	
-
-gather.nocomment
-
-	
-	output = 'gather no comment ' lpad(g.linenum,5) g.tab line
-
-*	Look for line consisting of just digits giving the sonnet's
-*	number.
-
-	line g.digits					:f(gather.notitle)
-
-*	Here at start of sonnet.
-
-	output = 'gather new sonnet'
-	output = 'resetting g.id ' g.id
-	g.id = line
-	g.num = 1
-	line = 'Sonnet ' g.id ' by William Shakespeare'
-	g.num = g.num + 1
-	g.tag = g.id '.' g.num
-	saveline(line)
-							:(gather.line)
-
-gather.notitle
+	line = text[i = i + 1]
 
 *	Convert line to lower case, remove punctuation marks,
 *	and set up for loop to find words.
 
-	saveline(line)
 	line = replace(trim(line),&ucase,&lcase) 
 	line = replace(line,g.punctuation,g.punctuation.spaces) 
 
-gather.compact line '  ' = ' '					:s(gather.compact)
+gather.compact line '  ' = ' '				:s(gather.compact)
 
 	line = trim(line) ' '
 
@@ -78,8 +44,8 @@ gather.word
 
 	output = 'gather.word line [' line ']'
 
-*	line break(' ') . word ' ' =			:f(gather.line)
-	line g.word.pat . word span(' ') =		:f(gather.line)
+*	line break(' ') . word ' ' =			:f(gather)
+	line g.word.pat . word span(' ') =		:f(gather)
 
 *	output = 'word [' word ']'
 
@@ -91,14 +57,14 @@ gather.word
 
 gather.notcommon
 
-	differ(g.words[word])				:s(gather.word.seen)
+	differ(g.word[word])				:s(gather.word.seen)
 
 
 *	Here on first seeing a word.
 
-	g.words.n = g.words.n + 1
-	g.refs[word] = references(,tag)
-	g.refs[-1] = g.refs[-1] + 1
+	g.word.n = g.word.n + 1
+	g.uses[word] = references(,tag)
+	g.uses[-1] = g.uses[-1] + 1
 
 gather.word.seen
 
@@ -108,13 +74,194 @@ gather.word.seen
 *	to the list of the lines containing the word.
 
 	g.freq[word] = g.freq[word] + 1
-	newref(word)					:(gather.word)
+	ref.add(word)					:(gather.word)
 	
 gather.end
 
-	define('init()')				:(init.end)
 
-init
+	define('map.init(name)tbl')			:(map.init.end)
+
+*	Define a map with name NAME.
+
+map.init
+
+	tbl = table()
+	map.init = map(name,tbl)
+	tbl[-1] = 0					:(return)
+
+map.init.end
+
+	define('map.get(map,key)')			:(map.get.end)
+
+*	Get the value of map MAP for key KEY.
+
+map.get
+
+	map.get = tbl[key]				:(return)
+
+map.get.end
+
+	define('map.set(map,key,val)tbl')			:(map.set.end)
+
+*	Add or update MAP entry for KEY to be VAL.
+*	If KEY is null, set KEY to be one more than current
+*	number of entries in the MAP.
+
+map.set	
+
+	tbl = tbl(map)
+	tbl[-1] = ident(key) tbl[-1] + 1
+	key = ident(key) tbl[-1]
+	output = 'map.set[' key ']' datatype(val)
+	tbl[-1] = ident(tbl[key]) tbl[-1] + 1
+	tbl[key] = val					:(return)
+
+map.set.end
+
+	define('reader()s,tag,text')			:(reader.end)
+
+*	Read in the text of the sonnets, creating a table
+*	entry in G.TEXT for each sonnet, with the key
+*	being the sonnet number, and the value being an
+*	array of the lines of the text of the sonner.
+
+reader
+
+*	Read next line. 
+
+	line = input 					:f(return)
+	output = 'reader in [' line ']'
+	line 'STOP'					:s(return)
+	ident(line)					:f(reader.notblank)
+							:(reader)
+reader.notblank
+
+*	Skip empty lines.
+
+	ident(line)					:s(reader)
+
+*	Skip comments.
+
+	line '*'					:s(reader)
+
+*	Look for line consisting of just digits giving the sonnet's number.
+
+	line g.digits					:f(reader.text)
+
+*	Here at start of sonnet.
+
+	g.sonnet = +line
+	output = 'start sonnet ' g.sonnet
+	text = map('text',table())
+	g.s = sonnet(g.sonnet,map('text'))
+	map.set(g.sonnets,g.sonnet, g.s)		:(reader)
+
+reader.text
+
+*	Add this line to text of sonnet.
+	
+	output = 'adding text to sonnet ' line
+	map.set(text,,line)				:(reader)
+
+reader.end
+
+	define('ref.add(word)ref')			:(ref.add.end)
+
+*	Add this line to the list of references for WORD, avoiding
+*	adding a new entry in the same line as the most recent
+*	use of WORD.
+
+ref.add
+		
+	output = 'enter new ref[' word  '] tag[' g.tag ']'
+
+	ref = g.uses[word]
+	ident(tag,last(ref))	 			:s(return)
+	list(ref) = list(ref) ' ' last(ref)
+	last(ref) = g.tag
+	output = 'leave ref word [' word ']  list [' list(ref) '] last [' last(ref)
+							:(return)
+
+ref.add.end
+	define('show.freq()i,count,freq,f,w')		:(show.freq.end)
+
+*	List the twenty most frequently used words.
+
+show.freq
+
+	g.freq[-1] =
+	freq = rsort(g.freq,2)
+*	output = 'dt g.freq ' datatype(g.freq) ' dt freq ' datatype(freq)
+
+	output = 'The bard used these twenty words most frequently:'
+
+show.freq.next
+
+	le(i = i + 1, 20)				:f(return)
+	w = freq[i,1]					:f(return)
+	f = freq[i,2]
+	output = rpad(w,12) ' ' lpad(f,6)		:(show.freq.next)
+
+show.freq.end
+
+	define('show.sonnet(num)i,n,sonnet,text')		:(show.sonnet.end)
+
+*	List the text of a sonnet. 
+
+show.sonnet
+
+	sonnet = g.sonnets[num]
+	text = text(sonnet)
+	n = text[-1]
+	output = 'Sonnet ' num ' by William Shakespeare.'
+
+show.sonnet.next
+
+	output = le(i = i + 1,n) text[i]		:s(show.sonnet.next)f(return)
+
+show.sonnet.end
+
+	define('show.sonnets()ara,i,n,tbl')		:(show.sonnets.end)
+
+*	List the text of all the sonnets.
+
+show.sonnets
+
+	tbl = copy(g.sonnets)
+	tbl[-1] = 
+	ara = convert(tbl,'array')
+	n = prototype(ara)
+	
+show.sonnets.next
+
+	show.sonnet(num(ara[i = i + 1]))		:s(show.sonnets.next)
+							:(return)
+show.sonnets.end
+
+
+	define('show.refs()n,word,refs,ref,this,wi')	:(show.refs.end)
+*	Here after scanning the file. Sort the word
+*	dictionary in alphabetical order.
+
+show.refs
+
+	n = g.uses[-1]
+*	output = 'listref n ' n
+	g.uses[-1] =
+	refs = sort(g.uses,1)
+	wi = 0
+
+show.refs.word	
+
+	le(wi = wi + 1,n)				:f(return)
+	word = refs[wi,1]
+*	output = 'wi ' wi ' ' word
+	this = refs[wi,2]
+	output =  word ':' tab list(this) ' ' last(this) :(show.refs.word)
+
+show.refs.end
+
+*	Main program.
 
 
 	&anchor = &trim = 1
@@ -124,6 +271,29 @@ init
 *	g.letter = any(&lcase)
 
 	g.tab = char(9)
+
+*	The datatpe MAP represents a map.
+
+	data('map(name,tbl)')
+
+*	where:
+
+*	NAME is a string giving the name of the map.
+*	TBL is a table of the map's key/value pairs.
+*	By convention, the key '-1' is used to count
+*	the number of entries in the map.
+
+*	The datatype SONNET represents a sonnet.
+
+	data('sonnet(name,num,text)')
+
+*	where:
+
+*		NAME is the name of the map;
+*		NUM is the number of the sonnet, in the range 1..154; and,
+*
+*		TEXT is a map mapping the line number within a sonnet
+*		to the text of that line.
 
 *	g.tag is the tag for the current line, consisting of g.id and
 *	g.num separated by a period. For example, '2.3' is the third line
@@ -138,19 +308,21 @@ init
 *	G.FREQ is a table mapping a word to the number of times it occurs
 *	in the sonnets.
 
-	g.freq = table()
-	g.freq[-1] = 0
+	g.freq = map('freq',table())
 
-*	G.WORDS is a table of words found.  For each WORD in G.WORDS,
+*	G.WORD is a table of words found.  For each WORD in G.WORD,
 *	REFLIST is a table mapping WORD to a table of the lines 
 *	containing an instance of WORD.
 
-	g.words = table()
-	g.words[-1] = 0
+	g.word = map('word',table())
 
-*	GLINES is a table mapping source line numbers to the line text.
+*	G.SONNET is the number of the current sonnet.
 
-	g.lines = table()
+*	G.SONNETS is a table mapping the number of a sonnet to an instance of
+*	the SONNET datatype.
+
+	g.sonnets = map('sonnets',table())
+
 	g.linenum = 0
 
 *	REFERENCES is a list, in increasing order, of the lines that reference a
@@ -162,8 +334,7 @@ init
 	
 	data('references(list,last)')
 
-	g.refs = table(1000)
-	g.refs[-1] = 0
+	g.uses = map('uses',table())
 
 *	g.id is the number identifying a sonnet.
 *	g.num is the line number within a sonnet.
@@ -172,6 +343,7 @@ init
 *	from the concordance.
 
 	g.common = table()
+	:(init.done)
 	s1 = 'a an and art but doth for from hath have his in I thou me mine my own '
 	s2 = 'shall should than that the thee their then they this thou thy to we '
 	s3 = 'were what when where which will with your of i is not you be love or '
@@ -180,109 +352,18 @@ init
 
 init.next
 	
-	str break(' ') . word ' ' =			:f(return)
+	str break(' ') . word ' ' =			:f(init.donc)
 	g.common[word] = 1				:(init.next)
 
-init.end
+init.done
 
-	define('listfreq()i,count,freq,f,w')		:(listfreq.end)
-
-*	List the twenty most frequently used words.
-
-listfreq
-
-	g.freq[-1] =
-	freq = rsort(g.freq,2)
-	output = 'dt g.freq ' datatype(g.freq) ' dt freq ' datatype(freq)
-
-	output = 'The bard used these twenty words most frequently:'
-
-listfreq.next
-
-	le(i = i + 1, 20)				:f(return)
-	w = freq[i,1]					:f(return)
-	f = freq[i,2]
-	output = rpad(w,12) ' ' lpad(f,6)		:(listfreq.next)
-
-listfreq.end
-
-	define('listlines()i,n')			:(listlines.end)
-
-*	List the lines of the sonnets. First write the
-*	number of lines and then write the text of all the sonnet's lines.
-
-listlines
-
-	n = g.lines.n
-	output = n
-
-listlines.next
-
-	le(i = i + 1, n)				:f(return)
-	output = g.lines[i]				:(listlines.next)
-
-listlines.end
-
-	define('newref(word)ref')			:(newref.end)
-
-*	Add this line to the list of references for WORD, avoiding
-*	adding a new entry in the same line as the most recent
-*	use of WORD.
-
-newref
-		
-	output = 'enter new ref[' word  '] tag[' g.tag ']'
-
-	ref = g.refs[word]
-	ident(tag,last(ref))	 			:s(return)
-	list(ref) = list(ref) ' ' last(ref)
-	last(ref) = g.tag
-	output = 'leave ref word [' word ']  list [' list(ref) '] last [' last(ref)
-							:(return)
-
-newref.end
-
-	define('listrefs()n,word,refs,ref,this,wi')			:(listrefs.end)
-*	Here after scanning the file. Sort the word
-*	dictionary in alphabetical order.
-
-listrefs
-
-	n = g.refs[-1]
-*	output = 'listref n ' n
-	g.refs[-1] =
-	refs = sort(g.refs,1)
-	wi = 0
-
-listrefs.word	
-
-	le(wi = wi + 1,n)					:f(return)
-	word = refs[wi,1]
-*	output = 'wi ' wi ' ' word
-	this = refs[wi,2]
-	output =  word ':' tab list(this) ' ' last(this)	:(listrefs.word)
-
-listrefs.end
-
-	define('saveline(line,tag)n')				:(saveline.end)
-
-*	Save line, prefixed by its tag, in the g.lines table.
-
-saveline
-
-	output = 'saving line[' g.tag '] [' line ']'
-	g.lines[glines.n = g.lines.n + 1] = g.tag ' ' line 	:(return)
-
-saveline.end
-
-*	Main program.
-
-	init()
+	reader()
 	gather()
-	listfreq()
-	listrefs()
-*	listlines()
-	output = '* The bard used ' g.words.n ' words in total, '
+*	show.freq()
+*	show.refs()
+*	show.sonnets()
+	show.sonnet(1)
+	output = '* The bard used ' g.word.n ' words in total, '
 .		g.common.n ' common words.'
 end 
 
