@@ -1,7 +1,63 @@
 	&dump = 3
-	
+*	Define global variables.
 
-	define('gather()i,num,tag,s1,s2,s3,s4,str,text')	:(gather.end)
+	&anchor = &trim = 1
+	g.digits = span('0123456789')
+	g.punctuation = ",;:.?!"
+	g.punctuation.spaces = dupl(' ',size(g.punctuation))
+*	g.letter = any(&lcase)
+
+	g.tab = char(9)
+
+*	The datatype SONNET represents a sonnet.
+
+	data('sonnet(id,tbl)')
+
+*	where:
+
+*		ID is the number of the sonnet, in the range 1..154; and,
+*		TBL is a table mapping the line number within a sonnet
+*		to the text of that line.
+
+*	g.tag is the tag for the current line, consisting of g.id and
+*	g.num separated by a period. For example, '2.3' is the third line
+*	in sonnet 2.
+
+	g.whitespace = span(' ')
+	g.word.pat = span(&lcase "'")
+
+*	The key '-1' is used in a table to track the number of keys.
+
+*	G.FREQ is a table mapping a word to the number of times it occurs
+*	in the sonnets.
+
+
+*	G.WORD is a table of words found.  For each WORD in G.WORD,
+*	REFLIST is a table mapping WORD to a table of the lines 
+*	containing an instance of WORD.
+
+*	G.SONNET is the number of the current sonnet.
+
+*	G.SONNETS is a table mapping the number of a sonnet to a table containing
+*	the text of the sonnet.
+
+*	REFERENCES is a list, in increasing order, of the lines that reference a
+*	particular word. LIST is a string consisting of line numbers separated
+*	by a space. LAST is the most recent line containing a use of the word.
+*	This assists is detecting multiple uses of a word in a line. 
+*	Consider, for example, the statement 'i = i + 1'.
+*	REFLIST is a map from a word to the REFS for it.
+	
+	data('uses(list,last)')
+
+*	g.id is the number identifying a sonnet.
+*	g.num is the line number within a sonnet.
+
+*	g.common is a table of common words to be omitted
+*	from the concordance.
+
+
+	define('gather()i,id,line,s1,s2,s3,s4,str,tag,text')	:(gather.end)
 
 *	Build a concordance for Shakespeare's sonnets, by reading
 *	the text of the sonnets from standard input and,
@@ -17,18 +73,20 @@
 *		n lines containing the text of the sonnets.
 
 gather
-	output = 'gather ' n
+
+	out('g.sonnets -1',g.sonnets[-1])
 	gt(n = n + 1, g.sonnets[-1])			:s(return)
 
-	sonnet = g.sonnets[n]
-	output = 'dt sonnet ' datatype(sonnet)
-	text = text(sonnet)
-	num = num(sonnet)
+	out('gather',n)
+
+	text = g.sonnets[n]
+	id = n
 	i = 0
 
 gather.sonnet
 	
-	line = text[i = i + 1]
+	gt(i = i + 1,text[-1])					:s(gather)
+	line = text[i]
 
 *	Convert line to lower case, remove punctuation marks,
 *	and set up for loop to find words.
@@ -42,15 +100,15 @@ gather.compact line '  ' = ' '				:s(gather.compact)
 
 gather.word
 
-	output = 'gather.word line [' line ']'
+	out('gather.word line',line)
 
-*	line break(' ') . word ' ' =			:f(gather)
 	line g.word.pat . word span(' ') =		:f(gather)
 
-*	output = 'word [' word ']'
+	out('word',word)
 
 *	Skip words in the common words table.
-	output = 'checking for common'
+
+	out('checking for common')
 
 	ident(g.common[word])				:s(gather.notcommon)
 	g.common.n = g.common.n + 1			:(gather.word)
@@ -62,285 +120,200 @@ gather.notcommon
 
 *	Here on first seeing a word.
 
-	g.word.n = g.word.n + 1
-	g.uses[word] = references(,tag)
 	g.uses[-1] = g.uses[-1] + 1
+	g.uses[word] = uses(,tag)
 
 gather.word.seen
 
-	output = 'gather.word.seen ' word
+	out('gather.word.seen',word)
 	ident(word)					:s(gather.word)
 *	Increment frequency count for word, and add this line 
 *	to the list of the lines containing the word.
 
+	out('update g.freq',word,+g.freq[word])
 	g.freq[word] = g.freq[word] + 1
-	ref.add(word)					:(gather.word)
+	use.add(word)					:(gather.word)
 	
 gather.end
 
+	define('init()')				:(init.end)
 
-	define('map.init(name)tbl')			:(map.init.end)
+*	Initialize global variables. 
 
-*	Define a map with name NAME.
+init
 
-map.init
+	g.freq = table()
+	g.freq[-1] = 0
 
-	tbl = table()
-	map.init = map(name,tbl)
-	tbl[-1] = 0					:(return)
+	g.sonnets = table()
+	g.sonnets[-1] = 0
 
-map.init.end
+	g.uses = table()
 
-	define('map.get(map,key)')			:(map.get.end)
+	g.word = table()
+							:(return)
+init.end
 
-*	Get the value of map MAP for key KEY.
+	define('out(text1,text2,text3)')		:(out.end)
 
-map.get
+*	Write out line consisting of TEXT1, followed by 
+*	TEXT2 enclossd in '[]' if TEXT2 is not null, followed
+*	by TEXT3.
 
-	map.get = tbl[key]				:(return)
+out
+	out = text1 ' ' (differ(text2) '[' text2 ']', '') ' ' text3 
+	output =  trim(out)				:(return)
 
-map.get.end
+out.end
 
-	define('map.set(map,key,val)tbl')			:(map.set.end)
-
-*	Add or update MAP entry for KEY to be VAL.
-*	If KEY is null, set KEY to be one more than current
-*	number of entries in the MAP.
-
-map.set	
-
-	tbl = tbl(map)
-	tbl[-1] = ident(key) tbl[-1] + 1
-	key = ident(key) tbl[-1]
-	output = 'map.set[' key ']' datatype(val)
-	tbl[-1] = ident(tbl[key]) tbl[-1] + 1
-	tbl[key] = val					:(return)
-
-map.set.end
-
-	define('reader()s,tag,text')			:(reader.end)
+	define('read()s,tag,text')			:(read.end)
 
 *	Read in the text of the sonnets, creating a table
 *	entry in G.TEXT for each sonnet, with the key
 *	being the sonnet number, and the value being an
 *	array of the lines of the text of the sonner.
 
-reader
+read
 
 *	Read next line. 
 
 	line = input 					:f(return)
-	output = 'reader in [' line ']'
 	line 'STOP'					:s(return)
-	ident(line)					:f(reader.notblank)
-							:(reader)
-reader.notblank
+	ident(line)					:f(read.notblank)
+							:(read)
+read.notblank
 
 *	Skip empty lines.
 
-	ident(line)					:s(reader)
+	ident(line)					:s(read)
 
 *	Skip comments.
 
-	line '*'					:s(reader)
+	line '*'					:s(read)
 
 *	Look for line consisting of just digits giving the sonnet's number.
 
-	line g.digits					:f(reader.text)
+	line g.digits					:f(read.text)
 
 *	Here at start of sonnet.
 
-	g.sonnet = +line
-	output = 'start sonnet ' g.sonnet
-	text = map('text',table())
-	g.s = sonnet(g.sonnet,map('text'))
-	map.set(g.sonnets,g.sonnet, g.s)		:(reader)
+	g.id = +line
+	text = table()
+	text[-1] = 0
+	g.sonnets[g.id] = text
+	g.sonnets[-1] = g.sonnets[-1] + 1
+							:(read)
 
-reader.text
+read.text
 
 *	Add this line to text of sonnet.
 	
-	output = 'adding text to sonnet ' line
-	map.set(text,,line)				:(reader)
+	text[-1] = text[-1] + 1
+	text[text[-1]] = line				:(read)
 
-reader.end
+read.end
 
-	define('ref.add(word)ref')			:(ref.add.end)
-
-*	Add this line to the list of references for WORD, avoiding
-*	adding a new entry in the same line as the most recent
-*	use of WORD.
-
-ref.add
-		
-	output = 'enter new ref[' word  '] tag[' g.tag ']'
-
-	ref = g.uses[word]
-	ident(tag,last(ref))	 			:s(return)
-	list(ref) = list(ref) ' ' last(ref)
-	last(ref) = g.tag
-	output = 'leave ref word [' word ']  list [' list(ref) '] last [' last(ref)
-							:(return)
-
-ref.add.end
-	define('show.freq()i,count,freq,f,w')		:(show.freq.end)
+	define('show.freq()i,count,freq,f,n,w')		:(show.freq.end)
 
 *	List the twenty most frequently used words.
 
 show.freq
 
-	g.freq[-1] =
 	freq = rsort(g.freq,2)
-*	output = 'dt g.freq ' datatype(g.freq) ' dt freq ' datatype(freq)
-
-	output = 'The bard used these twenty words most frequently:'
+	out('The bard used these twenty words most frequently:')
 
 show.freq.next
 
-	le(i = i + 1, 20)				:f(return)
+	le(i = i + 1, 21)				:f(return)
 	w = freq[i,1]					:f(return)
+	ident(w,'-1')					:s(show.freq.next)
 	f = freq[i,2]
-	output = rpad(w,12) ' ' lpad(f,6)		:(show.freq.next)
+	out(rpad(w,12) ' ' lpad(f,6))			:(show.freq.next)
 
 show.freq.end
 
-	define('show.sonnet(num)i,n,sonnet,text')		:(show.sonnet.end)
+	define('show.sonnet(id)i,n,sonnet,text')	:(show.sonnet.end)
 
 *	List the text of a sonnet. 
 
 show.sonnet
 
-	sonnet = g.sonnets[num]
-	text = text(sonnet)
-	n = text[-1]
-	output = 'Sonnet ' num ' by William Shakespeare.'
-
-show.sonnet.next
-
-	output = le(i = i + 1,n) text[i]		:s(show.sonnet.next)f(return)
+	text = g.sonnets[id]
+	out('Sonnet ',id,' by William Shakespeare.')
+	show.text(text)					:(return)
 
 show.sonnet.end
 
-	define('show.sonnets()ara,i,n,tbl')		:(show.sonnets.end)
+	define('show.sonnets()i,n')			:(show.sonnets.end)
 
 *	List the text of all the sonnets.
 
 show.sonnets
 
-	tbl = copy(g.sonnets)
-	tbl[-1] = 
-	ara = convert(tbl,'array')
-	n = prototype(ara)
-	
+	n = g.sonnets[-1]
+
 show.sonnets.next
 
-	show.sonnet(num(ara[i = i + 1]))		:s(show.sonnets.next)
-							:(return)
+	gt(i = i + 1,n)					:s(return)
+	show.sonnet(i)					:(show.sonnets.next)
+
 show.sonnets.end
 
+	define('show.text(text)i,txt')			:(show.text.end)
 
-	define('show.refs()n,word,refs,ref,this,wi')	:(show.refs.end)
+*	List the lines in text.
+
+show.text
+
+	text = copy(text)
+	text[-1] = 
+	text = convert(text,'array')
+
+show.text.next
+
+	txt = text[i = i + 1,2]				:f(return)
+	out(lpad(ti,2) ' ' txt)				:(show.text.next)
+
+show.text.end
+
+	define('show.uses()n,word,refs,ref,this,wi')	:(show.uses.end)
 *	Here after scanning the file. Sort the word
 *	dictionary in alphabetical order.
 
-show.refs
+show.uses
 
 	n = g.uses[-1]
-*	output = 'listref n ' n
+*	out('listref n ' n
 	g.uses[-1] =
 	refs = sort(g.uses,1)
 	wi = 0
 
-show.refs.word	
+show.uses.word	
 
 	le(wi = wi + 1,n)				:f(return)
 	word = refs[wi,1]
-*	output = 'wi ' wi ' ' word
+*	out('wi ' wi ' ' word
 	this = refs[wi,2]
-	output =  word ':' tab list(this) ' ' last(this) :(show.refs.word)
+	out( word ':' tab list(this) ' ' last(this)) :(show.uses.word)
 
-show.refs.end
+show.uses.end
 
-*	Main program.
+	define('use.add(word)tag.uses')			:(use.add.end)
 
+*	Add this line to the list of uses for WORD unless
+*	WORD has already been used in this line.
 
-	&anchor = &trim = 1
-	g.digits = span('0123456789')
-	g.punctuation = ",;:.?!"
-	g.punctuation.spaces = dupl(' ',size(g.punctuation))
-*	g.letter = any(&lcase)
+use.add
 
-	g.tab = char(9)
-
-*	The datatpe MAP represents a map.
-
-	data('map(name,tbl)')
-
-*	where:
-
-*	NAME is a string giving the name of the map.
-*	TBL is a table of the map's key/value pairs.
-*	By convention, the key '-1' is used to count
-*	the number of entries in the map.
-
-*	The datatype SONNET represents a sonnet.
-
-	data('sonnet(name,num,text)')
-
-*	where:
-
-*		NAME is the name of the map;
-*		NUM is the number of the sonnet, in the range 1..154; and,
-*
-*		TEXT is a map mapping the line number within a sonnet
-*		to the text of that line.
-
-*	g.tag is the tag for the current line, consisting of g.id and
-*	g.num separated by a period. For example, '2.3' is the third line
-*	in sonnet 2.
-
-	g.whitespace = span(' ')
-	g.word.pat = span(&lcase "'")
-
-*	For each table, the key -1 is used to maintain a 
-*	count of the number of entries in the table.
-
-*	G.FREQ is a table mapping a word to the number of times it occurs
-*	in the sonnets.
-
-	g.freq = map('freq',table())
-
-*	G.WORD is a table of words found.  For each WORD in G.WORD,
-*	REFLIST is a table mapping WORD to a table of the lines 
-*	containing an instance of WORD.
-
-	g.word = map('word',table())
-
-*	G.SONNET is the number of the current sonnet.
-
-*	G.SONNETS is a table mapping the number of a sonnet to an instance of
-*	the SONNET datatype.
-
-	g.sonnets = map('sonnets',table())
-
-	g.linenum = 0
-
-*	REFERENCES is a list, in increasing order, of the lines that reference a
-*	particular word. LIST is a string consisting of line numbers separated
-*	by a space. LAST is the most recent line containing a use of the word.
-*	This assists is detecting multiple uses of a word in a line. 
-*	Consider, for example, the statement 'i = i + 1'.
-*	REFLIST is a map from a word to the REFS for it.
-	
-	data('references(list,last)')
-
-	g.uses = map('uses',table())
-
-*	g.id is the number identifying a sonnet.
-*	g.num is the line number within a sonnet.
-
-*	g.common is a table of common words to be omitted
-*	from the concordance.
+	use = g.uses[word]
+	tag = g.id '.' g.num
+	out('enter new use' word  ' tag [' g.tag ']')
+	ident(tag,last(use))	 			:s(return)
+	list(use) = list(use) ' ' last(use)
+	last(use) = g.tag
+	out('leave use word [' word ']  list [' list(use) '] last [' last(use))
+							:(return)
+use.add.end
 
 	g.common = table()
 	:(init.done)
@@ -357,19 +330,27 @@ init.next
 
 init.done
 
-	reader()
+*	Main program
+
+	init()
+	read()
 	gather()
-*	show.freq()
-*	show.refs()
-*	show.sonnets()
-	show.sonnet(1)
-	output = '* The bard used ' g.word.n ' words in total, '
-.		g.common.n ' common words.'
+	show.freq()
+ :(end)
+	show.uses()
+	show.sonnets()
+*	show.sonnet(1)
+	out('* The bard used ' g.word.n ' words in total, ')
+	output = g.common.n ' common words.'
 end 
 
 1
 dave shields
 dan millman dan dave
+2
+From fairest creatures we desire increase,
+That thereby beauty's rose might never die,
+But as the riper should by time decease,
 STOP
 From fairest creatures we desire increase,
 That thereby beauty's rose might never die,
