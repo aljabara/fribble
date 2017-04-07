@@ -1,0 +1,500 @@
+	define('show(v)i,ent,type')			:(show.end)
+
+*	Show the value of an expression.
+
+*SHOW*
+show
+	ident(dt(v),'map') out('show arg type map',dt(v))	:s(error)
+	typ = dt(v)
+						:($('show.type.' typ))
+
+show.type.array
+
+	show = show.array(v)				:(show.done)
+
+show.type.integer
+
+	show = convert(v,'string')			:(show.done)
+
+show.type.move
+
+	show = show.move(v)				:(show.done)
+
+show.type.pair
+
+	show = show.pair(v)				:(show.done)
+
+show.type.table
+
+	show = show.table(v)				:(show.done)
+
+show.type.string
+
+	show = convert(v,'string')			:(show.done)
+
+show.done
+							:(return)
+show.end
+
+	define('show.array(ara)i,first,proto,second')	:(show.array.end)
+
+*	Show an array. Fribble uses only one and two dimensional arrays
+
+show.array
+
+	out('show.array dt(ara)',dt(ara))
+	proto = prototype(ara)
+	out('show.array prototype ' proto)
+	proto break(',')				:s(show.array.2)
+
+*	Here for one dimensional array.
+
+show.array.1
+	first = ara[add1(.i)]				:f(show.array.done)
+	out(lpad(i,3) tab first)			:(show.array.1)
+
+show.array.2
+	first = ara[add1(.i),1]		       	  :f(show.array.done)
+	out(lpad(i,3) tab show(first) tab show(ara[i,2])) :(show.array.2)
+
+show.array.done
+
+	out()						:(return)
+
+show.array.end
+
+	define('show.board(board,title)b,r,c,ch,line')	:(show.board.end)
+
+*	Show the bonus grid.
+
+*SHOW.BOARD*
+show.board
+
+	show.header()
+
+show.board.r
+
+	gt(r = r + 1,15) 				:s(show.board.finish)
+	line = lpad(r,2) '|'
+	c = 0
+
+show.board.c
+
+	gt(add1(.c),15)					:s(show.board.margin)
+	ch = ucase(board[r,c])
+	b = g.bonus[r,c]
+	differ(ch,' ')					:s(show.board.ch)
+
+*	Here if empty cell, see if there is a bonus to be show.boarded.
+
+	ne(b,1)						:s(show.board.b)
+
+*	Here to show.board empty cell.
+
+	line = line ' -'				:(show.board.c)
+
+show.board.b
+
+* 	Here to show.board bonus.
+
+	ch = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
+	line = line ch 					:(show.board.c)
+
+show.board.margin
+
+	out(line '|')					:(show.board.r)
+
+show.board.ch
+
+	line  = line ' ' ch				:(show.board.c)
+
+show.board.finish
+
+	out()						:(return)
+
+show.board.end
+
+	define('show.bonus()b,r,c,l,line')		:(show.bonus.end)
+
+*	Show the board.
+
+*SHOW.BONUS*
+show.bonus
+
+	show.header('bonus')
+
+show.bonus.r
+
+	gt(r = r + 1,15) 				:s(show.bonus.finish)
+	line = lpad(r,2) '|'
+	c = 0
+
+show.bonus.c
+
+	gt(add1(.c),15)					:s(show.bonus.l)
+	l = g.bonus[r,c]
+	line = differ(l,' ') line ' ' l 		:s(show.bonus.c)
+
+* Here for blank cell, show.bonus bonus if applicable
+
+	b = g.bonus[r,c]
+	eq(b)						:s(show.b)
+* 	Here to show bonus
+	l = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
+	line = line l 					:(show.bonus.c)
+
+show.bonus.b
+
+*	Here to show.bonus empty cell.
+	line = line ' -'				:(show.bonus.c)
+
+show.bonus.l
+
+	out(line '|')					:(show.bonus.r)
+
+show.bonus.finish
+
+	out()						:(return)
+
+show.bonus.end
+
+	define('show.clines(move,title)i,p,line,num')	:(show.clines.end)
+
+*	Show the clines array of lines
+
+*SHOW.CLINES*
+show.clines
+
+*	show.board(g.board)
+*	title  = 'clines' (differ(title) ' ' title, '')
+*	out(title)
+	out(differ(title) 'clines for ' show.move(move))
+	out('    123456789012345')
+
+show.clines.n
+
+	le(add1(.i), g.cln)				:f(return)
+	p = g.clines[i]
+	num = num(p)					:f(return)
+	line = line(p)
+	out(lpad(lineid(num),2) ' '  replace(line,' ','.')) :(show.clines.n)
+
+show.clines.end
+
+	define('show.free(free,title)i')		:(show.free.end)
+
+*	Show free array.
+
+*SHOW.FREE*
+show.free
+
+	show.free = show.free append(lpad(free[add1(.i)]),3)	:s(show.free)
+	show.free = 'Open: ' title ' ' show.free
+							:(return)
+show.free.end
+
+	define('show.grid(g)r')				:(show.grid.end)
+
+*	Show a grid.
+
+*SHOW.GRID*
+show.grid
+
+	show.header()
+
+show.grid.r
+
+	gt(add1(.r),15) 				:s(show.grid.done)
+	out(show.hline(g,r))				:(show.grid.r)
+
+show.grid.done
+
+	show.header()
+	out()						:(return)
+
+show.grid.end
+
+	define('show.header(label)')			:(show.header.end)
+
+*SHOW.HEADER*
+show.header
+
+	out(differ(label) label)
+	out('                     1 1 1 1 1 1')
+	out('   1 2 3 4 5 6 7 8 9 0 1 2 3 4 5')	:(return)
+
+show.header.end
+
+	define('show.hex(line)ch,i')			:(show.hex.end)
+
+*	Show line with blanks replaced by hex digits showing
+*	their position in the line.
+
+*SHOW.HEX*
+show.hex
+
+	ch = substr(line,add1(.i),1)				:f(return)
+	show.hex = show.hex (ident(ch,' ')
+.		substr('123456789ABCDEF',i,1), ch) :(show.hex)
+
+show.hex.end
+
+	define('show.hline(g,row)line,ch')		:(show.hline.end)
+
+**	Returns the line corresponding to row ROW in
+**	grid G with two characters per cell.
+
+*SHOW.HLINE*
+show.hline
+
+	line = hline(g,row)
+	show.hline = '|'
+
+show.hline.ch
+
+	line len(1) . ch = 				:f(show.hline.done)
+	show.hline = show.hline ' ' ch  		:(show.hline.ch)
+
+show.hline.done
+
+	show.hline = show.hline '|'			:(return)
+
+show.hline.end
+
+	define('show.line(line)')			:(show.line.end)
+
+*	Show a line with blanks replaced by '.'
+
+*SHOW.LINE*
+show.line
+
+	show.line = replace(line,' ','.')		:(return)
+
+show.line.end
+
+	define('show.lines(lines,title)i,line,titled')	:(show.lines.end)
+
+*	Show the lines that are not empty in an array of lines
+
+*SHOW.LINES*
+show.lines
+
+	title  = 'lines' (differ(title) ' ' title, '')
+	out(itle)
+
+show.lines.n
+
+	line = lines[add1(.i)]			:f(return)
+	empty(line)				:s(show.lines.n)
+	differ(titled)				:s(show.lines.titled)
+
+*	Don not list header unless at least one non-empty line
+
+	out('    123456789012345')
+
+
+	titled = 1
+
+show.lines.titled
+
+	out(lpad(lineid(i),2) ' ' replace(line,' ','.')) :(show.lines.n)
+
+show.lines.end
+
+	define('show.move(mov)f,i,ff,n')		:(show.move.end)
+
+*	Show a move.
+
+*SHOW.MOVE*
+show.move
+
+	ident(datatype(mov),'integer')			:s(error)
+	show.move = 	'move id=' id(mov) ' text=' text(mov)
+.			' free[1]=' free(mov)[1]
+.			' proto(free) ' prototype(free(mov))
+	n = +prototype(free(mov))
+
+show.move.i
+	gt(add1(.i),n)					:s(show.move.f)
+	ff = free(mov)[i]
+	f = append(f,ff)				:s(show.move.i)
+
+show.move.f
+
+	show.move = 'm('
+.			lineid(id(mov)) ','
+.			"'" f "',"
+.			  "'" text(mov) "'"
+.			(differ(points(mov)) ',+' points(mov), '')
+.	             ')'
+							:(return)
+show.movefail
+
+	out('free ff failure ')				:(end)
+
+show.move.end
+
+	define('show.pair(pair)')			:(show.pair.end)
+
+*	Show paired item.
+
+*SHOW.PAIR*
+show.pair
+
+	show.pair = '{' lineid(num(pair)) ',' "'"
+.			replace(line(pair),' ','.') "'" '}'	:(return)
+
+show.pair.end
+
+	define('show.play(move)plines,b,r,c,ch,line')	:(show.play.end)
+
+*	Show the board.
+
+*SHOW.PLAY*
+show.play
+
+*	Display move in grid with just this move in upper case by
+*	saving the board, playing the move with the text in upper case,
+*	showing it, and then restoring the board to its saved state.
+
+	board = copy (g.board)
+	lines = copy(g.lines)
+	text(move) = ucase(text(move))
+	playmove(move)
+	plines = lines(g.board)
+	text(move) = lcase(text(move));* restore
+	g.board = board
+	g.lines = lines
+
+*	Collect the lines of the grid.
+
+	lines = array(15)
+
+show.play.l
+
+	gt(add1(.r),15) 				:s(show.play.ll)
+	plines[r] = show.hline(board,r)			:(show.play.l)
+
+show.play.ll
+
+	r = 0
+	out(lpad('',22) '1 1 1 1 1 1'
+.		 lpad('',20) '1 1 1 1 1 1')
+	out(lpad('', 4) '1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
+.		 lpad('', 2) '1 2 3 4 5 6 7 8 9 0 1 2 3 4 5')
+
+show.play.r
+
+	gt(add1(.r),15) 				:s(show.play.finish)
+	line = lpad(r,2) '|'
+	c = 0
+
+show.play.c
+
+	gt(add1(.c),15)					:s(show.play.margin)
+	ch = ucase(board[r,c])
+	b = g.bonus[r,c]
+	differ(ch,' ')					:s(show.play.ch)
+
+*	Here if empty cell, see if there is a bonus to be show.played.
+
+	ne(b,1)						:s(show.play.b)
+
+*	Here to show.play empty cell.
+
+	line = line ' -'				:(show.play.c)
+
+show.play.b
+
+* 	Here to show.play bonus.
+
+	ch = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
+	line = line ch 					:(show.play.c)
+
+show.play.margin
+
+	out(line  plines[r])				:(show.play.r)
+
+show.play.ch
+
+	line  = line ' ' ch 				:(show.play.c)
+
+show.play.finish
+
+	out(lpad('', 4) '1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
+.		 lpad('', 2) '1 2 3 4 5 6 7 8 9 0 1 2 3 4 5')
+	out()						:(return)
+
+show.play.end
+
+	define('show.player(pid)player')		:(show.player.end)
+
+*	Show player description.
+
+*SHOW.PLAYER*
+show.player
+
+*	data('player(pid,name,kind,rack,total,thirty,highest)')
+
+	player = g.players[pid]
+	show.player =
+.		'player('  pid(player)	',"' name(player) '"'  	  	','
+.		'player.kind.'	(
+.			eq(kind(player),player.kind.auto) 'auto',
+.			eq(kind(player),player.kind.foe)  'foe',
+.			eq(kind(player),player.kind.solo) 'solo',
+.			eq(kind(player),player.kind.team) 'team', ''
+.			        )	','
+.		'"' rack(player) '",' total(player) ','
+.		(gt(highest(player)) highest(player) ,'')
+.		')'
+							:(return)
+show.player.end
+
+	define('show.table(tbl,col)ara,i,key')		:(show.table.end)
+
+*	Show a table.
+
+*SHOW.TABLE*
+show.table
+
+	ara = sort(tbl,col)
+
+show.table.next
+
+*	loop:	Get the next tbl key.
+
+	key = ara[add1(.i),1]				:f(show.table.done)
+
+*	Show the entry and continue back to loop.
+
+	out(lpad(show(key),8) ' -> ' show(ara[i,2]))
+							:(show.table.next)
+show.table.done
+	out()						:(return)
+
+show.table.end
+
+	define('show.tiles(tiles)i')			:(show.tiles.end)
+
+*	Show a list of tiles, separated by blanks.
+
+*SHOW.TILES*
+show.tiles
+	gt(add1(.i),size(tiles))			:s(return)
+
+	show.tiles = append(show.tiles, ucase(substr(tiles,i,1))) :(show.tiles)
+
+show.tiles.end
+
+	define('show.words(words)i,pos')		:(show.words.end)
+
+*	Show results of words() call.
+
+show.words
+
+	pos = words[add1(.i),1]			:f(return)
+	out('words ' lpad(pos,2) ' ' words[i,2])	:(show.words)
+
+show.words.end
+

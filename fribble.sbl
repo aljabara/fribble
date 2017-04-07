@@ -18,7 +18,11 @@
 *
 
 -include "globals.sbl"
--include "util.sbl"
+-include	"util.sbl"
+-include	"game.sbl"
+-include	"move.sbl"
+-include	"shell.sbl"
+-include	"show.sbl"
 
 *	Play a game of fribble.  Usage:  
 
