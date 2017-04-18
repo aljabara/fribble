@@ -1,40 +1,45 @@
-	define('show(v)i,ent,type')			:(show.end)
+	define('show.value(v)i,ent,type')			:(show.value.end)
 
 *	Show the value of an expression.
 
 *SHOW*
-show
-	ident(dt(v),'map') out('show arg type map',dt(v))	:s(error)
+show.value
 	typ = dt(v)
-						:($('show.type.' typ))
+						:($('show.value.type.' typ))
 
-show.type.array
+show.value.type.array
 
-	show = show.array(v)				:(show.done)
+	show = show.array(v)				:(show.value.done)
 
-show.type.integer
+show.value.type.integer
 
-	show = convert(v,'string')			:(show.done)
+	show = convert(v,'string')			:(show.value.done)
 
-show.type.move
+show.value.type.move
 
-	show = show.move(v)				:(show.done)
+	show = show.move(v)				:(show.value.done)
 
-show.type.pair
+show.value.type.pair
 
-	show = show.pair(v)				:(show.done)
+	show = show.pair(v)				:(show.value.done)
 
-show.type.table
+show.value.type.table
 
-	show = show.table(v)				:(show.done)
+	show = show.table(v)				:(show.value.done)
 
-show.type.string
+show.value.type.string
 
-	show = convert(v,'string')			:(show.done)
+	v break('"')					:s(show.value.string.quote)
 
-show.done
+	show.value = "'" string "'"			:(show.value.done)
+
+show.value.string.quote
+
+	show.value = '"'  v '"' 			:(show.value.done)
+
+show.value.done
 							:(return)
-show.end
+show.value.end
 
 	define('show.array(ara)i,first,proto,second')	:(show.array.end)
 

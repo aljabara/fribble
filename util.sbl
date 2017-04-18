@@ -1,463 +1,732 @@
-*	Copyright 2017, David Shields
 
-* This file is part of the fribble project:
-*		http://github.com/daveshields/fribble.
-*
-*	Fribble is free software: you can redistribute it and/or modify
-*	it under the terms of the gnu general public license as
-*	published by the free software foundation, either
-*	version 2 of the license, or (at your option) any later version.
-*
-*	Fribble is distributed in the hope that it will be useful,
-*	but without any warranty; without even the implied warranty of
-*	merchantability or fitness for a particular purpose.  See the
-*	gnu general public license for more details.
-*
-*	You should have received a copy of the gnu general public
-*	license along with fribble.
-*	If not, see <http://www.gnu.org/licenses/>.
+*       Copyright 2017, David Shields
 
-*	Utility functions
+-include "map.sbl"
+
+	data('pair(first,second)')
+
+*	A _pair_ just joins two values together. It is not part of the map package.
+
+*       Utility functions
+
+	data('pair(first,second)')
+
+*	A _pair_ just joins two values together. It is not part of the map package.
+        data('map(map.kind,map.size,map.table,map.index)')
 
 
-	define('add1(name)exp')		:(add1.end)
+        define('add1(name)exp')         :(add1.end)
 
-*	Add one to argument, which must be a name.
+*       Add one to argument, which must be a name.
 
+*ADD1*
 add1
 
-	exp = ' ' name ' = ' name ' + 1'
-	add1 = eval(exp)
-					:(return)
+        exp = ' ' name ' = ' name ' + 1'
+        add1 = eval(exp)
+                                        :(return)
 add1.end
 
-	define('append(str,w,ch)')				:(append.end)
+        define('append(str,w,ch)')                      :(append.end)
 
-**	Append word W to string *str*, prefixing with *ch* if *str* is not null,
-**	or using space if CH is null.
+*	_append_ appends _ch_, or ' ' if _ch_ is null, to _str_
+*	and then appends _w_.
 
 *APPEND*
 append
 
-	append = (ident(str) w, str (ident(ch) ' ' , ch) w)	:(return)
+        append = (ident(str) w, str (ident(ch) ' ' , ch) w):(return)
 
 append.end
 
+        define('array.slice(ara,start,len)i')           :(array.slice.end)
 
-	define('avail(pair)line,spaces,c,i,oi')	:(avail.end)
+*       Like substr, but returns the sub-array of _ara_ starting at
+*       element _start_ and consisting of _len_ elements
 
-*	Return array containing the indexes of the avail (blank) cells in line.
-*	Fail if no cells are available.
+*ARRAY.SLICE*
+array.slice
+
+        array.slice = array(len)
+
+array.slice.1
+
+        gt(add1(.i),len)                                :s(return)
+        array.slice[i] = copy(ara[start + i - 1])       :(array.slice.1)
+
+array.slice.end
+
+        define('ascii(line)c,n,name,nul,num,pos')       :(ascii.end)
+
+*       Return the text of line with every ascii character identified.
+
+*ASCII*
+ascii
+        nul = substr(&alphabet,1,1)
+
+ascii.next
+        
+*       Add space after previous character if result not null.
+
+        ascii = differ(ascii) ascii ' '
+        c = substr(line,1,1)                            :f(ascii.done)
+        ident(c,nul)                                    :s(ascii.null)
+*       output = 'ascii c[' c ']'
+        line any('0123456789')                          :s(ascii.integer)
+        line any(&lcase &ucase)                         :s(ascii.letter)
+        line ' '                                        :s(ascii.space)
+
+*       Check for control character (code <=26)
+
+        &alphabet break(c) . pos                        :f(ascii.other)
+        pos = size(pos) 
+*       output = 'pos of [' c '] is [' pos ']'
+        gt(pos,26)                                      :s(ascii.other)
+        ascii = ascii g.ascii.name[c] '(^'  substr('ABCDEFGHIJKLMNOPQRSTUVWXYZ',pos,1) ')' 
+        line len(1) =                                   :(ascii.next)
+
+ascii.integer
+
+        line span('0123456789') . text =
+*       output = 'ascii num [' text ']'
+        ascii = ascii  text                             :(ascii.next)
+
+ascii.letter
+
+        line span(&lcase &ucase) . text =
+*       output = 'ascii letter [' text ']'
+        ascii = ascii  text                             :(ascii.next)
+
+ascii.null
+
+        ascii = ascii 'NUL'                             :(ascii.next)
+
+ascii.other
+                
+*       Here if none of the other cases apply, so just list the ascii name.
+
+        ascii = ascii g.ascii.name[c]                   
+        line = substr(line,2)                           :(ascii.next)
+
+ascii.space
+
+        line span(' ') . text =
+*       output = 'ascii space [' text ']'
+        
+        ascii =  ascii 'SPC'
+        ascii = gt(size(text),1) ascii 'SPC*' size(text)
+        ascii = ascii 
+                                                        :(ascii.next)
+ascii.done
+
+        ascii = trim(ascii)                             :(return)
+
+ascii.end
+
+        define('ascii.init(init)name,val')              :(ascii.init.end)
+
+*       Initialize maps for use by _ascii_.
+*       Since space (ascii 32) prints as space, use the name SPC for 32.
+
+*ASCII.INIT*
+ascii.init
+
+
+        ascii.init = map.map(
+.       '0:NUL 16:DLE 48:0 64:@ 80:P 96:`:112:p '
+.       '1:SOH 17:DC1 33:! 49:1 65:A 81:Q  97:a 113:q '
+.       '2:STX 18:DC2 34:" 50:2 66:B 82:R  98:b 114:r '
+.       '3:ETX 19:DC3 35:# 51:3 67:C 83:S  99:c 115:s '
+.       '4:EOT 20 DC4 36:$ 52:4 68:D 84:T 100:d 116:t '
+.       '5:ENQ 21:NAK 37:% 53:5 69:E 85:U 101:e 117:u '
+.       '6:ACK 22:SYN 38:& 54:6 70:F 86:V 102:f 118:v '
+.       "7:BEL 23:ETB 39:' 55:7 71:G 87:W 103:g 119:w "
+.       '8:BS  24:CAN 40:( 56:8 72:H 88:X 104:h 120:x '
+.       '9:HT  25:EM  41:) 57:9 73:I 89:Y 105:i 121:y '
+.       '10:LF 26:SUB 42:*:58 : 74:J 90:Z 106:j 122:z '
+.       '11:VT 27:ESC 43:+:59 ; 75:K 91:[ 107:k 123:{ '
+.       '12:FF 28:FS  44:,:60 < 76:L 92:\ 108:l 124:| '
+.       '13:CR 29:GS  45:-:61 = 77:M 93:] 109:m 125:} '
+.       '14:SO 30:RS  46:.:62 > 78:N 94:^ 110:n 126:~ '
+.       '15:SI 31:US  47:/:63 ? 79:O 95:_ 111:o 127:DEL ' 
+
+        g.ascii.name = map.map(128)
+        g.ascii.val = map.map(128)
+        
+
+	map.loop(ascii.init)
+
+ascii.init.next
+
+	ent = map.next(ascii.init)			:(ascii.init.finis)
+	g.ascii.name[substr(&alphabet,+v + 1,1] = name
+	g.ascii.val[name] = +val			:(ascii.init.next)
+
+
+*       Correct entry for 32 to be SPC, the blank character
+*       Correct entry for 0 to be NUL, the NUL character
+
+        g.ascii.name[] = 'NUL'
+        g.ascii.val['NUL'] = 0  
+        g.ascii.name[' '] = 'SPC'
+        g.ascii.val['SPC'] = 32                         :(return)
+        
+ascii.init.end
+
+        define('avail(pair)line,spaces,c,i,oi')         :(avail.end)
+
+*       Return array containing the indexes of the avail (blank) cells in line.
+*       Fail if no cells are available.
 
 *AVAIL*
 avail
-	line = line(pair)
-	spaces = spaces(line)
-	eq(spaces,0)					:s(freturn)
-	avail = array(spaces)
-	i = ai = 0
+        line = line(pair)
+        spaces = spaces(line)
+        eq(spaces,0)                                    :s(freturn)
+        avail = array(spaces)
+        i = ai = 0
 
 avail.c
 
-	c = substr(line, add1(.i), 1)			:f(avail.done)
-	differ(c,' ')					:s(avail.c)
-	avail[add1(.oi)] = +i				:(avail.c)
+        c = substr(line, add1(.i), 1)                   :f(avail.done)
+        differ(c,' ')                                   :s(avail.c)
+        avail[add1(.oi)] = +i                           :(avail.c)
 
 avail.done
 
-	eq(g.tracing)					:s(return)
-	i = 0; c =
+        eq(g.tracing)                                   :s(return)
+        i = 0; c =
 
 avail.done.ch
 
-	c = c lpad(avail[add1(.i)],3)		:s(avail.done.ch)
-*		show.hex(line) '|  |' show.line(line) '| is ' c)
-							:(return)
+        c = c lpad(avail[add1(.i)],3)                   :s(avail.done.ch)
+*               show.hex(line) '|  |' show.line(line) '| is ' c)
+                                                        :(return)
 avail.end
 
 
-	define('cardinal(n,word)')			:(cardinal.end)
+        define('cardinal(n,word)')                      :(cardinal.end)
 
-*	If N is one, returns 'one' followed by WORD.
-*	Otherwise returns NUMBER(N) followed by WORD and 'S'.
+*       If N is one, returns 'one' followed by WORD.
+*       Otherwise returns NUMBER(N) followed by WORD and 'S'.
 
 cardinal
 
-	cardinal = (eq(n,1) 'one ' word, number(n) ' '  word 's') :(return)
+        cardinal = (eq(n,1) 'one ' word, number(n) ' '  word 's'):(return)
 
 cardinal.end
 
 
 
-	define('datename(date)s')				:(datename.end)
+        define('datename(date)s')                       :(datename.end)
 
-*	Convert date to form with no blanks, just dashes, to be
-*	suitable for use as part of a file name.
+*       Convert date to form with no spaces, just dashes, to be
+*       suitable for use as part of a file name.
 
 datename
 
-	datename = replace(date,' :/','---')
-	datename = substr(datename,12,8) '-' substr(datename,1,10)
-							:(return)
+        datename = replace(date,' :/','---')
+        datename = substr(datename,12,8) '-' substr(datename,1,10)
+                                                        :(return)
 datename.end
 
-	define('dt(obj)')				:(dt.end)
+        define('dt(obj)')                               :(dt.end)
 
-*	Shorthand for datatype(obj)
+*       Shorthand for datatype(obj)
 
 dt
 
-	dt = (ident(obj) 'string',  datatype(obj))	:(return)
+        dt = (ident(obj) 'string',  datatype(obj))      :(return)
 
 dt.end
 
-	define('empty(line)')				:(empty.end)
+        define('empty(line)')                           :(empty.end)
 
-*	Test if line is empty (null or all blanks).
+*       Test if line is empty (null or all spaces).
 
 *EMPTY*
 empty
 
-*	In most cases, the first character in line is not null.
+*       In most cases, the first character in line is not null.
 
-	ident(line)					:s(return)
-	differ(substr(line,1,1),' ')			:s(freturn)
-	line span(' ') =
-	ident(line)					:s(return)f(freturn)
+        ident(line)                                     :s(return)
+        differ(substr(line,1,1),' ')                    :s(freturn)
+        line span(' ') =
+        ident(line)                                     :s(return)f(freturn)
 
 empty.end
 
 
-	define('lcase(s)')				:(lcase.end)
+        define('lcase(s)')                              :(lcase.end)
 
-*	Convert argument to lower case.
+*       Convert argument to lower case.
 
 *LCASE*
 lcase
 
-	lcase = replace(s,&ucase,&lcase)		:(return)
+        lcase = replace(s,&ucase,&lcase)                :(return)
 
 lcase.end
 
-	define('less(str,sub)before,after')		:(less.end)
+        define('less(str,sub)before,after')             :(less.end)
 
-**	Less removes the first instance of each character in SUB from *str*,
-**	where SUB is a substring of *str*.
+**      Less removes the first instance of each character in SUB from *str*,
+**      where SUB is a substring of *str*.
 
 *LESS*
 less
-	ident(str)					:s(return)
-	less = str
+        ident(str)                                      :s(return)
+        less = str
 
 less.ch
-	sub len(1) . ch =				:f(return)
-	less break(ch) . before  ch rem . after
-	less = before after				:(less.ch)
+        sub len(1) . ch =                               :f(return)
+        less break(ch) . before  ch rem . after
+        less = before after                             :(less.ch)
 
 less.end
 
-	define('log(text)')				:(log.end)
+        define('log(text)')                             :(log.end)
 
-*	Write text to logfile if making a log.
+*       Write text to logfile if making a log.
 
 *LOG*
 log
-	eq(g.log)					:s(return)
+        eq(g.log)                                       :s(return)
 
-	g.logfile = text				:(return)
+        g.logfile = text                                :(return)
 
 log.end
 
-	define('number(n)')				:(number.end)
+        define('number(n)')                             :(number.end)
 
-**	If N can be represented as a string of one or two words
-**	then return that string. Otherwise return N.
+**      If N can be represented as a string of one or two words
+**      then return that string. Otherwise return N.
 
 number
-	number = eq(n) 'zero'				:s(return)
-	number = g.numbers[n]
-	differ(number)					:s(return)
-	number = n					:(return)
+        number = eq(n) 'zero'                           :s(return)
+        number = g.numbers[n]
+        differ(number)                                  :s(return)
+        number = n                                      :(return)
 number.end
 
 
-	define('out(text1,text2,text3)type1,type2')	:(out.end)
+        define('out(text1,text2,text3)type1,type2')     :(out.end)
 
-*	Output a line conisting of TEXT1, TEXT2 enclosed
-*	in brackets, followed by TEXT3.
+*       Output a line conisting of TEXT1, TEXT2 enclosed
+*       in brackets, followed by TEXT3.
 
 *OUT*
 out
-	output = text1 (differ(text2) '[' text2 ']', '')  (differ(text3) text3, '') :(return)
+        output = text1 (differ(text2) '[' text2 ']', '')  (differ(text3) text3, ''):(return)
 
-	differ(text2)				:s(out.text2)
+        differ(text2)                                   :s(out.text2)
 
-*	Here if just text1.
+*       Here if just text1.
 
-	output = text1				:(return)
+        output = text1                                  :(return)
 
 out.text2
 
-	type2 = dt(text2)
-	type3 = dt(text3)
-*	output = 'dt(type2) ' dt(type2)
-*	output = 'dt(type3) ' dt(type3)
-	ident(datatype(text2),'string')			:s(out.2)
-*	output = 'out second argument not integer or string,'
-*.	' but of type ' type2
-*.						:(error)
+        type2 = dt(text2)
+        type3 = dt(text3)
+*       output = 'dt(type2) ' dt(type2)
+*       output = 'dt(type3) ' dt(type3)
+        ident(datatype(text2),'string')                 :s(out.2)
+*       output = 'out second argument not integer or string,'
+*.      ' but of type ' type2
+*.                                              	:(error)
 
 out.2
 
-	ident(type3,'integer')			:s(out.3)
-	ident(type3,'string')			:s(out.3)
+        ident(type3,'integer')                          :s(out.3)
+        ident(type3,'string')                           :s(out.3)
 
 out.3
-	type.ex(text3,'string')			:s(out.ok)
-	type.ex(text3,'integer')			:s(out.ok)
-*	output = 'out third argument not integer or string,'
-*.	' but of type ' type3
-*.						 :(error)
+        type.ex(text3,'string')                         :s(out.ok)
+        type.ex(text3,'integer')             	:s(out.ok)
+*       output = 'out third argument not integer or string,'
+*.      ' but of type ' type3
+*.                                               :(error)
 
 out.ok
 
-	output = text1 ' [' text2 ']' text3		:(return)
+        output = text1 ' [' text2 ']' text3  	:(return)
 
 out.end
 
-	define('prefix(str,pre)word')			:(prefix.end)
+        define('prefix(str,pre)word')                   :(prefix.end)
 
-*	Prefix takes a list of space-separated words str and prefixes each
-*	with the string pre.
+*       Prefix takes a list of space-separated words str and prefixes each
+*       with the string pre.
 
 *PREFIX*
 prefix
 
-	str = str ' ';* so each word followed by space
+        str = str ' ';* so each word followed by space
 
 prefix.1
 
-	str break(' ') . word span(' ')  =		:f(return)
-	add1(.prefixcount)
-	prefix = append(prefix, pre word,'A')		:(prefix.1)
+        str break(' ') . word span(' ')  =              :f(return)
+        add1(.prefixcount)
+        prefix = append(prefix, pre word,'A')           :(prefix.1)
 
 prefix.end
 
-	define('random(n)')				:(random.end)
+        define('random(n)')                             :(random.end)
 
-*	Return integer uniformly distributed in 1,2,...,n.
-*	If n=0 returns real uniformly distributed in the interval [0,1].
-*	The Algorithm is based on that in section 16.1 of "Algorithms in SNOBOL4,"
-*	James F. Gimpel, John Wiley and Sons, 1976.
+*       Return integer uniformly distributed in 1,2,...,n.
+*       If n=0 returns real uniformly distributed in the interval [0,1].
+*       The Algorithm is based on that in section 16.1 of "Algorithms in SNOBOL4,"
+*       James F. Gimpel, John Wiley and Sons, 1976.
 
 *RANDOM*
 random
 
-	g.random_var = remdr(g.random_var * 4676, 414971)
-	random  = g.random_var / 414971.0
-	random = ne(n) convert(random * n,'integer') + 1
-							:(return)
+        g.random_var = remdr(g.random_var * 4676, 414971)
+        random  = g.random_var / 414971.0
+        random = ne(n) convert(random * n,'integer') + 1
+                                                        :(return)
 random.end
 
-	define('randomseed()s,c')			:(randomseed.end)
+        define('randomseed()s,c')                       :(randomseed.end)
 
-*	Compute seed for random number generator from date and time.
+*       Compute seed for random number generator from date and time.
 
 *RANDOMSEED*
 randomseed
-	g.random_var =
-	s = g.date
-	s = replace(s,'/:-','   ')
+        g.random_var =
+        s = g.date
+        s = replace(s,'/:-','   ')
 
-*	Get all the digits in s.
+*       Get all the digits in s.
 
 randomseed.loop
 
-	s len(1) . c =					:f(randomseed.done)
-	ident(c,' ')					:s(randomseed.loop)
-	g.random_var = g.random_var c			:(randomseed.loop)
+        s len(1) . c =                                  :f(randomseed.done)
+        ident(c,' ')                                    :s(randomseed.loop)
+        g.random_var = g.random_var c                   :(randomseed.loop)
 
 randomseed.done
 
-*	Reverse the seed so digits depending on time come first.
+*       Reverse the seed so digits depending on time come first.
 
-	g.random_var = +reverse(g.random_var	)
-							:(return)
+        g.random_var = +reverse(g.random_var    )
+                                                        :(return)
 
 randomseed.end
 
-	define('reader(filename)n')			:(reader.end)
+        define('reader(filename)'       )               :(reader.end)
 
-*	Return file as table of lines, with zero-th entry giving number
-*	of lines.
+*       Return a sequence map of the lines in the file specified by _filename_.
 
 *READER*
 reader
-	differ(filename) input(.file,g.channel.temp,filename)		:s(reader.opened)
 
-	out('unable to open reader file ' filename '.') :(freturn)
+        differ(filename) input(.file,g.channel.temp,filename):s(reader.opened)
+        out('unable to open reader file ' filename '.') :(freturn)
 
 reader.opened
 
-	n = 0
-	reader = table(100)
+        reader = map(map.kind.sequence,1024)
 
 reader.next
 
-	reader[add1(.n)] = (ident(filename) input, file) s:(reader.next)
+        map.add(map, (ident(filename) input, file))     :f(reader.eof)s(reader.next)
 
-*	Here at end of file, convert map to array of lines.
+reader.eof
 
-	reader[0] = n - 1;* line count
+*       Here at end of file; close temporary file if one was needed.
 
-	differ(filename) endfile(g.channel.temp)
-							:(return)
+        differ(filename) endfile(g.channel.temp)        :(return)
+
 reader.end
 
-	define('spaces(line)n')				:(spaces.end)
+	define('reader.string(str,delim)line')			:(reader.string.end)
 
-*	Count number of spaces in line.
+*	Returns a series map of the lines in _str_,
+*	where the delimiter character _delim_ is used to mark 
+*	the end of a line. One intended use of _reader.string_ 
+*	is to assist in the construction of test programs.
+
+reader.string
+
+	delim = ident(delim) '/'
+	reader.string = map.series()
+
+reader.string.next
+
+	str break(delim) . line delim =			:f(return)
+	add(reader.string,line)				:(reader.string.next)
+
+reader.string.end
+
+        define('spaces(line)c')                         :(spaces.end)
+
+*       Returns string which has ' ' in position _i_ if the _i_-th
+*	characer in _string_ is a space (' '), or '*' otherwise.
+
+spaces
+
+	line len(1) . c					:f(return)
+	spaces = spaces (ident(c,' ') ' ', '*')		:(spaces)
+
+spaces.end
+
 
 *SPACES*
 spaces
 
-	line len(1) . c =				:f(return)
-	spaces = ident(c,' ') spaces + 1		:(spaces)
+        line len(1) . c =                               :f(return)
+        spaces = ident(c,' ') spaces + 1                :(spaces)
 
 spaces.end
 
-	define('subarray(ara,start,len)i')		:(subarray.end)
+	define('string.slice(str,first,last)')		:(string.slice.end)
 
-**	Like substr, but returns the sub-array of ARA starting at
-**	element START and consisting of *len* elements
+string.slice
 
-*SUBARRAY*
-subarray
+	string.slice = substr(str,first,last)		:(return)
 
-	subarray = array(len)
+string.slice.end
 
-subarray.1
+        define('thousands(s)n')                         :(thousands.end)
 
-	gt(add1(.i),len)				:s(return)
-	subarray[i] = copy(ara[start + i - 1])		:(subarray.1)
-
-subarray.end
-
-	define('thousands(s)n')				:(thousands.end)
-
-*	Format s with comma's every three digits from right.
+*       Format s with comma's every three digits from right.
 
 *THOUSANDS*
 thousands
 
-	n = size(s)
-	thousands = le(n,3) s				:s(return)
-	thousands = thousands(substr(s,1,n - 3)) ',' substr(s, n - 2, 3) :(return)
+        n = size(s)
+        thousands = le(n,3) s                           :s(return)
+        thousands = thousands(substr(s,1,n - 3)) ',' substr(s, n - 2, 3):(return)
 
 thousands.end
 
-	define('traceoff()')				:(traceoff.end)
 
-*	Initiate tracing.
+        define('tokens()line,type,pos,text,lineno')                     (tokens.end)
+
+
+*       Tokens scans _line_ and returns a table of the tokens in the line.
+*       The table has keys from 1..n, where _n_ is the number of tokens found. The
+*       key '#' gives the number of entries in the table, and is used for no other purpose.
+*       For example, a scan of an empty line results in tokens['#'] having the value zero.
+
+*       This function is an instance of what is called a tokensical scanner, or tokenizer,
+*        which is the first stage in a programming language compiler, or for any program 
+*       that processes text files with a specified structure.
+
+*       Each token is represented as an instance of the datatype _token_ as follows:
+
+        data('token(lineno,pos,type,text)'
+
+*       where:
+*               _lineno_        is the line number within the file;
+*               _pos_           is the position of the first character of the token in the line;
+*               _type_          is the token's type, as described below; and
+*               _text_          is the text of the token.
+
+*       The type is represented by a single character, as follows:
+
+*               'c'             comment, indicated by asterisk (*) in the first column.
+*                               The text consists of the entire line.
+*               'i'             integer, consisting of one or more digits ('0123456789')
+*               'l'             left opener, one of '(<[{'
+*               'p'             punctation, one of '.;,?!', or single quote ('), or double quote ("),
+*               'o'             other printable character, one of '~@#$%^&*_-+=`'.
+                'q'             quoted string, starting witn '"', and continuing to the next instance of the opening quote character.
+*               'r'             right closer, one of ')>]}'
+*               's'             space, consistine of one or more spaces (spaces)
+*               't'             tab character
+*               'u'             unprintable character, for example control-k
+*               'w'             word, consisting of one of more letters in upper or lower case or
+*                               "'" or "_".
+
+*       The longest possible string meeting the rules is used when building a token.
+*       For example, 'abc' is just the word 'abc', not 'a' followed by 'bc', and so forth.
+
+*       It is recommended that the tab character NOT be used as an abbreviation for one or more spaces
+*       in the input file. If tabs are used, then _pos_ is ill-defined. If tabs are not used, then _pos_
+*       indicates the true position in the line of the first character of the token, and so error messages
+*       and references to the token will be exact. For example, _pos_ could be used to indicate where to
+*       give emphasis to a token by underlining it, or enclosing it in '_' to generate markdown format, and so forth.
+
+
+
+tokens  
+
+        tokens = map.series()
+        line '*'                                        :f(tokens.next)
+        type = 'c'
+        text = line                                                             
+        line =                                          :(tokens.new)
+
+tokens.next
+
+        line ' '                                        :s(tokens.space)
+        line any('0123456789')                          :s(tokens.integer)
+        line any('(<[{')                                :s(tokens.left)
+        line any('.;,?!')                               :s(tokens.punctuation)
+        line '"'                                        :s(tokens.quote)
+        line any('~@#$%^&*_-+=')                                        :s(tokens.other
+        line any(')>]}')                                :s(tokens.right)
+        line char(9)                                    :s(tokens.tab)
+        line any(&lcase &ucase)                         :s(tokens.word)
+
+*       Here for unprintable
+                                                        :(tokens.unprintable)
+
+tokens.integer
+
+        type = 'i'
+        line span('0123456789') . text =                :(tokens.new)
+
+tokens.punctuation 
+
+        type = 'p                                       :(tokens.character)
+
+tokens.other
+
+        type = 'o'                                      :(tokens.character)
+
+*tokens.other
+
+        type = 'o'                                      :(tokens.character)
+
+tokens.quote
+
+        type = 'q'
+        line '"' break('"') . text '"' =        
+        text = '"' text '"'                             :(tokens.new)
+
+tokens.right
+
+        type = 'r'                                      :(tokens.character)
+
+tokens.space
+
+        type = 's'
+        line span(' ')  . text =                        :(tokens.new)
+
+tokens.tab
+
+        type = 't'                                      :(tokens.character)
+
+tokens.word
+
+*FIX*
+        type = 'w'
+        line span(&ucase &lcase "_" "'")) . text =      :(tokens.new)
+
+map.sbl:1okens.tab
+
+        type = 't'                                      :(tokens.character)
+
+tokens.character
+
+*       Here if token is single character.
+
+        line len(1) . text                              :(tokens.new)
+
+tokens.new
+
+        map.add(tokens,token(lineno,pos,type,text))     :(tokens.next)
+
+tokens.end
+
+        define('traceoff()')                            :(traceoff.end)
+
+*       Initiate tracing.
 
 *TRACEOFF*
 traceoff
-	&ftrace = &trace =
+        &ftrace = &trace =
 
-	g.scoring = g.tracing = 0
-	out('stop TRACING ')
+        g.scoring = g.tracing = 0
+        out('stop TRACING ')
 
 traceoff.end
 
-	define('traceon()')				:(traceon.end)
+        define('traceon()')                             :(traceon.end)
 
-*	Initiate tracing.
+*       Initiate tracing.
 
 *TRACEON*
 traceon
 
-	out('start TRACING')
-*	&ftrace = &trace = 1500000
-	g.scoring = g.tracing = 1
-							:(return)
+        out('start TRACING')
+*       &ftrace = &trace = 1500000
+        g.scoring = g.tracing = 1
+                                                        :(return)
 traceon.end
 
-	define('ucase(s)')				:(ucase.end)
+        define('ucase(s)')                              :(ucase.end)
 
-*	Convert argument to upper case.
+*       Convert argument to upper case.
 
 *UCASE*
 ucase
 
-	ucase = replace(s,&lcase,&ucase)		:(return)
+        ucase = replace(s,&lcase,&ucase)                :(return)
 
 ucase.end
 
 
-	define('unpack(line),c,i')			:(unpack.end)
+        define('unpack(line),c,i')                      :(unpack.end)
 
-**	Unpack the characters of line LINE to an array of characters.
+**      Unpack the characters of line LINE to an array of characters.
 
 *UNPACK*
 unpack
 
-	unpack = array(size(line))
+        unpack = array(size(line))
 
 unpack.ch
 
-	c = substr(line,add1(.i),1)			:f(return)
-	unpack[i] = c					:(unpack.ch)
+        c = substr(line,add1(.i),1)                     :f(return)
+        unpack[i] = c                                   :(unpack.ch)
 
 unpack.end
 
-	define('words(s)n,w,pos,i,sp')			:(words.end)
+        define('words(str)word')                        :(words.end)
 
-*	Return array of the words in s, fail if no words.
-*	The first entry for an array element is the starting index;
-*	the second is the word itself.
+*       Return sequence map of the words in str, fail if no words.
 
 *WORDS*
 words
 
-*	Make sure we'll have blank to start off so initial span()
-*	matches something, and also one at end to break to
-*	in case last word extends to end of line.
+        words = map(map.kind.sequence)
+        str = ' str ' '
 
-	words = table(n)
-	s = ' ' s ' '
-	pos = 0
-words.sp
+words.next
 
-*	Account for blank(s) between words.
-
-	s span(' ') . sp =
-
-	ident(s)					:s(words.done)
-
-	pos = pos + size(sp);* point to start of next word
-
-words.w
-
-*	While it is customary to absorb the blank in the
-*	usage below, we leave it in so there will be at least
-*	one blank to satisfy span() when loop back to words.sp
-
-	s break(' ') . w  = 	 			:f(words.done)
-	words[pos] = w
-	pos = pos + size(w)				:(words.sp)
-
-words.done
-
-	words = convert(words,'array')			:(return)
+        str break(' ') . word ' ' =                     :f(return)
+        map.add(words,word)                             :(words.next)
 
 words.end
 
-	:(error.end)
+        define('writer(lines)'       )                  :(writer.end)
+
+*       Writes a sequence map of the lines in the series _lines_
+*	to standard output.
+
+
+writer
+
+	lines = copy(lines)
+	map.loop(lines)
+
+writer.next
+	
+	output = map.next(lines)				:f(return)s(writer.next)
+
+writer.end
+
+        :(error.end)
 error
-	output = 'error lastno ' &lastno
-	output = 'ERROR'
-	output = 'Fatal error: stopping the madness.'
-*	&dump = 3
-							:(end)
+        output = 'error lastno ' &lastno
+        output = 'ERROR'
+        output = 'Fatal error: stopping the madness.'
+*       &dump = 3
+                                                        :(end)
 error.end
 

@@ -1,0 +1,511 @@
+
+*       Copyright 2017, David Shields
+
+*	_map.sbl_ provides a set of functions for working with maps.
+
+*	For example, to obtain the number of words in a file
+
+
+*		define('f.count(entry) ;f.count; f.count = map.size(value(words(entry))) :(return)')
+*		define('f.sum(result,entry); f.sum; f.sum = result + value(entry) :(return)')
+*		result = map.forall(map.apply(reader(filename),f.count),f.sum)
+
+	 result = map.forall(map.foreach(reader(filename),f.count) ,f.sum)
+
+        data('map(map.kind,map.size,map.table,map.index)')
+
+*       map implements several forms of map, as specified by map.kind
+
+*       map.kind.array   ‘array’, a map defined by an array.
+*                               If the array is one-dimensional, then the entry for array element _i_
+*                               If the value of entry _i_ in the array.
+*                               If the array is two-dimensional, the entry for element _i_ is the
+*                               value of the corresponding array entry.
+
+*       map.kind.map     ‘map’, the most general form, consisting of a series of
+*                         key/value pairs.
+
+*       map.kind.series  ‘series’, a sequence of with keys 1..n
+
+*       map.kind.set     ‘set’, a set of values.
+
+*       map.kind.stack   'stack', a map representing a stack.
+*                        stack() creates a new stack.
+*                        stack.push(stack,val) pushes _val_ on to the stack
+*                        stack.pop(stack) pops the top item from the stack and
+*                        returns its value.
+
+*       map.kind.array  = ‘array’
+*       map.kind.map    = ‘map’
+*       map.kind.series = ‘series’
+*       map.kind.set    = ‘set’
+*       map.kind.stack  = ‘stack’
+
+*       _map.size_ is the number of entries in the map.
+
+*       _map.table_ is the table used to maintain the map by the various
+*       _map_ functions. Work with the table directly at your peril.
+
+*       _map.index_ is used to control iteration over a map. Work with
+*       it directly at your peril.
+
+        data('entry(key,value)')
+
+*       _entry_ is used to maintain a key/value pair.
+
+*       Map functions
+
+
+        define('array.slice(ara,start,len)i')           :(array.slice.end)
+
+**      Like substr, but returns the sub-array of _ara_ starting at
+**      element _start_ and consisting of *len* elements
+
+*ARRAY.SLICE*
+array.slice
+
+        array.slice = array(len)
+
+array.slice.1
+
+        gt(add1(.i),len)                                :s(return)
+        array.slice[i] = copy(ara[start + i - 1])       :(array.slice.1)
+
+array.slice.end
+
+        define('map.add(map,val)')                      :(map.add.end)
+
+*       Add new entry to map that implements a sequence, with keys running
+*       from 1..n.
+
+map.add
+
+	entry = (map.size(map) = map.size(map) + 1,val)
+	map.set(map,map.size(map), val)
+	map.add = entry					:(return)
+
+map.add.end
+
+	define('map.apply(map,f)entry,entry.new')	:(map.apply.end)
+
+*	_map.apply_ returns the map obtained by applying the function _f_
+*	to each entry in _map_.
+
+map.apply
+
+	map.apply = map.map(map.size(map))
+	map.loop(map)
+
+map.apply.next
+
+	entry = map.next(map)				:f(return)
+	entry.new = apply(f,entry)
+	map.set(map.apply,key(entry.new), value(entry.new)):(map.apply.next)
+
+map.apply.end
+
+*	Create a map defined by an array.
+*	If the array has one dimension then create a series map
+*	from the array values.
+*	If the array has two dimensions, create a map using the
+*	array indice as the keys, and the correspong value as the
+*	values.
+
+map.array
+
+        map.array = map(map.kind.array)
+        I = prototype(aray)
+        integer(i)                                      :s(map.array.one)
+
+*       Here to initialize from two-dimensional array
+
+map.array.next
+
+        key = aray[i = i + 1,1]                         :f(return)
+        map.set(map.aray,i,aray[i,2])                    :(map.array.next)
+
+map.array.one
+
+*        Here to initialize map from one-dimensional array
+
+*map.array.next
+*
+*        key = aray[i = i + 1]				:f(return)
+*        map.add(map.array,key)                          :(map.array.next)
+
+
+map.array.end
+
+        define('map.domain(entry)')			:(map.domain.end)
+
+
+*       Return series map with the keys in _map_.
+
+        map.loop(map)
+
+map.domain
+
+        entry = map.next(map)                           :f(return)
+        map.add(map.domain,ent)                         :(map.domain)
+
+map.domain.end
+
+        define('map.forall(map)')                    :(map.forall.end)
+
+*        Returns map defined as follows:
+*        Iterare over _map_. For each entry _ent_, invoke f(ent) and use the
+*        result to define a new entry in the result.
+
+map.forall
+
+        map.forall = map()
+        map.loop(map)
+
+map.forall.next
+
+*map.forall = apply(f,map.forall,map.next(map))          :f(return)s(map.forall.next)
+
+
+map.forall.end
+
+        define('map.foreach(map,f)’)                 :(map.foreach.end)
+
+*        Returns a map defined by iterating over the entries in _map_, and applying
+*        f to the entry to define a new entry in the result.
+
+map.foreach
+
+        map.foreach = map()
+
+map.foreach.next
+
+        Ent = apply(f,map.next(map))                    :f(return)
+        map.set(map.foreach, entry.key(ent), entry.value(ent)):(map.foreach.next)
+
+map.foreachend
+
+        define('map.get(key,val)')                  :(map.get.end)
+
+*       Gets the value of the key _key_ in the map _map_.
+
+map.get
+
+        map.get = map.table(map)[key]                   :(return)
+
+map.get.end
+
+	define('map.inverse)entry')			:(map.inverse.end)
+
+*	_map.inverse_ returns the inverse of a map. The inverse is
+*	a map with the keys and values of _map_ reversed. 
+*	_map.inverse_ fails if there are two instances of the same
+*	value in the range of the map.
+
+map.inverse
+
+	map.inverse = map.map(map.kind.map,map.size(map))
+	map.loop(map)
+
+map.inverse.next
+
+	entry = map.next(map)				:f(return)
+	differ(map.get(map.inverse,value(entry)))	:f(freturn)
+	map.set(map.inverse,value(entry), key(entry))  :(map.inverse.next)
+
+map.inverse.end
+
+        define('map.loop(map,kind)')                    :(map.loop.end)
+
+*       Returns an loop over map.
+
+*       _kind_ gives the kind of loop:
+
+*               '+order'        iterate in order in which entries added. (default)
+*               '-order'        iterate in reverse order in which entries added.
+*               '+key'          iterate in incresing values of keys.
+*               '-key'          iterate in decceasing values of keys.
+*               '+val'          iterate in incresing values of values.
+*               '-key'          iterate in decreasing values of keys.
+
+*       Otherwise loop over the keys in the order in which they were added to the map.
+
+map.loop
+
+        map.index(map) = 0
+        ident(kind)                                     :s(map.loop.order)
+        ident(kind, '+order')                           :s(map.loop.key.order.inc)
+        ident(kind, '-order')                           :s(map.loop.key.order.dec)
+        ident(kind, '+key')                             :s(map.loop.key.inc)
+        ident(kind, '-key')                             :s(map.loop.key.dec)
+        ident(kind, '+val')                             :s(map.loop.value.inc)
+        ident(kind, '-val')                             :s(map.loop.value.dec)
+
+map.loop.order.inc
+
+        map.array(map) = convert(map.table(map),'array'):(map.done)
+
+map.loop.rorder.inc
+
+        output = 'loop rorder not implemented '         :(nosuchlabel)
+        map.array(map) = convert(map.table(map),'array'):(map.done)
+
+map.loop.key.inc
+
+        map.array(map) = rsort(map.table(map),1)        :(return)
+
+map.loop.key.dec
+
+        map.array(map) = sort(map.table(map),1)         :(return)
+
+map.loop.value.inc
+
+        map.array(map) = rsort(map.table(map),2)        :(return)
+
+value.dec
+
+        map.array(map) = sort(map.table(map),-2)        :(return)
+
+map.loop.end
+
+        define('map.new(kind,init,n)i,key,str,valr')    :(map.new.end)
+
+*       Create a new map.
+
+*       _kind_ gives the kind of the map.
+*       A series is a list of values *  separated by spaces.
+
+*               map       _init_ is a list consisting of a list of key/value pairs,
+*                               with a colon (:) between the key and value.
+
+*               set       _init_ is a list of the members.
+                
+*               sequence  the map ranges from 1..n, where n is the number of words
+*                         in _init_.
+
+
+
+
+map.new
+
+        map.new = ident(init) map(table(128))           :s(return)
+        kind = ident(kind) 'map'
+        kind
+        output = 'enter map.new [' init ']'
+        init break(':')                                	:s(map.new.keyval)
+        i = convert(init,'integer')                     :f(map.new.set)
+        map.new = map(table(i))                         :(return)
+
+map.new.set
+
+*       Here if map is a set.
+
+        map.new = map(table(128))
+        init = trim(init) ' '
+
+map.new.set.next
+
+        init break(' ') . key span(' ') =               :f(return)
+        map.set(map.new,key,key)                        :(map.new.set.next)
+
+map.new.keyval
+        
+        map.new = map(table(128))
+
+map.new.keyval.next
+
+        init break(':') . key ':' break(' ') . val ' ' =	:f(return)
+        map.set(map.new,key,val)                        :(map.new.keyval.next)
+
+map.new.end
+
+        define('map.next(map)')                         :(map.next.end)
+
+*       _map.next_ returns the next entry in a map, or fails if no entries remain.
+
+map.next
+
+        le(map.index(map) = map.index(map) + 1, map.size(map)):f(freturn)
+        map.next = entry(map.array[map.index(map),1],map.array[map.index(map),2]):(return)
+
+map.next.end
+
+        define('map.range(map)’)                    :(map.range.end)
+
+
+*        Return series map with the values in _map_.
+
+
+map.range
+
+        map.range = map.series()
+        map.loop(map)
+
+map.range.next
+
+        map.range.add(entry.value(map.next(map)))       :f(return)s(map.range.next)
+
+map.range.end
+
+	define('map.reduce(map,test)entry')		:(map.reduce.end)
+
+*	_map.reduce_ returns a new map by iterating over the elements in
+*	_map_ and appling the function _test_ on each entry.
+*	If _test_ succeeds, then the entry is added to the new map,
+*	otherwise it is ignored.
+*	_test_ must be the name of the functiono to be used for the test.
+
+map.reduce
+
+	map.reduce = map(map.kind(map),map.size(map))
+	map.loop(map)
+
+map.reduce.next
+
+	entry = map.next(map)
+	apply(test,entry)				:f(map.reduce.next)
+	map.set(map.reduce,key(entry),value(entry)) :(map.reduce.next)
+
+map.reduce.end
+
+        define('map.series(init)words')	 		:(map.series.end)
+
+
+*        Define a series map from the words in _init_
+
+map.series
+	
+	words = words(init)
+        map.series = map(map.kind.series)
+	ident(init)					:s(return)
+	map.loop(words)
+
+map.series.next
+
+	map.add(map.series,value(map.next(words)))         :f(return)s(map.series.next)
+
+map.series.end
+
+        define('map.set(init)')                     :(mkap.set.end)
+
+*        Define a set map from the list of words in _init_.
+
+map.set
+
+        map.seres = map(map.kind.set)
+	ident(init)					:s(return)
+
+map.set.next
+
+	map.set(map.series'
+
+map.series.next
+
+
+        Init break(‘  ‘) . word ‘ ‘ =           :f(return)
+        map.set(map.series,word,word)                   :(map.series.next)
+
+
+map.series.end
+
+        define('map.set(key,val)v')                 :(map.set.end)
+
+*       Sets the value of the entry for key _key_ in map _map_ to be _val_, 
+*       creating a new entry if there is no current entry for _key_.
+
+map.set
+
+        output = 'enter map.set dt ' datatype(map) ' key [' key '] val [' val ']'
+        v = map.table(map)[key]
+        differ(v)                                       :s(map.set.value)
+
+*       Here to create new entry in map.
+
+        map.size(map) = map.size(map) + 1
+
+map.set.value
+
+        map.table(map)[key] = val                       :(return)
+
+map.set.end
+
+        define('map.test(key)')                     :(map.test.end)
+
+*       Tests if the map _map_ has an entry for _key_.
+
+map.test
+
+        differ(map.table(map)[key])                     :s(return)f(freturn)
+
+map.test.end
+
+        define('series.slice(ara,start,len)i')          :(series.slice.end)
+
+	
+**      element _start_ and consisting of *len* elements
+
+*ARRAY.SLICE*
+series.slice
+
+        series.slice = series(len)
+
+series.slice.1
+
+        gt(add1(.i),len)                                :s(return)
+        series.slice[i] = copy(ara[start + i - 1])      :(series.slice.1)
+
+series.slice.end
+
+        define('stack()')                               :(stack.end)
+
+*       _stack_ returns a new empty stack.
+
+stack
+
+        stack = map.new(map.kind.stack)                 :(return)
+
+stack.end
+
+        define('stack.empty(stack)')                    :(stack.empty.end)
+
+*       _stack.empty_ tests if the stack is empty.
+
+stack.empty
+
+        ne(map.size(stack))                             :s(return)f(freturn)
+
+stack.empty.end
+
+        define('stack.pop(stack)')                      :(stack.pop.end)
+
+*       _stack.pop_ pops the top of the stack and returns its value,
+*       unless the stack is empty in which case stack.pop fails
+
+stack.pop
+
+        eq(map.size(stack))                             :s(freturn)
+        stack.pop = stack.top(stack)                    :f(freturn)
+        map.set(stack,map.size(stack),'')
+        map.size(stack) = map.size(stack) - 1           :(return)
+
+stack.pop.end
+
+
+        define('stack.push(stack,val)'                  :(stack.push.end)
+
+*       _stack.push' pushes _val_ on to the stack.
+
+stack.push
+
+        map.add(stack,val)                              :(return)
+
+stack.push.end
+
+        define('stack.top(stack)')                      :(stack.top.end)
+
+*       _stack.top_ returns the top entry in the stack.
+
+stack.top
+
+        stack.top = map.get(stack,map.size(stack))      :(return)
+
+stack.top.end
