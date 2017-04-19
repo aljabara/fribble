@@ -1,6 +1,71 @@
 
 *       Copyright 2017, David Shields
 
+*	Booleans
+
+	true = 1
+	false = 0
+
+	define('false(a)')				:(false.end)
+
+*	Returns true if a is false, else false.
+
+false
+
+	false = (eq(a) true, false))			:(return)
+
+false.end
+
+	define('true(a)')				:(true.end)
+
+*	Returns true if a is true, else false.
+
+true
+
+	true = (ne(a) true, false))			:(return)
+
+true.end
+
+	define('and(a,b)')				:(and.end)
+*	Returns and(a,b), true iff a and b are true.
+
+and
+
+	and = (eq(a) false, eq(b) false, true))		:(return)
+
+and.end
+
+	define('not(a')					:(not.end)
+
+*	Returns not(a), true if b is false, else false.
+
+not
+
+	not = (eq(a) 
+
+not.end
+
+	define('or(a,b')				:(and.end)
+
+*	Returns or(a,b), true iff a or b is true.
+
+or
+
+	or = (ne(a) true, ne(b) true, false))		:(return)
+
+or.end
+
+	define('xor(a,b')				:(xor.end)
+
+*	Returns xor(a,b), true iff a xor b differ.
+
+xor
+
+	xor = (ne(a,b) true, false))			:(return)
+
+xor.end
+
+
 *	_map.sbl_ provides a set of functions for working with maps.
 
 *	For example, to obtain the number of words in a file
@@ -150,6 +215,16 @@ map.domain
 
 map.domain.end
 
+	define('map.exists(f,map)entry')		:(map.exists.end)
+
+*	Iterates over _map_, looking for entry for which f(entry)
+*	is true. If found, map.exists returns the entry, else it
+*	returns null.
+
+map.exists
+
+	
+
         define('map.forall(map)')                    :(map.forall.end)
 
 *        Returns map defined as follows:
@@ -168,7 +243,7 @@ map.forall.next
 
 map.forall.end
 
-        define('map.foreach(map,f)’)                 :(map.foreach.end)
+        define('map.foreach(map,f)')                 :(map.foreach.end)
 
 *        Returns a map defined by iterating over the entries in _map_, and applying
 *        f to the entry to define a new entry in the result.
@@ -396,7 +471,7 @@ map.set
 
 map.set.next
 
-	map.set(map.series'
+	map.set(map.series')
 
 map.series.next
 

@@ -582,7 +582,7 @@ tokens.integer
 
 tokens.punctuation 
 
-        type = 'p                                       :(tokens.character)
+        type = 'p'                                       :(tokens.character)
 
 tokens.other
 
@@ -615,7 +615,7 @@ tokens.word
 
 *FIX*
         type = 'w'
-        line span(&ucase &lcase "_" "'")) . text =      :(tokens.new)
+        line span(&ucase &lcase "_" "'"))) . text =      :(tokens.new)
 
 map.sbl:1okens.tab
 
