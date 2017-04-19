@@ -1,0 +1,63 @@
+
+	reference is sonnet-number.line-number
+
+	lines = reader(filename)
+
+	foreach line in lines:
+
+		tokens = tokens(line)
+		tokens = map.reduce(tokens,.isword)
+
+	foreach word in tokens
+
+		if word in this.words then skip
+		else add word to this.words
+			map.references(word) = append(map.references(word),reference(sonnet-number,line-number))
+
+
+	words = sort(words)
+	for each word in words
+		list referenes of word
+
+
+
+	reference is sonnet-number.line-number
+
+	lines = reader(filename)
+	map.loop(lines)
+
+line.next
+
+	tokens = tokens(line)
+	words.this = map..set
+	map.loop(tokens)
+
+token.next
+
+	word = map..next(tokens)
+	if word is comment loop to line.next
+	if word is not kins 'w' loop to token.next
+	if word not in words.this, add word to words.this
+	if reference not in references[word], add it
+	loop to next token
+
+
+	foreach line in lines:
+
+		tokens = tokens(line)
+		tokens = map.reduce(tokens,.isword)
+
+	foreach word in tokens
+
+		if word in this.words then skip
+		else add word to this.words
+			map.references(word) = append(map.references(word),reference(sonnet-number,line-number))
+
+
+	words = sort(words)
+	for each word in words
+		list referenes of word
+
+
+	
+	
