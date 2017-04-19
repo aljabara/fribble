@@ -314,7 +314,7 @@ show.lines.end
 show.move
 
 	ident(datatype(mov),'integer')			:s(error)
-	show.move = 	'move id=' id(mov) ' text=' text(mov)
+	show.move = 	'move id=' id(mov) ' text=' tiles(mov)
 .			' free[1]=' free(mov)[1]
 .			' proto(free) ' prototype(free(mov))
 	n = +prototype(free(mov))
@@ -329,7 +329,7 @@ show.move.f
 	show.move = 'm('
 .			lineid(id(mov)) ','
 .			"'" f "',"
-.			  "'" text(mov) "'"
+.			  "'" tiles(mov) "'"
 .			(differ(points(mov)) ',+' points(mov), '')
 .	             ')'
 							:(return)
@@ -364,10 +364,10 @@ show.play
 
 	board = copy (g.board)
 	lines = copy(g.lines)
-	text(move) = ucase(text(move))
+	tiles(move) = ucase(tiles(move))
 	playmove(move)
 	plines = lines(g.board)
-	text(move) = lcase(text(move));* restore
+	tiles(move) = lcase(tiles(move));* restore
 	g.board = board
 	g.lines = lines
 

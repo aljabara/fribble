@@ -70,7 +70,7 @@ makemove
 	highest(player) = gt(points(move),highest(player)) points(move)
 	playmove(move)
 	id = lineid(id(move))
-	out(	name(player) ' played "' show.tiles(text(move)) '" for '
+	out(	name(player) ' played "' show.tiles(tiles(move)) '" for '
 .		number(points(move)) ' points,'
 .		' starting at ' (ident(substr(id,1),'r') 'row ', 'column')
 .		' ' number(+substr(id,2))
@@ -90,9 +90,9 @@ makemove
 
 	board = copy (g.board)
 	lines = copy(g.lines)
-	text(move) = ucase(text(move))
+	tiles(move) = ucase(tiles(move))
 	playmove(move)
-	text(move) = lcase(text(move));* restore
+	tiles(move) = lcase(tiles(move));* restore
 *	show.grid(g.board)
 	g.board = board
 	g.lines = lines
@@ -395,7 +395,7 @@ scoremove.done
 
 *	There is a bonus of 35 points for playing seven tiles in one move.
 
-	scoremove  = eq(size(size(text(move))),7) scoremove + 35;
+	scoremove  = eq(size(size(tiles(move))),7) scoremove + 35;
 
 	ne(g.tracing) out('scoremove returns ' scoremove)
 							:(return)
@@ -660,7 +660,7 @@ test.perm
 *	the result gives a valid line. 'move' to the next permutation if not.
 *	(This is a clever use of replace(), even if I do say so myself.)
 
-	text(move) = perm;* insert permutation digits into free cells
+	tiles(move) = perm;* insert permutation digits into free cells
 	iline = insert(lines[num],move);* line with permutation digits entered
 	checkline(place(iline,rack))			:f(freturn)
 
@@ -673,7 +673,7 @@ test.perm
 *	detect junk as soon as possible so we can move on without wasting
 *	needless effort.
 
-	text(move) = text
+	tiles(move) = text
 
 *	out(ne(g.tracing) 'Find valid first '
 *		show.move(move) ' ' show.line(line))
@@ -697,9 +697,9 @@ test.perm.cross
 
 *	out(ne(g.tracing) 'Find valid checkline ' line(cline))
 
-	text(move) = place(text(move),ucase(rack))
+	tiles(move) = place(tiles(move),ucase(rack))
 
-*	out(ne(g.tracing) 'Find text ' text(move))
+*	out(ne(g.tracing) 'Find text ' tiles(move))
 
 	g.clines[add1(.g.cln)] = cline			:(test.perm.cross)
 
@@ -716,7 +716,7 @@ valid.start
 *	and is a word in the dictionary.
 
 	free = free(move)
-	text = text(move)
+	text = tiles(move)
 
 	num = convert(free,'integer')			:f(valid.start.free)
 
@@ -733,7 +733,7 @@ valid.start.free
 	out('valid.start.start.free ' free(valid.start))
 
 	free break('8')					:f(valid.start.error)
-	checkword(text(move))				:s(return)f(freturn)
+	checkword(tiles(move))				:s(return)f(freturn)
 
 valid.start.start.error
 

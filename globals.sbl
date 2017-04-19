@@ -1,4 +1,5 @@
 *	Copyright 2017, David Shields
+v
 
 * This file is part of the fribble project:
 *		http://github.com/daveshields/fribble.
@@ -98,12 +99,12 @@ init
 *	for a vertical play.
 
 
-	data('move(id,free,text,points)')
+	data('move(id,free,tiles,points)')
 
 *		ID	gives the line number, in the range 1..30;
 *		FREE	is an array of the free (empty) cells
 *			used in this move;
-*		TEXT	is the string of tiles of the move; and
+*		TILES	is the string of tiles of the move; and
 *		POINTS	is the number of points won by playing this move.
 
 *	g.move is the current/last move.

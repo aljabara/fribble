@@ -17,7 +17,7 @@
 *	along with fribble.  If not, see <http://www.gnu.org/licenses/>.
 *
 
--include "globals.sbl"
+-include        "globals.sbl"
 -include	"util.sbl"
 -include	"game.sbl"
 -include	"move.sbl"

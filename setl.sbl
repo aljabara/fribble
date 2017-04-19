@@ -1,5 +1,11 @@
-
 *       Copyright 2017, David Shields
+
+* Use MARK for line annotation
+
+        data('note(mark,text)')
+
+*       Useful functions based on the concepts found in the SETL language,
+*       a language with finite sets as the fundamental data type.
 
 *	Booleans
 
@@ -87,10 +93,10 @@ xor.end
 *                               If the array is two-dimensional, the entry for element _i_ is the
 *                               value of the corresponding array entry.
 
-*       map.kind.map     ‘map’, the most general form, consisting of a series of
+*       map.kind.map     ‘map’, the most general form, consisting of a sequence of
 *                         key/value pairs.
 
-*       map.kind.series  ‘series’, a sequence of with keys 1..n
+*       map.kind.sequence  ‘sequence’, a sequence of with keys 1..n
 
 *       map.kind.set     ‘set’, a set of values.
 
@@ -102,7 +108,7 @@ xor.end
 
 *       map.kind.array  = ‘array’
 *       map.kind.map    = ‘map’
-*       map.kind.series = ‘series’
+*       map.kind.sequence = ‘sequence’
 *       map.kind.set    = ‘set’
 *       map.kind.stack  = ‘stack’
 
@@ -151,7 +157,7 @@ map.add
 
 map.add.end
 
-	define('map.apply(map,f)entry,entry.new')	:(map.apply.end)
+	define('map.apply(f,map)entry,entry.new')	:(map.apply.end)
 
 *	_map.apply_ returns the map obtained by applying the function _f_
 *	to each entry in _map_.
@@ -170,7 +176,7 @@ map.apply.next
 map.apply.end
 
 *	Create a map defined by an array.
-*	If the array has one dimension then create a series map
+*	If the array has one dimension then create a sequence map
 *	from the array values.
 *	If the array has two dimensions, create a map using the
 *	array indice as the keys, and the correspong value as the
@@ -204,7 +210,7 @@ map.array.end
         define('map.domain(entry)')			:(map.domain.end)
 
 
-*       Return series map with the keys in _map_.
+*       Return sequence map with the keys in _map_.
 
         map.loop(map)
 
@@ -223,9 +229,18 @@ map.domain.end
 
 map.exists
 
+        map.loop(map)
+
+map.exists.loop
+
+        entry = map.next(map)                           :f(return)
+        entry = differ(apply(f,entry))                  :s(return)f(map.exists.loop)
+
+map.exists.end
+
 	
 
-        define('map.forall(map)')                    :(map.forall.end)
+        define('map.forall(f,map)')                    :(map.forall.end)
 
 *        Returns map defined as follows:
 *        Iterare over _map_. For each entry _ent_, invoke f(ent) and use the
@@ -243,7 +258,7 @@ map.forall.next
 
 map.forall.end
 
-        define('map.foreach(map,f)')                 :(map.foreach.end)
+        define('map.foreach(f,map)')                 :(map.foreach.end)
 
 *        Returns a map defined by iterating over the entries in _map_, and applying
 *        f to the entry to define a new entry in the result.
@@ -269,6 +284,13 @@ map.get
 
 map.get.end
 
+        define('map.integers(n)')                       :(map.integers,end)
+
+*       Returns sequence map of the first _n_ integers.
+
+map.integers
+
+        map.integers =HERE 
 	define('map.inverse)entry')			:(map.inverse.end)
 
 *	_map.inverse_ returns the inverse of a map. The inverse is
@@ -347,7 +369,7 @@ map.loop.end
 *       Create a new map.
 
 *       _kind_ gives the kind of the map.
-*       A series is a list of values *  separated by spaces.
+*       A sequence is a list of values *  separated by spaces.
 
 *               map       _init_ is a list consisting of a list of key/value pairs,
 *                               with a colon (:) between the key and value.
@@ -404,15 +426,32 @@ map.next
 
 map.next.end
 
+	define('map.notexists(f,map)entry')		:(map.notexists.end)
+
+*	Iterates over _map_, looking for entry for which f(entry)
+*	is false. If found, map.notexists returns the entry, else it
+*	returns null.
+
+map.notexists
+
+        map.loop(map)
+
+map.notexists.loop
+
+        entry = map.next(map)                           :f(return)
+        entry = differ(apply(f,entry))                  :s(return)f(map.notexists.loop)
+
+map.notexists.end
+
         define('map.range(map)’)                    :(map.range.end)
 
 
-*        Return series map with the values in _map_.
+*        Return sequence map with the values in _map_.
 
 
 map.range
 
-        map.range = map.series()
+        map.range = map.sequence()
         map.loop(map)
 
 map.range.next
@@ -421,7 +460,7 @@ map.range.next
 
 map.range.end
 
-	define('map.reduce(map,test)entry')		:(map.reduce.end)
+	define('map.reduce(test,map)entry')		:(map.reduce.end)
 
 *	_map.reduce_ returns a new map by iterating over the elements in
 *	_map_ and appling the function _test_ on each entry.
@@ -442,23 +481,23 @@ map.reduce.next
 
 map.reduce.end
 
-        define('map.series(init)words')	 		:(map.series.end)
+        define('map.sequence(init)words')	 		:(map.sequence.end)
 
 
-*        Define a series map from the words in _init_
+*        Define a sequence map from the words in _init_
 
-map.series
+map.sequence
 	
 	words = words(init)
-        map.series = map(map.kind.series)
+        map.sequence = map(map.kind.sequence)
 	ident(init)					:s(return)
 	map.loop(words)
 
-map.series.next
+map.sequence.next
 
-	map.add(map.series,value(map.next(words)))         :f(return)s(map.series.next)
+	map.add(map.sequence,value(map.next(words)))         :f(return)s(map.sequence.next)
 
-map.series.end
+map.sequence.end
 
         define('map.set(init)')                     :(mkap.set.end)
 
@@ -471,16 +510,16 @@ map.set
 
 map.set.next
 
-	map.set(map.series')
+	map.set(map.sequence')
 
-map.series.next
+map.sequence.next
 
 
         Init break(‘  ‘) . word ‘ ‘ =           :f(return)
-        map.set(map.series,word,word)                   :(map.series.next)
+        map.set(map.sequence,word,word)                   :(map.sequence.next)
 
 
-map.series.end
+map.sequence.end
 
         define('map.set(key,val)v')                 :(map.set.end)
 
@@ -513,22 +552,22 @@ map.test
 
 map.test.end
 
-        define('series.slice(ara,start,len)i')          :(series.slice.end)
+        define('sequence.slice(ara,start,len)i')          :(sequence.slice.end)
 
 	
 **      element _start_ and consisting of *len* elements
 
 *ARRAY.SLICE*
-series.slice
+sequence.slice
 
-        series.slice = series(len)
+        sequence.slice = sequence(len)
 
-series.slice.1
+sequence.slice.1
 
         gt(add1(.i),len)                                :s(return)
-        series.slice[i] = copy(ara[start + i - 1])      :(series.slice.1)
+        sequence.slice[i] = copy(ara[start + i - 1])      :(sequence.slice.1)
 
-series.slice.end
+sequence.slice.end
 
         define('stack()')                               :(stack.end)
 

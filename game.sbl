@@ -164,25 +164,25 @@ isbest
 
 *	Here if points equal, look for lower cost
 
-	lt(cost(text(move)),g.lowest)			:s(isbest.new)
-	gt(cost(text(move)),g.lowest)			:s(freturn)
+	lt(cost(tiles(move)),g.lowest)			:s(isbest.new)
+	gt(cost(tiles(move)),g.lowest)			:s(freturn)
 
 *	Here if same points and cost, see if one uses 's' and the
 *	other doesn't.  Continue search if current best doesn't use 's'.
 
-	text(find) ? break('s')				:f(freturn)
+	tiles(find) ? break('s')				:f(freturn)
 
 *	Here if current best uses an 's'.
 *	Continue if new move also uses 's'.
 
-	text(move) ? break('s')				:s(freturn)
+	tiles(move) ? break('s')				:s(freturn)
 
 isbest.new
 
 *	Here to add the new best move.
 
 	g.highest = points(move)
-	g.lowest = cost(text(move))
+	g.lowest = cost(tiles(move))
 *	out(ne(g.tracing) 'find NEW BEST move ' show.move(move))
 							:(return)
 isbest.end
@@ -240,7 +240,7 @@ playmove.ch
 	p = free(move)[add1(.i)]			:f(playmove.done)
 	r = row(id,p)
 	c = column(id,p)
-	ch = substr(text(move),i,1)
+	ch = substr(tiles(move),i,1)
 *	out('playmove p=' p ' i=' i ' r=' r ' c=' c ' ch=' ch)
 	g.board[r, c] = ch
 *	out('playmove r=' r ' c=' c ' char=' g.board[r,c])
@@ -671,7 +671,7 @@ turn.replenish
 *	Remove tiles played on move and then replenish the rack.
 
 	ne(f.trace) out('updating rack pid=' pid)
-	rack(player) = less(rack(player), lcase(text(g.move)))
+	rack(player) = less(rack(player), lcase(tiles(g.move)))
 	rack(player) = replenish(pid)
 	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
 							:(turn.done)
@@ -741,7 +741,7 @@ valid.move
 
 valid.u
 
-	gt(add1(.i),size(text(move)))			:s(freturn)
+	gt(add1(.i),size(tiles(move)))			:s(freturn)
 	pos = free(move)[i]
 	adjacent(row(num,pos),column(num,pos)) 		:f(valid.u)s(valid.used)
 
