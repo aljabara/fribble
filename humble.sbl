@@ -1,13 +1,10 @@
 * Copyright 2017, David Shields
 
--include "lib.sbl"
-
 *	Compute various assessments of code structure and size.
 
 	&anchor = &trim = 1
+
 	tab = char(9)
-	init(1)
-	dict = table(1000)
 
 	define('report(text,count)')		:(report.end)
 
@@ -46,31 +43,18 @@ notempty
 text
 
 	lines.code = lines.code + 1
-	chars.code = chars.code + size(line)
-	words = words(line)
-	n = prototype(words)
-	n break(',') . n
-	words.total = words.total + n
-	i = 0
-word
-
-	word = words[i = i + 1,2]		:f(next)
-	dict[word] = dict[word] + 1		:(word)
+	chars.code = chars.code + size(line)	:(next)
 
 scanned
 
-	report('total lines'		, lines.total)
 	report('blank lines'		, lines.blank)
 	report('comment lines'		, lines.comment)
 	report('code lines'		, lines.code)
+	report('total lines'		, lines.total)
 	report('comment chars'		, chars.comment)
 	report('code chars'		, chars.code)
 	report('total chars'		, chars.total)
-	report('total words'		, words.total)
 
-	dict = sort(dict,2)
-	n = prototype(dict)
-	n  break(',') . words.distinct
-	report('distinct words'		, words.distinct)
+	:(end) 
 
 end
