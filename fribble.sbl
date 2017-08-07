@@ -27,14 +27,16 @@
 
 *	The program can now run in several modes:
 
-*	f.mode = 1 for auto mode, where fribble moves for both players.
-*	f.mode = 2 for solo mode, where you play against fribble.
-*	f.mode = 3 for team mode, where you and fribble work 
+*	f.mode = 1 for move mode, where fribble reads tiles and state of board, and makes move.
+*	f.mode = 2 for auto mode, where fribble moves for both players.
+*	f.mode = 3 for solo mode, where you play against fribble.
+*	f.mode = 4 for team mode, where you and fribble work 
 *		as team to play another player.
 	
-	f.mode.auto = 1
-	f.mode.solo = 2
-	f.mode.team = 3
+	f.mode.move = 1
+	f.mode.auto = 2
+	f.mode.solo = 3
+	f.mode.team = 4
 
 *	Fribble can also be invoked to run as a shell:
 
@@ -59,6 +61,7 @@ options.loop
 
 	opt '-u' =					:f(options.loop)
 	
+	f.mode = ident(opt,'move') f.mode.move		:s(options.loop)
 	f.mode = ident(opt,'auto') f.mode.auto		:s(options.loop)
 	f.mode = ident(opt,'solo') f.mode.solo		:s(options.loop)
 	f.mode = ident(opt,'team') f.mode.team		:s(options.loop)
@@ -67,11 +70,12 @@ options.loop
 							:(options.loop)
 options.loop.done
 
+	eq(f.mode,f.mode.move)				:s(main.move)
 	eq(f.mode,f.mode.solo)				:s(main.solo)
 	eq(f.mode,f.mode.auto)				:s(main.auto)
 	eq(f.mode,f.mode.team)				:s(main.team)
 
-							:(main.auto);* default
+							:(main.move);* default
 main.auto
 
 *	Setup for mode 'auto'.
@@ -89,6 +93,23 @@ main.auto
 	g.tilemanager = 1
 							:(main.done)
 
+main.move
+
+*	Setup for mode 'move'. 
+
+*	In solo mode, the tiles and state of board are read from standard input.
+
+*	Fribble is player one, of kind player.kind.auto.
+*	You are player two, of kind player.kind.solo. 
+*	You make your own moves.
+
+	g.one = player(1,'Fribble',	player.kind.move)
+	g.two = player(2,'You',		player.kind.solo)
+
+*	Fribble manages the tiles for both players.
+
+	g.tilemanager = 1
+							:(main.done)
 main.solo
 
 *	Setup for mode 'solo'. 

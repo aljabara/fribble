@@ -461,7 +461,7 @@ take
 
 take.end
 
-	define('turn(pid,mode)manual,state,points.player,'
+	define('turn(pid,mode)manual,i,n,state,points.player,'
 .			'points.fribble') 	:(turn.end)
 
 *	Play a turn in a game.
@@ -500,6 +500,16 @@ turn
 turn.move
 
 	log( 'rack ' pid ' "' rack(player) '"')
+
+    rack(player) = getrack()
+    getlines()
+    g.grid = grid(g.lines,1)
+
+*   Merge with turn.auto to have fribble find best move.
+
+    :(turn.auto)
+*HERE
+
 
 *	2.	Find or enter the move to be played.
 
@@ -550,8 +560,8 @@ turn.manual.nomove
 	manual 'error'					:s(turn.manual.error)
 							:($('turn.' move))
 turn.solo
-*HERE*
 
+    
 *	Here to when playing solo. Get the player's move, then
 *	find what fribble would have played, and show the difference.
 
@@ -652,6 +662,21 @@ turn.make
 *	ne(f.trace) out('making move ' show.move(g.move))
 
 	show.play(makemove(pid,g.move))
+
+    ne(player.kind,player.kind.move)              
+
+*   Here in move mode, write out tiles and board
+
+    output = ' '
+    i = 0
+
+turn.make.write
+
+    i = i + 1
+    output = i ' ' g.lines(i = i + 1)
+    lt(i,15)                                :s(turn.make.write)
+
+        :(end)
 
 turn.replenish
 
@@ -760,4 +785,46 @@ valid.i
 	checkline(line(g.clines[i]))			:f(freturn)s(valid.i)
 
 valid.end
+
+    define('getrack()')                     :(getrack.end)
+
+*   Read in rack from standard input
+
+    getrack = input                       :f(freturn)s(return)
+
+getrack.end
+
+    define('getlines()i,line,n')              :(getlines.end)
+
+*   Get lines from standard input, end with first blank line, skip if comment
+
+getlines
+
+    line = dupl(' ',15)
+
+getlines.init
+
+    g.lines(i = i + 1) = line
+    lt(i,15)                                :s(getlines.init)
+
+*   Here with lines initialized to blank, now read in supplied lines
+    
+    i = 0
+
+getlines.next
+
+    line = input                                :f(return)
+    line '*'                                    :s(getlines.next)
+    line ' '                                    :s(return)
+    line break(' ') . n span(' ') =
+    line = replace(line,'-',' ')          
+    line = rpad(line,15,' ')
+    g.lines[n] = line
+    out('g.lines n',n')
+    out('g.lines n text',line)
+                                                :(getlines.next)
+
+getlines.end
+
+
 

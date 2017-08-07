@@ -104,10 +104,11 @@
 *		*name* 		is the player's name;
 *		*kind*	 	is the player's kind:
 	
-		  player.kind.solo = 1;* you are playing on your own;
-		  player.kind.auto = 2;* fribble plays against itself;
-		  player.kind.team = 3;* you and fribble work as a team; and
-		  player.kind.foe  = 4;* the other player when in team mode.
+		  player.kind.move = 1;* you are playing in move mode;
+		  player.kind.solo = 2;* you are playing on your own;
+		  player.kind.auto = 3;* fribble plays against itself;
+		  player.kind.team = 4;* you and fribble work as a team; and
+		  player.kind.foe  = 5;* the other player when in team mode.
 
 *		*rack* 		is the player's rack;
 *		*total*		is the player's current score;
@@ -382,7 +383,7 @@ init.options
 *	out('enter init.options')
 *	Set up map from first two characters of option name to full name.
 
-	s = ' auto dumb moves random seen shell solo team trace '
+	s = ' auto dumb maximum move random seen shell solo team trace '
 
 	g.options = table()
 	g.options.abbrev = table()
@@ -405,8 +406,8 @@ init.options.abbrev.done
 
 	options = '-uauto -umoves=' g.maxmoves ' '
 *.		'-urandom=' g.random_var  ' '
-	g.options['auto'] = 1
-	g.options['moves'] = g.maxmoves
+	g.options['move'] = 1
+	g.options['maximum'] = g.maxmoves
 *	g.options['random'] = g.random_var
 	options = options host(0) ' '
 
@@ -448,6 +449,10 @@ init.options.val
 *	'=' is followed by value
 
 	opt break('=') . opt '=' rem . val		:(init.options.opt)
+
+init.options.opt.move
+
+	g.mode = g.mode.move				:(init.options.next)
 
 init.options.opt.auto
 
@@ -3063,6 +3068,7 @@ show.player
 	show.player = 
 .		'player('  pid(player)	',"' name(player) '"'  	  	',' 
 .		'player.kind.'	( 	
+.			eq(kind(player),player.kind.move) 'move',
 .			eq(kind(player),player.kind.auto) 'auto',
 .			eq(kind(player),player.kind.foe)  'foe',
 .			eq(kind(player),player.kind.solo) 'solo',
@@ -3497,14 +3503,23 @@ turn
 *	This is needed when playing in team mode. 
 *	need to enter your tiles from the wwf board.
 
+	eq(f.mode,f.mode.move)				:s(turn.move)
 	eq(f.mode,f.mode.auto)				:s(turn.auto)
-	ne(kind(player),player.kind.team)		:s(turn.move)
+	ne(kind(player),player.kind.team)		:s(turn.pickmove)
 
 	rack(player) = replenish(pid)
 	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
 	ne(f.trace) out(show.player(pid))
+                                        :(turn.pickmove)
 
 turn.move
+
+*   Here to read in tiles and state of board.
+
+    
+*HERE
+
+turn.pickmove
 
 	log( 'rack ' pid ' "' rack(player) '"')
 

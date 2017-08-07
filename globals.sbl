@@ -122,10 +122,11 @@ init
 *		NAME 		is the player's name;
 *		KIND	 	is the player's kind:
 
-		  player.kind.solo = 1;* you are playing on your own;
-		  player.kind.auto = 2;* fribble plays against itself;
-		  player.kind.team = 3;* you and fribble work as a team; and
-		  player.kind.foe  = 4;* the other player when in team mode.
+		  player.kind.move = 1;* tiles and state of board are read from standard input;
+		  player.kind.solo = 2;* you are playing on your own;
+		  player.kind.auto = 3;* fribble plays against itself;
+		  player.kind.team = 4;* you and fribble work as a team; and
+		  player.kind.foe  = 5;* the other player when in team mode.
 
 *		RACK 		is the player's rack;
 **		TOTAL		is the player's current score;

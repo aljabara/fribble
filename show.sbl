@@ -445,6 +445,7 @@ show.player
 	show.player =
 .		'player('  pid(player)	',"' name(player) '"'  	  	','
 .		'player.kind.'	(
+.			eq(kind(player),player.kind.move) 'move',
 .			eq(kind(player),player.kind.auto) 'auto',
 .			eq(kind(player),player.kind.foe)  'foe',
 .			eq(kind(player),player.kind.solo) 'solo',
