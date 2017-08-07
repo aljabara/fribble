@@ -1,11 +1,12 @@
+
 *	Copyright 2017, David Shields
 
-* This file is part of the fribble project: 
+* This file is part of the fribble project:
 *		http://github.com/daveshields/fribble.
 *
 *	Fribble is free software: you can redistribute it and/or modify
-*	it under the terms of the gnu general public license as 
-*	published by the free software foundation, either 
+*	it under the terms of the gnu general public license as
+*	published by the free software foundation, either
 *	version 2 of the license, or (at your option) any later version.
 *
 *	Fribble is distributed in the hope that it will be useful,
@@ -13,14 +14,14 @@
 *	merchantability or fitness for a particular purpose.  See the
 *	gnu general public license for more details.
 *
-*	You should have received a copy of the gnu general public 
+*	You should have received a copy of the gnu general public
 *	license along with fribble.
 *	If not, see <http://www.gnu.org/licenses/>.
 
 *	Global Variables
 
-*	Global variables have names starting with 'g.' 
-*	Their initial value is set in the procedure *init()* and 
+*	Global variables have names starting with 'g.'
+*	Their initial value is set in the procedure *init()* and
 *	its subfunctions.
 
 *	g.version is the version of the program:
@@ -30,11 +31,11 @@
 *	g.board, array('15,15'), the playing board. Each entry is
 *	 blank (' ') for an unplayed cell, or is the letter played.
 
-*	g.bonus.lines,array(30), is the array of lines corresponding 
+*	g.bonus.lines,array(30), is the array of lines corresponding
 *	to g.bonus
 
 *	g.channel.temp is channel number used for temporary files,
-*	that is, files that are opened, read, and then immediately 
+*	that is, files that are opened, read, and then immediately
 *	closed.
 
 	g.channel.temp = 4
@@ -42,12 +43,12 @@
 	g.clines = array(8);* for line with move and its crossing lines.
 	g.cln = 0;* number of entries in clines.
 
-*	g.date, date and time at start of run. Used to name log 
-*	file and seed the random number generator.	
+*	g.date, date and time at start of run. Used to name log
+*	file and seed the random number generator.
 
 	g.date = date()
 
-*	g.dict, array(15), is an array of hashtables  that are non-null 
+*	g.dict, array(15), is an array of hashtables  that are non-null
 *	for words in the dictionary.
 
 	g.highest = 0;* highest score
@@ -55,36 +56,36 @@
 
 *	g.log is set to append a copy of standard output to
 *	log file 'fribble.log'.
-	
+
 	g.log = 1
 
 *	g.logfile is the output-associated variable for the log file
 *	g.logfile.channel is its channel; g.logfile.name is its name
 
-	g.logfile = g.logfile.name = 
+	g.logfile = g.logfile.name =
 	g.logfile.channel = 5
 
-*	g.maxmoves, maximum number of moves. This is used to avoid 
+*	g.maxmoves, maximum number of moves. This is used to avoid
 *	runaway behavior.
 
 	g.maxmoves = 6
 	g.maxmoves = 60
 
-*	g.lines, array(30), is the array of the lines defined by the 
-*	rows and columns in the board. 
+*	g.lines, array(30), is the array of the lines defined by the
+*	rows and columns in the board.
 
 *	A move consists of a sequence of empty cells in a row or column
-*	such that at least one cell in the sequence is adjacent 
-*	to an already occupied cell, with each cell occupied by one 
-*	of the tiles in the player's rack.  The cells are ordered 
-*	from left to right for a horizontal play, top to bottom 
+*	such that at least one cell in the sequence is adjacent
+*	to an already occupied cell, with each cell occupied by one
+*	of the tiles in the player's rack.  The cells are ordered
+*	from left to right for a horizontal play, top to bottom
 *	for a vertical play.
 
 
 	data('move(id,free,text,points)')
 
 *		ID	gives the line number, in the range 1..30;
-*		FREE	is an array of the free (empty) cells 
+*		FREE	is an array of the free (empty) cells
 *			used in this move;
 *		TEXT	is the string of tiles of the move; and
 *		POINTS	is the number of points won by playing this move.
@@ -103,7 +104,7 @@
 *		*pid*		is an integer identifier, either 1 or 2;
 *		*name* 		is the player's name;
 *		*kind*	 	is the player's kind:
-	
+
 		  player.kind.move = 1;* you are playing in move mode;
 		  player.kind.solo = 2;* you are playing on your own;
 		  player.kind.auto = 3;* fribble plays against itself;
@@ -112,13 +113,13 @@
 
 *		*rack* 		is the player's rack;
 *		*total*		is the player's current score;
-*		*thirty* 	is number of moves with scores of 30 
-*				or more points; 
+*		*thirty* 	is number of moves with scores of 30
+*				or more points;
 *		*highest* 	is the player's highest move score.
 
 	g.players is an array of the two players.
 
-	g.players = array(2)	
+	g.players = array(2)
 	g.players[1] = player(1)
 	g.players[2] = player(2)
 
@@ -130,27 +131,27 @@
 
 *		1	for the value of the letter itself,
 *		2	for double letter,
-*		3	for triple letter, 
+*		3	for triple letter,
 *		4	for double word, and
 *		5	for triple word.
 
 *	A paired line consists of a line number and an associated line.
-*	It is used when it is necessary to pass a line of text to a procedure 
+*	It is used when it is necessary to pass a line of text to a procedure
 *	along with line number from where it was derived.
 
 		data('pair(num, line)')
 
-*	g.permutations, a table of the permutations of n=1..7 things 
+*	g.permutations, a table of the permutations of n=1..7 things
 *	taken 1..k at a time.
-*	For example, g.perms['7?3'] is permutations of 1..7 
+*	For example, g.perms['7?3'] is permutations of 1..7
 *	taken 3 at a time.
-*	Each entry in the table is an array giving the desired 
+*	Each entry in the table is an array giving the desired
 *	set of permutations.
 
-*	g.permutations.count, a table of the number of permutations 
+*	g.permutations.count, a table of the number of permutations
 *	for a given *n* and *k*.
 
-*	g.random_var is used by random() to compute the next 
+*	g.random_var is used by random() to compute the next
 *	pseudo-random value.
 
 	g.random_var = 	substr(g.random_var,10,2) substr(g.random_var,13,2)
@@ -164,12 +165,12 @@
 *	g.scoring is used to enable tracing of scoring.
 
 	g.scoring = 1
-	g.scoring = 
+	g.scoring =
 
-*	g.tiles, a string containing the characters in the 
+*	g.tiles, a string containing the characters in the
 *	initial bag of characters.
 
-*	g.tilemanager determines how tiles are dealt out. 
+*	g.tilemanager determines how tiles are dealt out.
 *	If not null, the program manages the tiles and updates the players'
 *	racks after each turn.  If null, then you manually update the racks.
 
@@ -181,7 +182,7 @@
 
 *	g.trace, if not null, begin tracing at the start of move g.trace.
 
-	g.trace = 
+	g.trace =
 
 *	g.tracing, set nonzero when tracing initiated by *g.trace* begins.
 
@@ -190,9 +191,9 @@
 
 	g.turn = g.lastmove = 0
 
-*	g.used, array('15,15') tracks the cells in the board that have been 
+*	g.used, array('15,15') tracks the cells in the board that have been
 *	used in a move.  A move made after the first move must have at least one
-*	tile played in a square adjacent to another that has been 
+*	tile played in a square adjacent to another that has been
 *	used in a prior move.
 
 *	g.used.lines, array(30), an array of lines defined by the rows and columns
@@ -209,10 +210,10 @@
 	c1 = c01 = 16; c2 = c02 = 17; c3 = c03 = 18; c4 = c04 = 19; c5 = c05 = 20
 	c6 =  c06 = 21; c7 = c07 = 22; c8 = c08 = 23; c9 = c09 = 24;
 	c10 = 25; c11 = 26; c12 = 27; c13 = 28; c14 = 29; c15 = 30
-	
+
 *	Utility functions
 
-	define('init(dictfile,skip,external)c,i,j,s,t')	:(init.end)
+	define('init(dictfile,skip,external)c,i,j,s,t')        :(init.end)
 
 *	Initialize global variables.
 
@@ -221,10 +222,10 @@ init
 	init.main(dictfile,skip)
 
 	randomseed();* seed the random number generator
-							:(return)
+                                                        :(return)
 init.end
 
-	define('init.main(dictfile,skip)c,i,j,s,t')	:(init.main.end)
+	define('init.main(dictfile,skip)c,i,j,s,t')            :(init.main.end)
 
 *	Initialize global variables.
 
@@ -251,12 +252,12 @@ init.main
 	init.value()
 
 	init.dict(dictfile,skip)
-							:(return)
+                                                        :(return)
 init.main.end
 
-	define('init.bonus()s,row,col,b,c')		:(init.bonus.end)
+	define('init.bonus()s,row,col,b,c')                    :(init.bonus.end)
 
-*	Initialize the bonus squares for the 15x15 grid: 
+*	Initialize the bonus squares for the 15x15 grid:
 *		1 for the value of the letter,
 *		2 for double letter,
 *		3 for triple letter,
@@ -277,16 +278,16 @@ init.bonus
 
 init.bonus.1
 
-	s len(1) . b ' ' len(2) . row len(2) . col ' ' =  :f(init.bonus.next)
-	g.bonus[+row,+col] = +b				:(init.bonus.1)
+	s len(1) . b ' ' len(2) . row len(2) . col ' ' =       :f(init.bonus.next)
+	g.bonus[+row,+col] = +b                                :(init.bonus.1)
 
 init.bonus.next
 
-	g.bonus.lines = lines(g.bonus)			:(return)
+	g.bonus.lines = lines(g.bonus)                         :(return)
 
 init.bonus.end
 
-	define('init.dict(filename)file,i,n,w,s')	:(init.dict.end)
+	define('init.dict(filename)file,i,n,w,s')              :(init.dict.end)
 
 *	Initialize the global dictionary g.dict.
 
@@ -300,9 +301,9 @@ init.dict
 
 init.dict.tbl
 
-	gt(i = i + 1,15)				:s(init.dict.tbl.1)
-	s break(' ') . n ' ' = 
-	g.dict[i] = table(+n)				:(init.dict.tbl)
+	gt(i = i + 1,15)                                       :s(init.dict.tbl.1)
+	s break(' ') . n ' ' =
+	g.dict[i] = table(+n)                                  :(init.dict.tbl)
 
 init.dict.tbl.1
 
@@ -311,33 +312,33 @@ init.dict.tbl.1
 *	Read in dictionary from a file, with one word per line.
 
 	filename = ident(filename) 'dict.txt'
-	input(.file,g.channel.temp,filename)		:s(init.dict.in)
-	out('unable to open input file ',filename)	:(freturn)
+	input(.file,g.channel.temp,filename)                   :s(init.dict.in)
+	out('unable to open input file ',filename)             :(freturn)
 	n = 0
 
 init.dict.in
 
-	w = file					:f(init.dict.done)
-	gt(size(w),15)					:s(init.dict.in)
+	w = file                                               :f(init.dict.done)
+	gt(size(w),15)                                         :s(init.dict.in)
 
 *	Process plural words, indicated by 'S' at end.
 
-	differ(substr(w,size(w),1),'S')			:s(init.dict.w)
+	differ(substr(w,size(w),1),'S')                        :s(init.dict.w)
 	w = substr(w,1,size(w) - 1)
 	g.dict[size(w)][w] = +1
-	g.dict[size(w) + 1][w 's'] = +1			:(init.dict.in)
+	g.dict[size(w) + 1][w 's'] = +1                        :(init.dict.in)
 
 init.dict.w
 
-	g.dict[size(w)][w] = +1				:(init.dict.in)
+	g.dict[size(w)][w] = +1                                :(init.dict.in)
 
 init.dict.done
 
-	endfile(g.channel.temp)				:(return)
+	endfile(g.channel.temp)                                :(return)
 
 init.dict.end
 
-	define('init.number()i1,i2,i3,i4,s1,s2,w')		:(init.number.end)
+	define('init.number()i1,i2,i3,i4,s1,s2,w')             :(init.number.end)
 
 *	Initialize g.numbers.
 
@@ -353,28 +354,28 @@ init.number
 
 init.number.digits
 
-	s1 break(' ') . w ' ' =				:f(init.number.tens)
-	g.numbers[i1 = i1 + 1] = w			:(init.number.digits)
+	s1 break(' ') . w ' ' =                                :f(init.number.tens)
+	g.numbers[i1 = i1 + 1] = w                             :(init.number.digits)
 
 init.number.tens
-	
-	gt(i2 = i2 + 10,90)				:s(init.number.decades)
+
+	gt(i2 = i2 + 10,90)                                    :s(init.number.decades)
 	s2 break(' ') . w ' ' =
-	g.numbers[i2] = w				:(init.number.tens)
+	g.numbers[i2] = w                                      :(init.number.tens)
 
 init.number.decades
-	
-	gt(i4 = i4 + 10, 90)				:s(return)
+
+	gt(i4 = i4 + 10, 90)                                   :s(return)
 
 init.number.loop
 
-	gt(i3 = i3 + 1,99)				:s(return)
-	eq(remdr(i3,10))				:s(init.number.decades)
+	gt(i3 = i3 + 1,99)                                     :s(return)
+	eq(remdr(i3,10))                                       :s(init.number.decades)
 	g.numbers[i4 + remdr(i3,10)] = g.numbers[i4] ' ' g.numbers[remdr(i3,10)]
-.					:s(init.number.loop)f(return)
+.                                                       :s(init.number.loop)f(return)
 init.number.end
 
-	define('init.options()s,t,options,optname,opt,val,cname')	:(init.options.end)
+	define('init.options()s,t,options,optname,opt,val,cname'):(init.options.end)
 
 *	Initialize command line options.
 
@@ -391,12 +392,12 @@ init.options
 init.options.abbrev
 
 	s span(' ') =
-	ident(s)					:s(init.options.abbrev.done)
+	ident(s)                                               :s(init.options.abbrev.done)
 *	out('init.options.init s',s)
-	s break(' ') . opt = 				:f(init.options.abbrev.done)
+	s break(' ') . opt =                                   :f(init.options.abbrev.done)
 *	out('init.options.abbrev ',opt )
-	
-	g.options.abbrev[substr(opt,1,2)] = opt	:(init.options.abbrev)
+
+	g.options.abbrev[substr(opt,1,2)] = opt                :(init.options.abbrev)
 
 init.options.abbrev.done
 
@@ -412,93 +413,93 @@ init.options.abbrev.done
 	options = options host(0) ' '
 
 init.options.next
-	
+
 	val = 1
-	options '-u' =					:f(init.options.done)
-	options break(' ') . opt span(' ') =	
+	options '-u' =                                         :f(init.options.done)
+	options break(' ') . opt span(' ') =
 
 init.options.opt
 
 	lt(size(opt),3) out('no such option ',opt,'  - ignoring.')
-.						:s(init.options.next)
+.                                                       :s(init.options.next)
 	optname = g.options.abbrev[substr(opt,1,2)]
 	ident(optname) out('no such option,' opt ',- ignoring.')
-.						:s(init.options.next)
+.                                                       :s(init.options.next)
 
-	opt 'no'				:s(init.options.no)
-	opt break('=')				:s(init.options.val)
+	opt 'no'                                               :s(init.options.no)
+	opt break('=')                                         :s(init.options.val)
 
 	cname = 'init.options.opt.' optname
-	:($('init.options.opt.' optname))
+                                                        :($('init.options.opt.' optname))
 
 init.options.no
 
 *	'no' before option name sets val to zero.
-	
+
 	opt 'no' =
-	val = 0						
-							:(init.options.opt)
+	val = 0
+                                                        :(init.options.opt)
 init.options.set
 
 *	Set value for command options.
 
-	g.options[optname] = val			:(init.options.next)
+	g.options[optname] = val                               :(init.options.next)
 
 init.options.val
 
 *	'=' is followed by value
 
-	opt break('=') . opt '=' rem . val		:(init.options.opt)
+	opt break('=') . opt '=' rem . val                     :(init.options.opt)
 
 init.options.opt.move
 
-	g.mode = g.mode.move				:(init.options.next)
+                                                        :(init.options.next)
 
 init.options.opt.auto
 
-	g.mode = g.mode.auto				:(init.options.next)
+                                                        :(init.options.next)
 
 init.options.opt.dumb
 
-	g.dumb = val					:(init.options.set)
+	g.dumb = val                                           :(init.options.set)
 
 init.options.opt.moves
 
-	g.maxmoves = val				:(init.options.set)
+	g.maxmoves = val                                       :(init.options.set)
 
 init.options.opt.random
 
-	g.random_var = (ne(val) val,2017)		:(init.options.set)
+	g.random_var = (ne(val) val,2017)                      :(init.options.set)
 
 init.options.opt.seen
 
-	g.seen = val					:(init.options.set)
+	g.seen = val                                           :(init.options.set)
 
 init.options.opt.shell
 
-	g.shell = val					:(init.options.set)
+	g.shell = val                                          :(init.options.set)
 
 init.options.opt.solo
 
-	g.mode = g.mode.solo				:(init.options.next)
+                                                        :(init.options.next)
 
 init.options.opt.team
 
-	g.mode = g.mode.team				:(init.options.next)
+                                                        :(init.options.next)
 
 init.options.opt.trace
 
 	val = ident(val) 1
-	g.trace = val					:(init.options.set)
+	g.trace = val                                          :(init.options.set)
 
 init.options.done
 
-	out('Options:')
-	show(g.options)				:(return)
+	out('Options                                           :')
+	show(g.options)                                        :(return)
 
 init.options.end
 
-	define('init.perm(filename)line,ifile,n,k,lines,nread')	:(init.perm.end)
+	define('init.perm(filename)line,ifile,n,k,lines,nread'):(init.perm.end)
 
 *	Initialize the list of possible permutations from a file.
 
@@ -507,12 +508,12 @@ init.perm
 
 	g.permutations = table(7)
 	g.permutations.count = table(100)
-	input(.ifile,g.channel.temp, filename)    	 :s(init.perm.next)
-	out('unable to open permutation file ',filename) :(freturn)
+	input(.ifile,g.channel.temp, filename)                 :s(init.perm.next)
+	out('unable to open permutation file ',filename)       :(freturn)
 
 init.perm.next
 
-	line = ifile					:f(init.perm.done)
+	line = ifile                                           :f(init.perm.done)
 	line break('?') . n '?' break(' ') . k ' ' rem . count :f(init.perm.err)
 	g.permutations.count[n '?' k] = count
 	ara = array(count)
@@ -520,20 +521,20 @@ init.perm.next
 
 init.perm.array
 
-	ara[ai = ai + 1] = ifile		:s(init.perm.array)
-	g.permutations[n '?' k] = ara		:(init.perm.next)
+	ara[ai = ai + 1] = ifile                               :s(init.perm.array)
+	g.permutations[n '?' k] = ara                          :(init.perm.next)
 
 init.perm.done
 
-	endfile(g.channel.temp)				:(return)
+	endfile(g.channel.temp)                                :(return)
 
 init.perm.err
 
-	out('init.perm error, line ' lines '  '  line) :(freturn)
+	out('init.perm error, line ' lines '  '  line)         :(freturn)
 
 init.perm.end
 
-	define('init.tiles()ch,n,s')		:(init.tiles.end)
+	define('init.tiles()ch,n,s')                           :(init.tiles.end)
 
 * 	Initialize set of tiles, ignoring the 'blank' tiles for now.
 
@@ -546,19 +547,19 @@ init.tiles
 
 init.tiles.ch
 
-	s break(' ') . ch ' ' break(' ') . n ' ' = :f(init.tiles.ch.done)
-	g.tiles = g.tiles dupl(ch,n)		   :(init.tiles.ch)
+	s break(' ') . ch ' ' break(' ') . n ' ' =             :f(init.tiles.ch.done)
+	g.tiles = g.tiles dupl(ch,n)                           :(init.tiles.ch)
 
 init.tiles.ch.done
 
 	randomseed();* set random number generator seed
 
 	shuffle();* shuffle the tiles
-							:(return)
+                                                        :(return)
 
 init.tiles.end
 
-	define('init.value()s,c')			:(init.value.end)
+	define('init.value()s,c')                              :(init.value.end)
 *INIT.VALUE*
 init.value
 
@@ -570,14 +571,14 @@ init.value
 init.value.next
 
 *	assume value is 1
-	s len(1) . c =					:f(init.value.letters)
-	g.value[c] = +1					:(init.value.next)
+	s len(1) . c =                                         :f(init.value.letters)
+	g.value[c] = +1                                        :(init.value.next)
 
 init.value.letters
 
 *	Update assumptions for letters with value greater than one.
 
-	s = 
+	s =
 .	'b 4 c 4 d 2 f 4 g 3 h 3 j 10 k 5 l 2 m 4 '
 .	'n 2 p 4 q 10 u 2 v 5 w 4 x 8 y 3 z 10 '
 .	'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 '
@@ -585,27 +586,27 @@ init.value.letters
 
 init.value.update
 
-	s break(' ') . c ' ' break(' ') . v ' ' =	:f(return)
-	g.value[c] = +v					:(init.value.update)
+	s break(' ') . c ' ' break(' ') . v ' ' =              :f(return)
+	g.value[c] = +v                                        :(init.value.update)
 
 init.value.end
 
-	define('adjacent(r,c)')				:(adjacent.end)
+	define('adjacent(r,c)')                                :(adjacent.end)
 
-*	Test if the cell in row *r* and column *c* is adjacent to one 
+*	Test if the cell in row *r* and column *c* is adjacent to one
 *	that has been used.
 
 *ADJACENT*
 adjacent
 
-	gt(r,1) differ(g.used[r - 1,c],' ')	:s(return) ;* cell to north
-	lt(c,15) differ(g.used[r,c + 1],' ')	:s(return) ;* cell to east
-	gt(c,1) differ(g.used[r,c - 1],' ')	:s(return) ;* cell to west
-	lt(r,15) differ(g.used[r + 1,c],' ')	:s(return) ;* cell to south
-						:(freturn)
+	gt(r,1) differ(g.used[r - 1,c],' ')                    :s(return) ;* cell to north
+	lt(c,15) differ(g.used[r,c + 1],' ')                   :s(return) ;* cell to east
+	gt(c,1) differ(g.used[r,c - 1],' ')                    :s(return) ;* cell to west
+	lt(r,15) differ(g.used[r + 1,c],' ')                   :s(return) ;* cell to south
+                                                        :(freturn)
 adjacent.end
 
-	define('append(str,w,ch)')				:(append.end)
+	define('append(str,w,ch)')                             :(append.end)
 
 *	Append word *w* to string *str*, prefixing with *ch* if *str* is not null,
 *	or using space if *ch* is null.
@@ -613,12 +614,12 @@ adjacent.end
 *APPEND*
 append
 
-	append = (ident(str) w, str (ident(ch) ' ' , ch) w)	:(return)
+	append = (ident(str) w, str (ident(ch) ' ' , ch) w)    :(return)
 
 append.end
 
 
-	define('avail(pair)line,spaces,c,i,oi')	:(avail.end)
+	define('avail(pair)line,spaces,c,i,oi')                :(avail.end)
 
 *	Return array containing the indexes of the avail (blank) cells in line.
 *	Fail if no cells are available.
@@ -627,29 +628,29 @@ append.end
 avail
 	line = line(pair)
 	spaces = spaces(line)
-	eq(spaces,0)					:s(freturn)
+	eq(spaces,0)                                           :s(freturn)
 	avail = array(spaces)
 	i = ai = 0
 
 avail.c
 
-	c = substr(line, i = i + 1, 1)			:f(avail.done)
-	differ(c,' ')					:s(avail.c)
-	avail[oi = oi + 1] = +i				:(avail.c)
+	c = substr(line, i = i + 1, 1)                         :f(avail.done)
+	differ(c,' ')                                          :s(avail.c)
+	avail[oi = oi + 1] = +i                                :(avail.c)
 
 avail.done
 
-	eq(g.tracing)					:s(return)
-	i = 0; c = 
+	eq(g.tracing)                                          :s(return)
+	i = 0; c =
 
 avail.done.ch
 
-	c = c lpad(avail[i = i + 1],3)		:s(avail.done.ch)
+	c = c lpad(avail[i = i + 1],3)                         :s(avail.done.ch)
 *		show.hex(line) '|  |' show.line(line) '| is ' c)
-							:(return)
+                                                        :(return)
 avail.end
 
-	define('bonus.lines()i')			:(bonus.lines.end)
+	define('bonus.lines()i')                               :(bonus.lines.end)
 
 *BONUS.LINES*
 bonus.lines
@@ -658,24 +659,24 @@ bonus.lines
 
 bonus.lines.next
 
-	gt(i = i + 1,15)				:s(return)
+	gt(i = i + 1,15)                                       :s(return)
 	bonus.lines[i] = hline(g.bonus,i)
-	bonus.lines[i + 15] = vline(g.bonus,i)		:(bonus.lines.next)
+	bonus.lines[i + 15] = vline(g.bonus,i)                 :(bonus.lines.next)
 
 bonus.lines.end
 
-	define('cardinal(n,word)')			:(cardinal.end)
+	define('cardinal(n,word)')                             :(cardinal.end)
 
 *	If N is one, returns 'one' followed by WORD.
 *	Otherwise returns NUMBER(N) followed by WORD and 'S'.
 
 cardinal
 
-	cardinal = (eq(n,1) 'one ' word, number(n) ' '  word 's') :(return)
+	cardinal = (eq(n,1) 'one ' word, number(n) ' '  word 's'):(return)
 
 cardinal.end
 
-	define('checkline(line)word')			:(checkline.end)
+	define('checkline(line)word')                          :(checkline.end)
 
 *	Test if all the words in a line are in the dictionary.
 
@@ -684,21 +685,21 @@ checkline
 
 	count.checkline = count.checkline + 1
 	line span(' ') =
-	empty(line)					:s(return)
+	empty(line)                                            :s(return)
 	line = line ' ';* to simplify breaking out words.
 
 checkline.1
 
 	line span(' ') =
-	line break(' ')  . word ' ' =			:f(return)
-	eq(size(word),1)				:s(checkline.1)
-	checkword(word)					:f(freturn)s(checkline.1)
+	line break(' ')  . word ' ' =                          :f(return)
+	eq(size(word),1)                                       :s(checkline.1)
+	checkword(word)                                        :f(freturn)s(checkline.1)
 
 checkline.end
 
 	checkwordn = 0
 
-	define('checkword(word)')			:(checkword.end)
+	define('checkword(word)')                              :(checkword.end)
 
 *	Test if a word is in the dictionary.
 
@@ -709,14 +710,14 @@ checkword
 
 *	Accept words of a single character since they can occur in crossing lines.
 
-	eq(size(word),1)				:s(return)
+	eq(size(word),1)                                       :s(return)
 
 	word = lcase(word);* in case upper case letters have wrongly crept it.
-	differ(g.dict[size(word)][word])		:f(freturn)s(return)
+	differ(g.dict[size(word)][word])                       :f(freturn)s(return)
 
 checkword.end
 
-	define('cline(lines,move,p,ch)c,line')		:(cline.end)
+	define('cline(lines,move,p,ch)c,line')                 :(cline.end)
 
 *	Return crossing line of p-th cell in move *move*.
 *	*ch* gives tile to be played.
@@ -732,11 +733,11 @@ cline
 	line = lines[c];* cross line
 	p = (le(id(move),15) id(move), id(move) - 15);* position to insert
 	line = substr(line,1,p - 1) ucase(ch) substr(line,p + 1)
-	cline = pair(c,line)				:(return)
+	cline = pair(c,line)                                   :(return)
 
 cline.end
 
-	define('clines(move,upper)p,c,ch,line')		:(clines.end)
+	define('clines(move,upper)p,c,ch,line')                :(clines.end)
 
 *	Update g.clines to contain the line for move *move* and all
 *	its crossing lines. Express the letters of the move in upper case
@@ -766,51 +767,51 @@ clines.i
 
 	c = (le(id(move),15) p + 15, p);* cross line
 	line = g.lines[c];* cross line
-	p = (le(id(move),15) id(move), id(move) - 15);* position to insert 
+	p = (le(id(move),15) id(move), id(move) - 15);* position to insert
 	ch = substr(text(move),i,1)
-	line = (gt(p,1) substr(line,1,p - 1),'') 
+	line = (gt(p,1) substr(line,1,p - 1),'')
 .		 (differ(upper) ucase(ch), ch) (lt(p,15) substr(line,p + 1),'')
 	g.clines[g.cln = g.cln + 1] = pair(c, (ident(upper) lcase(line), line))
-	le(i = i + 1, size(text(move)))			:s(clines.i)f(return)
+	le(i = i + 1, size(text(move)))                        :s(clines.i)f(return)
 
 clines.end
 
-	define('column(num,pos)')			:(column.end)
+	define('column(num,pos)')                              :(column.end)
 
 *	Returns column corresponding to position *pos* in line *num*.
 
 *COLUMN*
 column
 
-	column = ((gt(num,15) num - 15, pos))		:(return)
+	column = ((gt(num,15) num - 15, pos))                  :(return)
 
 column.end
 
-	define('cost(text)')				:(cost.end)
+	define('cost(text)')                                   :(cost.end)
 
-*	Return the cost of *text*, defined as the sum of the 
+*	Return the cost of *text*, defined as the sum of the
 *	values of the tiles in *text*.
 
 *COST*
 cost
 
-	text len(1) . ch =				:f(return)
-	cost = cost + g.value[ch]			:(cost)
+	text len(1) . ch =                                     :f(return)
+	cost = cost + g.value[ch]                              :(cost)
 
 cost.end
 
-	define('counter(text,count)')			:(counter.end)
+	define('counter(text,count)')                          :(counter.end)
 
 *	Output the descriptive text *text* and value *n* of a counter.
 
 *COUNTER*
 counter
 
-	out(lpad(text,26) lpad(count,12))		:(return)
+	out(lpad(text,26) lpad(count,12))                      :(return)
 
 counter.end
 
-	define('counters()elapsed')			:(counters.end)
+	define('counters()elapsed')                            :(counters.end)
 
 *	Output the collected counter metrics.
 
@@ -818,7 +819,7 @@ counter.end
 counters
 
 	out()
-	out('Performance metrics:')
+	out('Performance metrics                               :')
 *	out('Time ',(time() - g.time) / 1000)
 *	elapsed = (time() - g.time) / 1000
 *	counter('execution time (sec)'		, thousands(elapsed))
@@ -834,32 +835,32 @@ counters
 	counter('total inserts'			, thousands(count.insert))
 	counter('contiguous inserts'		, thousands(count.insert.contig))
 	counter('split inserts'			, thousands(count.insert.split))
-							:(return)
+                                                        :(return)
 counters.end
 
-	define('datename(date)s')				:(datename.end)
+	define('datename(date)s')                              :(datename.end)
 
 *	Convert date to form with no blanks, just dashes, to be
 *	suitable for use as part of a file name.
 
 datename
 
-	datename = replace(date,' :/','---')		
+	datename = replace(date,':/ ','---')
 	datename = substr(datename,12,8) '-' substr(datename,1,10)
-							:(return)
+                                                        :(return)
 datename.end
 
-	define('dt(obj)')				:(dt.end)
+	define('dt(obj)')                                      :(dt.end)
 
 *	Shorthand for datatype(obj)
 
 dt
 
-	dt = (ident(obj) 'string',  datatype(obj))	:(return)
+	dt = (ident(obj) 'string',  datatype(obj))             :(return)
 
 dt.end
 
-	define('empty(line)')				:(empty.end)
+	define('empty(line)')                                  :(empty.end)
 
 *	Test if line is empty (null or all blanks).
 
@@ -868,14 +869,14 @@ empty
 
 *	In most cases, the first character in line is not null.
 
-	differ(substr(line,1,1),' ')			:s(freturn)
+	differ(substr(line,1,1),' ')                           :s(freturn)
 	line span(' ') =
-	ident(line)					:s(return)f(freturn)
+	ident(line)                                            :s(return)f(freturn)
 
 empty.end
-	
-	define('endgame()')				:(endgame.end)
-	
+
+	define('endgame()')                                    :(endgame.end)
+
 *	Summarize results at end of game.
 
 *ENDGAME*
@@ -887,42 +888,42 @@ endgame
 	out(	name(g.players[2])  ' scored' number(total(g.players[2])) ' points, '
 .		'with a best move of' cardinal(highest(g.players[2]),'point') '.')
 
-	out(gt(thirty(g.players[1])) name(g.players[1]) ' had ' 
+	out(gt(thirty(g.players[1])) name(g.players[1]) ' had '
 .		cardinal(thirty(g.players[1]),'move') ' of thirty or more points.')
 
-	out(gt(thirty(g.players[2])) name(g.players[2]) ' had ' 
+	out(gt(thirty(g.players[2])) name(g.players[2]) ' had '
 .		cardinal(thirty(g.players[2]),'move') ' of thirty or more points.')
 
 	counters()
-							:(return)
+                                                        :(return)
 endgame.end
 
 	define('find(pid,turn)rack,num,inlines,line,moves,mi,m,perms,perm,'
-.	 'permi,fline,tline,cline,highest,lowest,i,p,score,move,tried')	
-.							:(find.end)
+.	 'permi,fline,tline,cline,highest,lowest,i,p,score,move,tried')
+.                                                       :(find.end)
 
-*	Find all the valid moves and their scores given the current board 
-*	and the indicated rack. For each line, find the set of all 
-*	possible moves for that line. Then for each move check the options 
-*	(permutations) that can be played from the tiles.  For each 
-*	specific permutation, see if the resulting line contains only valid 
-*	words.  If not, go on to the next permutation. If true, then see if 
-*	all the lines affected by the move contain only valid words.  
-*	If not, go on to the next permutation. If so, then add up the 
+*	Find all the valid moves and their scores given the current board
+*	and the indicated rack. For each line, find the set of all
+*	possible moves for that line. Then for each move check the options
+*	(permutations) that can be played from the tiles.  For each
+*	specific permutation, see if the resulting line contains only valid
+*	words.  If not, go on to the next permutation. If true, then see if
+*	all the lines affected by the move contain only valid words.
+*	If not, go on to the next permutation. If so, then add up the
 *	scores of all new words created by the move.
 
 *	From amongst the valid moves determine the best move as follows.
-*	If two moves have different scores, prefer the one with the 
+*	If two moves have different scores, prefer the one with the
 *	higher score.
 
-*	The 'cost' of a move is the sum of the values of the tiles in the 
+*	The 'cost' of a move is the sum of the values of the tiles in the
 	move; so want to keep cost low to save higher value tiles for
 *	later moves. If two moves have the same score and different costs,
-*	prefer the move with the lower cost.  If two moves have the same 
+*	prefer the move with the lower cost.  If two moves have the same
 *	score and cost, while one uses the letter 's' and the other doesn't,
 *	prefer the move that doesn't use the letter 's'.
 
-*	Find returns the best move as defined above, or null if it is unable 
+*	Find returns the best move as defined above, or null if it is unable
 *	to find a valid move.
 
 *FIND*
@@ -930,7 +931,7 @@ find
 
 *	See if first move, in which case call start()
 
-	find = eq(turn,1) start(pid)			:s(return)
+	find = eq(turn,1) start(pid)                           :s(return)
 
 	rack = rack(g.players[pid])
 	lines = copy(g.lines)
@@ -941,52 +942,52 @@ find
 
 find.line
 
-	gt(num = num + 1,30)				:s(find.done)
+	gt(num = num + 1,30)                                   :s(find.done)
 	line = lines[num]
 *	out(ne(g.tracing) 'Find.line ' lpad(lineid(num),3) ' ' show.line(line))
-	moves = scan(pair(num,line),rack)		:f(find.line)
+	moves = scan(pair(num,line),rack)                      :f(find.line)
 	mi = 0
 
 find.move
 
 	count.moves = count.moves + 1
-	move = moves[mi = mi + 1,2]			:f(find.line)
+	move = moves[mi = mi + 1,2]                            :f(find.line)
 *	out(ne(g.tracing) 'Find.move mi ' mi ' ' show.move(move,'find'))
-	points(move) = 
+	points(move) =
 	permi = 0
 
 *	The rack will almost always have at least two, and sometimes three,
 *	identical letters.  Use *tried* to track texts that have been tried,
 *	to avoid duplicate testing for validity of the same text.
-	
+
 	tried = table(500)
 
-	perms = g.permutations[text(move)]		:s(find.perm.next)
+	perms = g.permutations[text(move)]                     :s(find.perm.next)
 
 *	Something must be wrong with the requested permutation
 
-	out('fatal permutation request ',text(move)) :(end)
+	out('fatal permutation request ',text(move))           :(end)
 
 find.perm.next
 
-	perm = perms[permi = permi + 1]			:f(find.move)
-	ident(perm)					:s(find.move)
-	find.perm(rack,perm,num,move,inlines,tried)	:f(find.perm.next)
+	perm = perms[permi = permi + 1]                        :f(find.move)
+	ident(perm)                                            :s(find.move)
+	find.perm(rack,perm,num,move,inlines,tried)            :f(find.perm.next)
 
 find.score
 
 	score = 0
 
-*	out(ne(g.tracing) 'Found valid move ' show.move(move) ' in ' 
+*	out(ne(g.tracing) 'Found valid move ' show.move(move) ' in '
 *.		show.pair(pair(num,line)))
 
 *	Score the line by summing the scores of the lines saved in clines.
-	
-*	out(ne(g.tracing) 'valid move :' line '  move '  id(move) ' ' 
+
+*	out(ne(g.tracing) 'valid move :' line '  move '  id(move) ' '
 *.		size((text(move)) '  '
-*.		free(move)[1] '...' free(move)[size(text(move))] 
+*.		free(move)[1] '...' free(move)[size(text(move))]
 *.		' ' text(move))
- 
+
 	count.valid = count.valid + 1
 	move = copy(move)
 
@@ -995,44 +996,44 @@ find.score
 *	ne(g.tracing) show.play(move)
 *	out(ne(g.tracing) 'Find calling scoremove')
 
-	points(move) = +scoremove(move)	
+	points(move) = +scoremove(move)
 	g.cln = 0;* reset for next permutation
-	find = isbest(move) copy(move)			:(find.perm.next)
+	find = isbest(move) copy(move)                         :(find.perm.next)
 
 find.done
 
-	ident(find)					:s(find.fail)
-							:(return)	
+	ident(find)                                            :s(find.fail)
+                                                        :(return)
 find.fail
 
 *	out('find failed ')
 
 	output = ident(find) 'find FAILED, no move found.'
 
-							:(freturn)
+                                                        :(freturn)
 find.end
 
 	define('find.perm(rack,perm,num,move,inlines,tried)'
-.		'text,lines,iline,i,p,cline')	:(find.perm.end)
+.		'text,lines,iline,i,p,cline')                        :(find.perm.end)
 
-*	Assess effect of permutation, failing if it doesn't 
+*	Assess effect of permutation, failing if it doesn't
 *	produce a valid movel
 
 find.perm
 
 *	NOTE: THE LOOP BELOW IS THE CRITICAL INNER LOOP OF THIS PROGRAM.
 *	TIME SPENT SPEEDING THINGS UP ELSEWHERE WILL HAVE LITTLE EFFECT.
-*	
+*
 *	For example, given a move of length 7 with a rack of 7 letters,
-*	we need to account for the slightly over 5000 permutations of 
-*	the letters that can be used here. And note this is just 
+*	we need to account for the slightly over 5000 permutations of
+*	the letters that can be used here. And note this is just
 *	for one possible move ...
 *
 *	Since most racks will contain duplicate, or even triplicate,
-*	instances of the same letter, the table *tried* is used below. 
-*	This cut the running time of the program by a factor of two 
+*	instances of the same letter, the table *tried* is used below.
+*	This cut the running time of the program by a factor of two
 *	when first introduced.
-	
+
 	count.perm = count.perm + 1
 	count.cells = count.cells + size(perm)
 
@@ -1042,54 +1043,54 @@ find.perm
 
 *	See if we have already tested this text.
 
-	differ(tried[text])				:s(freturn)
+	differ(tried[text])                                    :s(freturn)
 	tried[text] = 1;* note that we have reviewed this text
 
 
 	lines = copy(inlines);
 
-*	Insert the letters from the tiles corresponding to the 
-*	permutation into the selected blank cells in the line.  
-*	The digit '1' selects the first tile, the digit '2' the second, 
-*	and so on.  Then see if the result gives a valid line. Move 
-*	to the next permutation if not.  
+*	Insert the letters from the tiles corresponding to the
+*	permutation into the selected blank cells in the line.
+*	The digit '1' selects the first tile, the digit '2' the second,
+*	and so on.  Then see if the result gives a valid line. Move
+*	to the next permutation if not.
 
 	text(move) = perm
 	iline = insert(lines[num],move)
-	checkline(place(iline,rack))			:f(freturn)
+	checkline(place(iline,rack))                           :f(freturn)
 
-*	Move is valid on this line, so check validity on crossing 
-*	lines.Save the valid lines in *clines* for scoring if move 
+*	Move is valid on this line, so check validity on crossing
+*	lines.Save the valid lines in *clines* for scoring if move
 *	proves valid.
 
-*	We could use the clines() procedure for this, but in this loop 
+*	We could use the clines() procedure for this, but in this loop
 *	every statement counts, so in effect we build clines on the fly.
-*	Since almost all permutations will result in junk, we want to 
-*	detect junk as soon as possible so we can move on without 
+*	Since almost all permutations will result in junk, we want to
+*	detect junk as soon as possible so we can move on without
 *	needless effort.
 
 	text(move) = text
 
-*	out(ne(g.tracing) 'Find valid first ' 
+*	out(ne(g.tracing) 'Find valid first '
 *		show.move(move) ' ' show.line(line))
 
-	g.clines[g.cln = g.cln + 1] 
+	g.clines[g.cln = g.cln + 1]
 .			= pair( id(move), insert(lines[num],move))
 	i = 0
 
-*	Check the crossing lines, constructing them as needed, 
+*	Check the crossing lines, constructing them as needed,
 *	to make sure the move is valid.
 
 find.perm.cross
 
 *	out('find cross ')
 
-*	If next assignment fails, we have finished checking the 
+*	If next assignment fails, we have finished checking the
 *	permutation without finding a valid move, and so return failure.
 
-	p = free(move)[i = i + 1]			:f(return)
+	p = free(move)[i = i + 1]                              :f(return)
 	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1))
-	checkline(line(cline))				:f(freturn)
+	checkline(line(cline))                                 :f(freturn)
 
 *	out(ne(g.tracing) 'Find valid checkline ' line(cline))
 
@@ -1097,34 +1098,34 @@ find.perm.cross
 
 *	out(ne(g.tracing) 'Find text ' text(move))
 
-	g.clines[g.cln = g.cln + 1] = cline		:(find.perm.cross)
+	g.clines[g.cln = g.cln + 1] = cline                    :(find.perm.cross)
 
 find.perm.end
 
 	define('game(mode)players,player,opn,move,i,li,offset,open.word,'
-.		'open.score,n,tiles,moves,li,passed,board,lfn') :(game.end)
+.		'open.score,n,tiles,moves,li,passed,board,lfn')      :(game.end)
 
 *	Play a game of fribble. *max* is the maximum number of moves.
-*	Mode is 
+*	Mode is
 *		one to have fribble play a game with itself,
-*		two to let you play against fribble, and 
+*		two to let you play against fribble, and
 *		three to work with fribble to play with another person,
 *		who may be using fribble themself, but good for them!
 
 *GAME*
 game
 
-*	Test to see if log file needed. Even if not, we always call log() 
-*	function. It will do nothing if no log file. This avoids need 
+*	Test to see if log file needed. Even if not, we always call log()
+*	function. It will do nothing if no log file. This avoids need
 *	to test for presence of log file before each call to log().
 
-	eq(g.log)					:s(game.setup)
+	eq(g.log)                                              :s(game.setup)
 
 *	Open log file.
 
 	g.logfile.name = datename(g.date) '.fri'
-	output(.g.logfile,g.logfile.channel,g.logfile.name)  :s(game.log)
-	out('unable to open log file ',g.logfile.name)	     :(game.setup)
+	output(.g.logfile,g.logfile.channel,g.logfile.name)    :s(game.log)
+	out('unable to open log file ',g.logfile.name)         :(game.setup)
 
 game.log
 
@@ -1146,22 +1147,22 @@ game.turn
 	log('turn ' g.turn)
 
 *	ne(f.trace) out('g.turn=' g.turn ' g.maxmoves=' g.maxmoves)
-	gt(g.turn,g.lastmove + 3) 
-.  	  out('Game over - too many turns with no move.') :s(game.over)
+	gt(g.turn,g.lastmove + 3)
+.  	  out('Game over - too many turns with no move.')   :s(game.over)
 
-	gt(g.turn,g.maxmoves)				
-.		out('Game over -- too many turns (' 
-.		g.maxmoves ').') :s(game.over)
+	gt(g.turn,g.maxmoves)
+.		out('Game over -- too many turns ('
+.		g.maxmoves ').')                                     :s(game.over)
 
 	pid = (eq(pid,1) 2, 1)
 
 	player = g.players[pid]
 
-	out('Move ' number(g.turn) ' for player ' name(player) 
+	out('Move ' number(g.turn) ' for player ' name(player)
 .		 (differ(g.tilemanager) ', with tiles "'
 .		show.tiles(rack(player),'A'),'')	'".')
 
-	turn(pid,mode)			:f(game.turn.fail)s(game.turn)
+	turn(pid,mode)                                         :f(game.turn.fail)s(game.turn)
 
 game.turn.fail
 
@@ -1169,33 +1170,33 @@ game.turn.fail
 *	Try to swap three tiles
 
 	out('no move, swapping tiles.')
-	rack(player) = swap(pid,3)			:(game.turn)
-	
+	rack(player) = swap(pid,3)                             :(game.turn)
+
 game.fail
 
 *	Here if no move found.
 
 	out('No move found.')
 
-*	Here if no move found, in which case the return value is 
+*	Here if no move found, in which case the return value is
 *	a set of swapped tiles. If *move* is null, then pass.
 
-	differ(move)					:s(game.swap)
+	differ(move)                                           :s(game.swap)
 	passed = passed + 1
-	out(gt(passed,6) ' Too many passed moves.')	:s(game.over)
-	out('Player ' name(player) ' passes.')		:(game.turn)
-	
+	out(gt(passed,6) ' Too many passed moves.')            :s(game.over)
+	out('Player ' name(player) ' passes.')                 :(game.turn)
+
 game.swap
 
 	out('swapping tiles pid=',pid)
 	rack(player) = swap(pid,3)
 	out('Player ' name(player) ' swapped tiles.')
-	out('Player ' name(player) ' now has tiles ' 
-.		show.tiles(rack(player))) :(game.turn)
+	out('Player ' name(player) ' now has tiles '
+.		show.tiles(rack(player)))                            :(game.turn)
 
-game.over						
+game.over
 
-	endgame()					
+	endgame()
 
 *	Complete log file.
 
@@ -1206,31 +1207,31 @@ game.over
 	log('endgame')
 
 	differ(logfile) endfile(g.logfile.channel)
-							:(return)
+                                                        :(return)
 
 game.end
 
-	define('log.tiles()')				:(log.tiles.end)
+	define('log.tiles()')                                  :(log.tiles.end)
 
 *	Write tiles set to log file
 
 log.tiles
 
-	log('tiles  "' g.tiles '"')		:(return)
+	log('tiles  "' g.tiles '"')                            :(return)
 
 log.tiles.end
 
-	define('log.player(pid)')			:(log.player.end)
+	define('log.player(pid)')                              :(log.player.end)
 
 *	Write player description to log file.
 
 log.player
-	log('player ' pid ' ' show.player(pid))			
-							:(return)
+	log('player ' pid ' ' show.player(pid))
+                                                        :(return)
 
 log.player.end
 
-	define('grid(lines,start)i,r,c,line')		:(grid.end)
+	define('grid(lines,start)i,r,c,line')                  :(grid.end)
 
 *	Construct a grid from a sequence of lines beginning at index *start*,
 *	(1..15 for rows, 16..30 for columns.
@@ -1241,7 +1242,7 @@ grid
 	grid = array('15,15',' ')
 	start = ident(start) +1
 	start = (le(start,15) 1, 16)
-	gt(start,15)					:s(grid.col)
+	gt(start,15)                                           :s(grid.col)
 
 *	Here to build grid from the rows.
 
@@ -1249,13 +1250,13 @@ grid
 
 grid.nextrow
 
-	gt(r = r + 1,15)				:s(grid.done)
-	line = lines[r]					:f(grid.3)
+	gt(r = r + 1,15)                                       :s(grid.done)
+	line = lines[r]                                        :f(grid.3)
 	i = 0
 grid.r
 
 *	out('grid r ' r '  ' i + 1 ' ' substr(line,i + 1,1))
-	grid[r,i = i + 1] = substr(line,i,1)		:s(grid.r)f(grid.nextrow)
+	grid[r,i = i + 1] = substr(line,i,1)                   :s(grid.r)f(grid.nextrow)
 
 grid.col
 
@@ -1265,37 +1266,37 @@ grid.col
 
 grid.nextcol
 
-	gt(c = c + 1,30)				:s(grid.done)
+	gt(c = c + 1,30)                                       :s(grid.done)
 	line = lines[c]
 	i = 0
 
 grid.c
 
-	grid[i = i + 1,c] = substr(line,i,1)		:s(grid.c)f(grid.nextcol)
+	grid[i = i + 1,c] = substr(line,i,1)                   :s(grid.c)f(grid.nextcol)
 
-grid.done						:(return)
+grid.done                                               :(return)
 
 grid.end
 
-	define('hline(g,r)')				:(hline.end)
+	define('hline(g,r)')                                   :(hline.end)
 
-*	Return the horizontal line of grid *g* corresponding to 
+*	Return the horizontal line of grid *g* corresponding to
 *	row *r* as a string.
 
 *HLINE*
 hline
 	r = +r
-	hline = g[r,1] g[r,2] g[r,3] g[r,4] g[r,5] 
+	hline = g[r,1] g[r,2] g[r,3] g[r,4] g[r,5]
 .		g[r,6] g[r,7] g[r,8] g[r,9] g[r,10]
 .		g[r,11] g[r,12] g[r,13] g[r,14] g[r,15]
-							:(return)
+                                                        :(return)
 hline.end
 
 
-	define('insert(line,move,upper)c,f,i,text')	:(insert.end)
+	define('insert(line,move,upper)c,f,i,text')            :(insert.end)
 
 *	Insert the text of a move into its free list of empty
-*	cells in the line of the move.  Express the text in upper case 
+*	cells in the line of the move.  Express the text in upper case
 *	if *upper* is not null.
 
 *INSERT*
@@ -1304,7 +1305,7 @@ insert
 	text = (differ(upper) ucase(text(move)), text(move))
 	f = free(move)
 	c = size(text(move))
-	ne(f[c] - f[1], c - 1)			:s(insert.chars)
+	ne(f[c] - f[1], c - 1)                                 :s(insert.chars)
 
 *	Here if cells are contiguous. Insert text after part before it,
 *	and before part after it.
@@ -1312,11 +1313,11 @@ insert
 	count.insert.contig = count.insert.contig + 1
 
 	insert = substr(line, 1, f[1] - 1) text substr(line, f[c] + 1)
-	out(ne(size(line),15) 'insert failure ' line)		:s(end)
-							:(return)
+	out(ne(size(line),15) 'insert failure ' line)          :s(end)
+                                                        :(return)
 insert.chars
 
-*	Here if cells not contiguous. Unpack the line, insert the 
+*	Here if cells not contiguous. Unpack the line, insert the
 *	move text, and pack it back up.
 
 	count.insert.split = count.insert.split + 1
@@ -1325,41 +1326,41 @@ insert.chars
 
 insert.ch
 
-	gt(i = i + 1,size(text(move)))			:s(insert.done)
-	insert[free(move)[i]] = substr(text,i,1)	:(insert.ch)
+	gt(i = i + 1,size(text(move)))                         :s(insert.done)
+	insert[free(move)[i]] = substr(text,i,1)               :(insert.ch)
 
 insert.done
 
-	insert = pack(insert)				:(return)
+	insert = pack(insert)                                  :(return)
 
 insert.end
 
-	define('isbest(move)')			:(isbest.end)
+	define('isbest(move)')                                 :(isbest.end)
 
 *	Test the score of a move to see if it the best yet seen in a turn.
 
 *ISBERT*
 isbest
-	out(ne(f.showscore) 'Find points(move) ' points(move) 
+	out(ne(f.showscore) 'Find points(move) ' points(move)
 .		'  highest=' g.highest ' lowest=' g.lowest)
 
-	lt(points(move),g.highest)			:s(freturn)
-	gt(points(move),g.highest)			:s(isbest.new)
+	lt(points(move),g.highest)                             :s(freturn)
+	gt(points(move),g.highest)                             :s(isbest.new)
 
 *	Here if points equal, look for lower cost
 
-	lt(cost(text(move)),g.lowest)			:s(isbest.new)
-	gt(cost(text(move)),g.lowest)			:s(freturn)
+	lt(cost(text(move)),g.lowest)                          :s(isbest.new)
+	gt(cost(text(move)),g.lowest)                          :s(freturn)
 
-*	Here if same points and cost, see if one uses 's' and the 
+*	Here if same points and cost, see if one uses 's' and the
 *	other doesn't.  Continue search if current best doesn't use 's'.
 
-	text(find) ? break('s')				:f(freturn)
+	text(find) ? break('s')                                :f(freturn)
 
-*	Here if current best uses an 's'. 
+*	Here if current best uses an 's'.
 *	Continue if new move also uses 's'.
 
-	text(move) ? break('s')				:s(freturn)
+	text(move) ? break('s')                                :s(freturn)
 
 isbest.new
 
@@ -1368,52 +1369,52 @@ isbest.new
 	g.highest = points(move)
 	g.lowest = cost(text(move))
 *	out(ne(g.tracing) 'find NEW BEST move ' show.move(move))
-							:(return)
+                                                        :(return)
 isbest.end
 
-	define('lcase(s)')				:(lcase.end)
+	define('lcase(s)')                                     :(lcase.end)
 
 *	Convert argument to lower case.
 
 *LCASE*
 lcase
 
-	lcase = replace(s,&ucase,&lcase)		:(return)
+	lcase = replace(s,&ucase,&lcase)                       :(return)
 
 lcase.end
-	
-	define('less(str,sub)before,after')		:(less.end)
 
-*	Less removes the first instance of each character in *sub* from *str*, 
+	define('less(str,sub)before,after')                    :(less.end)
+
+*	Less removes the first instance of each character in *sub* from *str*,
 *	where *sub* is a substring of *str*.
 
 *LESS*
 less
-	ident(str)					:s(return)
+	ident(str)                                             :s(return)
 	less = str
 
 less.ch
-	sub len(1) . ch =				:f(return)	
+	sub len(1) . ch =                                      :f(return)
 	less break(ch) . before  ch rem . after
-	less = before after				:(less.ch)
+	less = before after                                    :(less.ch)
 
 less.end
 
-	define('lineid(num)')				:(lineid.end)
+	define('lineid(num)')                                  :(lineid.end)
 
 *	Returns row or column id corresponding to line number *num*.
 
 *LINEID*
 lineid
 
-	lineid = (le(num,15) 'r' lpad(num,2,0), 'c' lpad(num - 15,2,0)) :(return)
+	lineid = (le(num,15) 'r' lpad(num,2,0), 'c' lpad(num - 15,2,0)):(return)
 
 lineid.end
 
-	define('lines(g)i')				:(lines.end)
+	define('lines(g)i')                                    :(lines.end)
 
-*	Express the grid *g* as a sequence of lines, with the 
-*	first fifteen consisting of the rows and the last 
+*	Express the grid *g* as a sequence of lines, with the
+*	first fifteen consisting of the rows and the last
 *	fifteen consisting of the columns.
 
 *LINES*
@@ -1426,24 +1427,24 @@ lines.next
 *	Make sure all entries in lines are in lower case,
 *	 since we enter moves in g in upper case.
 
-	gt(i = i + 1,15)				:s(return)
+	gt(i = i + 1,15)                                       :s(return)
 	lines[i] = lcase(hline(g,i))
-	lines[i + 15] = lcase(vline(g,i))		:(lines.next)
+	lines[i + 15] = lcase(vline(g,i))                      :(lines.next)
 
 lines.end
 
-	define('log(text)')				:(log.end)
+	define('log(text)')                                    :(log.end)
 
 *	Write text to logfile if making a log.
 
 *LOG*
 log
-	eq(g.log)					:s(return)
+	eq(g.log)                                              :s(return)
 
-	g.logfile = text				:(return)
+	g.logfile = text                                       :(return)
 
 log.end
-	define('m(id,str,text)fi,free,len,pos')		:(m.end)
+	define('m(id,str,text)fi,free,len,pos')                :(m.end)
 
 *	Create move in line with given id and text.
 *	*str* is one of the following:
@@ -1452,7 +1453,7 @@ log.end
 *	  string giving list of empty (open) cells used, with entries
 *			separated by spaces.
 
-*	For example, the following each specify the word 'fribble' 
+*	For example, the following each specify the word 'fribble'
 *	starting at position 6 in row 8.
 
 *		m(r8,6,'fribble')
@@ -1463,14 +1464,14 @@ m
 	free = array(size(text))
 
 *	out('m str' str)
-	str break(' ')					:s(m.list)
-	pos = +str					:f(m.error)
+	str break(' ')                                         :s(m.list)
+	pos = +str                                             :f(m.error)
 
 m.pos
 
 	len = len + 1
 *	out('pos fi ' fi ' ' pos + (fi - 1 ))
-	free[fi = fi + 1] = pos + (fi - 1)		:s(m.pos)f(m.done)
+	free[fi = fi + 1] = pos + (fi - 1)                     :s(m.pos)f(m.done)
 
 m.list
 
@@ -1480,26 +1481,26 @@ m.list
 
 m.next
 
-	str break(' ') . pos span(' ')  =		:f(m.done)
+	str break(' ') . pos span(' ')  =                      :f(m.done)
 	len = len + 1
-	free[fi = fi + 1] = pos				:(m.next)
+	free[fi = fi + 1] = pos                                :(m.next)
 
 m.error
 
-	out('m(id,str,text) error - .') :(freturn)
+	out('m(id,str,text) error - .')                        :(freturn)
 
 m.done
 
-	ne(len, size(text)) out('m size mismatch,try again'):s(freturn)
+	ne(len, size(text)) out('m size mismatch,try again')   :s(freturn)
 
-	out('m.done id=' id ' text=' text ', free[1]=' 
+	out('m.done id=' id ' text=' text ', free[1]='
 .		free[1] ' free[n]=' free[size(text)])
 
-	m = move(id,free,text)				:(return)
+	m = move(id,free,text)                                 :(return)
 
 m.end
 
-	define('makemove(pid,move)player,board,lines,id') :(makemove.end)
+	define('makemove(pid,move)player,board,lines,id')      :(makemove.end)
 
 *	Make a move for player with id *pid*, and return its value.
 
@@ -1515,13 +1516,13 @@ makemove
 	highest(player) = gt(points(move),highest(player)) points(move)
 	playmove(move)
 	id = lineid(id(move))
-	out(	name(player) ' played "' show.tiles(text(move)) '" for ' 
+	out(	name(player) ' played "' show.tiles(text(move)) '" for '
 .		number(points(move)) ' points,'
 .		' starting at ' (ident(substr(id,1),'r') 'row ', 'column')
 .		' ' number(+substr(id,2))
 .		', position ' number(free(move)[1]) '.')
 
-	out('Score now: '  
+	out('Score now: '
 .		name(g.players[1]) ', ' number(total(g.players[1]))  '; '
 .		name(g.players[2]) ', ' number(total(g.players[2]))  '. ')
 
@@ -1529,7 +1530,7 @@ makemove
 .	    'N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
 	out()
 
-*	Display move in grid with just this move in upper case by saving 
+*	Display move in grid with just this move in upper case by saving
 *	the board, playing the move with the text in upper case, showing it,
 *	and then restoring the board to its saved state.
 
@@ -1550,33 +1551,33 @@ makemove
 
 	g.lines = lines(g.board)
 
-*	Fold g.lines into lower case so only new moves made later will 
+*	Fold g.lines into lower case so only new moves made later will
 *	display in upper case.
 
 	li = 0
 
-makemove.fold						
+makemove.fold
 
-	g.lines[li = li + 1] = lcase(g.lines[li]) :s(makemove.fold)
+	g.lines[li = li + 1] = lcase(g.lines[li])              :s(makemove.fold)
 
 *	Rebuild board since lines have changed.
 
 *	out('rebuilding board')
-	g.board = grid(g.lines)				
-							:(return)
+	g.board = grid(g.lines)
+                                                        :(return)
 makemove.end
 
-	define('move.input()mov,line,out,cells,start,text')	:(move.input.end)
+	define('move.input()mov,line,out,cells,start,text')    :(move.input.end)
 
 *	Enter move.inputly (by hand).
 
-*MANUAL*	
+*MANUAL*
 move.input
 	ne(f.trace) out('getting move move.inputly')
 *	Here to enter the move move.inputly
 
 
-	
+
 move.input.in
 	out('enter move row/column')
 	start = terminal
@@ -1587,103 +1588,103 @@ move.input.in
 	cells = terminal
 	out(' you entered ' cells)
 	out()
-	
+
 	out('enter text')
 	text = terminal
 	out(' you entered ' text)
 	move.input = 'm(' start ',"' cells '","' text '")'
 	out()
-							:(return)
-	
-	move.input = input.user()				:f(end)
-	:(return)
-	ident(move.input)					:s(return)
-	move.input ( 'pass' | 'swap' | 'resign' | 'quit') :(return)
-	move.input = move.input					:(return)
+                                                        :(return)
 
-	move.input = eval(move.input)				:f(move.input.error)
+	move.input = input.user()                              :f(end)
+                                                        :(return)
+	ident(move.input)                                      :s(return)
+	move.input ( 'pass' | 'swap' | 'resign' | 'quit')      :(return)
+	move.input = move.input                                :(return)
+
+	move.input = eval(move.input)                          :f(move.input.error)
 
 *	ident(datatype(move.input),'move') out(show.move(move.input))	:f(move.input.error)
 
-	ne(g.turn,1)					:s(move.input.check)
+	ne(g.turn,1)                                           :s(move.input.check)
 
 move.input.check
 
-	valid(move.input)					:s(return)
+	valid(move.input)                                      :s(return)
 
-	out('need to enter a valid move')		:(move.input)
+	out('need to enter a valid move')                      :(move.input)
 
 move.input.error
 
-	out('move.input error evaluating ' line)		:(freturn)
+	out('move.input error evaluating ' line)               :(freturn)
 
 move.input.end
 
-	define('number(n)')				:(number.end)
+	define('number(n)')                                    :(number.end)
 
-*	If *n* can be represented as a string of one or two words 
+*	If *n* can be represented as a string of one or two words
 *	then return that string. Otherwise return *n*.
 
 number
-	number = eq(n) 'zero'				:s(return)
+	number = eq(n) 'zero'                                  :s(return)
 	number = g.numbers[n]
-	differ(number)					:s(return)
-	number = n					:(return)
+	differ(number)                                         :s(return)
+	number = n                                             :(return)
 number.end
 
-	define('order(tiles)chars,ch,c1,c2,swaps,i,v1,v2') :(order.end)
+	define('order(tiles)chars,ch,c1,c2,swaps,i,v1,v2')     :(order.end)
 
-*	Sort the tiles in *tiles* according to their value, with 
-*	least valuable first.  Though 's' has a nominal value of 1, 
-*	its actual value is greater, since almost a third of 
-*	the words in the dictionary are plurals. Give 's' a value 
+*	Sort the tiles in *tiles* according to their value, with
+*	least valuable first.  Though 's' has a nominal value of 1,
+*	its actual value is greater, since almost a third of
+*	the words in the dictionary are plurals. Give 's' a value
 *	of 5 for the purpose of the sort.
 
 *ORDER*
 order
-	order = le(size(tiles),2) tiles			:s(return)
+	order = le(size(tiles),2) tiles                        :s(return)
 	chars = unpack(tiles)
-							:(order.loop)
+                                                        :(order.loop)
 order.next
 
-	eq(swaps,0)					:s(order.done)
-	swaps = i = 0						
+	eq(swaps,0)                                            :s(order.done)
+	swaps = i = 0
 
 *	Loop through chars, swapping out of order characters,
 *	 until all characters are properly ordered.
 
 order.loop
 
-	c1 = chars[i = i + 1]				:f(order.next)
-	c2 = chars[i + 1]				:f(order.next)
+	c1 = chars[i = i + 1]                                  :f(order.next)
+	c2 = chars[i + 1]                                      :f(order.next)
 	v1 = (ident(c1,'s') 5, g.value[c1])
 	v2 = (ident(c2,'s') 5, g.value[c2])
-	le(v1,v2)					:s(order.loop)
+	le(v1,v2)                                              :s(order.loop)
 	ch = c2
 	chars[i + 1] = c1
 	chars[i] = ch
-	swaps = swaps + 1				:(order.loop)
+	swaps = swaps + 1                                      :(order.loop)
 
 order.done
 
-	order = pack(chars)				:(return)
+	order = pack(chars)                                    :(return)
 
 order.end
 
-	define('out(text1,text2,text3)type1,type2')	:(out.end)
+	define('out(text1,text2,text3)type1,type2')            :(out.end)
 
 *	Output a line conisting of TEXT1, TEXT2 enclosed
 *	in brackets, followed by TEXT3.
 
 *OUT*
 out
-	output = text1 (differ(text2) '[' text2 ']', '')  (differ(text3) text3, '') :(return)
+	output = text1 (differ(text2) '[' text2 ']', '')  (differ(text3) text3, ''):(return)
 
-	differ(text2)				:s(out.text2)
+	differ(text2)                                          :s(out.text2)
 
 *	Here if just text1.
 
-	output = text1				:(return)
+	output = text1                                         :(return)
 
 out.text2
 
@@ -1691,67 +1692,67 @@ out.text2
 	type3 = dt(text3)
 *	output = 'dt(type2) ' dt(type2)
 *	output = 'dt(type3) ' dt(type3)
-	ident(datatype(text2),'string')			:s(out.2)
+	ident(datatype(text2),'string')                        :s(out.2)
 *	output = 'out second argument not integer or string,'
-*.	' but of type ' type2 
+*.	' but of type ' type2
 *.						:(error)
 
 out.2
 
-	ident(type3,'integer')			:s(out.3)
-	ident(type3,'string')			:s(out.3)
+	ident(type3,'integer')                                 :s(out.3)
+	ident(type3,'string')                                  :s(out.3)
 
 out.3
-	type.ex(text3,'string')			:s(out.ok)
-	type.ex(text3,'integer')			:s(out.ok)
-*	output = 'out third argument not integer or string,' 
+	type.ex(text3,'string')                                :s(out.ok)
+	type.ex(text3,'integer')                               :s(out.ok)
+*	output = 'out third argument not integer or string,'
 *.	' but of type ' type3
 *.						 :(error)
 
 out.ok
 
-	output = text1 ' [' text2 ']' text3		:(return)
+	output = text1 ' [' text2 ']' text3                    :(return)
 
 out.end
 
 *	pack.sizes = array(30)
 
-	define('pack(chars)n,i')			:(pack.end)
+	define('pack(chars)n,i')                               :(pack.end)
 
 *	Pack the array of characters *chars* into a line.
 
 *PACK*
 pack
 	n = +prototype(chars)
-	ne(n,15)					:s(pack.chars)
+	ne(n,15)                                               :s(pack.chars)
 
 *	Almost all calls to pack are to pack a line from the grid,
-*	so do it directly, and so avoid quadratic behavior 
+*	so do it directly, and so avoid quadratic behavior
 *	if concatenate characters in loop.
 
-	pack =  chars[1]  chars[2]  chars[3]  chars[4]  chars[5]  
-.		chars[6]  chars[7]  chars[8]  chars[9]  chars[10] 
-.		chars[11] chars[12] chars[13] chars[14] chars[15] 
-	
+	pack =  chars[1]  chars[2]  chars[3]  chars[4]  chars[5]
+.		chars[6]  chars[7]  chars[8]  chars[9]  chars[10]
+.		chars[11] chars[12] chars[13] chars[14] chars[15]
+
 pack.chars
-	pack = pack chars[i = i + 1]		:f(return)s(pack.chars)
+	pack = pack chars[i = i + 1]                           :f(return)s(pack.chars)
 
 pack.end
 
-	define('place(txt,rack)')			:(place.end)
+	define('place(txt,rack)')                              :(place.end)
 
-*	Place the permutation digits in *txt* with the 
+*	Place the permutation digits in *txt* with the
 *	corresponding tiles from *rack*.
 
 *PLACE
 place
 
 	place = replace(txt,substr('1234567',1,size(rack)),rack)
-							:(return)
+                                                        :(return)
 place.end
 
 
-	define('playmove(move)i,p,r,c,ch')		:(playmove.end)
+	define('playmove(move)i,p,r,c,ch')                     :(playmove.end)
 
 *	Play move *move*, updating the board and related objects.
 
@@ -1764,7 +1765,7 @@ playmove
 
 playmove.ch
 
-	p = free(move)[i = i + 1]			:f(playmove.done)
+	p = free(move)[i = i + 1]                              :f(playmove.done)
 	r = row(id,p)
 	c = column(id,p)
 	ch = substr(text(move),i,1)
@@ -1772,15 +1773,15 @@ playmove.ch
 	g.board[r, c] = ch
 *	out('playmove r=' r ' c=' c ' char=' g.board[r,c])
 	g.used[r,c]   = 1
-	g.bonus[r, c] = ' ' :(playmove.ch) ;* indicate bonus no longer available 
+	g.bonus[r, c] = ' '                                    :(playmove.ch) ;* indicate bonus no longer available
 
 playmove.done
 *	out('playmove.done i=' i)
 	out(ne(g.tracing) 'playmove returns')
-							:(return)
+                                                        :(return)
 playmove.end
-	
-	define('prefix(str,pre)word')			:(prefix.end)
+
+	define('prefix(str,pre)word')                          :(prefix.end)
 
 *	Prefix takes a list of space-separated words str and prefixes each
 *	with the string pre.
@@ -1792,15 +1793,15 @@ prefix
 
 prefix.1
 
-	str break(' ') . word span(' ')  =		:f(return)
+	str break(' ') . word span(' ')  =                     :f(return)
 	prefixcount = prefixcount + 1
-	prefix = append(prefix, pre word,'A')		:(prefix.1)
+	prefix = append(prefix, pre word,'A')                  :(prefix.1)
 
 prefix.end
 
-	define('random(n)')				:(random.end)
+	define('random(n)')                                    :(random.end)
 
-*	Return integer uniformly distributed in 1,2,...,n. 
+*	Return integer uniformly distributed in 1,2,...,n.
 *	If n=0 returns real uniformly distributed in the interval [0,1].
 *	The Algorithm is based on that in section 16.1 of "Algorithms in SNOBOL4,"
 *	James F. Gimpel, John Wiley and Sons, 1976.
@@ -1811,16 +1812,16 @@ random
 	g.random_var = remdr(g.random_var * 4676, 414971)
 	random  = g.random_var / 414971.0
 	random = ne(n) convert(random * n,'integer') + 1
-							:(return)
+                                                        :(return)
 random.end
 
-	define('randomseed()s,c')			:(randomseed.end)
+	define('randomseed()s,c')                              :(randomseed.end)
 
 *	Compute seed for random number generator from date and time.
 
 *RANDOMSEED*
 randomseed
-	g.random_var = 
+	g.random_var =
 	s = g.date
 	s = replace(s,'/:-','   ')
 
@@ -1828,29 +1829,29 @@ randomseed
 
 randomseed.loop
 
-	s len(1) . c =					:f(randomseed.done)
-	ident(c,' ')					:s(randomseed.loop)
-	g.random_var = g.random_var c			:(randomseed.loop)
+	s len(1) . c =                                         :f(randomseed.done)
+	ident(c,' ')                                           :s(randomseed.loop)
+	g.random_var = g.random_var c                          :(randomseed.loop)
 
 randomseed.done
 
 *	Reverse the seed so digits depending on time come first.
 
-	g.random_var = +reverse(g.random_var	)	
-							:(return)
+	g.random_var = +reverse(g.random_var	)
+                                                        :(return)
 
 randomseed.end
 
-	define('reader(filename)n')			:(reader.end)
+	define('reader(filename)n')                            :(reader.end)
 
 *	Return file as table of lines, with zero-th entry giving number
 *	of lines.
 
 *READER*
 reader
-	input(.file,g.channel.temp,filename)		:s(reader.opened)
-	
-	out('unable to open reader file ' filename '.') :(freturn)
+	input(.file,g.channel.temp,filename)                   :s(reader.opened)
+
+	out('unable to open reader file ' filename '.')        :(freturn)
 
 reader.opened
 
@@ -1858,14 +1859,14 @@ reader.opened
 	reader = table(100)
 
 reader.next
-	reader[n = n + 1] = file		:s(reader.next)
+	reader[n = n + 1] = file                               :s(reader.next)
 
 *	Here at end of file, convert map to array of lines.
 
 	reader[0] = n - 1;* line count
 
 	endfile(g.channel.temp)
-							:(return)
+                                                        :(return)
 
 reader.end
 
@@ -1874,13 +1875,13 @@ reader.end
 	str = 'date endgame game move play rack tiles total turn version '
 	replay.ops = table(10)
 
-replay.init	
-	str break(' ') . op ' ' =			:f(replay.init.done)
-	replay.ops[op] = 1				:(replay.init)
+replay.init
+	str break(' ') . op ' ' =                              :f(replay.init.done)
+	replay.ops[op] = 1                                     :(replay.init)
 
 replay.init.done
 
-	define('replay(option)line,command'):(replay.end)
+	define('replay(option)line,command')                   :(replay.end)
 
 *	Replay commands from previous game.
 *	If *option* is an integer, replay that number of commands
@@ -1890,61 +1891,61 @@ replay.init.done
 
 *REPLAY*
 replay
-	g.replay.lines = reader(option)			:s(replay.lines)
+	g.replay.lines = reader(option)                        :s(replay.lines)
 	out('reader returned ' prototype(ops) ' commands.')
-	out('error reading commands from ' option)	:(freturn)
-	
+	out('error reading commands from ' option)             :(freturn)
+
 replay.lines
 
 	g.replay.i = 0;* set up for replaying.
-	g.replay.n = commands[0]			:(return)
+	g.replay.n = commands[0]                               :(return)
 
 
 replay.next
-	gt(g.replay.i = g.replay.i + 1, g.replay.n)	:s(replay.done)
-	line = g.replay.lines[g.replay.i]		:f(replay.done)
+	gt(g.replay.i = g.replay.i + 1, g.replay.n)            :s(replay.done)
+	line = g.replay.lines[g.replay.i]                      :f(replay.done)
 	out('replaying line ' g.replay.i ' |' line '|')
-	ident(line)					:s(replay.next)
-	line '*'					:s(replay.next)
+	ident(line)                                            :s(replay.next)
+	line '*'                                               :s(replay.next)
 	line span(&lcase) . command =
 	out('replay.op=' command)
-	differ(replay.ops[command])			:s($('replay.' command))
+	differ(replay.ops[command])                            :s($('replay.' command))
 
-	out('replaying unknown command ' command ', ignore.')	:(replay.next)
+	out('replaying unknown command ' command ', ignore.')  :(replay.next)
 
 replay.endgame
-							:(replay.done)
+                                                        :(replay.done)
 replay.move
 	line span(' ') len(1) . pid span(' ') =
 	out('replay.move evaluating |' line '|')
 	move = eval(line)
 	out('replaying move datatype=' datatype(move)  ','  show.move(move))
 	show.play(makemove(pid,move))
-							:(replay.next)
+                                                        :(replay.next)
 replay.player
-	line '.' len(1) . pid span(' ') = 
+	line '.' len(1) . pid span(' ') =
 	g.players[pid] = eval(line)
-							:(replay.next)
+                                                        :(replay.next)
 replay.rack
 	line '.' len(1) . pid =
 	line = ' rack(g.players[ ' pid '] = ' line
 	out('replay.rack ' line)
 	eval(line)
-							:(replay.next)
+                                                        :(replay.next)
 replay.tiles
 	line = ' g.tiles = ' line
 	out('replay.tiles ' line)
 	eval(line)
-							:(replay.next)
+                                                        :(replay.next)
 replay.turn
 	line span(' ') span('0123456789') . turn =
-	g.turn = turn					:s(replay.next)
+	g.turn = turn                                          :s(replay.next)
 
 replay.done
-							:(return)
+                                                        :(return)
 replay.end
 
-	define('replenish(pid)player,rack,s')		:(replenish.end)
+	define('replenish(pid)player,rack,s')                  :(replenish.end)
 
 *	Replenish a player's rack. Do this from the tiles is g.tilemanager is
 *	set, or get the new tiles from the user otherwise.
@@ -1953,51 +1954,51 @@ replay.end
 replenish
 
 	player = g.players[pid]
-	differ(g.tilemanager)				:s(replenish.auto)
+	differ(g.tilemanager)                                  :s(replenish.auto)
 
 replenish.manual
 
-	out('enter rack for player: ' show.player(pid))
-	replenish = lcase(input)			:f(replenish.eof)
-	ident(replenish) out('no input - try again.')	:s(replenish.manual)
-	gt(size(replenish),7) out('too many letters |' replenish 
-.			'|, try again.') :s(replenish.manual)
+	out('enter rack for player                             : ' show.player(pid))
+	replenish = lcase(input)                               :f(replenish.eof)
+	ident(replenish) out('no input - try again.')          :s(replenish.manual)
+	gt(size(replenish),7) out('too many letters |' replenish
+.			'|, try again.')                                    :s(replenish.manual)
 	s = replenish
 	s span(&lcase) =
-	differ(s) out('non-alphabetic character - try again.')	
-.							:s(replenish.manual)
+	differ(s) out('non-alphabetic character - try again.')
+.                                                       :s(replenish.manual)
 
-							:(return)
+                                                        :(return)
 replenish.eof
 
-	out('end of data on input - bye ')		:(end)
+	out('end of data on input - bye ')                     :(end)
 
 replenish.auto
 
 	replenish = rack(player)
 
-	eq(size(replenish),7)				:s(return)
+	eq(size(replenish),7)                                  :s(return)
 
-	replenish = replenish take(7 - size(replenish)) :(return)
+	replenish = replenish take(7 - size(replenish))        :(return)
 
 replenish.end
 
-	define('row(num,pos)')				:(row.end)
+	define('row(num,pos)')                                 :(row.end)
 
 *	Returns row corresponding to position POS in line NUM.
 
 *ROW*
 row
-	row = ((le(num,15) num, pos))		:(return)
+	row = ((le(num,15) num, pos))                          :(return)
 
 row.end
 
 	define('scan(pair,rack)num,line,i,pi,open,oi,nopen,n,'
-.			'first,pos,move,sub,len')	:(scan.end)
+.			'first,pos,move,sub,len')                           :(scan.end)
 
 *	Scan the given line to find the places where a valid move can be made.
-*	At least one cell in a move must be adjacent to an occupied cell. 
-*	*line* is the line to be scanned, and *num* gives 
+*	At least one cell in a move must be adjacent to an occupied cell.
+*	*line* is the line to be scanned, and *num* gives
 *	its position on the board.
 
 *SCAN*
@@ -2005,90 +2006,90 @@ scan
 
 	line = line(pair)
 	num = num(pair)
-*	out(ne(g.tracing) 'Scan line ' lineid(num) ' ' 
+*	out(ne(g.tracing) 'Scan line ' lineid(num) ' '
 *		show.line(line) ' ' show.hex(line))
 
-*	Allocate and fill in *open*, an array giving the 
+*	Allocate and fill in *open*, an array giving the
 *	positions of the open cells.
 
 *	Fail if no empty cells.
 
-	open = avail(pair)				:f(scan.done)
+	open = avail(pair)                                     :f(scan.done)
 
 *	Nopen is the number of open cells in the line.
 
 	nopen = +prototype(open)
-	
+
 	pi = 0
 
 scan.first
 
-	first = open[pi = pi + 1]			:f(scan.done)
-	
+	first = open[pi = pi + 1]                              :f(scan.done)
+
 *	*first* is the position of the first letter in the move.
 
-*	The number of moves *n* that can be made starting at a given 
+*	The number of moves *n* that can be made starting at a given
 *	position in *open* depends on the number of tiles in the rack,
 *	and the number of remaining open cells in the line.
-	
+
 	n = +size(rack)
 	n = gt(n, nopen - pi) nopen - pi;* number of remaining open cells
-	
-*	Try for moves of length len=n,n-1...1 starting at position 
+
+*	Try for moves of length len=n,n-1...1 starting at position
 *	*first* in the line.
 
 	len = n + 1;* prime for loop
 
 scan.len
 
-	le(len = len - 1)				:s(scan.first)
+	le(len = len - 1)                                      :s(scan.first)
 
 *	out(ne(g.tracing) 'Scan first=' first ' left =' (nopen - pi)
 *.		 ' n=' n ' len=' len)
 
-*	At least one cell to be occupied by this move must be 
+*	At least one cell to be occupied by this move must be
 *	adjacent to a used cell.
-	
+
 	oi = 0
 
 scan.used
 
-	gt(oi = oi + 1,len)				:s(scan.len)
-	pos = open[pi + oi - 1]				:f(scan.first)
+	gt(oi = oi + 1,len)                                    :s(scan.len)
+	pos = open[pi + oi - 1]                                :f(scan.first)
 *	out(ne(g.tracing) 'Scan oi=' oi ' pos=' pos)
-	adjacent(row(num,pos),column(num,pos)) 		:f(scan.used)s(scan.text)
+	adjacent(row(num,pos),column(num,pos))                 :f(scan.used)s(scan.text)
 
-*	If a move of length *len* has no adjacent cells, then no move 
-*	of lesser length can have adjacent cells, so we can advance to 
+*	If a move of length *len* has no adjacent cells, then no move
+*	of lesser length can have adjacent cells, so we can advance to
 *	the next possible starting point.
 
-							:(scan.first)
+                                                        :(scan.first)
 scan.text
 
-*	Here if adjacent cell found. Set text of move to 
+*	Here if adjacent cell found. Set text of move to
 *	the permutation specification.
 
-	sub = subarray(open,pi,len)			:f(scan.len)
-	move = move(num,sub,size(rack) '?' len)		:f(scan.len)
+	sub = subarray(open,pi,len)                            :f(scan.len)
+	move = move(num,sub,size(rack) '?' len)                :f(scan.len)
 *	out(ne(g.tracing) 'Scan move ' show.move(move))
 	scan = ident(scan) table()
 	count.scanned = count.scanned + 1
-	scan[count.scanned] = move			:(scan.len)
+	scan[count.scanned] = move                             :(scan.len)
 
 scan.done
 
-	ident(scan)					:s(freturn)
-	scan = convert(scan,'array')			
- 							:(return)
+	ident(scan)                                            :s(freturn)
+	scan = convert(scan,'array')
+                                                        :(return)
 scan.end
 
 	define('scoreline(pair)'
-.		'line,word,words,wi,n,start,ch,i,bonus,mult,val') :(scoreline.end)
+.		'line,word,words,wi,n,start,ch,i,bonus,mult,val')    :(scoreline.end)
 
-*	Compute the score of a move on a given line. All the letters of 
-*	the move will be in upper case on the board so the score of the move 
-*	is the sum of the scores of all the words with upper case letters in 
-*	them, for both rows and columns. This function should only be called 
+*	Compute the score of a move on a given line. All the letters of
+*	the move will be in upper case on the board so the score of the move
+*	is the sum of the scores of all the words with upper case letters in
+*	them, for both rows and columns. This function should only be called
 *	for lines which have an upper case letter in them as a result of the move.
 
 *SCORELINE*
@@ -2096,26 +2097,26 @@ scoreline
 
 	scoreline = 0
 	line = line(pair)
-	empty(line)					:s(return)
+	empty(line)                                            :s(return)
 	bonusline = g.bonus.lines[num(pair)]
-	line break(&ucase)				:f(scoreline.error)
-	words = words(line)				:f(scoreline.done)
+	line break(&ucase)                                     :f(scoreline.error)
+	words = words(line)                                    :f(scoreline.done)
 	wi = 0
 
 scoreline.word
 
-	start = words[wi = wi + 1,1]			:f(scoreline.done)
+	start = words[wi = wi + 1,1]                           :f(scoreline.done)
 	word = words[wi,2]
 *	count.scoreline = count.scoreline + 1
 	ne(g.tracing) out('scoreline wi=' wi ' start=' start ' word=' word
 .		 '.' ' count ' count.scoreline)
-	word break(&ucase)				:f(scoreline.word)
+	word break(&ucase)                                     :f(scoreline.word)
 	n = size(word)
 
-*	Words of just one letter don't contribute to scoreline since 
+*	Words of just one letter don't contribute to scoreline since
 *	they result from a crossing line.
 
-	eq(n,1)						:s(scoreline.word)
+	eq(n,1)                                                :s(scoreline.word)
 
 	line = substr(line,start)
 
@@ -2128,14 +2129,14 @@ scoreline.word
 
 scoreline.char
 
-	gt(i = i + 1,n) 			:s(scoreline.char.done)
+	gt(i = i + 1,n)                                        :s(scoreline.char.done)
 	ch = substr(word,i,1)
 	bonus = +substr(bonusline,i,1)
 
-*	Update scoreline according to value of letter. Always get at 
-*	least the value of the letter, and may get double or 
+*	Update scoreline according to value of letter. Always get at
+*	least the value of the letter, and may get double or
 *	triple the letter value.
-	
+
 	val = g.value[ch]
 	val = (eq(bonus,2) val * 2, eq(bonus,3) val * 3, val)
 	scoreline = scoreline + val
@@ -2143,42 +2144,42 @@ scoreline.char
 
 *	Update double/triple word multiplier.
 
-	mult = gt(bonus,3) mult * (bonus - 2)		:(scoreline.char)
+	mult = gt(bonus,3) mult * (bonus - 2)                  :(scoreline.char)
 
 
 scoreline.char.done
 
-	scoreline = ne(scoreline) scoreline * mult	
+	scoreline = ne(scoreline) scoreline * mult
 	ne(g.tracing) out('mult=' mult ' scoreline=' scoreline)
-						:(scoreline.word)
+                                                        :(scoreline.word)
 scoreline.error
 
 	out('error tracing line with no new move ' line(pair))
-	scoreline = 0					:(return)
+	scoreline = 0                                          :(return)
 
 scoreline.done
 
 *	ne(g.scoremove) out('scoreline returns ' scoreline)
-							:(return)
+                                                        :(return)
 scoreline.end
 
-	define('scoremove(move)i,p')			:(scoremove.end)
+	define('scoremove(move)i,p')                           :(scoremove.end)
 
-*	A move's score is the sum of the scores of its own line 
+*	A move's score is the sum of the scores of its own line
 *	and its crossing lines.
 
 *SCOREMOVE*
 scoremove
 
-*	In order to determine which words on the board would be 
-*	formed by making this move, rebuild *clines* but with the 
+*	In order to determine which words on the board would be
+*	formed by making this move, rebuild *clines* but with the
 *	new tiles in uppercase. This way, a word is new if and only if
-*	it contains an upper case character. The score is then the 
-*	sum over all the lines of the scores of the words containing an 
+*	it contains an upper case character. The score is then the
+*	sum over all the lines of the scores of the words containing an
 *	upper-case character. At most one word in each line of grid will
 *	contain an upper-case character.
 
-*	Generate move's line and its cross lines with the move's 
+*	Generate move's line and its cross lines with the move's
 *	text in upper case.
 
 	clines(move,1);
@@ -2192,9 +2193,9 @@ scoremove
 scoremove.line
 
 	ne(g.tracing) out('scoremove line' i)
-	gt(i = i + 1,g.cln)				:s(scoremove.done)
+	gt(i = i + 1,g.cln)                                    :s(scoremove.done)
 	ne(g.tracing) out('scoremove i=' i ' scoremove =' scoremove)
-	scoremove = scoremove + scoreline(g.clines[i])	:(scoremove.line)
+	scoremove = scoremove + scoreline(g.clines[i])         :(scoremove.line)
 
 scoremove.done
 
@@ -2203,10 +2204,10 @@ scoremove.done
 	scoremove  = eq(size(size(text(move))),7) scoremove + 35;
 
 	ne(g.tracing) out('scoremove returns ' scoremove)
-							:(return)
+                                                        :(return)
 scoremove.end
 
-	define('seen(perm,rack,test)p,c,cp,cmap,next,signature,map,d,dp,dmap')	:(seen.end)
+	define('seen(perm,rack,test)p,c,cp,cmap,next,signature,map,d,dp,dmap'):(seen.end)
 
 *	Test if a permutation has already been processed in this turn.
 
@@ -2223,14 +2224,14 @@ scoremove.end
 *		1234557
 *
 *	If later see a permutation such as '1234657', it will have
-*	the same signature, and so will not need to investigate 
+*	the same signature, and so will not need to investigate
 *	futher -- we can move directly to the next permutation.
 
 *	Define a map *dmap* from digits to characters by
 *	iterating over the permutation. If *d* is the
 *	digit at position *p*, let *c* be the character
 *	at position *d* in the rack. This is the character
-*	corresponding to *d*. Set *dmap[d]* to *c*. 
+*	corresponding to *d*. Set *dmap[d]* to *c*.
 
 *	Define a map *cmap* from characters to digits by iterating
 *	over the rack. Let *c* be the character at position *p*.
@@ -2244,54 +2245,54 @@ scoremove.end
 * `	set the next digit in the new permutation to the value of
 *	*cmap[c]*.
 
-	
+
 *	The result is the signature, or normal form, of the permutation.
 
 *	Look up the result in the table *seen*. It the value is not
 *	null then we have already seen an equivalent permutation,
-*	and so return success.  
+*	and so return success.
 
-*	If the value is null, enter the new permutation as the representation 
+*	If the value is null, enter the new permutation as the representation
 *	of the input permutation, and return failure.
 
 *SEEN*
 seen
-	ident(perm)				:s(freturn)
-	ident(rack)				:s(freturn)
+	ident(perm)                                            :s(freturn)
+	ident(rack)                                            :s(freturn)
 
 	g.cmap = table('cmap')
 	g.dmap = table('dmap')
 	cp = dp = 0
-	
+
 seen.d
-	d = substr(perm,dp = dp + 1,1)		:f(seen.c)
+	d = substr(perm,dp = dp + 1,1)                         :f(seen.c)
 	c = substr(rack,d,1)
 	out('g.map')
 	g.dmap[d] = c
-						:(seen.d)
+                                                        :(seen.d)
 seen.c
-	c = substr(rack,cp = cp + 1,1)		:f(seen.mapped)
+	c = substr(rack,cp = cp + 1,1)                         :f(seen.mapped)
 	out('GET seen.c ')
-	ident(g.cmap[c]) g.cmap[c] = convert(cp,'string') :(seen.c)
+	ident(g.cmap[c]) g.cmap[c] = convert(cp,'string')      :(seen.c)
 
 seen.mapped
 
 	dp = 0
-	signature = 
+	signature =
 
 seen.next
 
-	d = substr(perm,dp = dp + 1,1)		:f(seen.check)
+	d = substr(perm,dp = dp + 1,1)                         :f(seen.check)
 	c = g.dmap[d]
-	signature = signature g.cmap[c]		:(seen.next)
+	signature = signature g.cmap[c]                        :(seen.next)
 
 seen.check
 
- :(seen.outed)
+                                                        :(seen.outed)
 	seens = seens + 1
 *	gt(seens,10000) :s(end)
-	
-	ne(remdr(seens,100)) :s(seen.outed)
+
+	ne(remdr(seens,100))                                   :s(seen.outed)
 	out()
 	show(g.dmap)
 	out()
@@ -2309,12 +2310,12 @@ seen.outed
 *	out('seen same perm=' perm ' rack=' rack )
 
 	out('GET seen.outed ')
-	differ(g.tried[signature])			:s(return)
+	differ(g.tried[signature])                             :s(return)
 
 *	Here if first encounter with this signature.
 
 	g.tried[signature] = 1
-							:(freturn)
+                                                        :(freturn)
 *	out('seen new signature ' signature ' perm=' perm ' rack=' rack '.')
 *	See if we have seen an equivalent permutation before.
 
@@ -2325,11 +2326,11 @@ seen.outed
 *	:(freturn)
 seen.end
 
-	define('shell()ops,key,op')			:(shell.def.end)
+	define('shell()ops,key,op')                            :(shell.def.end)
 
-*	Simple 'shell' for fribble. 
+*	Simple 'shell' for fribble.
 
-*	Read commands from terminal and execute them. 
+*	Read commands from terminal and execute them.
 *	This is meant mainly for debugging, testing
 *	and as a way to learn how fribble operates.
 
@@ -2344,9 +2345,9 @@ shell
 
 	s.move =
 
-*	s.ops is the list of shell commands. 
+*	s.ops is the list of shell commands.
 
-	s.ops = 
+	s.ops =
 . 	'board clear eval find help init letters next move pass play quit '
 .	'remove replay score search start tiles valid '
 
@@ -2358,29 +2359,29 @@ shell
 
 	s.letters = &lcase &ucase
 
-*	s.replay is set to read commands from file 'term' before 
+*	s.replay is set to read commands from file 'term' before
 *	asking for key board input.
 
 	s.replay =
 
 *	s.v is set to value of last 'eval' operation.
 
-*	Initialize s.optable to acceptable abbreviations for shell 
-*	operations.  Acceptable abbreviations consist of the initial 
-*	two or more characters of the operation, up to the 
+*	Initialize s.optable to acceptable abbreviations for shell
+*	operations.  Acceptable abbreviations consist of the initial
+*	two or more characters of the operation, up to the
 *	full command name itself.
 
 
 	ops = s.ops
 
 shell.setup.next
-	ops break(' ') . op ' ' =		:f(shell.setup.end)
+	ops break(' ') . op ' ' =                              :f(shell.setup.end)
 	key = op
 	s.opabbrev[substr(key,1,1)] = op
 shell.setup.op
 	s.opabbrev[key] = op
-	key = substr(key,1,size(key) - 1)	:f(shell.setup.next)
-	gt(size(key),1)		:s(shell.setup.op)f(shell.setup.next)
+	key = substr(key,1,size(key) - 1)                      :f(shell.setup.next)
+	gt(size(key),1)                                        :s(shell.setup.op)f(shell.setup.next)
 shell.setup.end
 	tab = char(9)
 	out('starting shell')
@@ -2389,11 +2390,11 @@ shell.setup.end
 
 shell.loop
 	out('starting replay')
-	replay('keyin') :(end)
-	out('enter shell loop') :(end)
-	ident(s.replay)					:s(shell.term)
-	linein = termfile				:s(shell.line)
-	linein 'q'					:s(shell.loop)
+	replay('keyin')                                        :(end)
+	out('enter shell loop')                                :(end)
+	ident(s.replay)                                        :s(shell.term)
+	linein = termfile                                      :s(shell.line)
+	linein 'q'                                             :s(shell.loop)
 	s.replay =
 	endfile(3)
 	output(.termfile,3,'term[-a]')
@@ -2401,16 +2402,16 @@ shell.loop
 shell.term
 
 	out('op?')
-	linein = terminal ' '				:f(shell.end)
+	linein = terminal ' '                                  :f(shell.end)
 
 shell.line
 
 	termfile = differ(termfile) linein;* save line
 *	out('linein =' linein '.')
-	linein span(s.letters) . opin span(' ') rem . operand 
-.							:s(shell.loop.ok)
+	linein span(s.letters) . opin span(' ') rem . operand
+.                                                       :s(shell.loop.ok)
 	operand = trim(operand)
-	out('fail opin =' opin ' operand=' operand '.') :(shell.loop)
+	out('fail opin =' opin ' operand=' operand '.')        :(shell.loop)
 
 shell.loop.ok
 
@@ -2419,48 +2420,48 @@ shell.loop.ok
 	out('op ' opin ' operand ' operand '.')
 *	out('op abbrev =' op)
 
-	differ(op)					:s(shell.op)
-	out('unknown op: ' op)				:(shell.loop)
+	differ(op)                                             :s(shell.op)
+	out('unknown op: ' op)                                 :(shell.loop)
 
-shell.op						:($('shell.' op))
+shell.op                                                :($('shell.' op))
 
 shell.board
 
-	show.board(g.board)				:s(loop)
+	show.board(g.board)                                    :s(loop)
 
 shell.clear
 
 *	Clear the board
-	g.board = array('15,15',' ')			:(shell.loop)
+	g.board = array('15,15',' ')                           :(shell.loop)
 
 shell.end
-	out('shell end of input - bye')		:(end)
+	out('shell end of input - bye')                        :(end)
 shell.eval
 	out('evaluating ' operand)
-	s.v = eval(operand)	:s(shell.eval.succeed)f(shell.eval.fail)
+	s.v = eval(operand)                                    :s(shell.eval.succeed)f(shell.eval.fail)
 shell.eval.succeed
-	s.ok = 1					:(shell.loop)
+	s.ok = 1                                               :(shell.loop)
 shell.eval.fail
 	out('eval failed, ' &errtext)
-	s.ok = 0					:(shell.loop)
+	s.ok = 0                                               :(shell.loop)
 
 shell.find
 
 *	Use find to find best move given current tiles for Player 1.
 
-	s.move = find(1,g.turn)			
-	show.move(s.move)				:(shell.loop)
+	s.move = find(1,g.turn)
+	show.move(s.move)                                      :(shell.loop)
 
 shell.game
 
-*	(I know you're wondering, but Fribble wasn't written just 
-*	so I could I say I wrote a program where it made sense to 
+*	(I know you're wondering, but Fribble wasn't written just
+*	so I could I say I wrote a program where it made sense to
 *	use the identifier 'shell.game'.)
 
 *	Enter (or leave) game mode, if argument is 'on' ('off').
 
 	s.game = (ident(substr(operand,2,1),'y') 1, 0)
-							:(shell.loop)
+                                                        :(shell.loop)
 
 shell.help
 	out(rpad('board',14) 'show board')
@@ -2478,20 +2479,20 @@ shell.help
 	out(rpad('start' ,14) 'make starting move')
 	out(rpad('rack tiles',14) 'set rack to tiles, default "fribble"')
 	out(rpad('valid' ,14) 'validate move')
-							:(shell.loop)
+                                                        :(shell.loop)
 shell.init
-	init()						:(shell.loop)
-	
+	init()                                                 :(shell.loop)
+
 shell.letters
 	out(	'B 4 C 4 D 2 F 4 G 3 H 3 J 10 K 5 L 2 M 4 '
 .		'N 2 P 4 Q 10 U 2 V 5 W 4 X 8 Y 3 Z 10 ')
-							:(shell.loop)
+                                                        :(shell.loop)
 shell.move
 
 *	Get move, assume user knows about 'mf' and 'm' functions.
 
 	s.move = eval(operand)
-	out('Last move now ' show.move(s.move))		:(shell.loop)
+	out('Last move now ' show.move(s.move))                :(shell.loop)
 
 shell.next
 
@@ -2500,32 +2501,32 @@ shell.next
 *	resulting player has the fribble attribute then a move is made
 *	on that player's behalf, and another next command is executed.
 
-	ident(s.game)					:s(shell.loop)
+	ident(s.game)                                          :s(shell.loop)
 
 	g.turn = g.turn + 1
 	g.pid = (eq(g.pid,1) 2, 1)
-	
+
 *	See if player has 'fribble' attribute.
-	
-	ident(fribble(g.players[g.pid]))		:s(shell.loop)
-	
+
+	ident(fribble(g.players[g.pid]))                       :s(shell.loop)
+
 	s.move = (eq(g.turn,1) start(g.pid), find(g.pid))
-	ident(s.move) out('no move found, so no move made')	:(shell.loop)
+	ident(s.move) out('no move found, so no move made')    :(shell.loop)
 
 	points(s.move) = scoremove(s.move)
 	show.play(makemove(g.pid,s.move))
 	replenish(g.pid)
-							:(shell.loop)	
-							:(shell.loop)
+                                                        :(shell.loop)
+                                                        :(shell.loop)
 
 shell.pass
-	
-*	Pass from making a move. This is typically used when the 
+
+*	Pass from making a move. This is typically used when the
 *	player with pid=1 does not want to make the first move.
 
 	out('Player ' pid ' passes.')
 	g.turn = g.turn + 1
-							:(shell.loop)
+                                                        :(shell.loop)
 
 shell.play
 
@@ -2534,26 +2535,26 @@ shell.play
 	points(s.move) = scoremove(s.move)
 	makemove(g.pid,s.move)
 	show.play(s.move)
-							:(shell.loop)
+                                                        :(shell.loop)
 shell.quit
-	out('exiting')					:(end)
+	out('exiting')                                         :(end)
 
 shell.remove
-	out('remove not yet implemented')		:(shell.loop)
-	
-*	Remove (undo) last move played, by setting its free cells to 
+	out('remove not yet implemented')                      :(shell.loop)
+
+*	Remove (undo) last move played, by setting its free cells to
 *	unused
 
-							:(shell.loop)
+                                                        :(shell.loop)
 shell.replay.
 
-*	Replay input saved in 'term' from prior run. To main user 
+*	Replay input saved in 'term' from prior run. To main user
 *	confidence in our programming skills, don't replay 'quit' op.
 
-	replay('keyin')	
+	replay('keyin')
 	s.replay = 1
 	input(.termfile,3,'term')
-							:(shell.loop)
+                                                        :(shell.loop)
 shell.score
 
 *	Show score computation for last move entered.
@@ -2565,22 +2566,22 @@ shell.score
 	score = scoremove(s.move)
 	points(move) = score
 	g.showscore = 0
-	out('Move ' show.move(move)  
-.			' scores ' score ' points.') :(shell.loop)
+	out('Move ' show.move(move)
+.			' scores ' score ' points.')                        :(shell.loop)
 
 
 shell.scoremove
-	
+
 *	g.showscore = 1
 	points(move) = findscore()
 	out('move is worth ' points(s.move) ' points.')
-							:(shell.loop)
+                                                        :(shell.loop)
 	out('do you want to make this move (y or ENTER for yes,'
 .					' no otherwise)?')
-	ans = terminal				:f(shell.eod)
-	ident(ans)				:s(shell.moveon)
-	ident(ans,'y')				:s(shell.moveon)
-						:(shell.you.move)
+	ans = terminal                                         :f(shell.eod)
+	ident(ans)                                             :s(shell.moveon)
+	ident(ans,'y')                                         :s(shell.moveon)
+                                                        :(shell.you.move)
 
 shell.search
 
@@ -2596,7 +2597,7 @@ shell.start
 	s.move = start(1,1)
 
 *	Merge to make the move.
-							:(shell.play)
+                                                        :(shell.play)
 
 shell.tiles
 
@@ -2607,64 +2608,64 @@ shell.tiles
 	tiles = gt(size(tiles,7)) substr(tiles,1,7)
 	rack(g.players[1]) = tiles
 	out('rack now ' tiles)
-							:(shell.loop)
+                                                        :(shell.loop)
 
 shell.validmove
 
 *	show.move(move)
-	out((validmove(move) ' valid move','invalid move'))  :(shell.loop)
+	out((validmove(move) ' valid move','invalid move'))    :(shell.loop)
 
 *shell.move
 shell.moveon
 
 	makemove(g.pid,s.move)
 	show.play(move)
-							:(shell.loop)
+                                                        :(shell.loop)
 shell.eof
 
-	out('end of input - bye')			:(return)
+	out('end of input - bye')                              :(return)
 
 shell.def.end
 
-	define('show(v)i,ent,type')			:(show.end)
+	define('show(v)i,ent,type')                            :(show.end)
 
 *	Show the value of an expression.
 
 *SHOW*
 show
-	ident(dt(v),'map') out('show arg type map',dt(v))	:s(error)
+	ident(dt(v),'map') out('show arg type map',dt(v))      :s(error)
 	typ = dt(v)
-						:($('show.type.' typ))
+                                                        :($('show.type.' typ))
 
 show.type.array
 
-	show = show.array(v)				:(show.done)
+	show = show.array(v)                                   :(show.done)
 
 show.type.integer
 
-	show = convert(v,'string')			:(show.done)
+	show = convert(v,'string')                             :(show.done)
 
 show.type.move
 
-	show = show.move(v)				:(show.done)
+	show = show.move(v)                                    :(show.done)
 
 show.type.pair
 
-	show = show.pair(v)				:(show.done)
+	show = show.pair(v)                                    :(show.done)
 
 show.type.table
 
-	show = show.table(v)				:(show.done)
+	show = show.table(v)                                   :(show.done)
 
 show.type.string
 
-	show = convert(v,'string')			:(show.done)
+	show = convert(v,'string')                             :(show.done)
 
 show.done
-							:(return)
+                                                        :(return)
 show.end
 
-	define('show.array(ara)i,first,proto,second')	:(show.array.end)
+	define('show.array(ara)i,first,proto,second')          :(show.array.end)
 
 *	Show an array. Fribble uses only one and two dimensional arrays
 
@@ -2673,25 +2674,25 @@ show.array
 	out('show.array dt(ara)',dt(ara))
 	proto = prototype(ara)
 	out('show.array prototype ' proto)
-	proto break(',')				:s(show.array.2)
+	proto break(',')                                       :s(show.array.2)
 
 *	Here for one dimensional array.
 
 show.array.1
-	first = ara[i = i + 1]				:f(show.array.done)
-	out(lpad(i,3) tab first)			:(show.array.1)
+	first = ara[i = i + 1]                                 :f(show.array.done)
+	out(lpad(i,3) tab first)                               :(show.array.1)
 
 show.array.2
-	first = ara[i = i + 1,1]		       	  :f(show.array.done)
-	out(lpad(i,3) tab show(first) tab show(ara[i,2])) :(show.array.2)
+	first = ara[i = i + 1,1]                               :f(show.array.done)
+	out(lpad(i,3) tab show(first) tab show(ara[i,2]))      :(show.array.2)
 
 show.array.done
 
-	out()						:(return)
+	out()                                                  :(return)
 
 show.array.end
 
-	define('show.board(board,title)b,r,c,ch,line')	:(show.board.end)
+	define('show.board(board,title)b,r,c,ch,line')         :(show.board.end)
 
 *	Show the bonus grid.
 
@@ -2702,47 +2703,47 @@ show.board
 
 show.board.r
 
-	gt(r = r + 1,15) 				:s(show.board.finish)
-	line = lpad(r,2) '|' 
+	gt(r = r + 1,15)                                       :s(show.board.finish)
+	line = lpad(r,2) '|'
 	c = 0
 
 show.board.c
 
-	gt(c = c + 1,15)				:s(show.board.margin)
+	gt(c = c + 1,15)                                       :s(show.board.margin)
 	ch = ucase(board[r,c])
 	b = g.bonus[r,c]
-	differ(ch,' ')					:s(show.board.ch)
+	differ(ch,' ')                                         :s(show.board.ch)
 
 *	Here if empty cell, see if there is a bonus to be show.boarded.
 
-	ne(b,1)						:s(show.board.b)
+	ne(b,1)                                                :s(show.board.b)
 
 *	Here to show.board empty cell.
 
-	line = line ' -'				:(show.board.c)
+	line = line ' -'                                       :(show.board.c)
 
 show.board.b
 
 * 	Here to show.board bonus.
 
 	ch = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
-	line = line ch 					:(show.board.c)
+	line = line ch                                         :(show.board.c)
 
 show.board.margin
 
-	out(line '|')					:(show.board.r)
+	out(line '|')                                          :(show.board.r)
 
 show.board.ch
 
-	line  = line ' ' ch				:(show.board.c)
+	line  = line ' ' ch                                    :(show.board.c)
 
 show.board.finish
 
-	out()						:(return)
+	out()                                                  :(return)
 
 show.board.end
 
-	define('show.bonus()b,r,c,l,line')		:(show.bonus.end)
+	define('show.bonus()b,r,c,l,line')                     :(show.bonus.end)
 
 *	Show the board.
 
@@ -2753,40 +2754,40 @@ show.bonus
 
 show.bonus.r
 
-	gt(r = r + 1,15) 				:s(show.bonus.finish)
+	gt(r = r + 1,15)                                       :s(show.bonus.finish)
 	line = lpad(r,2) '|'
 	c = 0
 
 show.bonus.c
 
-	gt(c = c + 1,15)				:s(show.bonus.l)
+	gt(c = c + 1,15)                                       :s(show.bonus.l)
 	l = g.bonus[r,c]
-	line = differ(l,' ') line ' ' l 		:s(show.bonus.c)
+	line = differ(l,' ') line ' ' l                        :s(show.bonus.c)
 
 * Here for blank cell, show.bonus bonus if applicable
 
 	b = g.bonus[r,c]
-	eq(b)						:s(show.b)
+	eq(b)                                                  :s(show.b)
 * 	Here to show bonus
 	l = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
-	line = line l 					:(show.bonus.c)
+	line = line l                                          :(show.bonus.c)
 
 show.bonus.b
 
 *	Here to show.bonus empty cell.
-	line = line ' -'				:(show.bonus.c)
+	line = line ' -'                                       :(show.bonus.c)
 
 show.bonus.l
 
-	out(line '|')					:(show.bonus.r)
+	out(line '|')                                          :(show.bonus.r)
 
 show.bonus.finish
 
-	out()						:(return)
+	out()                                                  :(return)
 
 show.bonus.end
 
-	define('show.clines(move,title)i,p,line,num')	:(show.clines.end)
+	define('show.clines(move,title)i,p,line,num')          :(show.clines.end)
 
 *	Show the clines array of lines
 
@@ -2801,27 +2802,27 @@ show.clines
 
 show.clines.n
 
-	le(i = i + 1, g.cln)				:f(return)
+	le(i = i + 1, g.cln)                                   :f(return)
 	p = g.clines[i]
-	num = num(p)					:f(return)
-	line = line(p) 
-	out(lpad(lineid(num),2) ' '  replace(line,' ','.')) :(show.clines.n)
+	num = num(p)                                           :f(return)
+	line = line(p)
+	out(lpad(lineid(num),2) ' '  replace(line,' ','.'))    :(show.clines.n)
 
 show.clines.end
 
-	define('show.free(free,title)i')		:(show.free.end)
+	define('show.free(free,title)i')                       :(show.free.end)
 
 *	Show free array.
 
 *SHOW.FREE*
 show.free
 
-	show.free = show.free append(lpad(free[i = i + 1]),3)	:s(show.free)
-	show.free = 'Open: ' title ' ' show.free
-							:(return)
+	show.free = show.free append(lpad(free[i = i + 1]),3)  :s(show.free)
+	show.free = 'Open                                      : ' title ' ' show.free
+                                                        :(return)
 show.free.end
 
-	define('show.grid(g)r')				:(show.grid.end)
+	define('show.grid(g)r')                                :(show.grid.end)
 
 *	Show a grid.
 
@@ -2832,44 +2833,44 @@ show.grid
 
 show.grid.r
 
-	gt(r = r + 1,15) 				:s(show.grid.done)
-	out(show.hline(g,r))				:(show.grid.r)		 
+	gt(r = r + 1,15)                                       :s(show.grid.done)
+	out(show.hline(g,r))                                   :(show.grid.r)
 
 show.grid.done
 
 	show.header()
-	out()						:(return)
+	out()                                                  :(return)
 
 show.grid.end
 
-	define('show.header(label)')			:(show.header.end)
+	define('show.header(label)')                           :(show.header.end)
 
 *SHOW.HEADER*
 show.header
 
 	out(differ(label) label)
 	out('                     1 1 1 1 1 1')
-	out('   1 2 3 4 5 6 7 8 9 0 1 2 3 4 5')	:(return)
+	out('   1 2 3 4 5 6 7 8 9 0 1 2 3 4 5')                :(return)
 
 show.header.end
 
-	define('show.hex(line)ch,i')			:(show.hex.end)
+	define('show.hex(line)ch,i')                           :(show.hex.end)
 
-*	Show line with blanks replaced by hex digits showing 
+*	Show line with blanks replaced by hex digits showing
 *	their position in the line.
 
 *SHOW.HEX*
 show.hex
 
-	ch = substr(line,i = i + 1,1)				:f(return)
-	show.hex = show.hex (ident(ch,' ') 
-.		substr('123456789ABCDEF',i,1), ch) :(show.hex)
+	ch = substr(line,i = i + 1,1)                          :f(return)
+	show.hex = show.hex (ident(ch,' ')
+.		substr('123456789ABCDEF',i,1), ch)                   :(show.hex)
 
 show.hex.end
 
-	define('show.hline(g,row)line,ch')		:(show.hline.end)
+	define('show.hline(g,row)line,ch')                     :(show.hline.end)
 
-*	Returns the line corresponding to row *row* in 
+*	Returns the line corresponding to row *row* in
 *	grid *g* with two characters per cell.
 
 *SHOW.HLINE*
@@ -2880,27 +2881,27 @@ show.hline
 
 show.hline.ch
 
-	line len(1) . ch = 				:f(show.hline.done)
-	show.hline = show.hline ' ' ch  		:(show.hline.ch)
+	line len(1) . ch =                                     :f(show.hline.done)
+	show.hline = show.hline ' ' ch                         :(show.hline.ch)
 
 show.hline.done
 
-	show.hline = show.hline '|'			:(return)
+	show.hline = show.hline '|'                            :(return)
 
 show.hline.end
 
-	define('show.line(line)')			:(show.line.end)
+	define('show.line(line)')                              :(show.line.end)
 
 *	Show a line with blanks replaced by '.'
 
 *SHOW.LINE*
 show.line
 
-	show.line = replace(line,' ','.')		:(return)
+	show.line = replace(line,' ','.')                      :(return)
 
 show.line.end
 
-	define('show.lines(lines,title)i,line,titled')	:(show.lines.end)
+	define('show.lines(lines,title)i,line,titled')         :(show.lines.end)
 
 *	Show the lines that are not empty in an array of lines
 
@@ -2912,9 +2913,9 @@ show.lines
 
 show.lines.n
 
-	line = lines[i = i + 1]			:f(return)
-	empty(line)				:s(show.lines.n)
-	differ(titled)				:s(show.lines.titled)
+	line = lines[i = i + 1]                                :f(return)
+	empty(line)                                            :s(show.lines.n)
+	differ(titled)                                         :s(show.lines.titled)
 
 *	Don not list header unless at least one non-empty line
 
@@ -2925,64 +2926,64 @@ show.lines.n
 
 show.lines.titled
 
-	out(lpad(lineid(i),2) ' ' replace(line,' ','.')) :(show.lines.n)
+	out(lpad(lineid(i),2) ' ' replace(line,' ','.'))       :(show.lines.n)
 
 show.lines.end
 
-	define('show.move(mov)f,i,ff,n')		:(show.move.end)
+	define('show.move(mov)f,i,ff,n')                       :(show.move.end)
 
 *	Show a move.
 
 *SHOW.MOVE*
 show.move
 
-	ident(datatype(mov),'integer')			:s(error)
-	show.move = 	'move id=' id(mov) ' text=' text(mov) 
-.			' free[1]=' free(mov)[1] 
+	ident(datatype(mov),'integer')                         :s(error)
+	show.move = 	'move id=' id(mov) ' text=' text(mov)
+.			' free[1]=' free(mov)[1]
 .			' proto(free) ' prototype(free(mov))
 	n = +prototype(free(mov))
 
 show.move.i
-	gt(i = i + 1,n)					:s(show.move.f)
+	gt(i = i + 1,n)                                        :s(show.move.f)
 	ff = free(mov)[i]
-	f = append(f,ff)				:s(show.move.i)
+	f = append(f,ff)                                       :s(show.move.i)
 
 show.move.f
 
-	show.move = 'm(' 
-.			lineid(id(mov)) ',' 
+	show.move = 'm('
+.			lineid(id(mov)) ','
 .			"'" f "',"
 .			  "'" text(mov) "'"
-.			(differ(points(mov)) ',+' points(mov), '')  
+.			(differ(points(mov)) ',+' points(mov), '')
 .	             ')'
-							:(return)
+                                                        :(return)
 show.movefail
 
-	out('free ff failure ')				:(end)
+	out('free ff failure ')                                :(end)
 
 show.move.end
 
-	define('show.pair(pair)')			:(show.pair.end)
+	define('show.pair(pair)')                              :(show.pair.end)
 
 *	Show paired item.
 
 *SHOW.PAIR*
 show.pair
 
-	show.pair = '{' lineid(num(pair)) ',' "'" 
-.			replace(line(pair),' ','.') "'" '}'	:(return)
+	show.pair = '{' lineid(num(pair)) ',' "'"
+.			replace(line(pair),' ','.') "'" '}'                 :(return)
 
 show.pair.end
 
-	define('show.play(move)plines,b,r,c,ch,line')	:(show.play.end)
+	define('show.play(move)plines,b,r,c,ch,line')          :(show.play.end)
 
 *	Show the board.
 
 *SHOW.PLAY*
 show.play
 
-*	Display move in grid with just this move in upper case by 
-*	saving the board, playing the move with the text in upper case, 
+*	Display move in grid with just this move in upper case by
+*	saving the board, playing the move with the text in upper case,
 *	showing it, and then restoring the board to its saved state.
 
 	board = copy (g.board)
@@ -3000,8 +3001,8 @@ show.play
 
 show.play.l
 
-	gt(r = r + 1,15) 				:s(show.play.ll)
-	plines[r] = show.hline(board,r)			:(show.play.l)
+	gt(r = r + 1,15)                                       :s(show.play.ll)
+	plines[r] = show.hline(board,r)                        :(show.play.l)
 
 show.play.ll
 
@@ -3013,49 +3014,49 @@ show.play.ll
 
 show.play.r
 
-	gt(r = r + 1,15) 				:s(show.play.finish)
-	line = lpad(r,2) '|' 
+	gt(r = r + 1,15)                                       :s(show.play.finish)
+	line = lpad(r,2) '|'
 	c = 0
 
 show.play.c
 
-	gt(c = c + 1,15)				:s(show.play.margin)
+	gt(c = c + 1,15)                                       :s(show.play.margin)
 	ch = ucase(board[r,c])
 	b = g.bonus[r,c]
-	differ(ch,' ')					:s(show.play.ch)
+	differ(ch,' ')                                         :s(show.play.ch)
 
 *	Here if empty cell, see if there is a bonus to be show.played.
 
-	ne(b,1)						:s(show.play.b)
+	ne(b,1)                                                :s(show.play.b)
 
 *	Here to show.play empty cell.
 
-	line = line ' -'				:(show.play.c)
+	line = line ' -'                                       :(show.play.c)
 
 show.play.b
 
 * 	Here to show.play bonus.
 
 	ch = (eq(b,2) 'dl', eq(b,3) 'tl', eq(b,4) 'dw', eq(b,5) 'tw')
-	line = line ch 					:(show.play.c)
+	line = line ch                                         :(show.play.c)
 
 show.play.margin
 
-	out(line  plines[r])				:(show.play.r)
+	out(line  plines[r])                                   :(show.play.r)
 
 show.play.ch
 
-	line  = line ' ' ch 				:(show.play.c)
+	line  = line ' ' ch                                    :(show.play.c)
 
 show.play.finish
 
 	out(lpad('', 4) '1 2 3 4 5 6 7 8 9 0 1 2 3 4 5'
 .		 lpad('', 2) '1 2 3 4 5 6 7 8 9 0 1 2 3 4 5')
-	out()						:(return)
+	out()                                                  :(return)
 
 show.play.end
 
-	define('show.player(pid)player')		:(show.player.end)
+	define('show.player(pid)player')                       :(show.player.end)
 
 *	Show player description.
 
@@ -3065,9 +3066,9 @@ show.player
 *	data('player(pid,name,kind,rack,total,thirty,highest)')
 
 	player = g.players[pid]
-	show.player = 
-.		'player('  pid(player)	',"' name(player) '"'  	  	',' 
-.		'player.kind.'	( 	
+	show.player =
+.		'player('  pid(player)	',"' name(player) '"'  	  	','
+.		'player.kind.'	(
 .			eq(kind(player),player.kind.move) 'move',
 .			eq(kind(player),player.kind.auto) 'auto',
 .			eq(kind(player),player.kind.foe)  'foe',
@@ -3075,12 +3076,12 @@ show.player
 .			eq(kind(player),player.kind.team) 'team', ''
 .			        )	','
 .		'"' rack(player) '",' total(player) ','
-.		(gt(highest(player)) highest(player) ,'')			
+.		(gt(highest(player)) highest(player) ,'')
 .		')'
-							:(return)
+                                                        :(return)
 show.player.end
 
-	define('show.table(tbl,col)ara,i,key')		:(show.table.end)
+	define('show.table(tbl,col)ara,i,key')                 :(show.table.end)
 
 *	Show a table.
 
@@ -3093,48 +3094,48 @@ show.table.next
 
 *	loop:	Get the next tbl key.
 
-	key = ara[i = i + 1,1]				:f(show.table.done)
+	key = ara[i = i + 1,1]                                 :f(show.table.done)
 
 *	Show the entry and continue back to loop.
- 
+
 	out(lpad(show(key),8) ' -> ' show(ara[i,2]))
-							:(show.table.next)
+                                                        :(show.table.next)
 show.table.done
-	out()						:(return)
+	out()                                                  :(return)
 
 show.table.end
 
-	define('show.tiles(tiles)i')			:(show.tiles.end)
+	define('show.tiles(tiles)i')                           :(show.tiles.end)
 
 *	Show a list of tiles, separated by blanks.
 
 *SHOW.TILES*
 show.tiles
-	gt(i = i + 1,size(tiles))			:s(return)
+	gt(i = i + 1,size(tiles))                              :s(return)
 
-	show.tiles = append(show.tiles, ucase(substr(tiles,i,1))) :(show.tiles)
+	show.tiles = append(show.tiles, ucase(substr(tiles,i,1))):(show.tiles)
 
 show.tiles.end
 
-	define('show.words(words)i,pos')		:(show.words.end)
+	define('show.words(words)i,pos')                       :(show.words.end)
 
 *	Show results of words() call.
 
 show.words
 
-	pos = words[i = i + 1,1]			:f(return)
-	out('words ' lpad(pos,2) ' ' words[i,2])	:(show.words)
+	pos = words[i = i + 1,1]                               :f(return)
+	out('words ' lpad(pos,2) ' ' words[i,2])               :(show.words)
 
 show.words.end
 
 
-	define('shuffle()tiles,n,passes,r1,r2,ch')	:(shuffle.end)
+	define('shuffle()tiles,n,passes,r1,r2,ch')             :(shuffle.end)
 
-*	Shuffle the remaining tiles by randomly swapping.players[2] 
+*	Shuffle the remaining tiles by randomly swapping.players[2]
 *	tiles several times.
 
 *SHUFFLE*
-shuffle	
+shuffle
 
 	tiles = unpack(g.tiles)
 	n = size(g.tiles)
@@ -3142,45 +3143,45 @@ shuffle
 
 shuffle.next
 
-	le(passes = passes - 1)				:s(shuffle.done)
+	le(passes = passes - 1)                                :s(shuffle.done)
 	r1 = random(n); r2 = random(n)
-	eq(r1,r2)					:s(shuffle.next)
+	eq(r1,r2)                                              :s(shuffle.next)
 	ch = tiles[r1]
-	tiles[r1] = tiles[r2]	
-	tiles[r2] = ch					:(shuffle.next)
+	tiles[r1] = tiles[r2]
+	tiles[r2] = ch                                         :(shuffle.next)
 
 shuffle.done
 
 	g.tiles = pack(tiles)
-							:(return)
+                                                        :(return)
 shuffle.end
 
-	define('spaces(line)n')				:(spaces.end)
+	define('spaces(line)n')                                :(spaces.end)
 
 *	Count number of spaces in line.
 
 *SPACES*
 spaces
 
-	line len(1) . c =				:f(return)
-	spaces = ident(c,' ') spaces + 1		:(spaces)
+	line len(1) . c =                                      :f(return)
+	spaces = ident(c,' ') spaces + 1                       :(spaces)
 
 spaces.end
 
 	define('start(pid)player,tiles,perm,perms,permi,free,offset,i,'
 .       	'highest,lower,best,n,word,start,score,move,max'):(start.end)
 
-*	Determine best starting.turn. At least one letter in this move 
+*	Determine best starting.turn. At least one letter in this move
 *	must be in the center square (8,8). The only bonus available is
 *	double word, for any word of more than four characters.
 
 *	Find the move the highest score. Given two moves with the
 *	same score, prefer the one with the lowest tile cost.
 *
-*	The return value has the form 'm s' where m is the move 
+*	The return value has the form 'm s' where m is the move
 *	and s is its score.
 *
-*	There are seven tiles, so we just try all permutations 
+*	There are seven tiles, so we just try all permutations
 *	of length one up to seven.
 
 *START*
@@ -3198,60 +3199,60 @@ start
 
 *	Don't use 's' on starting move: save it for later.
 
-	tiles break('s')				:f(start.n)
+	tiles break('s')                                       :f(start.n)
 	tiles = less(tiles,'s')
 	max = max - 1
 
-start.n	gt(n = n + 1,max)				:s(start.done)
+start.n	gt(n = n + 1,max)                               :s(start.done)
 
 	kind = size(tiles) '?' n
 *	out('start.n kind=' kind)
-	perms = g.permutations[kind]			:f(start.n)
+	perms = g.permutations[kind]                           :f(start.n)
 	permi = 0
 
 start.word
 
 *	Get next word, check that valid, then see if new high score
 
-	perm = perms[permi = permi + 1]			:f(start.n)
+	perm = perms[permi = permi + 1]                        :f(start.n)
 	word = replace(perm,substr('1234567',1,size(tiles)),tiles)
 
 *	out('kind ' kind ' perm ' perm ' word ' word)
-	checkword(word)					:f(start.word)
+	checkword(word)                                        :f(start.word)
 	checkwords = checkwords + 1
 
-*	Score is the value of the tiles unless the word has five or 
-*	more characters, in which case the double word bonus 
+*	Score is the value of the tiles unless the word has five or
+*	more characters, in which case the double word bonus
 *	at index twelve can be achieved.
 
 	score = (lt(size(word),5) cost(word), 2 * cost(word))
-	
+
 *	See if get bonus for playing seven tiles.
 
 	score = eq(size(word),7) score + 35
 
 *	Add the first word found to set *highest* and *lowest*
 
-	eq(highest,0)					:s(start.new)
+	eq(highest,0)                                          :s(start.new)
 
-	lt(score,highest)				:s(start.word)
-	gt(score,highest)				:s(start.new)
+	lt(score,highest)                                      :s(start.word)
+	gt(score,highest)                                      :s(start.new)
 
 *	Here if current best and new move have same score.
 *	Prefer the one with the lowest cost.
 
-	lt(cost(word),lowest)				:s(start.new)
+	lt(cost(word),lowest)                                  :s(start.new)
 
 start.new
 
 	highest = score
 	lowest = cost(word)
-	best = word					
-							:(start.word)
+	best = word
+                                                        :(start.word)
 start.done
 
-*	Start word at position 8, unless word size greater than 
-*	five, in which case move it to the left, but making sure 
+*	Start word at position 8, unless word size greater than
+*	five, in which case move it to the left, but making sure
 *	move still covers double-word cell at position twelve.
 
 	offset = (lt(size(best,5) 0, 5 - size(best)))
@@ -3263,13 +3264,13 @@ start.done
 
 start.free
 
-	free[i = i + 1] = 7 + i  + offset		:s(start.free)
+	free[i = i + 1] = 7 + i  + offset                      :s(start.free)
 
-	start = move(8 + offset,free,best,highest) :(return)
+	start = move(8 + offset,free,best,highest)             :(return)
 
 start.end
 
-	define('state.restore(saved)')		:(state.restore.end)
+	define('state.restore(saved)')                         :(state.restore.end)
 
 *	Restore the state of the game from a prior save.
 
@@ -3280,10 +3281,10 @@ state.restore
 	g.tiles = 	saved['tiles']
 	g.players[1] = 	saved['player.1']
 	g.players[2] = 	saved['player.2']
-							:(return)
+                                                        :(return)
 state.restore.end
 
-	define('state.save()')				:(state.save.end)
+	define('state.save()')                                 :(state.save.end)
 
 *	Save the state of the game.
 
@@ -3295,13 +3296,13 @@ state.save
 	state.save['tiles'] = 	copy(g.tiles)
 	state.save['player.1'] = copy(g.players[1])
 	state.save['player.2'] = copy(g.players[2])
-							:(return)
+                                                        :(return)
 state.save.end
 
 
-	define('subarray(ara,start,len)i')		:(subarray.end)
+	define('subarray(ara,start,len)i')                     :(subarray.end)
 
-*	Like substr, but returns the sub-array of *ara* starting at 
+*	Like substr, but returns the sub-array of *ara* starting at
 *	element *start* and consisting of *len* elements
 
 *SUBARRAY*
@@ -3311,34 +3312,34 @@ subarray
 
 subarray.1
 
-	gt(i = i + 1,len)				:s(return)
-	subarray[i] = copy(ara[start + i - 1])		:(subarray.1)		
+	gt(i = i + 1,len)                                      :s(return)
+	subarray[i] = copy(ara[start + i - 1])                 :(subarray.1)
 
 subarray.end
 
-	define('swap(pid,n)player,tiles')		:(swap.end)
+	define('swap(pid,n)player,tiles')                      :(swap.end)
 
-*	Swap *n* tiles from the first *n* characters in *tiles* 
+*	Swap *n* tiles from the first *n* characters in *tiles*
 *	of player with id *pid*.  If fewer than *n* tiles remain,
 *	set *n* to the size of the tiles.
 
 *SWAP*
-swap	
+swap
 
 	player = g.players[pid]
 	tiles = rack(player)
 	n = gt(n,size(tiles)) size(tiles)
 	n = gt(n,size(g.tiles)) size(g.tiles)
-	eq(n)						:s(freturn)
+	eq(n)                                                  :s(freturn)
 
 swap.next
 
 	swap = substr(g.tiles,1,n)
 	g.tiles = substr(g.tiles,n + 1)  substr(tiles,1,n)
-							:(return)
+                                                        :(return)
 swap.end
 
-	define('take(n)')				:(take.end)
+	define('take(n)')                                      :(take.end)
 
 *	Take *n* tiles from the tiles, or taking all
 *	the remaining tiles if fewer than *n* remain.
@@ -3346,14 +3347,14 @@ swap.end
 *TAKE*
 take
 	n = gt(n,size(g.tiles)) size(g.tiles)
-	eq(n,0)						:s(return)
+	eq(n,0)                                                :s(return)
 	take = order(substr(g.tiles,1,n))
-	g.tiles = substr(g.tiles, n + 1)		:(return)
+	g.tiles = substr(g.tiles, n + 1)                       :(return)
 
 take.end
 
 	define('test.perm(rack,perm,num,move,inlines)'
-.		'text,lines,iline,i,p,cline')	:(test.perm.end)
+.		'text,lines,iline,i,p,cline')                        :(test.perm.end)
 
 *	Test if applying a permutation PERM to a rack RACK yields a valid move.
 *	NUM is the line containing the move, and INLINES is a list of
@@ -3364,7 +3365,7 @@ test.perm
 
 *	NOTE: THE LOOP BELOW IS THE CRITICAL INNER LOOP OF THIS PROGRAM.
 *	ANY TIME SPENT SPEEDING THINGS UP ELSEWHERE WILL HAVE LITTLE EFFECT.
-*	
+*
 *	For example, given a move of length 7 with a rack of 7 letters, we
 *	need to account for the slightly over 5000 permutations of the letters
 *	that can be used here. And note this is just for one possible move ...
@@ -3372,10 +3373,10 @@ test.perm
 *	Since most racks will contain duplicate, or even triplicate, instances of
 *	the same letter, the table *tried* is used below. This cut the running
 *	time of the program by a factor of two when first introduced.
-	
+
 	count.perm = count.perm + 1
 
-	seen(perm)				:s(freturn)
+	seen(perm)                                             :s(freturn)
 	count.cells = count.cells + size(perm)
 
 	g.cln = 0
@@ -3385,27 +3386,27 @@ test.perm
 	lines = copy(inlines);
 
 *	Insert the letters from the tiles corresponding to the permutation
-*	into the selected blank cells in the line.  The digit '1' selects 
-*	the first tile, the digit '2' the second, and so on.  Then see if 
-*	the result gives a valid line. 'move' to the next permutation if not.  
+*	into the selected blank cells in the line.  The digit '1' selects
+*	the first tile, the digit '2' the second, and so on.  Then see if
+*	the result gives a valid line. 'move' to the next permutation if not.
 *	(This is a clever use of replace(), even if I do say so myself.)
 
 	text(move) = perm;* insert permutation digits into free cells
 	iline = insert(lines[num],move);* line with permutation digits entered
-	checkline(place(iline,rack))			:f(freturn)
+	checkline(place(iline,rack))                           :f(freturn)
 
 *	'move' is valid on this line, so check validity on crossing lines.
 *	Save the valid lines in *clines* for scoring if move proves valid.
 
 *	We could use the clines() procedure for this, but in this loop every
 *	statement counts, so in effect we build clines on the fly.
-*	Since almost all permutations will result in junk, we want to 
-*	detect junk as soon as possible so we can move on without wasting 
+*	Since almost all permutations will result in junk, we want to
+*	detect junk as soon as possible so we can move on without wasting
 *	needless effort.
 
 	text(move) = text
 
-*	out(ne(g.tracing) 'Find valid first ' 
+*	out(ne(g.tracing) 'Find valid first '
 *		show.move(move) ' ' show.line(line))
 
 	g.clines[g.cln = g.cln + 1] =  pair( id(move), insert(lines[num],move))
@@ -3418,12 +3419,12 @@ test.perm.cross
 
 *	out('find cross ')
 
-*	If next assignment fails, we have finished checking the 
+*	If next assignment fails, we have finished checking the
 *	permutation without finding a valid move, and so return failure.
 
-	p = free(move)[i = i + 1]			:f(return)
+	p = free(move)[i = i + 1]                              :f(return)
 	cline = cline(lines,move,p,substr(rack,substr(perm,i,1),1))
-	checkline(line(cline))				:f(freturn)
+	checkline(line(cline))                                 :f(freturn)
 
 *	out(ne(g.tracing) 'Find valid checkline ' line(cline))
 
@@ -3431,37 +3432,37 @@ test.perm.cross
 
 *	out(ne(g.tracing) 'Find text ' text(move))
 
-	g.clines[g.cln = g.cln + 1] = cline		:(test.perm.cross)
+	g.clines[g.cln = g.cln + 1] = cline                    :(test.perm.cross)
 
 test.perm.end
 
-	define('thousands(s)n')				:(thousands.end)
+	define('thousands(s)n')                                :(thousands.end)
 
 *	Format s with comma's every three digits from right.
 
 *THOUSANDS*
-thousands	
+thousands
 
 	n = size(s)
-	thousands = le(n,3) s				:s(return)
-	thousands = thousands(substr(s,1,n - 3)) ',' substr(s, n - 2, 3) :(return)
+	thousands = le(n,3) s                                  :s(return)
+	thousands = thousands(substr(s,1,n - 3)) ',' substr(s, n - 2, 3):(return)
 
 thousands.end
 
-	define('traceoff()')				:(traceoff.end)
+	define('traceoff()')                                   :(traceoff.end)
 
 *	Initiate tracing.
 
 *TRACEOFF*
 traceoff
-	&ftrace = &trace = 
+	&ftrace = &trace =
 
 	g.scoring = g.tracing = 0
 	out('stop TRACING ')
 
 traceoff.end
 
-	define('traceon()')				:(traceon.end)
+	define('traceon()')                                    :(traceon.end)
 
 *	Initiate tracing.
 
@@ -3471,11 +3472,11 @@ traceon
 	out('start TRACING')
 *	&ftrace = &trace = 1500000
 	g.scoring = g.tracing = 1
-							:(return)
+                                                        :(return)
 traceon.end
 
 	define('turn(pid,mode)manual,state,points.player,'
-.			'points.fribble') 	:(turn.end)
+.			'points.fribble')                                   :(turn.end)
 
 *	Play a turn in a game.
 
@@ -3498,25 +3499,25 @@ turn
 
 	eq(g.trace,g.turn) traceon()
 
-*	Replenish tiles before making the move. 
+*	Replenish tiles before making the move.
 
-*	This is needed when playing in team mode. 
+*	This is needed when playing in team mode.
 *	need to enter your tiles from the wwf board.
 
-	eq(f.mode,f.mode.move)				:s(turn.move)
-	eq(f.mode,f.mode.auto)				:s(turn.auto)
-	ne(kind(player),player.kind.team)		:s(turn.pickmove)
+	eq(f.mode,f.mode.move)                                 :s(turn.move)
+	eq(f.mode,f.mode.auto)                                 :s(turn.auto)
+	ne(kind(player),player.kind.team)                      :s(turn.pickmove)
 
 	rack(player) = replenish(pid)
 	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
 	ne(f.trace) out(show.player(pid))
-                                        :(turn.pickmove)
+                                                        :(turn.pickmove)
 
 turn.move
 
 *   Here to read in tiles and state of board.
 
-    
+
 *HERE
 
 turn.pickmove
@@ -3529,16 +3530,16 @@ turn.pickmove
 *	You need to enter the foe's move when playing as a team,
 *	and your own move when playing a solo game.
 
-	eq(f.mode,f.mode.auto)				:s(turn.auto)
-	eq(kind(player),player.kind.foe)		:s(turn.manual)
+	eq(f.mode,f.mode.auto)                                 :s(turn.auto)
+	eq(kind(player),player.kind.foe)                       :s(turn.manual)
 
-*	Enable next line to get 'enhanced' mode where Fribble reports 
+*	Enable next line to get 'enhanced' mode where Fribble reports
 *	move it would have made
 
 *	eq(kind(player),player.kind.solo)		:s(turn.solo)
 
-	eq(kind(player),player.kind.solo)		:s(turn.manual)
-	
+	eq(kind(player),player.kind.solo)                      :s(turn.manual)
+
 turn.auto
 
 *	Here to have fribble find the best move.
@@ -3547,12 +3548,12 @@ turn.auto
 
 *	ne(kind(player),player.kind.auto) out('computing move ...')
 
-	g.move = find(pid,g.turn)			:f(turn.fail)
+	g.move = find(pid,g.turn)                              :f(turn.fail)
 
 *	ne(f.trace) out('auto move ' show.move(g.move))
 
 *	ne(kind(player),player.kind.auto) out('... computed')
-							:(turn.make)
+                                                        :(turn.make)
 
 turn.manual
 
@@ -3561,16 +3562,16 @@ turn.manual
 	ne(f.trace) out('getting move manually')
 
 	manual = move.input()
-	ident(datatype(manual),'move')			:f(turn.manual.nomove)
-	g.move = manual					:(turn.validate)
+	ident(datatype(manual),'move')                         :f(turn.manual.nomove)
+	g.move = manual                                        :(turn.validate)
 
 turn.manual.nomove
 
-*	Here if manual didn't return a move, so branch 
+*	Here if manual didn't return a move, so branch
 *	to the corresponding handler.
 
-	manual 'error'					:s(turn.manual.error)
-							:($('turn.' move))
+	manual 'error'                                         :s(turn.manual.error)
+                                                        :($('turn.' move))
 turn.solo
 *HERE*
 
@@ -3582,51 +3583,51 @@ turn.solo.in
 	ne(f.trace) out('getting move manually')
 
 	manual = move.input()
-	ident(datatype(manual),'move')			:f(turn.solo.nomove)
+	ident(datatype(manual),'move')                         :f(turn.solo.nomove)
 	out('solo player move ' show.move(manual))
-	g.move = manual				:(turn.solo.fribble.havemove)
+	g.move = manual                                        :(turn.solo.fribble.havemove)
 
 turn.solo.nomove
 
-*	Here if manual didn't return a move, so branch 
+*	Here if manual didn't return a move, so branch
 *	to the corresponding handler.
 
-	manual 'error'				:s(turn.manual.error)
+	manual 'error'                                         :s(turn.manual.error)
 	target = $('turn.' manual)
 	out('solo no move target datatype ' datatype(target) ' ' target)
 	out('turn.solo.nomove ' manual)
-						:($('turn.' manual))
+                                                        :($('turn.' manual))
 turn.solo.move
 
-	eq(g.turn,1) valid.start(manual)	:s(turn.solo.fribble.havemove)
-	ne(g.turn,1) valid(manual)		:s(turn.solo.fribble.havemove)
-	
-	out('invalid move - try again')			:(turn.solo.in)
+	eq(g.turn,1) valid.start(manual)                       :s(turn.solo.fribble.havemove)
+	ne(g.turn,1) valid(manual)                             :s(turn.solo.fribble.havemove)
+
+	out('invalid move - try again')                        :(turn.solo.in)
 
 turn.solo.fribble.havemove
 
 	g.move = manual
 
 *	G.move is the player's valid move.
-*	Save the state, find the move fribble would have made, 
+*	Save the state, find the move fribble would have made,
 *	and report the results to the player.
 
-	state = state.save()	
-	move = find(pid, rack)			:s(turn.solo.fribble.move)
+	state = state.save()
+	move = find(pid, rack)                                 :s(turn.solo.fribble.move)
 
 *	Here if fribble couldn't find a valid move.
 
-	out('Hmmm ... Fribble unable to find a valid move.')	:(turn.validate)
+	out('Hmmm ... Fribble unable to find a valid move.')   :(turn.validate)
 
 turn.solo.fribble.move
- 
+
 	points.fribble = scoremove(move)
 	points.player = scoremove(g.move)
 
-	out('You played the move ' show.move(g.move) ' for ' 
+	out('You played the move ' show.move(g.move) ' for '
 .		number(points.player) ' points.')
 
-	out('Fribble would have played ' show.move(move) ' for ' 
+	out('Fribble would have played ' show.move(move) ' for '
 .		number(points(move)) ' points.')
 
 	show.play(makemove(pid,move));* display fribble's move.
@@ -3644,9 +3645,9 @@ turn.solo.fribble.move
 .		 		    ') points than Fribble.')
 
 	gt(points.player,points.fribble)	out('You are a genius!')
-	
+
 *	Put things back where they were.
-	
+
 	state.restore(state)
 
 turn.validate
@@ -3655,21 +3656,21 @@ turn.validate
 
 *	See if move is valid.
 
-	eq(g.turn,1) valid.start(g.move)		:s(turn.make)
-	ne(g.turn,1) valid(g.move)			:s(turn.make)
+	eq(g.turn,1) valid.start(g.move)                       :s(turn.make)
+	ne(g.turn,1) valid(g.move)                             :s(turn.make)
 
-	out('invalid move - try again')			:(turn.manual)
+	out('invalid move - try again')                        :(turn.manual)
 
 turn.manual.error
 
-	out('eval error ' &errtext)			:(turn.manual)
+	out('eval error ' &errtext)                            :(turn.manual)
 
 turn.make
 *	3.	Make the move by updating the data structures, scores, etc.
 
 	points(g.move) = scoremove(g.move)
 
-	log.move(pid,g.move)	
+	log.move(pid,g.move)
 
 *	ne(f.trace) out('making move ' show.move(g.move))
 
@@ -3683,7 +3684,7 @@ turn.replenish
 *	Replenish tiles if necessary. If doing this manually, don't do it here,
 *	but at start of next turn.
 
-	eq(g.tilemanager)				:s(turn.done)
+	eq(g.tilemanager)                                      :s(turn.done)
 *	out('DAVE')
 *	out('replenishing pid= ' pid ' ' show.player(player))
 	ne(f.trace) out('replenishing pid= ' pid )
@@ -3694,68 +3695,68 @@ turn.replenish
 
 	ne(f.trace) out('updating rack pid=' pid)
 	rack(player) = less(rack(player), lcase(text(g.move)))
-	rack(player) = replenish(pid)			
-	ne(f.trace) out('rack pid=' pid '   now ' rack(player))	
-							:(turn.done)
+	rack(player) = replenish(pid)
+	ne(f.trace) out('rack pid=' pid '   now ' rack(player))
+                                                        :(turn.done)
 
 turn.pass
 
 	log( 'pass ' pid)
-							:(turn.done)
+                                                        :(turn.done)
 turn.resign
 
 	out('player ' pid ' resigns.')
-	log('resign ' pid)				:(turn.done)
+	log('resign ' pid)                                     :(turn.done)
 
 turn.swap
-	
+
 *	Here in case foe swapped tiles. Report it as such and move on.
 
 
 	log('swap ' pid)
 
-	out('foe swapped tiles')			:(turn.done)
+	out('foe swapped tiles')                               :(turn.done)
 
 turn.done
 
 	ne(f.trace) out('turn done')
-							:(return)
+                                                        :(return)
 turn.fail
 
-	out('turn failed - unable to find move.')	:(freturn)
+	out('turn failed - unable to find move.')              :(freturn)
 
-turn.end 
+turn.end
 
-	define('user.input()')				:(user.input.end)
+	define('user.input()')                                 :(user.input.end)
 
 *	Get a line from the user, usually from the terminal, or from
 *	a user input file.
 
 user.input
 
-	user.input = terminal				:f(freturn)s(return)
+	user.input = terminal                                  :f(freturn)s(return)
 
 user.input.end
 
-	define('valid.start(move)free,num,text')	:(valid.start.end)
+	define('valid.start(move)free,num,text')               :(valid.start.end)
 
 *	Test if a suggested starting move is valid.
 
 *VALID.START*
 valid.start
 
-*	If this is a starting move, check that it covers column 8 in row 8, 
+*	If this is a starting move, check that it covers column 8 in row 8,
 *	and is a word in the dictionary.
 
-	free = free(move) 
+	free = free(move)
 	text = text(move)
 
-	num = convert(free,'integer')			:f(valid.start.free)
+	num = convert(free,'integer')                          :f(valid.start.free)
 
 	out('valid.start.start num=' num)
 
-	lt(num,9 - size(text))				:s(valid.start.error)
-	gt(num,7 + size(text))				:s(valid.start.error)
+	lt(num,9 - size(text))                                 :s(valid.start.error)
+	gt(num,7 + size(text))                                 :s(valid.start.error)
 
 valid.start.free
 
@@ -3764,38 +3765,38 @@ valid.start.free
 	out('valid.start.start.free ' show.move(valid.start))
 	out('valid.start.start.free ' free(valid.start))
 
-	free break('8')					:f(valid.start.error)
-	checkword(text(move))				:s(return)f(freturn)
+	free break('8')                                        :f(valid.start.error)
+	checkword(text(move))                                  :s(return)f(freturn)
 
 valid.start.start.error
 
-	out('starting move must use column 8.')		:(freturn)
+	out('starting move must use column 8.')                :(freturn)
 
 valid.start.end
 
-	define('log.move(pid,move)')			:(log.move.end)
+	define('log.move(pid,move)')                           :(log.move.end)
 
 *	Write move description to log file.
 
 log.move
 
-	log('move ' pid ' ' show.move(move))		:(return)
+	log('move ' pid ' ' show.move(move))                   :(return)
 
 log.move.end
 
 
-	define('ucase(s)')				:(ucase.end)
+	define('ucase(s)')                                     :(ucase.end)
 
 *	Convert argument to upper case.
 
 *UCASE*
 ucase
 
-	ucase = replace(s,&lcase,&ucase)		:(return)
+	ucase = replace(s,&lcase,&ucase)                       :(return)
 
 ucase.end
-	
-	define('unpack(line),c,i')			:(unpack.end)
+
+	define('unpack(line),c,i')                             :(unpack.end)
 
 *	Unpack the characters of line *line* to an array of characters.
 
@@ -3806,32 +3807,32 @@ unpack
 
 unpack.ch
 
-	c = substr(line,i = i + 1,1)			:f(return)
-	unpack[i] = c					:(unpack.ch)
+	c = substr(line,i = i + 1,1)                           :f(return)
+	unpack[i] = c                                          :(unpack.ch)
 
 unpack.end
 
-	define('valid(move)num,i,pos')			:(valid.end)
+	define('valid(move)num,i,pos')                         :(valid.end)
 
-*	Test if move is valid. 
+*	Test if move is valid.
 
 *VALID*
 valid
 valid.move
 
-*	At least one cell to be occupied by this move must be 
+*	At least one cell to be occupied by this move must be
 *	adjacent to a used cell.
-	
+
 	num = id(move)
 
 valid.u
 
-	gt(i = i + 1,size(text(move)))			:s(freturn)
+	gt(i = i + 1,size(text(move)))                         :s(freturn)
 	pos = free(move)[i]
-	adjacent(row(num,pos),column(num,pos)) 		:f(valid.u)s(valid.used)
+	adjacent(row(num,pos),column(num,pos))                 :f(valid.u)s(valid.used)
 
 *	Here if no adjacent cell found, fail.  *
-							:(freturn)
+                                                        :(freturn)
 valid.used
 
 *	Test that line and all its crossing lines are valid.
@@ -3841,27 +3842,27 @@ valid.used
 
 valid.i
 
-	gt(i = i + 1,g.cln)				:s(return)
-	checkline(line(g.clines[i]))			:f(freturn)s(valid.i)
+	gt(i = i + 1,g.cln)                                    :s(return)
+	checkline(line(g.clines[i]))                           :f(freturn)s(valid.i)
 
 valid.end
 
-	define('vline(g,c)')				:(vline.end)
+	define('vline(g,c)')                                   :(vline.end)
 
-*	Return the vertical line of  grid *g* corresponding 
+*	Return the vertical line of  grid *g* corresponding
 *	to column *c* as a string.
 
 *VLINE*
 vline
 
 	c = +c
-	vline = g[1,c] g[2,c] g[3,c] g[4,c] g[5,c] 
+	vline = g[1,c] g[2,c] g[3,c] g[4,c] g[5,c]
 .		g[6,c] g[7,c] g[8,c] g[9,c] g[10,c]
 .		g[11,c] g[12,c] g[13,c] g[14,c] g[15,c]
-							:(return)
+                                                        :(return)
 vline.end
 
-	define('words(s)n,w,pos,i,sp')			:(words.end)
+	define('words(s)n,w,pos,i,sp')                         :(words.end)
 
 *	Return array of the words in s, fail if no words.
 *	The first entry for an array element is the starting index;
@@ -3870,45 +3871,45 @@ vline.end
 *WORDS*
 words
 
-*	Make sure we'll have blank to start off so initial span() 
-*	matches something, and also one at end to break to 
+*	Make sure we'll have blank to start off so initial span()
+*	matches something, and also one at end to break to
 *	in case last word extends to end of line.
 
 	words = table(n)
 	s = ' ' s ' '
-	pos = 0	
+	pos = 0
 words.sp
 
 *	Account for blank(s) between words.
 
 	s span(' ') . sp =
 
-	ident(s)					:s(words.done)
+	ident(s)                                               :s(words.done)
 
 	pos = pos + size(sp);* point to start of next word
 
 words.w
 
-*	While it is customary to absorb the blank in the 
-*	usage below, we leave it in so there will be at least 
+*	While it is customary to absorb the blank in the
+*	usage below, we leave it in so there will be at least
 *	one blank to satisfy span() when loop back to words.sp
 
-	s break(' ') . w  = 	 			:f(words.done)
-	words[pos] = w					
-	pos = pos + size(w)				:(words.sp)
+	s break(' ') . w  =                                    :f(words.done)
+	words[pos] = w
+	pos = pos + size(w)                                    :(words.sp)
 
 words.done
 
-	words = convert(words,'array')			:(return)
+	words = convert(words,'array')                         :(return)
 
 words.end
 
-	:(error.end)
+                                                        :(error.end)
 error
 	output = 'error lastno ' &lastno
 	output = 'ERROR'
-	output = 'Fatal error: stopping the madness.'
+	output = 'Fatal error                                  : stopping the madness.'
 *	&dump = 3
-							:(end)
+                                                        :(end)
 error.end
 
