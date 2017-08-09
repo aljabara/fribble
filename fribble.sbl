@@ -47,7 +47,7 @@
 *	games, study moves, make moves, test the system, and of course
 *	learn more about Fribble.
 
-	&stlimit = -1
+*   &stlimit = -1
 
 	&anchor = &trim = 1
 
@@ -165,8 +165,8 @@ main.done
 
 *	Set f.trace to trace fribble.
 
-	f.trace = 1
 	f.trace = 0
+	f.trace = 1
 
 	ident(g.tilemanager)                                   :s(main.game)
 
