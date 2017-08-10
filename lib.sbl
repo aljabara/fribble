@@ -186,10 +186,11 @@
     g.trace =
 
 *   g.tracing, set nonzero when tracing initiated by *g.trace* begins.
+
     g.tracing = 1
     g.tracing =
 
-*   g.turn, the number of the current turn
+*   g.turn, the number of the current turn.
 *   g.lastmove, the turn when the last move was made.
 
     g.turn = g.lastmove = 0
@@ -268,12 +269,12 @@ init.bonus
 
     g.bonus = array('15,15','1')
     s =     '5 0104 3 0107 3 0109 5 0112 2 0203 4 0206 4 0210 2 0213 '
-.               '2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 5 0415 '
-.               '2 0503 2 0507 2 0509 2 0513 4 0602 3 0606 3 0610 4 0614 '
-.               '3 0701 2 0705 2 0711 3 0715 4 0804 4 0812 3 0901 2 0905 2 0911 '
-.               '3 0915 4 1002 3 1006 3 1010 4 1014 2 1103 2 1107 2 1109 2 1113 '
-.               '5 1201 3 1204 4 1208 3 1212 5 1215 2 1302 2 1305 2 1311 2 1314 '
-.               '2 1403 4 1406 4 1410 2 1413 5 1504 3 1507 3 1509 5 1512 '
+.           '2 0302 2 0305 2 0311 2 0314 5 0401 3 0404 4 0408 3 0412 5 0415 '
+.           '2 0503 2 0507 2 0509 2 0513 4 0602 3 0606 3 0610 4 0614 '
+.           '3 0701 2 0705 2 0711 3 0715 4 0804 4 0812 3 0901 2 0905 2 0911 '
+.           '3 0915 4 1002 3 1006 3 1010 4 1014 2 1103 2 1107 2 1109 2 1113 '
+.           '5 1201 3 1204 4 1208 3 1212 5 1215 2 1302 2 1305 2 1311 2 1314 '
+.           '2 1403 4 1406 4 1410 2 1413 5 1504 3 1507 3 1509 5 1512 '
 
 init.bonus.1
 
@@ -703,9 +704,6 @@ checkword
     eq(size(word),1)                                    :s(return)
 
     word = lcase(word);* in case upper case letters have wrongly crept it.
-    ident(word,'wag') out('checkword WAG')
-    ident(word,'sag') out('checkword SAG')
-    ident(word,'rag') out('checkword RAG')
     differ(g.dict[size(word)][word])                    :f(freturn)s(return)
 
 checkword.end
@@ -920,12 +918,9 @@ find
     find = ne(f.mode,f.mode.move) eq(turn,1) start(pid) :s(return)
 
     rack = rack(g.players[pid])
-    out('enter find showing grid')
     show.grid(g.board)
 
     lines = copy(g.lines)
-*   out('show lines')
-*   show.lines(lines)
     inlines = copy(lines)
     g.highest = 0;* highest score this turn
     g.lowest = 0;* lowest cost this turn
@@ -2210,7 +2205,6 @@ scoreline.char
 *   triple the letter value.
 
     val = g.value[ch]
-    val = eq(bonus,2) val * 2
     val = eq(bonus,2) val * 2
     val = eq(bonus,3) val * 3
     scoreline = scoreline + val
@@ -3804,7 +3798,6 @@ turn.swap
 
 turn.done
 
-    ne(f.trace) out('turn done')
                                                         :(return)
 turn.fail
 
@@ -3983,7 +3976,7 @@ words.w
 
 words.done
 
-    words = convert(words,'array')                      :(return)
+    words = convert(words,'array')                      :s(return)f(freturn)
 
 words.end
 

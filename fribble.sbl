@@ -32,13 +32,10 @@
 *	f.mode = 1 for move mode, where fribble reads tiles and state of board, and makes move.
 *	f.mode = 2 for auto mode, where fribble moves for both players.
 *	f.mode = 3 for solo mode, where you play against fribble.
-*	f.mode = 4 for team mode, where you and fribble work
-*		as team to play another player.
 
 	f.mode.move = 1
 	f.mode.auto = 2
 	f.mode.solo = 3
-	f.mode.team = 4
 
 *	Fribble can also be invoked to run as a shell:
 
@@ -66,7 +63,6 @@ options.loop
 	f.mode = ident(opt,'move') f.mode.move                 :s(options.loop)
 	f.mode = ident(opt,'auto') f.mode.auto                 :s(options.loop)
 	f.mode = ident(opt,'solo') f.mode.solo                 :s(options.loop)
-	f.mode = ident(opt,'team') f.mode.team                 :s(options.loop)
 	ident(opt,'shell')                                     :s(main.shell)
 
                                                         :(options.loop)
@@ -75,7 +71,6 @@ options.loop.done
 	eq(f.mode,f.mode.move)                                 :s(main.move)
 	eq(f.mode,f.mode.solo)                                 :s(main.solo)
 	eq(f.mode,f.mode.auto)                                 :s(main.auto)
-	eq(f.mode,f.mode.team)                                 :s(main.team)
 
                                                         :(main.move);* default
 main.auto
@@ -129,29 +124,6 @@ main.solo
 
 	g.tilemanager = 1
                                                         :(main.done)
-main.team
-
-*	Setup for mode 'team'
-
-*	In team mode, you work with fribble to play a foe,
-*	 reporting the foe's moves to fribble and playing the
-*	move fribble then suggests against the foe.
-
-*	You are player one, of kind player.kind.team.
-*	The foe is player two, of kind player.kind.foe.
-
-*	You manage the tiles, entering your tiles as dealt
-*	by wwf before each move.  (The foe's tiles are unknown,
-*	as all that matters is the move they make.)
-
-*	(I wrote this program because a friend named Phil kept beating
-*	me -- badly -- playing wwf.)
-
-	g.one = player(1,'Phil DeFoe',	player.kind.foe);* Hi Phil!
-
-	g.two = player(2,'You',		player.kind.team)
-	g.tilemanager =
-                                                        :(main.done)
 main.shell
 	shell()                                                :(end)
 
@@ -166,8 +138,8 @@ main.done
 
 *	Set f.trace to trace fribble.
 
-	f.trace = 0
 	f.trace = 1
+	f.trace = 0
 
 	ident(g.tilemanager)                                   :s(main.game)
 
