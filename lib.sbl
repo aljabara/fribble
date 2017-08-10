@@ -869,11 +869,11 @@ empty.end
 
 endgame
 
-    out(    name(g.players[1])  ' scored' number(total(g.players[1])) ' points, '
-.               'with a best move off' cardinal(highest(g.players[1]),'point') '.')
+    out(    name(g.players[1])  ' scored ' number(total(g.players[1])) ' points, '
+.               'with a best move of ' cardinal(highest(g.players[1]),'point') '.')
 
-    out(    name(g.players[2])  ' scored' number(total(g.players[2])) ' points, '
-.               'with a best move of' cardinal(highest(g.players[2]),'point') '.')
+    out(    name(g.players[2])  ' scored ' number(total(g.players[2])) ' points, '
+.               'with a best move of ' cardinal(highest(g.players[2]),' points') '.')
 
     out(gt(thirty(g.players[1])) name(g.players[1]) ' had '
 .               cardinal(thirty(g.players[1]),'move') ' of thirty or more points.')
@@ -1589,7 +1589,7 @@ makemove
 .               ' ' number(+substr(id,2))
 .               ', position ' number(free(move)[1]) '.')
 
-    out('Score now                                      : '
+    out('Score now : '
 .               name(g.players[1]) ', ' number(total(g.players[1]))  '; '
 .               name(g.players[2]) ', ' number(total(g.players[2]))  '. ')
 
