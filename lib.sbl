@@ -187,8 +187,8 @@
 
 *   g.tracing, set nonzero when tracing initiated by *g.trace* begins.
 
-    g.tracing = 1
     g.tracing =
+    g.tracing = 1
 
 *   g.turn, the number of the current turn.
 *   g.lastmove, the turn when the last move was made.
@@ -1232,14 +1232,17 @@ getlines.next
     line break(' ') . i span(' ') =
     line = replace(line,'-',' ')
     line = rpad(line,15,' ')
+    out('getlines i',i)
+    out('getlines line',line)
     getlines[i] = line
+    line =
                                                         :(getlines.next)
 
 getlines.done
 
     g.board = grid(getlines)
     g.lines = lines(g.board)
-*   show.lines(g.lines,'getlines.done')
+    show.lines(g.lines,'getlines.done')
 
 *   Compute g.used from full set of lines
 
