@@ -20,6 +20,7 @@
 *
 
 -include "globals.sbl"
+-include "find.sbl"
 -include "lib.sbl"
 -include "shell.sbl"
 -include "show.sbl"
