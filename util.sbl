@@ -1,0 +1,351 @@
+
+*   Utility functions
+
+    define('adjacent(r,c)')                             :(adjacent.end)
+
+*   Test if the cell in row *r* and column *c* is adjacent to one
+*   that has been used.
+
+adjacent
+
+    gt(r,1) differ(g.used[r - 1,c],' ')                 :s(return) ;* cell to north
+    lt(c,15) differ(g.used[r,c + 1],' ')                :s(return) ;* cell to east
+    gt(c,1) differ(g.used[r,c - 1],' ')                 :s(return) ;* cell to west
+    lt(r,15) differ(g.used[r + 1,c],' ')                :s(return) ;* cell to south
+                                                        :(freturn)
+adjacent.end
+
+    define('append(str,w,ch)')                          :(append.end)
+
+*   Append word *w* to string *str*, prefixing with *ch* if *str* is not null,
+*   or using space if *ch* is null.
+
+append
+
+    append = (ident(str) w, str (ident(ch) ' ' , ch) w) :(return)
+
+append.end
+
+
+    define('cardinal(n,word)')                          :(cardinal.end)
+
+*   If N is one, returns 'one' followed by WORD.
+*   Otherwise returns NUMBER(N) followed by WORD and 'S'.
+
+cardinal
+
+    cardinal = (eq(n,1) 'one ' word, number(n) ' '  word 's'):(return)
+
+cardinal.end
+    define('datename(date)s')                           :(datename.end)
+
+
+*   Convert date to form with no blanks, just dashes, to be
+*   suitable for use as part of a file name.
+
+datename
+
+    datename = replace(date,':/ ','---')
+    datename = substr(datename,12,8) '-' substr(datename,1,10)
+                                                        :(return)
+datename.end
+
+    define('dt(obj)')                                   :(dt.end)
+
+*   Shorthand for datatype(obj)
+
+dt
+
+    dt = (ident(obj) 'string',  datatype(obj))          :(return)
+
+dt.end
+
+    define('empty(line)')                               :(empty.end)
+
+*   Test if line is empty (null or all blanks).
+
+empty
+
+*   In most cases, the first character in line is not null.
+
+    differ(substr(line,1,1),' ')                        :s(freturn)
+    line span(' ') =
+    ident(line)                                         :s(return)f(freturn)
+
+empty.end
+
+    define('lcase(s)')                                  :(lcase.end)
+
+*   Convert argument to lower case.
+
+lcase
+
+    lcase = replace(s,&ucase,&lcase)                    :(return)
+
+lcase.end
+
+    define('less(str,sub)before,after')                 :(less.end)
+
+*   Less removes the first instance of each character in *sub* from *str*,
+*   where *sub* is a substring of *str*.
+
+less
+    ident(str)                                          :s(return)
+    less = str
+
+less.ch
+
+    sub len(1) . ch =                                   :f(return)
+    less break(ch) . before  ch rem . after
+    less = before after                                 :(less.ch)
+
+less.end
+
+    define('number(n)')                                 :(number.end)
+
+*   If *n* can be represented as a string of one or two words
+*   then return that string. Otherwise return *n*.
+
+number
+
+    number = eq(n) 'zero'                               :s(return)
+    number = g.numbers[n]
+    differ(number)                                      :s(return)
+    number = n                                          :(return)
+number.end
+
+    define('out(text1,text2,text3)type1,type2')         :(out.end)
+
+*   Output a line conisting of TEXT1, TEXT2 enclosed
+*   in brackets, followed by TEXT3.
+
+out
+    output = text1 (differ(text2) '[' text2 ']', '')  (differ(text3) text3, ''):(return)
+
+    differ(text2)                                       :s(out.text2)
+
+*   Here if just text1.
+
+    output = text1                                      :(return)
+
+out.text2
+
+    type2 = dt(text2)
+    type3 = dt(text3)
+*   output = 'dt(type2) ' dt(type2)
+*   output = 'dt(type3) ' dt(type3)
+    ident(datatype(text2),'string')                     :s(out.2)
+*   output = 'out second argument not integer or string,'
+*.      ' but of type ' type2
+*.                                              :(error)
+
+out.2
+
+    ident(type3,'integer')                              :s(out.3)
+    ident(type3,'string')                               :s(out.3)
+
+out.3
+
+    type.ex(text3,'string')                             :s(out.ok)
+    type.ex(text3,'integer')                            :s(out.ok)
+*   output = 'out third argument not integer or string,'
+*.      ' but of type ' type3
+*.                                               :(error)
+
+out.ok
+
+    output = text1 ' [' text2 ']' text3                 :(return)
+
+out.end
+
+*   pack.sizes = array(30)
+
+    define('pack(chars)n,i')                            :(pack.end)
+
+*   Pack the array of characters *chars* into a line.
+
+pack
+
+    n = +prototype(chars)
+    ne(n,15)                                            :s(pack.chars)
+
+*   Almost all calls to pack are to pack a line from the grid,
+*   so do it directly, and so avoid quadratic behavior
+*   if concatenate characters in loop.
+
+    pack =  chars[1]  chars[2]  chars[3]  chars[4]  chars[5]
+.               chars[6]  chars[7]  chars[8]  chars[9]  chars[10]
+.               chars[11] chars[12] chars[13] chars[14] chars[15]
+
+pack.chars
+    pack = pack chars[i = i + 1]                        :f(return)s(pack.chars)
+
+pack.end
+
+    define('prefix(str,pre)word')                       :(prefix.end)
+
+*   Prefix takes a list of space-separated words str and prefixes each
+*   with the string pre.
+
+prefix
+
+    str = str ' ';* so each word followed by space
+
+prefix.1
+
+    str break(' ') . word span(' ')  =                  :f(return)
+    prefixcount = prefixcount + 1
+    prefix = append(prefix, pre word,'A')               :(prefix.1)
+
+prefix.end
+
+    define('random(n)')                                 :(random.end)
+
+*   Return integer uniformly distributed in 1,2,...,n.
+*   If n=0 returns real uniformly distributed in the interval [0,1].
+*   The Algorithm is based on that in section 16.1 of "Algorithms in SNOBOL4,"
+*   James F. Gimpel, John Wiley and Sons, 1976.
+
+random
+
+    g.random_var = remdr(g.random_var * 4676, 414971)
+    random  = g.random_var / 414971.0
+    random = ne(n) convert(random * n,'integer') + 1
+                                                        :(return)
+random.end
+
+    define('randomseed()s,c')                           :(randomseed.end)
+
+*   Compute seed for random number generator from date and time.
+
+randomseed
+
+    g.random_var =
+    s = g.date
+    s = replace(s,'/:-','   ')
+
+*   Get all the digits in s.
+
+randomseed.loop
+
+    s len(1) . c =                                      :f(randomseed.done)
+    ident(c,' ')                                        :s(randomseed.loop)
+    g.random_var = g.random_var c                       :(randomseed.loop)
+
+randomseed.done
+
+*   Reverse the seed so digits depending on time come first.
+
+    g.random_var = +reverse(g.random_var    )
+                                                        :(return)
+
+randomseed.end
+
+    define('spaces(line)n')                             :(spaces.end)
+
+*   Count number of spaces in line.
+
+spaces
+
+    line len(1) . c =                                   :f(return)
+    spaces = ident(c,' ') spaces + 1                    :(spaces)
+
+spaces.end
+
+    define('subarray(ara,start,len)i')                  :(subarray.end)
+
+*   Like substr, but returns the sub-array of *ara* starting at
+*   element *start* and consisting of *len* elements
+
+subarray
+
+    subarray = array(len)
+
+subarray.1
+
+    gt(i = i + 1,len)                                   :s(return)
+    subarray[i] = copy(ara[start + i - 1])              :(subarray.1)
+
+subarray.end
+
+    define('thousands(s)n')                             :(thousands.end)
+
+*   Format s with comma's every three digits from right.
+
+thousands
+
+    n = size(s)
+    thousands = le(n,3) s                               :s(return)
+    thousands = thousands(substr(s,1,n - 3)) ',' substr(s, n - 2, 3):(return)
+
+thousands.end
+
+    define('ucase(s)')                                  :(ucase.end)
+
+*   Convert argument to upper case.
+
+ucase
+
+    ucase = replace(s,&lcase,&ucase)                    :(return)
+
+ucase.end
+
+    define('unpack(line),c,i')                          :(unpack.end)
+
+*   Unpack the characters of line *line* to an array of characters.
+
+unpack
+
+    unpack = array(size(line))
+
+unpack.ch
+
+    c = substr(line,i = i + 1,1)                        :f(return)
+    unpack[i] = c                                       :(unpack.ch)
+
+unpack.end
+
+    define('words(sin)n,w,pos,i,s,sp')                  :(words.end)
+
+*   Return array of the words in s, fail if no words.
+*   The first entry for an array element is the starting index;
+*   the second is the word itself.
+
+words
+
+*   Make sure we'll have blank to start off so initial span()
+*   matches something, and also one at end to break to
+*   in case last word extends to end of line.
+
+    words = table(n)
+    s = sin
+    s = gt(size(sin),15) substr(sin,1,15)
+    s = ' ' s ' '
+    pos = 0
+
+words.sp
+
+*   Account for blank(s) between words.
+
+    s span(' ') . sp =
+
+    ident(s)                                            :s(words.done)
+
+    pos = pos + size(sp);* point to start of next word
+
+words.w
+
+*   While it is customary to absorb the blank in the
+*   usage below, we leave it in so there will be at least
+*   one blank to satisfy span() when loop back to words.sp
+
+    s break(' ') . w  =                                 :f(words.done)
+    words[pos] = w
+    pos = pos + size(w)
+    lt(pos,size(sin))                                   :s(words.sp)
+
+words.done
+
+    words = convert(words,'array')                      :s(return)f(freturn)
+
+words.end

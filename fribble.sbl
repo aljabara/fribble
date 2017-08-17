@@ -20,8 +20,10 @@
 *
 
 -include "globals.sbl"
--include "show.sbl"
 -include "lib.sbl"
+-include "shell.sbl"
+-include "show.sbl"
+-include "util.sbl"
 
 *	Play a game of fribble.  Usage:
 
