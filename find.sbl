@@ -1,6 +1,171 @@
 *   Copyright 2017, David Shields
 *   Licensed under the MIT license.
 
+    define('avail(pair)line,spaces,c,i,oi')             :(avail.end)
+
+*   Return array containing the indexes of the avail (blank) cells in line.
+*   Fail if no cells are available.
+
+avail
+
+    line = line(pair)
+    spaces = spaces(line)
+    eq(spaces,0)                                        :s(freturn)
+    avail = array(spaces)
+    i = ai = 0
+
+avail.c
+
+    c = substr(line, i = i + 1, 1)                      :f(avail.done)
+    differ(c,' ')                                       :s(avail.c)
+    avail[oi = oi + 1] = +i                             :(avail.c)
+
+avail.done
+
+    eq(g.tracing)                                       :s(return)
+    i = 0; c =
+
+avail.done.ch
+
+    c = c lpad(avail[i = i + 1],3)                      :s(avail.done.ch)
+*           show.hex(line) '|  |' show.line(line) '| is ' c)
+                                                        :(return)
+avail.end
+
+    define('bonus.lines()i')                            :(bonus.lines.end)
+
+bonus.lines
+
+    bonus.lines = array(30)
+
+bonus.lines.next
+
+    gt(i = i + 1,15)                                    :s(return)
+    bonus.lines[i] = hline(g.bonus,i)
+    bonus.lines[i + 15] = vline(g.bonus,i)              :(bonus.lines.next)
+
+bonus.lines.end
+
+    define('checkline(line)word')                       :(checkline.end)
+
+*   Test if all the words in a line are in the dictionary.
+
+checkline
+
+    count.checkline = count.checkline + 1
+    line span(' ') =
+    empty(line)                                         :s(return)
+    line = line ' ';* to simplify breaking out words.
+
+checkline.1
+
+    line span(' ') =
+    line break(' ')  . word ' ' =                       :f(return)
+    eq(size(word),1)                                    :s(checkline.1)
+    checkword(word)                                     :f(freturn)s(checkline.1)
+
+checkline.end
+
+    checkwordn = 0
+
+    define('checkword(word)')                           :(checkword.end)
+
+*   Test if a word is in the dictionary.
+
+checkword
+
+    count.checkword = count.checkword + 1
+
+*   Accept words of a single character since they can occur in crossing lines.
+
+    eq(size(word),1)                                    :s(return)
+
+    word = lcase(word);* in case upper case letters have wrongly crept it.
+    differ(g.dict[size(word)][word])                    :f(freturn)s(return)
+
+checkword.end
+
+    define('cline(lines,move,p,ch)c,line')              :(cline.end)
+
+*   Return crossing line of p-th cell in move *move*.
+*   *ch* gives tile to be played.
+
+cline
+
+    count.cline = count.cline + 1
+
+*   Cross line of row r, position p, is column p.
+*   Cross line of column c, position p, is row p.
+
+    c = (le(id(move),15) p + 15, p);* cross line id
+    line = lines[c];* cross line
+    p = (le(id(move),15) id(move), id(move) - 15);* position to insert
+    line = substr(line,1,p - 1) ucase(ch) substr(line,p + 1)
+    cline = pair(c,line)                                :(return)
+
+cline.end
+
+    define('clines(move,upper)p,c,ch,line')             :(clines.end)
+
+*   Update g.clines to contain the line for move *move* and all
+*   its crossing lines. Express the letters of the move in upper case
+*   (for later scoring) if *upper* is not null.
+
+clines
+
+    line = g.lines[id(move)]
+    p = free(move)[1]
+
+*   First entry is for the line containing the move
+
+    g.cln = 1
+    g.clines[1] = pair(id(move), insert(g.lines[id(move)],move,1))
+    i = 1
+
+*   On each pass through the loop, we compute the crossing line of the
+*   i-th character in the move.
+
+clines.i
+
+    p = free(move)[i]
+
+
+*   Cross line of row r, position p,  is column p.
+*   Cross line of column c, position p, is row p.
+
+    c = (le(id(move),15) p + 15, p);* cross line
+    line = g.lines[c];* cross line
+    p = (le(id(move),15) id(move), id(move) - 15);* position to insert
+    ch = substr(text(move),i,1)
+    line = (gt(p,1) substr(line,1,p - 1),'')
+.                (differ(upper) ucase(ch), ch) (lt(p,15) substr(line,p + 1),'')
+    g.clines[g.cln = g.cln + 1] = pair(c, (ident(upper) lcase(line), line))
+    le(i = i + 1, size(text(move)))                     :s(clines.i)f(return)
+
+clines.end
+
+    define('column(num,pos)')                           :(column.end)
+
+*   Returns column corresponding to position *pos* in line *num*.
+
+column
+
+    column = ((gt(num,15) num - 15, pos))               :(return)
+
+column.end
+
+    define('cost(text)')                                :(cost.end)
+
+*   Return the cost of *text*, defined as the sum of the
+*   values of the tiles in *text*.
+
+cost
+
+    text len(1) . ch =                                  :f(return)
+    cost = cost + g.value[ch]                           :(cost)
+
+cost.end
+
     define('find(pid,turn)rack,num,inlines,line,moves,mi,m,perms,perm,'
 .        'permi,fline,tline,cline,highest,lowest,i,p,score,move,tried,f.moves')
 .                                                       :(find.end)
@@ -232,6 +397,152 @@ find.perm.cross
     g.clines[g.cln = g.cln + 1] = cline                 :(find.perm.cross)
 
 find.perm.end
+
+    define('hline(g,r)')                                :(hline.end)
+
+*   Return the horizontal line of grid *g* corresponding to
+*   row *r* as a string.
+
+hline
+
+    r = +r
+    hline = g[r,1] g[r,2] g[r,3] g[r,4] g[r,5]
+.               g[r,6] g[r,7] g[r,8] g[r,9] g[r,10]
+.               g[r,11] g[r,12] g[r,13] g[r,14] g[r,15]
+                                                        :(return)
+hline.end
+
+    define('insert(line,move,upper)c,f,i,text')         :(insert.end)
+
+*   Insert the text of a move into its free list of empty
+*   cells in the line of the move.  Express the text in upper case
+*   if *upper* is not null.
+
+insert
+
+    count.insert = count.insert + 1
+    text = (differ(upper) ucase(text(move)), text(move))
+    f = free(move)
+    c = size(text(move))
+    ne(f[c] - f[1], c - 1)                              :s(insert.chars)
+
+*   Here if cells are contiguous. Insert text after part before it,
+*   and before part after it.
+
+    count.insert.contig = count.insert.contig + 1
+
+    insert = substr(line, 1, f[1] - 1) text substr(line, f[c] + 1)
+    out(ne(size(line),15) 'insert failure ' line)       :s(end)
+                                                        :(return)
+insert.chars
+
+*   Here if cells not contiguous. Unpack the line, insert the
+*   move text, and pack it back up.
+
+    count.insert.split = count.insert.split + 1
+
+    insert = unpack(line)
+
+insert.ch
+
+    gt(i = i + 1,size(text(move)))                      :s(insert.done)
+    insert[free(move)[i]] = substr(text,i,1)            :(insert.ch)
+
+insert.done
+
+    insert = pack(insert)                               :(return)
+
+insert.end
+
+    define('isbest(move)')                              :(isbest.end)
+
+*   Test the score of a move to see if it the best yet seen in a turn.
+
+isbest
+
+    out(ne(f.showscore) 'Find points(move) ' points(move)
+.               '  highest=' g.highest ' lowest=' g.lowest)
+
+    lt(points(move),g.highest)                          :s(freturn)
+    gt(points(move),g.highest)                          :s(isbest.new)
+
+*   Here if points equal, look for lower cost
+
+    lt(cost(text(move)),g.lowest)                       :s(isbest.new)
+    gt(cost(text(move)),g.lowest)                       :s(freturn)
+
+*   Here if same points and cost, see if one uses 's' and the
+*   other doesn't.  Continue search if current best doesn't use 's'.
+
+    text(find) ? break('s')                             :f(freturn)
+
+*   Here if current best uses an 's'.
+*   Continue if new move also uses 's'.
+
+    text(move) ? break('s')                             :s(freturn)
+
+isbest.new
+
+*   Here to add the new best move.
+
+    g.highest = points(move)
+    g.lowest = cost(text(move))
+*   out(ne(g.tracing) 'find NEW BEST move ' show.move(move))
+                                                        :(return)
+isbest.end
+
+    define('order(tiles)chars,ch,c1,c2,swaps,i,v1,v2')  :(order.end)
+
+*   Sort the tiles in *tiles* according to their value, with
+*   least valuable first.  Though 's' has a nominal value of 1,
+*   its actual value is greater, since almost a third of
+*   the words in the dictionary are plurals. Give 's' a value
+*   of 5 for the purpose of the sort.
+
+order
+    order = le(size(tiles),2) tiles                     :s(return)
+    chars = unpack(tiles)
+                                                        :(order.loop)
+order.next
+
+    eq(swaps,0)                                         :s(order.done)
+    swaps = i = 0
+
+*   Loop through chars, swapping out of order characters,
+
+*    until all characters are properly ordered.
+
+order.loop
+
+    c1 = chars[i = i + 1]                               :f(order.next)
+    c2 = chars[i + 1]                                   :f(order.next)
+    v1 = (ident(c1,'s') 5, g.value[c1])
+    v2 = (ident(c2,'s') 5, g.value[c2])
+    le(v1,v2)                                           :s(order.loop)
+    ch = c2
+    chars[i + 1] = c1
+    chars[i] = ch
+    swaps = swaps + 1                                   :(order.loop)
+
+order.done
+
+    order = pack(chars)                                 :(return)
+
+order.end
+
+*   pack.sizes = array(30)
+
+    define('place(txt,rack)')                           :(place.end)
+
+*   Place the permutation digits in *txt* with the
+*   corresponding tiles from *rack*.
+
+place
+
+    place = replace(txt,substr('1234567',1,size(rack)),rack)
+                                                        :(return)
+place.end
+
 
     define('scan(pair,rack)num,line,i,pi,open,oi,nopen,n,'
 .                       'first,pos,move,sub,len')       :(scan.end)
@@ -748,6 +1059,7 @@ test.perm.cross
     g.clines[g.cln = g.cln + 1] = cline                 :(test.perm.cross)
 
 test.perm.end
+
     define('valid.start(move)free,num,text')            :(valid.start.end)
 
 *   Test if a suggested starting move is valid.
@@ -816,317 +1128,6 @@ valid.i
     checkline(line(g.clines[i]))                        :f(freturn)s(valid.i)
 
 valid.end
-
-    define('avail(pair)line,spaces,c,i,oi')             :(avail.end)
-
-*   Return array containing the indexes of the avail (blank) cells in line.
-*   Fail if no cells are available.
-
-avail
-
-    line = line(pair)
-    spaces = spaces(line)
-    eq(spaces,0)                                        :s(freturn)
-    avail = array(spaces)
-    i = ai = 0
-
-avail.c
-
-    c = substr(line, i = i + 1, 1)                      :f(avail.done)
-    differ(c,' ')                                       :s(avail.c)
-    avail[oi = oi + 1] = +i                             :(avail.c)
-
-avail.done
-
-    eq(g.tracing)                                       :s(return)
-    i = 0; c =
-
-avail.done.ch
-
-    c = c lpad(avail[i = i + 1],3)                      :s(avail.done.ch)
-*           show.hex(line) '|  |' show.line(line) '| is ' c)
-                                                        :(return)
-avail.end
-
-    define('bonus.lines()i')                            :(bonus.lines.end)
-
-bonus.lines
-
-    bonus.lines = array(30)
-
-bonus.lines.next
-
-    gt(i = i + 1,15)                                    :s(return)
-    bonus.lines[i] = hline(g.bonus,i)
-    bonus.lines[i + 15] = vline(g.bonus,i)              :(bonus.lines.next)
-
-bonus.lines.end
-
-    define('checkline(line)word')                       :(checkline.end)
-
-*   Test if all the words in a line are in the dictionary.
-
-checkline
-
-    count.checkline = count.checkline + 1
-    line span(' ') =
-    empty(line)                                         :s(return)
-    line = line ' ';* to simplify breaking out words.
-
-checkline.1
-
-    line span(' ') =
-    line break(' ')  . word ' ' =                       :f(return)
-    eq(size(word),1)                                    :s(checkline.1)
-    checkword(word)                                     :f(freturn)s(checkline.1)
-
-checkline.end
-
-    checkwordn = 0
-
-    define('checkword(word)')                           :(checkword.end)
-
-*   Test if a word is in the dictionary.
-
-checkword
-
-    count.checkword = count.checkword + 1
-
-*   Accept words of a single character since they can occur in crossing lines.
-
-    eq(size(word),1)                                    :s(return)
-
-    word = lcase(word);* in case upper case letters have wrongly crept it.
-    differ(g.dict[size(word)][word])                    :f(freturn)s(return)
-
-checkword.end
-
-    define('cline(lines,move,p,ch)c,line')              :(cline.end)
-
-*   Return crossing line of p-th cell in move *move*.
-*   *ch* gives tile to be played.
-
-cline
-
-    count.cline = count.cline + 1
-
-*   Cross line of row r, position p, is column p.
-*   Cross line of column c, position p, is row p.
-
-    c = (le(id(move),15) p + 15, p);* cross line id
-    line = lines[c];* cross line
-    p = (le(id(move),15) id(move), id(move) - 15);* position to insert
-    line = substr(line,1,p - 1) ucase(ch) substr(line,p + 1)
-    cline = pair(c,line)                                :(return)
-
-cline.end
-
-    define('clines(move,upper)p,c,ch,line')             :(clines.end)
-
-*   Update g.clines to contain the line for move *move* and all
-*   its crossing lines. Express the letters of the move in upper case
-*   (for later scoring) if *upper* is not null.
-
-clines
-
-    line = g.lines[id(move)]
-    p = free(move)[1]
-
-*   First entry is for the line containing the move
-
-    g.cln = 1
-    g.clines[1] = pair(id(move), insert(g.lines[id(move)],move,1))
-    i = 1
-
-*   On each pass through the loop, we compute the crossing line of the
-*   i-th character in the move.
-
-clines.i
-
-    p = free(move)[i]
-
-
-*   Cross line of row r, position p,  is column p.
-*   Cross line of column c, position p, is row p.
-
-    c = (le(id(move),15) p + 15, p);* cross line
-    line = g.lines[c];* cross line
-    p = (le(id(move),15) id(move), id(move) - 15);* position to insert
-    ch = substr(text(move),i,1)
-    line = (gt(p,1) substr(line,1,p - 1),'')
-.                (differ(upper) ucase(ch), ch) (lt(p,15) substr(line,p + 1),'')
-    g.clines[g.cln = g.cln + 1] = pair(c, (ident(upper) lcase(line), line))
-    le(i = i + 1, size(text(move)))                     :s(clines.i)f(return)
-
-clines.end
-
-    define('column(num,pos)')                           :(column.end)
-
-*   Returns column corresponding to position *pos* in line *num*.
-
-column
-
-    column = ((gt(num,15) num - 15, pos))               :(return)
-
-column.end
-
-    define('cost(text)')                                :(cost.end)
-
-*   Return the cost of *text*, defined as the sum of the
-*   values of the tiles in *text*.
-
-cost
-
-    text len(1) . ch =                                  :f(return)
-    cost = cost + g.value[ch]                           :(cost)
-
-cost.end
-
-    define('insert(line,move,upper)c,f,i,text')         :(insert.end)
-
-*   Insert the text of a move into its free list of empty
-*   cells in the line of the move.  Express the text in upper case
-*   if *upper* is not null.
-
-insert
-
-    count.insert = count.insert + 1
-    text = (differ(upper) ucase(text(move)), text(move))
-    f = free(move)
-    c = size(text(move))
-    ne(f[c] - f[1], c - 1)                              :s(insert.chars)
-
-*   Here if cells are contiguous. Insert text after part before it,
-*   and before part after it.
-
-    count.insert.contig = count.insert.contig + 1
-
-    insert = substr(line, 1, f[1] - 1) text substr(line, f[c] + 1)
-    out(ne(size(line),15) 'insert failure ' line)       :s(end)
-                                                        :(return)
-insert.chars
-
-*   Here if cells not contiguous. Unpack the line, insert the
-*   move text, and pack it back up.
-
-    count.insert.split = count.insert.split + 1
-
-    insert = unpack(line)
-
-insert.ch
-
-    gt(i = i + 1,size(text(move)))                      :s(insert.done)
-    insert[free(move)[i]] = substr(text,i,1)            :(insert.ch)
-
-insert.done
-
-    insert = pack(insert)                               :(return)
-
-insert.end
-
-    define('isbest(move)')                              :(isbest.end)
-
-*   Test the score of a move to see if it the best yet seen in a turn.
-
-isbest
-
-    out(ne(f.showscore) 'Find points(move) ' points(move)
-.               '  highest=' g.highest ' lowest=' g.lowest)
-
-    lt(points(move),g.highest)                          :s(freturn)
-    gt(points(move),g.highest)                          :s(isbest.new)
-
-*   Here if points equal, look for lower cost
-
-    lt(cost(text(move)),g.lowest)                       :s(isbest.new)
-    gt(cost(text(move)),g.lowest)                       :s(freturn)
-
-*   Here if same points and cost, see if one uses 's' and the
-*   other doesn't.  Continue search if current best doesn't use 's'.
-
-    text(find) ? break('s')                             :f(freturn)
-
-*   Here if current best uses an 's'.
-*   Continue if new move also uses 's'.
-
-    text(move) ? break('s')                             :s(freturn)
-
-isbest.new
-
-*   Here to add the new best move.
-
-    g.highest = points(move)
-    g.lowest = cost(text(move))
-*   out(ne(g.tracing) 'find NEW BEST move ' show.move(move))
-                                                        :(return)
-isbest.end
-
-    define('order(tiles)chars,ch,c1,c2,swaps,i,v1,v2')  :(order.end)
-
-*   Sort the tiles in *tiles* according to their value, with
-*   least valuable first.  Though 's' has a nominal value of 1,
-*   its actual value is greater, since almost a third of
-*   the words in the dictionary are plurals. Give 's' a value
-*   of 5 for the purpose of the sort.
-
-order
-    order = le(size(tiles),2) tiles                     :s(return)
-    chars = unpack(tiles)
-                                                        :(order.loop)
-order.next
-
-    eq(swaps,0)                                         :s(order.done)
-    swaps = i = 0
-
-*   Loop through chars, swapping out of order characters,
-
-*    until all characters are properly ordered.
-
-order.loop
-
-    c1 = chars[i = i + 1]                               :f(order.next)
-    c2 = chars[i + 1]                                   :f(order.next)
-    v1 = (ident(c1,'s') 5, g.value[c1])
-    v2 = (ident(c2,'s') 5, g.value[c2])
-    le(v1,v2)                                           :s(order.loop)
-    ch = c2
-    chars[i + 1] = c1
-    chars[i] = ch
-    swaps = swaps + 1                                   :(order.loop)
-
-order.done
-
-    order = pack(chars)                                 :(return)
-
-order.end
-
-*   pack.sizes = array(30)
-
-    define('place(txt,rack)')                           :(place.end)
-
-*   Place the permutation digits in *txt* with the
-*   corresponding tiles from *rack*.
-
-place
-
-    place = replace(txt,substr('1234567',1,size(rack)),rack)
-                                                        :(return)
-place.end
-
-    define('hline(g,r)')                                :(hline.end)
-
-*   Return the horizontal line of grid *g* corresponding to
-*   row *r* as a string.
-
-hline
-
-    r = +r
-    hline = g[r,1] g[r,2] g[r,3] g[r,4] g[r,5]
-.               g[r,6] g[r,7] g[r,8] g[r,9] g[r,10]
-.               g[r,11] g[r,12] g[r,13] g[r,14] g[r,15]
-                                                        :(return)
-hline.end
-
 
     define('vline(g,c)')                                :(vline.end)
 
