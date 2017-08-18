@@ -1,3 +1,6 @@
+*   Copyright 2017, David Shields
+*   Licensed under the MIT license.
+
     define('show(v)i,ent,type')                         :(show.end)
 
 *   Show the value of an expression.

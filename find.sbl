@@ -1,3 +1,5 @@
+*   Copyright 2017, David Shields
+*   Licensed under the MIT license.
 
     define('find(pid,turn)rack,num,inlines,line,moves,mi,m,perms,perm,'
 .        'permi,fline,tline,cline,highest,lowest,i,p,score,move,tried,f.moves')

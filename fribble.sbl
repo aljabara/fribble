@@ -1,23 +1,5 @@
-
-
-*	Copyright 2017, David Shields
-
-*	Copyright 2017, David Shields
-
-*
-*	Fribble is free software: you can redistribute it and/or modify
-*	it under the terms of the gnu general public license as published by
-*	the free software foundation, either version 2 of the license, or
-*	(at your option) any later version.
-*
-*	Fribble is distributed in the hope that it will be useful,
-*	but without any warranty; without even the implied warranty of
-*	merchantability or fitness for a particular purpose.  See the
-*	gnu general public license for more details.
-*
-*	You should have received a copy of the gnu general public license
-*	along with fribble.  If not, see <http://www.gnu.org/licenses/>.
-*
+*   Copyright 2017, David Shields
+*   Licensed under the MIT license.
 
 -include "globals.sbl"
 -include "find.sbl"

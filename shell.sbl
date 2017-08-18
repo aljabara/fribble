@@ -1,3 +1,6 @@
+*   Copyright 2017, David Shields
+*   Licensed under the MIT license.
+
     define('shell()ops,key,op')                         :(shell.def.end)
 
 *   Simple 'shell' for fribble.
