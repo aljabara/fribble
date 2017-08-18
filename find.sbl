@@ -105,7 +105,7 @@ cline
 
 cline.end
 
-    define('clines(move,upper)p,c,ch,line')             :(clines.end)
+    define('clines(move,text,upper)p,c,ch,line')             :(clines.end)
 
 *   Update g.clines to contain the line for move *move* and all
 *   its crossing lines. Express the letters of the move in upper case
@@ -119,7 +119,7 @@ clines
 *   First entry is for the line containing the move
 
     g.cln = 1
-    g.clines[1] = pair(id(move), insert(g.lines[id(move)],move,1))
+    g.clines[1] = pair(id(move), insert(g.lines[id(move)],move,text,1))
     i = 1
 
 *   On each pass through the loop, we compute the crossing line of the
@@ -136,11 +136,11 @@ clines.i
     c = (le(id(move),15) p + 15, p);* cross line
     line = g.lines[c];* cross line
     p = (le(id(move),15) id(move), id(move) - 15);* position to insert
-    ch = substr(text(move),i,1)
+    ch = substr(text,i,1)
     line = (gt(p,1) substr(line,1,p - 1),'')
 .                (differ(upper) ucase(ch), ch) (lt(p,15) substr(line,p + 1),'')
     g.clines[g.cln = g.cln + 1] = pair(c, (ident(upper) lcase(line), line))
-    le(i = i + 1, size(text(move)))                     :s(clines.i)f(return)
+    le(i = i + 1, size(text))                           :s(clines.i)f(return)
 
 clines.end
 
@@ -233,7 +233,7 @@ find.move
 
     tried = table(500)
 
-    perms = g.permutations[text(move)]                  :s(find.perm.next)
+    perms = g.permutations[perm(move)]                  :s(find.perm.next)
 
 *   Something must be wrong with the requested permutation
 
@@ -342,7 +342,7 @@ find.perm
 
     differ(tried[text])                                 :s(freturn)
     tried[text] = 1;* note that we have reviewed this text
-
+    text(move) = text
 
     lines = copy(inlines);
 
@@ -352,8 +352,7 @@ find.perm
 *   and so on.  Then see if the result gives a valid line. Move
 *   to the next permutation if not.
 
-    text(move) = perm
-    iline = insert(lines[num],move)
+    iline = insert(lines[num],move,perm)
     checkline(place(iline,rack))                        :f(freturn)
 
 *   Move is valid on this line, so check validity on crossing
@@ -366,12 +365,10 @@ find.perm
 *   detect junk as soon as possible so we can move on without
 *   needless effort.
 
-    text(move) = text
-
 *   ne(g.tracing) out('Find valid first ' show.move(move) ' ' show.line(line))
 
     g.clines[g.cln = g.cln + 1]
-.                       = pair( id(move), insert(lines[num],move))
+.                       = pair( id(move), insert(lines[num],move,text(move)))
     i = 0
 
 *   Check the crossing lines, constructing them as needed,
@@ -412,18 +409,17 @@ hline
                                                         :(return)
 hline.end
 
-    define('insert(line,move,upper)c,f,i,text')         :(insert.end)
+    define('insert(line,move,txt,upper)c,f,i,text')     :(insert.end)
 
-*   Insert the text of a move into its free list of empty
-*   cells in the line of the move.  Express the text in upper case
-*   if *upper* is not null.
+*   Insert the text 'txt' into the free list of empty cells in the line of a move.
+*   Express the text in upper case  if *upper* is not null.
 
 insert
 
     count.insert = count.insert + 1
-    text = (differ(upper) ucase(text(move)), text(move))
+    text = (differ(upper) ucase(txt), txt)
     f = free(move)
-    c = size(text(move))
+    c = size(text)
     ne(f[c] - f[1], c - 1)                              :s(insert.chars)
 
 *   Here if cells are contiguous. Insert text after part before it,
@@ -445,7 +441,7 @@ insert.chars
 
 insert.ch
 
-    gt(i = i + 1,size(text(move)))                      :s(insert.done)
+    gt(i = i + 1,size(txt))                             :s(insert.done)
     insert[free(move)[i]] = substr(text,i,1)            :(insert.ch)
 
 insert.done
@@ -614,11 +610,12 @@ scan.used
                                                         :(scan.first)
 scan.text
 
-*   Here if adjacent cell found. Set text of move to
+*   Here if adjacent cell found. Set permutation field of move to
 *   the permutation specification.
 
     sub = subarray(open,pi,len)                         :f(scan.len)
-    move = move(num,sub,size(rack) '?' len)             :f(scan.len)
+    move = move(num,sub)
+    perm(move) = size(rack) '?' len
 *   ne(g.tracing) out('Scan move ' show.move(move))
     scan = ident(scan) table()
     count.scanned = count.scanned + 1
@@ -729,7 +726,7 @@ scoremove
 *   Generate move's line and its cross lines with the move's
 *   text in upper case.
 
-    clines(move,1);
+    clines(move,text(move),1);
 
     ne(g.tracing) show.clines()
     ne(g.tracing) out('scoremove move=' show.move(move))
@@ -923,7 +920,8 @@ start.word
 *   Get next word, check that valid, then see if new high score
 
     perm = perms[permi = permi + 1]                     :f(start.n)
-    word = replace(perm,substr('1234567',1,size(tiles)),tiles)
+*    word = replace(perm,substr('1234567',1,size(tiles)),tiles)
+    word = place(perm,tiles)
 
 *   out('kind ' kind ' perm ' perm ' word ' word)
     checkword(word)                                     :f(start.word)
@@ -1016,7 +1014,7 @@ test.perm
 *   (This is a clever use of replace(), even if I do say so myself.)
 
     text(move) = perm;* insert permutation digits into free cells
-    iline = insert(lines[num],move);* line with permutation digits entered
+    iline = insert(lines[num],move,text(move));* line with permutation digits entered
     checkline(place(iline,rack))                        :f(freturn)
 
 *   'move' is valid on this line, so check validity on crossing lines.
@@ -1033,7 +1031,7 @@ test.perm
 *   out(ne(g.tracing) 'Find valid first '
 *           show.move(move) ' ' show.line(line))
 
-    g.clines[g.cln = g.cln + 1] =  pair( id(move), insert(lines[num],move))
+    g.clines[g.cln = g.cln + 1] =  pair( id(move), insert(lines[num],move,text(move)))
     i = 0
 
 *   Check the crossing lines, constructing them as needed, to make sure the
@@ -1119,7 +1117,7 @@ valid.used
 
 *   Test that line and all its crossing lines are valid.
 
-    clines(move);* get line and its crossing lines
+    clines(move,text(move));* get line and its crossing lines
     i = 0
 
 valid.i
