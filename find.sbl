@@ -1111,3 +1111,32 @@ place
                                                         :(return)
 place.end
 
+    define('hline(g,r)')                                :(hline.end)
+
+*   Return the horizontal line of grid *g* corresponding to
+*   row *r* as a string.
+
+hline
+
+    r = +r
+    hline = g[r,1] g[r,2] g[r,3] g[r,4] g[r,5]
+.               g[r,6] g[r,7] g[r,8] g[r,9] g[r,10]
+.               g[r,11] g[r,12] g[r,13] g[r,14] g[r,15]
+                                                        :(return)
+hline.end
+
+
+    define('vline(g,c)')                                :(vline.end)
+
+*   Return the vertical line of  grid *g* corresponding
+*   to column *c* as a string.
+
+vline
+
+    c = +c
+    vline = g[1,c] g[2,c] g[3,c] g[4,c] g[5,c]
+.               g[6,c] g[7,c] g[8,c] g[9,c] g[10,c]
+.               g[11,c] g[12,c] g[13,c] g[14,c] g[15,c]
+                                                        :(return)
+vline.end
+
