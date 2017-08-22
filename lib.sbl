@@ -1047,7 +1047,7 @@ turn.manual.error
 turn.make
 *   3.      Make the move by updating the data structures, scores, etc.
 
-    points(g.move) = scoremove(g.move)
+*    points(g.move) = scoremove(g.move)
 
     log.move(pid,g.move)
 

@@ -267,9 +267,9 @@ find.score
 *   ne(g.tracing) show.play(move)
 *   out(ne(g.tracing) 'Find calling scoremove')
 
-    points(move) = +scoremove(move)
+    scoremove(move)
 
-    g.moves[g.moves.n = g.moves.n + 1] = move
+    g.moves[g.moves.n = g.moves.n + 1] = copy(move)
 
 *   eq(f.mode,f.mode.move) out(show.move(move))
 *   eq(f.mode,f.mode.move) gt(points(move),9) out(show.move(move))
@@ -726,11 +726,10 @@ scoremove
 *   Generate move's line and its cross lines with the move's
 *   text in upper case.
 
+    points(move) = 0
+    ne(g.tracing) out('scoremove enter move=' show.move(move))
     clines(move,text(move),1);
 
-    ne(g.tracing) show.clines()
-    ne(g.tracing) out('scoremove move=' show.move(move))
-    ne(g.tracing) out('g.cln=' g.cln)
 
     i = 0
 
@@ -747,7 +746,8 @@ scoremove.done
 
     scoremove  = eq(size(size(text(move))),7) scoremove + 35;
 
-    ne(g.tracing) out('scoremove returns ' scoremove)
+    points(move) = scoremove
+    ne(g.tracing) out('scoremove move=' show.move(move))
                                                         :(return)
 scoremove.end
 
